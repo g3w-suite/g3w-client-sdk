@@ -4,15 +4,13 @@ var G3WObject = require('core/g3wobject');
 var GUI = require('gui/gui');
 var ApplicationService = require('core/applicationservice');
 var ProjectsRegistry = require('core/project/projectsregistry');
-var ProjectTypes = require('core/project/projecttypes');
 var ProjectLayer = require('core/project/projectlayer');
-var GeometryTypes = require('core/geometry/geometry').GeometryTypes;
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 var WMSLayer = require('core/map/layer/wmslayer');
 var ControlsFactory = require('gui/map/control/factory');
 var QueryService = require('core/query/queryservice');
 
-function MapService(project){
+function MapService(project) {
   var self = this;
   this.config;
   this.viewer;
@@ -277,7 +275,7 @@ proto.setupControls = function(){
           });
           control.on('picked',function(e){
             var coordinates = e.coordinates;
-            var showQueryResults = GUI.showResultsFactory('query');
+            var showQueryResults = GUI.showContentFactory('query');
             var layers = self.project.getLayers({
               QUERYABLE: true,
               SELECTEDORALL: true

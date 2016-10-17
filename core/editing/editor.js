@@ -14,7 +14,7 @@ var CutLineTool = require('./tools/cutlinetool');
 /// BUFFER /////
 var EditBuffer = require('./editbuffer');
 
-var Form = require('gui/form/form');
+var Form = require('gui/form/vue/form');
 var form = null; // brutto ma devo tenerlo esterno sennò si crea un clico di riferimenti che manda in palla Vue
 
 // Editor di vettori puntuali
@@ -456,6 +456,8 @@ proto.getField = function(name, fields) {
   var field = null;
   _.forEach(fields, function(f) {
     if (f.name == name) {
+      console.log(name);
+      console.log(field);
       field = f;
     }
   });
@@ -706,12 +708,15 @@ proto._openEditorForm = function(isNew, feature, next) {
     });
   }
   var relationsPromise = this.getRelationsWithValues(feature);
+  // recupero la funzione per visualizzazre il componente Form
+  var showForm  = GUI.showContentFactory('form');
+  //var queryResultsPanel = showQueryResults('interrogazione');
   relationsPromise
     .then(function(relations) {
-      form = new self._formClass({
+      showForm({
         provider: self,
         name: "Edita attributi "+vectorLayer.name,
-        id: self.generateFormId(vectorLayer.name),
+        formId: self.generateFormId(vectorLayer.name),
         dataid: vectorLayer.name,
         vectorLayer: vectorLayer,
         pk: vectorLayer.pk,
@@ -740,10 +745,6 @@ proto._openEditorForm = function(isNew, feature, next) {
             }
           }
         ]
-      });
-      GUI.showForm(form,{
-        modal: true,
-        closable: false
       });
     })
     .fail(function() {

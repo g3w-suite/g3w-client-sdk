@@ -7,10 +7,10 @@ function ApiService(){
   this._config = null;
   this._baseUrl = null;
   this._apiUrls = {};
-  
   this.init = function(config) {
 
     this._config = config;
+    // prende l'url base delle api dal config dell'applicazione
     this._baseUrl = config.urls.api;
     this._apiEndpoints = config.urls.apiEndpoints;
   };
@@ -59,9 +59,9 @@ function ApiService(){
       return reject();
     }
   };
-  
   base(this);
 }
+
 inherit(ApiService,G3WObject);
 
 module.exports = new ApiService;

@@ -14,29 +14,27 @@ function GUI() {
   // show a Vue form
   this.showForm = noop;
   this.closeForm = noop;
-  
   // mostra una lista di oggetti (es. lista di risultati)
   this.showListing = noop;
   this.closeListing = noop;
   this.hideListing = noop;
-  
   // options conterrà i vari dati sui risultati. Sicuramente avrà la prprietà options.features
   // nel caso di queryByLocation avrà anche options.coordinate
   this.showQueryResults = function(options) {};
   this.hideQueryResults = noop;
-
   /* panel */
   this.showPanel = noop;
   this.hidePanel = noop;
-
   //metodi componente
   // aggiunge (e registra) un componente in un placeholder del template - Metodo implementato dal template
-  this.addComponent = function(component,placeholder) {};
+  this.addComponent = function(component, placeholder) {};
   this.removeComponent = function(id) {};
   // registra globalmente un componente (non legato ad uno specifico placeholder. Es. componente per mostrare risultati interrogazion)
   this.setComponent = function(component) {
     ComponentsRegistry.registerComponent(component);
   };
+  // funzione che mi permette di prendere il componente
+  // registrato in base al suo id
   this.getComponent = function(id) {
     return ComponentsRegistry.getComponent(id);
   };

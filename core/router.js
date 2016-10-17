@@ -100,10 +100,10 @@ proto.slicePath = function(path){
 proto.sliceFirst = function(path){
   var pathAndQuery = path.split('?');
   var queryString = pathAndQuery[1];
-  var pathArr = pathAndQuery[0].split('/')
+  var pathArr = pathAndQuery[0].split('/');
   var firstPath = pathArr[0];
   path = pathArr.slice(1).join('/');
-  path = [path,queryString].join('?')
+  path = [path,queryString].join('?');
   return [firstPath,path];
 };
   

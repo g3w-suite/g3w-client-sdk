@@ -32,9 +32,6 @@ function ToolsService(){
   };
   this.removeTool = function(toolId) {
   };
-  this.updateTool = function(order, toolId) {
-
-  };
   this.updateToolsGroup = function(order, groupConfig) {
     this.state.toolsGroups.$set(order, groupConfig)
   };

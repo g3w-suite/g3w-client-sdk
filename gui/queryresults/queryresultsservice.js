@@ -4,29 +4,26 @@ var GUI = require('gui/gui');
 var G3WObject = require('core/g3wobject');
 var ComponentsRegistry = require('gui/componentsregistry');
 
-function QueryResultsService(){
+function QueryResultsService() {
   var self = this;
   this._actions = {
     'zoomto': QueryResultsService.zoomToElement,
-    //'gotogeometry': QueryResultsService.goToGeometry,
     'highlightgeometry': QueryResultsService.highlightGeometry,
     'clearHighlightGeometry': QueryResultsService.clearHighlightGeometry
   };
-
-  this.state = null
-  
+  this.state = null;
   this.init = function(options) {
     this.clearState();
   };
-  
+
   this.setters = {
-    setQueryResponse: function(queryResponse,coordinates,resolution) {
+    setQueryResponse: function(queryResponse, coordinates, resolution) {
       this.state.layers = [];
       this.state.query = queryResponse.query;
       var layers = this._digestFeaturesForLayers(queryResponse.data);
       this.setLayersData(layers,this);
     },
-    setLayersData: function(layers,self) {
+    setLayersData: function(layers, self) {
       // un opportunità per aggiungere / modificare i risultati dell'interrogazione
       this.state.loading = false;
       this.state.layers =  layers;
@@ -39,7 +36,7 @@ function QueryResultsService(){
       // un opportunità per i listener di intervenire sul DOM
     }
   };
-  
+  // fa il clear dello state
   this.clearState = function() {
     this.state = {
       layers: [],
@@ -56,7 +53,7 @@ function QueryResultsService(){
 
   this.setState = function(state) {
     this.state = state;
-  }
+  };
 
   this.setTitle = function(querytitle) {
     this.state.querytitle = querytitle || "";

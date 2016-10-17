@@ -6,12 +6,14 @@ function ClipboardService() {
     // se e solo se si riferisce allo stesso id
     var formLayer = formId.split('form')[0];
     this._data[formLayer] = data;
+    console.log(data);
   };
 
   this.get = function(formLayer) {
-    var data = this._data[formLayer] || {}
+    var data = this._data[formLayer] || {};
     this._data[formLayer] = {};
     return data;
-  }
+  };
+
 }
 module.exports = new ClipboardService;

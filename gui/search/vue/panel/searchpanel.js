@@ -25,7 +25,7 @@ var SearchPanelComponet = Vue.extend({
       //al momento molto farragginoso ma da rivedere
       //per associazione valore input
       this.filterObject = this.fillFilterInputsWithValues(this.filterObject, this.formInputValues);
-      var showQueryResults = GUI.showResultsFactory('query');
+      var showQueryResults = GUI.showContentFactory('query');
       var queryResultsPanel = showQueryResults(self.title);
       QueryService.queryByFilter(this.filterObject)
       .then(function(results){

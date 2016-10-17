@@ -6,7 +6,7 @@ var noop = require('core/utils/utils').noop;
  * @constructor
  */
 var G3WObject = function(){
-  if (this.setters){
+  if (this.setters) {
     this._setupListenersChain(this.setters);
   }
 };

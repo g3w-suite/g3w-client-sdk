@@ -5,21 +5,22 @@ var Component = function(options) {
   var options = options || {};
   this.internalComponent = null;
   this.id = options.id || Math.random() * 1000;
-  this.title = options.title || ''
+  this.title = options.title || '';
   this.state = {
     visible: options.visible || true,
     open: options.open || false
   }
 };
-inherit(Component,G3WObject);
+
+inherit(Component, G3WObject);
 
 var proto = Component.prototype;
 
-proto.getId = function(){
+proto.getId = function() {
   return this.id;
 };
 
-proto.getTitle = function(){
+proto.getTitle = function() {
   return this.state.title;
 };
 

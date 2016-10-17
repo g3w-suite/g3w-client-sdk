@@ -28,7 +28,6 @@ var vueComponentOptions = {
 // se lo voglio istanziare manualmente
 var InternalComponent = Vue.extend(vueComponentOptions);
 // se lo voglio usare come componente come elemento html
-//Vue.component('g3w-search',vueComponentOptions);
 
 /* COMPONENTI FIGLI */
 /* FINE COMPONENTI FIGLI */
@@ -48,7 +47,7 @@ function SearchComponent(options){
     //inizializzo il servizio
     this._service.init();
   };
-};
+}
 
 inherit(SearchComponent, Component);
 module.exports = SearchComponent;
