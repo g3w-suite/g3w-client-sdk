@@ -189,20 +189,24 @@ var vueComponentOptions = {
       if (csrftoken) {
         formData.csrfmiddlewaretoken = csrftoken;
       }
-      $(e.target).fileupload({
-        dataType: 'json',
-        formData : formData,
-        done: function (e, data) {
-          $.each(data.result, function (key, value) {
-            field.value = value.filename
-          });
-        }
-      });
+
       //verifico se è stato caricato un file
       var files = e.target.files || e.dataTransfer.files;
       if (!files.length)
         return;
-      this.createImage(files[0]);
+      else {
+        this.createImage(files[0]);
+        $(e.target).fileupload({
+          dataType: 'json',
+          formData : formData,
+          done: function (e, data) {
+            $.each(data.result, function (key, value) {
+              console.log(value.filename);
+              field.value = value.filename
+            });
+          }
+        });
+      }
     },
     createImage: function(file) {
       var reader = new FileReader();

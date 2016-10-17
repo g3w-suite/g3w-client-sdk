@@ -456,8 +456,6 @@ proto.getField = function(name, fields) {
   var field = null;
   _.forEach(fields, function(f) {
     if (f.name == name) {
-      console.log(name);
-      console.log(field);
       field = f;
     }
   });

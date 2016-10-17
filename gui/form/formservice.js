@@ -22,7 +22,7 @@ Inputs.SELECT = 'select';
 Inputs.LAYERPICKER = 'layerpicker';
 Inputs.FILE = 'file';
 
-Inputs.specialInputs = [Inputs.TEXTAREA,Inputs.SELECT,Inputs.LAYERPICKER];
+Inputs.specialInputs = [Inputs.TEXTAREA, Inputs.SELECT, Inputs.LAYERPICKER];
 
 function FormService() {
   this._actions = {};
@@ -43,6 +43,10 @@ function FormService() {
     setFormData: function(fields, relations) {
       this.setFormFields(fields);
       this.setFormRelations(relations);
+    },
+    // setter del singolo field
+    setField: function(field) {
+      console.log(field);
     },
     // setter sull'aggiunta di un'azione sul form
     addActionsForForm: function (actions) {
@@ -159,7 +163,7 @@ function FormService() {
   };
 
   this._setFieldValueLayerFromToRelationField = function(relation, name) {
-    console.log('questa funzione deve essere sovrascritta dal plugin al momento');
+     ('questa funzione deve essere sovrascritta dal plugin al momento');
   };
 
   this._checkIfFieldIsOverwritable = function(fieldName, fieldsdArray) {
