@@ -12,6 +12,11 @@ var MapService = require('../mapservice');
 
 var vueComponentOptions = {
   template: require('./map.html'),
+  data: function() {
+    return {
+      target: 'map'
+    }
+  },
   ready: function(){
     var self = this;
     
@@ -34,20 +39,22 @@ function MapComponent(options){
   base(this,options);
   this.id = "map-component";
   this.title = "Catalogo dati";
-  this._service = new MapService;
+  this.target = options.target || 'map';
+  this._service = new MapService(options);
   merge(this, options);
   this.internalComponent = new InternalComponent({
     mapService: this._service
   });
+  this.internalComponent.target = this.target;
 };
 
 inherit(MapComponent, Component);
 var proto = MapComponent.prototype;
 
 proto.layout = function(width,height) {
-  $("#map").height(height);
-  $("#map").width(width);
-  this._service.resize(width,height);
+  $('#'+this.target).height(height);
+  $('#'+this.target).width(width);
+  this._service.layout(width,height);
 };
 
 module.exports =  MapComponent;

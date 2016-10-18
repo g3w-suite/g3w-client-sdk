@@ -10,7 +10,7 @@ var WMSLayer = require('core/map/layer/wmslayer');
 var ControlsFactory = require('gui/map/control/factory');
 var QueryService = require('core/query/queryservice');
 
-function MapService(project) {
+function MapService(options) {
   var self = this;
   this.config;
   this.viewer;
@@ -50,8 +50,8 @@ function MapService(project) {
   };
   
   this._interactionsStack = [];
-  if(!_.isNil(project)) {
-    this.project = project;
+  if(!_.isNil(options.project)) {
+    this.project = options.project;
   }
   else {
     this.project = ProjectsRegistry.getCurrentProject();
@@ -65,6 +65,9 @@ function MapService(project) {
       this.updateMapLayers(this._mapLayers);
     },
     setupViewer: function(width,height){
+      if (width == 0 || height == 0) {
+        return
+      }
       //$script("http://epsg.io/"+ProjectService.state.project.crs+".js");
       proj4.defs("EPSG:"+self.project.state.crs,this.project.state.proj4);
       if (self.viewer) {
@@ -712,12 +715,14 @@ proto.refreshMap = function() {
   });
 };
 
-proto.resize = function(width,height) {
+proto.layout = function(width,height) {
   if (!this.viewer) {
     this.setupViewer(width,height);
   }
-  this.getMap().updateSize();
-  this._setMapView();
+  if (this.viewer) {
+    this.getMap().updateSize();
+    this._setMapView();
+  }
 };
 
 proto._reset = function() {
