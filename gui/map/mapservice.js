@@ -325,36 +325,36 @@ proto.setupControls = function(){
   }
 };
 
-proto.addControl = function(controlType,control){
+proto.addControl = function(type,control){
   this.viewer.map.addControl(control);
   this._mapControls.push({
-    type: controlType,
+    type: type,
     control: control,
     visible: true
   })
 };
 
-proto.showControl = function(controlType) {
-  this.showControls([controlType]);
+proto.showControl = function(type) {
+  this.showControls([type]);
 };
 
-proto.hideControl = function(controlType) {
-  this.hideControls([controlType]);
+proto.hideControl = function(type) {
+  this.hideControls([type]);
 };
 
-proto.showControls = function(controlTypes) {
-  this.toggleControl(controlType,true);
+proto.showControls = function(types) {
+  this.toggleControls(types,true);
 };
 
-proto.hideControls = function(controlTypes) {
- this.toggleControl(controlType,false);
+proto.hideControls = function(types) {
+ this.toggleControls(types,false);
 };
 
-proto.toggleControl = function(controlType,toggle) {
+proto.toggleControls = function(types,toggle) {
   var self = this;
   this._removeControls();
   _.forEach(this._mapControls,function(controlObj){
-    if (controlObj.type == controlType) {
+    if (types.indexOf(controlObj.type) > -1) {
       controlObj.visible = toggle;
     }
   });
