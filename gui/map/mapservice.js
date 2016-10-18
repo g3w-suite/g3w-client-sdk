@@ -346,39 +346,34 @@ proto.hideControl = function(type) {
 
 // come sopra ma per un array di tipi di controlli. Es. mapService.showControls(['zoombox','query'])
 proto.showControls = function(types) {
-  this.toggleControls(types,true);
+  this.toggleControls(true,types);
 };
 
 // come sopra ma per un array di tipi di controlli. Es. mapService.hideControls(['zoombox','query'])
 proto.hideControls = function(types) {
- this.toggleControls(types,false);
+ this.toggleControls(false,types);
 };
 
 // riattiva tutti i controlli disponibili
 proto.showAllControls = function() {
-  var self = this;
-  this._removeControls();
-  _.forEach(this._mapControls,function(controlObj){
-    controlObj.visible = true;
-  });
-  this._layoutControls();
+  this.toggleControls(true);
 };
 
 // rimuove tutti i controlli
 proto.hideAllControls = function() {
-  var self = this;
-  this._removeControls();
-  _.forEach(this._mapControls,function(controlObj){
-    controlObj.visible = false;
-  });
-  this._layoutControls();
+  this.toggleControls(false);
 };
 
-proto.toggleControls = function(types,toggle) {
+proto.toggleControls = function(toggle, types) {
   var self = this;
   this._removeControls();
   _.forEach(this._mapControls,function(controlObj){
-    if (types.indexOf(controlObj.type) > -1) {
+    if (types) {
+      if (types.indexOf(controlObj.type) > -1) {
+        controlObj.visible = toggle;
+      }
+    }
+    else {
       controlObj.visible = toggle;
     }
   });
