@@ -238,7 +238,7 @@ proto.setupControls = function(){
               type: controlType
             });
           }
-          self.addControl(control);
+          self.addControl(controlType,control);
           break;
         case 'zoom':
           control = ControlsFactory.create({
@@ -246,7 +246,7 @@ proto.setupControls = function(){
             zoomInLabel: "\ue98a",
             zoomOutLabel: "\ue98b"
           });
-          self.addControl(control);
+          self.addControl(controlType,control);
           break;
         case 'zoombox': 
           if (!isMobile.any) {
@@ -256,7 +256,7 @@ proto.setupControls = function(){
             control.on('zoomend', function (e) {
               self.viewer.fit(e.extent);
             });
-            self.addControl(control);
+            self.addControl(controlType,control);
           }
           break;
         case 'zoomtoextent':
@@ -266,7 +266,7 @@ proto.setupControls = function(){
               label: "\ue98c",
               extent: self.project.state.initextent
             });
-            self.addControl(control);
+            self.addControl(controlType,control);
           }
           break;
         case 'query':
@@ -287,14 +287,14 @@ proto.setupControls = function(){
               queryResultsPanel.setQueryResponse(results,coordinates,self.state.resolution);
             });
           });
-          self.addControl(control);
+          self.addControl(controlType,control);
           break;
         case 'scaleline':
           control = ControlsFactory.create({
             type: controlType,
             position: 'br'
           });
-          self.addControl(control);
+          self.addControl(controlType,control);
           break;
         case 'overview':
           if (!isMobile.any) {
@@ -315,7 +315,7 @@ proto.setupControls = function(){
                     projection: self.getProjection()
                   })
                 });
-                self.addControl(control);
+                self.addControl(controlType,control);
               });
             }
           }
@@ -325,9 +325,64 @@ proto.setupControls = function(){
   }
 };
 
-proto.addControl = function(control){
+proto.addControl = function(controlType,control){
   this.viewer.map.addControl(control);
-  this._mapControls.push(control);
+  this._mapControls.push({
+    type: controlType,
+    control: control,
+    visible: true
+  })
+};
+
+proto.showControl = function(controlType) {
+  this.showControls([controlType]);
+};
+
+proto.hideControl = function(controlType) {
+  this.hideControls([controlType]);
+};
+
+proto.showControls = function(controlTypes) {
+  this.toggleControl(controlType,true);
+};
+
+proto.hideControls = function(controlTypes) {
+ this.toggleControl(controlType,false);
+};
+
+proto.toggleControl = function(controlType,toggle) {
+  var self = this;
+  this._removeControls();
+  _.forEach(this._mapControls,function(controlObj){
+    if (controlObj.type == controlType) {
+      controlObj.visible = toggle;
+    }
+  });
+  this.layoutControls();
+};
+
+proto.layoutControls = function() {
+  var self = this;
+  _.forEach(this._mapControls,function(controlObj){
+    if (controlObj.visible) {
+      self.viewer.map.addControl(controlObj.control);
+    }
+  })
+};
+
+proto._removeControls = function() {
+  var self = this;
+  _.forEach(this._mapControls,function(controlObj){
+    self.viewer.map.removeControl(controlObj.control);
+  })
+};
+
+proto._unToggleControls = function() {
+  _.forEach(this._mapControls,function(controlObj){
+    if (controlObj.control.toggle) {
+      controlObj.control.toggle(false);
+    }
+  })
 };
 
 proto.addMapLayer = function(mapLayer) {
@@ -490,7 +545,7 @@ proto.setTarget = function(elId){
 
 proto.addInteraction = function(interaction) {
 
-  this._unsetControls();
+  this._unToggleControls();
   this.viewer.map.addInteraction(interaction);
   interaction.setActive(true);
 };
@@ -648,14 +703,6 @@ proto.resize = function(width,height) {
 
 proto._reset = function() {
   this._mapLayers = [];
-};
-
-proto._unsetControls = function() {
-  _.forEach(this._mapControls,function(control){
-    if (control.toggle) {
-      control.toggle(false);
-    }
-  })
 };
 
 proto._setMapView = function() {

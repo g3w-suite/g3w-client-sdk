@@ -23,7 +23,7 @@ var Control = function(options){
   ol.control.Control.call(this,options);
   
   this._postRender();
-}
+};
 ol.inherits(Control, ol.control.Control);
 
 var proto = Control.prototype;
@@ -57,19 +57,24 @@ proto._handleClick = function(event){
   }
 };
 
-proto.setMap = function(map){
-  var position =  this.getPosition();
-  var viewPort = map.getViewport();
-  var previusControls = $(viewPort).find('.ol-control-'+this.positionCode);
-  if (previusControls.length) {
-    previusControl = previusControls.last();
-    var previousOffset = position.left ? previusControl.position().left : previusControl.position().right;
-    var hWhere = position.left ? 'left' : 'right';
-    var previousWidth = previusControl[0].offsetWidth;
-    var hOffset = $(this.element).position()[hWhere] + previousOffset + previousWidth + 2;
-    $(this.element).css(hWhere,hOffset+'px');
+proto.layout = function(map) {
+  if (map) {
+    var position =  this.getPosition();
+    var viewPort = map.getViewport();
+    var previusControls = $(viewPort).find('.ol-control-'+this.positionCode);
+    if (previusControls.length) {
+      previusControl = previusControls.last();
+      var previousOffset = position.left ? previusControl.position().left : previusControl.position().right;
+      var hWhere = position.left ? 'left' : 'right';
+      var previousWidth = previusControl[0].offsetWidth;
+      var hOffset = $(this.element).position()[hWhere] + previousOffset + previousWidth + 2;
+      $(this.element).css(hWhere,hOffset+'px');
+    }
   }
-  
+};
+
+proto.setMap = function(map){
+  this.layout(map);
   ol.control.Control.prototype.setMap.call(this,map);
 };
 

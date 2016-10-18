@@ -22,7 +22,7 @@ var OLControl = function(options){
   ol.control.Control.call(this,{
     element: this._control.element
   });
-}
+};
 ol.inherits(OLControl, ol.control.Control);
 module.exports = OLControl;
 
@@ -36,18 +36,24 @@ proto.getPosition = function(positionCode) {
   return position;
 };
 
-proto.setMap = function(map){
-  var position =  this.getPosition();
-  var viewPort = map.getViewport();
-  var previusControls = $(viewPort).find('.ol-control-'+this.positionCode);
-  if (previusControls.length) {
-    previusControl = previusControls.last();
-    var previousOffset = position.left ? previusControl.position().left : previusControl.position().right;
-    var hWhere = position.left ? 'left' : 'right';
-    var previousWidth = previusControl[0].offsetWidth;    
-    var hOffset = $(this.element).position()[hWhere] + previousOffset + previousWidth + 2;
-    $(this.element).css(hWhere,hOffset+'px');
+
+proto.layout = function(map) {
+  if (map) {
+    var position =  this.getPosition();
+    var viewPort = map.getViewport();
+    var previusControls = $(viewPort).find('.ol-control-'+this.positionCode);
+    if (previusControls.length) {
+      previusControl = previusControls.last();
+      var previousOffset = position.left ? previusControl.position().left : previusControl.position().right;
+      var hWhere = position.left ? 'left' : 'right';
+      var previousWidth = previusControl[0].offsetWidth;
+      var hOffset = $(this.element).position()[hWhere] + previousOffset + previousWidth + 2;
+      $(this.element).css(hWhere,hOffset+'px');
+    }
   }
-  
+};
+
+proto.setMap = function(map){
+  this.layout(map);
   this._control.setMap(map);
 };
