@@ -334,18 +334,22 @@ proto.addControl = function(type,control){
   })
 };
 
+// mostra uno dei controlli disponibili (ovvero già istanziati in base alla configurazione)
 proto.showControl = function(type) {
   this.showControls([type]);
 };
 
+// nasconde uno dei controlli disponibili (ovvero già istanziati in base alla configurazione)
 proto.hideControl = function(type) {
   this.hideControls([type]);
 };
 
+// come sopra ma per un array di tipi di controlli
 proto.showControls = function(types) {
   this.toggleControls(types,true);
 };
 
+// come sopra ma per un array di tipi di controlli
 proto.hideControls = function(types) {
  this.toggleControls(types,false);
 };
