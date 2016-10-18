@@ -184,35 +184,31 @@ var vueComponentOptions = {
     },
     onFileChange: function(field, e) {
       // verifico se esiste il tocken di django
-      var formData = {};
+      formData = {};
       var csrftoken = this.$cookie.get('csrftoken');
       if (csrftoken) {
         formData.csrfmiddlewaretoken = csrftoken;
       }
-
+      $(e.target).fileupload({
+        dataType: 'json',
+        formData : formData,
+        done: function (e, data) {
+          $.each(data.result, function (key, value) {
+            field.value = value.filename
+          });
+        }
+      });
       //verifico se è stato caricato un file
       var files = e.target.files || e.dataTransfer.files;
-      if (!files.length)
+      if (!files.length) {
         return;
-      else {
-        this.createImage(files[0]);
-        $(e.target).fileupload({
-          dataType: 'json',
-          formData : formData,
-          done: function (e, data) {
-            $.each(data.result, function (key, value) {
-              console.log(value.filename);
-              field.value = value.filename
-            });
-          }
-        });
       }
     },
-    createImage: function(file) {
+    createImage: function(file, field) {
       var reader = new FileReader();
       var self = this;
       reader.onload = function(e) {
-        self.image = e.target.result;
+        field.value = e.target.result;
       };
       reader.readAsDataURL(file);
     },
@@ -234,6 +230,23 @@ var vueComponentOptions = {
     hasRelations: function() {
       return this.state.relations.length;
     }
+  },
+  ready: function() {
+    var self = this;
+    if (this.state.relationOne && this.state.isnew) {
+      var relationsOne = this.$options.formService._getRelationsOne();
+      _.forEach(relationsOne, function(relationOne) {
+        if (!relationOne.elements.length) {
+          self.addRelationElement(relationOne);
+        }
+      });
+    }
+    // al momento lo devo forzare qui
+    $('input:file').filestyle({
+      buttonText: " Foto",
+      buttonName: "btn-primary",
+      iconName: "glyphicon glyphicon-camera"
+    });
   }
 };
 

@@ -48,6 +48,10 @@ function FormService() {
     setField: function(field) {
       console.log(field);
     },
+    // settere dello state
+    setState: function(state) {
+      this._setState(state);
+    },
     // setter sull'aggiunta di un'azione sul form
     addActionsForForm: function (actions) {
       // un opportunità per i listener per aggiungere azioni a form
@@ -85,6 +89,7 @@ function FormService() {
       isnew: this.isnew,
       buttons: this.buttons,
       tools: {},
+      relationOne: this.relationOne,
       canpaste: _.has(this._clipBoard._data, formLayer)
     });
     this._setFormTools(this.tools);
@@ -95,27 +100,13 @@ function FormService() {
     this.state.elementsBoxes = elementsBoxes;
     // qui associo lo state del pannello allo ste del form
     this._setFormTools(this.tools);
-    if (this.relationOne && this.isnew) {
-      var relationsOne = this._getRelationsOne();
-      _.forEach(relationsOne, function(relationOne) {
-        if (!relationOne.elements.length) {
-          self._addRelationElement(relationOne);
-        }
-      });
-    }
-    // da vedere meglio
-    $('input:file').filestyle({
-      buttonText: ' Foto',
-      buttonName: "btn-primary",
-      iconName: "glyphicon glyphicon-camera"
-    });
   };
 
   this.getState = function () {
     return this.state;
   };
 
-  this.setState = function (state) {
+  this._setState = function(state) {
     this.state = state;
   };
   // funzione che supporta la validazione dei campi obbigatori al fine di abliltare o meno il Salva
