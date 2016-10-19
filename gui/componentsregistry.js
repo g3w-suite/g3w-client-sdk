@@ -9,6 +9,7 @@ function ComponentsRegistry() {
     var id = component.getId();
     if (!this.components[id]) {
       this.components[id] = component;
+      this.emit('componentregistered',component);
     }
   }; 
   

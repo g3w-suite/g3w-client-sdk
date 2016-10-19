@@ -56,6 +56,10 @@ proto.mount = function(parent){};
 */
 proto.unmount = function(){};
 
+proto.ismount = function(){
+  return true;
+};
+
 /* 
  * Metodo (opzionale) che offre l'opportunità di ricalcolare proprietà dipendenti dalle dimensioni del padre
  * parentHeight: nuova altezza del parent

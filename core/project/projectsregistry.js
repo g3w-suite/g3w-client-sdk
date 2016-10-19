@@ -85,7 +85,7 @@ proto.setupState = function() {
   //per ogni progetto ciclo e setto tutti gli attributi comuni
   // come i base layers etc ..
   self.config.projects.forEach(function(project){
-    project.baselayers = self.config.baselayers;
+    project.baselayers = _.cloneDeep(self.config.baselayers);
     project.minscale = self.config.minscale;
     project.maxscale = self.config.maxscale;
     project.crs = self.config.crs;

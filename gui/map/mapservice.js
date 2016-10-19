@@ -12,7 +12,6 @@ var QueryService = require('core/query/queryservice');
 
 function MapService(options) {
   var self = this;
-  this.config;
   this.viewer;
   this.target;
   this._mapControls = [],
@@ -23,10 +22,11 @@ function MapService(options) {
       bbox: [],
       resolution: null,
       center: null,
-      loading: false
+      loading: false,
+      hidden: true
   };
   this._greyListenerKey = null;
-  this.config = ApplicationService.getConfig();
+  this.config = options.config || ApplicationService.getConfig();
   
   this._howManyAreLoading = 0;
   this._incrementLoaders = function(){
@@ -63,6 +63,9 @@ function MapService(options) {
       this.state.resolution = resolution;
       this.state.center = center;
       this.updateMapLayers(this._mapLayers);
+    },
+    setHidden: function(bool) {
+      this.state.hidden = bool;
     },
     setupViewer: function(width,height){
       if (width == 0 || height == 0) {
@@ -433,8 +436,6 @@ proto.setupBaseLayers = function(){
   }
 
   this.mapBaseLayers = {};
-
-  var initBaseLayer = ProjectsRegistry.config.initbaselayer;
   var baseLayersArray = this.project.state.baselayers;
 
   var baseLayers = this.project.state.baselayers;
@@ -720,6 +721,7 @@ proto.layout = function(width,height) {
     this.setupViewer(width,height);
   }
   if (this.viewer) {
+    this.setHidden((width == 0 || height == 0))
     this.getMap().updateSize();
     this._setMapView();
   }

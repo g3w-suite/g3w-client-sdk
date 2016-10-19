@@ -4,6 +4,7 @@ var merge = require('core/utils/utils').merge;
 var t = require('core/i18n/i18n.service').t;
 var resolve = require('core/utils/utils').resolve;
 var Component = require('gui/vue/component');
+var ComponentsRegistry = require('gui/componentsregistry');
 var GUI = require('gui/gui');
 var ProjectsRegistry = require('core/project/projectsregistry');
 
@@ -32,6 +33,7 @@ var vueComponentOptions = {
   },
   ready: function() {
     var self = this;
+
     this.$on('treenodetoogled',function(node){
       self.project.toggleLayer(node.id);
     });
@@ -142,7 +144,7 @@ Vue.component('tristate-tree', {
       }
     }
   }
-})
+});
 
 Vue.component('legend',{
     template: require('./legend.html'),
@@ -208,9 +210,35 @@ Vue.component('legend-item',{
 /* INTERFACCIA PUBBLICA */
 function CatalogComponent(options){
   base(this);
+  var self = this;
   this.id = "catalog-component";
   this.title = "catalog";
+  this.mapComponentId = options.mapcomponentid;
   this.internalComponent = new InternalComponent;
+
+  function listenToMapVisibility(map) {
+    var mapService = map.getService();
+    self.state.visible = !mapService.state.hidden;
+    mapService.onafter('setHidden',function(hidden){
+      self.state.visible = !mapService.state.hidden;
+      self.state.expanded = true;
+    })
+  }
+
+  if (this.mapComponentId) {
+    var map = GUI.getComponent(this.mapComponentId);
+    if (!map) {
+      ComponentsRegistry.on('componentregistered',function(component){
+        if (component.getId() == self.mapComponentId) {
+          listenToMapVisibility(component);
+        }
+      })
+    }
+    else {
+      listenToMapVisibility(map)
+    }
+  }
+
   //mergio opzioni con proprità di default del componente
   merge(this, options);
 }
