@@ -161,10 +161,6 @@ function QueryResultsService() {
             action = layerAction;
           }
         });
-
-        if (actionId == 'gotodetail') {
-          var a = 1;
-        }
         if (action) {
           this.triggerLayerAction(action,layer,feature);
         }
