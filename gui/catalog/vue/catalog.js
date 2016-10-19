@@ -12,10 +12,13 @@ var vueComponentOptions = {
   template: require('./catalog.html'),
   data: function() {
     return {
-      project: ProjectsRegistry.getCurrentProject()
+      prstate: ProjectsRegistry.state
     }
   },
   computed: {
+    project: function() {
+      return this.prstate.currentProject
+    },
     layerstree: function(){
       return this.project.state.layerstree;
     },
@@ -193,7 +196,10 @@ Vue.component('legend-item',{
     legendurl: function(){
       // in attesa di risolvere lo schianto di QGSI Server...
       //return "http://localhost/cgi-bin/qgis_mapserv.fcgi?map=/home/giohappy/Scrivania/Dev/G3W/g3w-client/test/progetto/test.qgs&SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&FORMAT=image/png&LAYERTITLE=False&ITEMFONTSIZE=10&LAYER="+this.layer.name;
-      return ProjectsRegistry.getCurrentProject().getLayerById(this.layer.id).getLegendUrl();
+      var projectLyer = ProjectsRegistry.getCurrentProject().getLayerById(this.layer.id);
+      if (projectLyer) {
+        return projectLyer.getLegendUrl();
+      }
     }
   },
   methods: {

@@ -25,6 +25,7 @@ function MapService(options) {
       loading: false,
       hidden: true
   };
+  this._interactionsStack = [];
   this._greyListenerKey = null;
   this.config = options.config || ApplicationService.getConfig();
   
@@ -49,12 +50,17 @@ function MapService(options) {
     }
   };
   
-  this._interactionsStack = [];
+
+  this.project
   if(!_.isNil(options.project)) {
     this.project = options.project;
   }
   else {
     this.project = ProjectsRegistry.getCurrentProject();
+    ProjectsRegistry.onafter('setCurrentProject',function(project){
+      self.project = project;
+      self.setupLayers();
+    });
   }
 
   this.setters = {
@@ -159,10 +165,6 @@ function MapService(options) {
     QueryService.setMapService(this);
     this.emit('ready');
   };
-  
-  this.project.on('projectswitch',function(){
-    self.setupLayers();
-  });
   
   this.project.onafter('setLayersVisible',function(layersIds){
     var mapLayers = _.map(layersIds,function(layerId){
