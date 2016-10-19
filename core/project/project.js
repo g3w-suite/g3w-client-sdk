@@ -78,6 +78,10 @@ proto.getId = function() {
   return this.state.id;
 };
 
+proto.getTitle = function() {
+  return this.state.title;
+};
+
 //funzione che ritorna il tipo
 proto.getType = function() {
   return this.state.type;

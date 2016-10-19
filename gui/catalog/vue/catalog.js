@@ -19,6 +19,9 @@ var vueComponentOptions = {
     project: function() {
       return this.prstate.currentProject
     },
+    title: function() {
+      return this.project.state.title;
+    },
     layerstree: function(){
       return this.project.state.layerstree;
     },

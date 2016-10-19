@@ -104,6 +104,19 @@ proto.getPendingProjects = function() {
   return this._pendingProjects;
 };
 
+proto.getProjects = function() {
+  return this._pendingProjects;
+};
+
+proto.getListableProjects = function() {
+  return _.filter(this.getProjects(),function(project){
+    if (!_.isNil(project.listable)) {
+      return project.listable;
+    }
+    return project;
+  })
+};
+
 proto.getCurrentProject = function(){
   return this.state.currentProject;
 };
@@ -114,7 +127,7 @@ proto.getCurrentProject = function(){
 proto.getProject = function(projectGid) {
   var self = this;
   var d = $.Deferred();
-  var pendingProject = false;
+  var pendingProject;
   var project = null;
   // scorro atraverso i pending project che contengono oggetti
   // di configurazione dei progetti del gruppo
