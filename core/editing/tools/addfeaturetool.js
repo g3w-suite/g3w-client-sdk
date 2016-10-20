@@ -1,14 +1,17 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
-
 var EditingTool = require('./editingtool');
 
+// classe  per l'aggiuntadi feature
+// eridita dalla classe padre EditingTool
 function AddFeatureTool(editor, options) {
 
   var options = options || {};
   this._running = false;
   this._busy = false;
+  // source del layer di editing
   this.source = editor.getEditVectorLayer().getMapLayer().getSource();
+  // la drw interaction per disegnare la feature
   this.drawInteraction = null;
   this._snap = options.snap || null;
   this._snapInteraction = null;
@@ -38,7 +41,7 @@ proto.run = function() {
   //definisce l'interazione che deve essere aggiunta
   // specificando il layer sul quale le feature aggiunte devono essere messe
   this.drawInteraction = new ol.interaction.Draw({
-    type: this.editor.getEditVectorLayer().geometrytype,
+    type: this.editor.getEditVectorLayer().geometrytype, // il tipo lo prende dal geometry type dell'editing vetor layer che a sua volta lo prende dal tipo si geometry del vector layer originale
     source: this.source,
     condition: this._condition,
     finishCondition: this._finishCondition // disponibile da https://github.com/openlayers/ol3/commit/d425f75bea05cb77559923e494f54156c6690c0b

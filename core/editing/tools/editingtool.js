@@ -4,11 +4,15 @@ var G3WObject = require('core/g3wobject');
 
 // CLASSE PADRE DI TUTTI GLI EDITING TOOL
 function EditingTool(editor, options) {
-
+  // interactions
   this._interactions = [];
+  // editor padre
   this.editor = editor;
+  // il layer originale su cui si fa l'editing
   this.layer = this.editor.getVectorLayer().getMapLayer();
+  // il layer di editing
   this.editingLayer = this.editor.getEditVectorLayer().getMapLayer();
+  // eventuali opzioni
   this.options = options || {};
   this.steps = null;
   base(this);
@@ -17,13 +21,14 @@ function EditingTool(editor, options) {
 inherit(EditingTool, G3WObject);
 
 var proto = EditingTool.prototype;
-
+// metodo per aggiungere un'interazione
 proto.addInteraction = function(interaction) {
+  // recupero il mapservice
   var mapService = this.editor.getMapService();
   mapService.addInteraction(interaction);
   this._interactions.push(interaction);
 };
-
+// rimuovo un'interazione
 proto.removeInteraction = function(interaction) {
   var _interactions = this._interactions;
   var mapService = this.editor.getMapService();
@@ -44,7 +49,7 @@ proto.ownsInteraction = function(interaction) {
   });
   return owns;
 };
-
+// metodo di fine editing
 proto.stop = function() {
   if (this.steps) {
     this.steps.destroy();

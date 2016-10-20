@@ -24,31 +24,44 @@ function Editor(options) {
   this._vectorLayer = null;
   this._editVectorLayer = null;
   this._editBuffer = null;
+  // tool attivo
   this._activeTool = null;
   this._formClass = options.formClass || Form;
   this._dirty = false;
+  // prefisso delle nuove  feature
   this._newPrefix = '_new_';
+  // feature loccate
   this._featureLocks = null;
+  // mi dice se è stato avviato o meno
   this._started = false;
+  // definisce lo stile del vettore di editing
   this._editingVectorStyle = options.editingVectorStyle || null;
   // verifica se bisogna attivare le relazioni ONE all'aggiunta di una nuova feature
   this.checkOneRelation = options.checkOneRelation || false;
   // regole copy and paste campi non sovrascrivibili
   this._saveFromEditForm = false;
+  // mi indicano quale campi non devono essere sovrascritti nel copy and paste
   this._copyAndPasteFieldsNotOverwritable = options.copyAndPasteFieldsNotOverwritable || {};
+  // mi indicano i campi del layer che sono in relazione con campi di relazioni
   this._fieldsLayerbindToRelationsFileds = options.fieldsLayerbindToRelationsFileds || {};
   // tools del form come ad esempio copypaste etc ..
   this._formTools = options.formTools || ['copypaste'];
+  // la picked feature
   this._pickedFeature = null;
+  // setters listeners
   this._setterslisteners = {
     before: {},
     after: {}
   };
+  // definisce il tipo di geometrie
   this._geometrytypes = [
     'Point',
     'LineString',
-    'MultiLineString'
+    'MultiLineString',
+    'Polygon',
+    'MultiPolygon'
   ];
+
   // elenco dei tool e delle relative classi per tipo di geometria (in base a vector.geometrytype)
   this._toolsForGeometryTypes = {
     'Point': {
@@ -64,26 +77,38 @@ function Editor(options) {
       deletefeature: DeleteFeatureTool,
       editattributes: PickFeatureTool,
       cutline: CutLineTool
-    }
+    },
+    'Polygon': {
+      addfeature: AddFeatureTool,
+      movefeature: MoveFeatureTool,
+      deletefeature: DeleteFeatureTool,
+      editattributes: PickFeatureTool
+    },
+    'MultiPolygon': {
+      addfeature: AddFeatureTool,
+      movefeature: MoveFeatureTool,
+      deletefeature: DeleteFeatureTool,
+      editattributes: PickFeatureTool
+    },
   };
   //ACTIVE TOOL -- ISTANZA CON I SUOI METODI E ATTRIBUTI
   this._activeTool = new function() {
     this.type = null;
     this.instance = null;
-
+    // funzione che prende memeoria del tipo di tool e ne prende l'istanza
     this.setTool = function(type, instance) {
       this.type = type;
       this.instance = instance;
     };
-
+    // restituisce il type
     this.getType = function() {
       return this.type;
     };
-
+    // restituisce l'istanza
     this.getTool = function() {
       return this.instance;
     };
-
+    // fa il clear del tool
     this.clear = function() {
       this.type = null;
       this.instance = null;
@@ -116,6 +141,39 @@ inherit(Editor, G3WObject);
 
 var proto = Editor.prototype;
 
+// LISTENERS COMUNI A TUTTI
+
+// delete editing listener
+proto._askConfirmToDeleteEditingListener = function() {
+  var self = this;
+  this.onbeforeasync('deleteFeature', function(feature, isNew, next) {
+    self._deleteFeatureDialog(next);
+  });
+};
+
+proto._deleteFeatureDialog = function(next) {
+  GUI.dialog.confirm("Vuoi eliminare l'elemento selezionato?",function(result) {
+    next(result);
+  });
+};
+
+// apre form attributi per i  nserimento
+proto._setupAddFeatureAttributesEditingListeners = function() {
+  var self = this;
+  this.onbeforeasync('addFeature', function(feature, next) {
+    self._openEditorForm('new', feature, next);
+  }, 100);
+};
+
+// apre form attributi per editazione
+proto._setupEditAttributesListeners = function() {
+  var self = this;
+  this.onbeforeasync('pickFeature',function(feature, next) {
+    var new_old = self.isNewFeature(feature.getId()) ? 'new' : 'old';
+    self._openEditorForm(new_old, feature, next);
+  });
+};
+
 proto.getcopyAndPasteFieldsNotOverwritable = function() {
   return this._copyAndPasteFieldsNotOverwritable;
 };
@@ -127,11 +185,11 @@ proto.setcopyAndPasteFieldsNotOverwritable = function(obj) {
 proto.getfieldsLayerbindToRelationsFileds = function() {
   return this._fieldsLayerbindToRelationsFileds;
 };
-
+// restituisce il mapservice
 proto.getMapService = function() {
   return this._mapService;
 };
-
+// restituisce la picked feature
 proto.getPickedFeature = function() {
   return this._pickedFeature;
 };
@@ -612,7 +670,7 @@ proto.isNewFeature = function(fid) {
   }
   return true;
 };
-
+// verifico se la geometria è compatibile con quelle definite dall'editor
 proto._isCompatibleType = function(geometrytype) {
   return this._geometrytypes.indexOf(geometrytype) > -1;
 };
@@ -621,11 +679,11 @@ proto._setToolsForVectorType = function(geometrytype) {
   var self = this;
   var tools = this._toolsForGeometryTypes[geometrytype];
   _.forEach(tools, function(toolClass, tool) {
-    //assegnazione
+    //prendo memorai dell'oggetto tools class
     self._tools[tool] = toolClass;
   })
 };
-
+// setto l'attributo started a true quando avvio l'editor
 proto._setStarted = function(bool) {
   this._started = bool;
 };
@@ -641,37 +699,7 @@ proto._setDirty = function(bool) {
     this._dirty = bool;
   }
   // emetto l'evento dirty dell'editor
-  this.emit("dirty",this._dirty);
-};
-
-proto._askConfirmToDeleteEditingListener = function() {
-  var self = this;
-  this.onbeforeasync('deleteFeature', function(feature, isNew, next) {
-   self._deleteFeatureDialog(next);
-  });
-};
-
-proto._deleteFeatureDialog = function(next) {
-  GUI.dialog.confirm("Vuoi eliminare l'elemento selezionato?",function(result) {
-    next(result);
-  });
-};
-
-// apre form attributi per i  nserimento
-proto._setupAddFeatureAttributesEditingListeners = function() {
-  var self = this;
-  this.onbeforeasync('addFeature', function(feature, next) {
-    self._openEditorForm('new', feature, next);
-  }, 100);
-};
-
-// apre form attributi per editazione
-proto._setupEditAttributesListeners = function() {
-  var self = this;
-  this.onbeforeasync('pickFeature',function(feature, next) {
-    var new_old = self.isNewFeature(feature.getId()) ? 'new' : 'old';
-    self._openEditorForm(new_old, feature, next);
-  });
+  this.emit("dirty", this._dirty);
 };
 
 proto._onSaveEditorForm = function(feature, fields, relations, next) {
