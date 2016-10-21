@@ -30,7 +30,7 @@ function PluginsRegistry() {
   this._setup = function(name,pluginConfig) {
 
     if (pluginConfig){
-      var url = this.pluginsBaseUrl+'/js/'+name+'/plugin.js';
+      var url = this.pluginsBaseUrl+name+'/js/plugin.js';
       $script(url);
     }
   };
