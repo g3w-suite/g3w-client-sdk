@@ -6,7 +6,7 @@
       <button v-if='state.isnew' class="btn btn-default glyphicon glyphicon-paste" data-placement="bottom" @click="pasteClipBoardToForm" v-disabled="!state.canpaste" data-i18n="[title]paste_form_data"></button>
     </div>
   </div>
-  <div>
+  <div style="height:100%; overflow:auto">
     <validator name="validation">
       <form novalidate class="form-horizontal g3w-form">
         <div class="box box-primary">
