@@ -1,4 +1,5 @@
 var inherit = require('core/utils/utils').inherit;
+var merge = require('core/utils/utils').merge;
 var G3WObject = require('core/g3wobject');
 
 var Component = function(options) {
@@ -15,6 +16,23 @@ var Component = function(options) {
 inherit(Component, G3WObject);
 
 var proto = Component.prototype;
+
+proto.getInternalComponent = function() {
+  return this.internalComponent;
+};
+
+proto.setInternalComponent = function(internalComponent) {
+  this.internalComponent = internalComponent;
+};
+
+proto.extendService = function(serviceOptions) {
+  var service = this.getService();
+  merge(service, serviceOptions);
+};
+
+proto.extendInternalComponent = function(internalComponentOptions) {
+  merge(this.internalComponent, internalComponentOptions);
+};
 
 proto.getId = function() {
   return this.id;

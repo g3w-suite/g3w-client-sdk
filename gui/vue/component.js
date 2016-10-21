@@ -41,7 +41,7 @@ proto.unmount = function() {
 
 proto.ismount = function() {
   return this.internalComponent && this.internalComponent.$el;
-}
+};
 
 proto.hide = function() {
   console.log(this.internalComponent.$el);

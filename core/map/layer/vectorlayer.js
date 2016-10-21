@@ -53,6 +53,10 @@ module.exports = VectorLayer;
 
 var proto = VectorLayer.prototype;
 
+proto.getPk = function() {
+  return this.pk;
+};
+
 proto.setData = function(featuresData) {
 
   var self = this;

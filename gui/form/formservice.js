@@ -61,7 +61,6 @@ function FormService() {
     }
   };
   this._setInitForm = function(options) {
-    var self = this;
     this.provider = options.provider || null; // è l' editor che lo chiama
     this.formId = options.formId;
     this.name = options.name; // nome del form
@@ -71,7 +70,6 @@ function FormService() {
     this.pk = options.pk || null; // eventuale chiave primaria (non tutti i form potrebbero avercela o averne bisogno
     this.tools = options.tools || [];
     this.isnew = (!_.isNil(options.isnew) && _.isBoolean(options.isnew)) ? options.isnew : true;
-    var formPanelTemplate = options.formPanelTemplate || null;
     this._defaults = options.defaults || Inputs.defaults;
     this.buttons = options.buttons;
     // clipboard
@@ -80,7 +78,7 @@ function FormService() {
     // in quanto l'id è creato univoco ma riposrta al suo interno
     // il nome del layer
     var formLayer = this.formId.split('form')[0];
-    this._pickedPromise = null;;
+    this._pickedPromise = null;
     // setto lo stato
     this.setState({
       fields: null,
@@ -347,8 +345,9 @@ function FormService() {
           if (featuresForLayers.length && featuresForLayers[0].features.length) {
             // rpendo la prima feature
             var feature = featuresForLayers[0].features[0];
+            var pk = vectorLayer.getPk();
             // prendo dal vectorLayer la feature basato sull'id della richiesta
-            feature = vectorLayer.getFeatureById(feature.getId());
+            feature = vectorLayer.getFeatureById(feature.get(pk));
             var fields = vectorLayer.getFieldsWithValues(feature);
             var relationsPromise = self.editor.getRelationsWithValues(feature);
             relationsPromise

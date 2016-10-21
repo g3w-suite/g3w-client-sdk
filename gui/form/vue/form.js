@@ -4,6 +4,7 @@ var Component = require('gui/vue/component');
 var FormService = require('gui/form/formservice');
 var base = require('core/utils/utils').base;
 var merge = require('core/utils/utils').merge;
+var FormTemplate = require('./formpanel.html');
 
 Vue.filter('startcase', function (value) {
   return _.startCase(value);
@@ -26,7 +27,7 @@ Vue.validator('integer', function (val) {
 });
 
 var vueComponentOptions = {
-  template: require('./formpanel.html'),
+  template: null,
   data: function() {
     return {
       state: this.$options.formService.state,
@@ -261,13 +262,17 @@ function FormComponent(options) {
   merge(this, options);
   // dichiaro l'internal Component
   this.internalComponent = null;
+  //template from component
+  this.template = options.template || FormTemplate;
   // settor il service del component
-  this._service = new FormService();
+  this._service = options.service || new FormService;
+  // verifico se esiste nell'oprione un componente interno
+  var InternalComponentForm = options.internalComponent || InternalComponent;
   // setto il componente interno
   this.setInternalComponent = function () {
-    this.internalComponent = new InternalComponent({
+    this.internalComponent = new InternalComponentForm({
       formService: this._service,
-      editor: this.editor
+      template: this.template
     });
     this.internalComponent.state = this._service.state;
   };

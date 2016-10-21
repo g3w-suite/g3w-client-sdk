@@ -13,20 +13,17 @@ var PickFeatureTool = require('./tools/pickfeaturetool');
 var CutLineTool = require('./tools/cutlinetool');
 /// BUFFER /////
 var EditBuffer = require('./editbuffer');
-
-var Form = require('gui/form/vue/form');
-var form = null; // brutto ma devo tenerlo esterno sennò si crea un clico di riferimenti che manda in palla Vue
-
 // Editor di vettori puntuali
 function Editor(options) {
-
+  var options = options || {};
+  // formComponent
+  this._formComponent = options.formComponent || null;
   this._mapService = options.mapService || {};
   this._vectorLayer = null;
   this._editVectorLayer = null;
   this._editBuffer = null;
   // tool attivo
   this._activeTool = null;
-  this._formClass = options.formClass || Form;
   this._dirty = false;
   // prefisso delle nuove  feature
   this._newPrefix = '_new_';
@@ -56,6 +53,7 @@ function Editor(options) {
   // definisce il tipo di geometrie
   this._geometrytypes = [
     'Point',
+    'MultiPoint',
     'LineString',
     'MultiLineString',
     'Polygon',
@@ -65,6 +63,12 @@ function Editor(options) {
   // elenco dei tool e delle relative classi per tipo di geometria (in base a vector.geometrytype)
   this._toolsForGeometryTypes = {
     'Point': {
+      addfeature: AddFeatureTool,
+      movefeature: MoveFeatureTool,
+      deletefeature: DeleteFeatureTool,
+      editattributes: PickFeatureTool
+    },
+    'MuliPoint': {
       addfeature: AddFeatureTool,
       movefeature: MoveFeatureTool,
       deletefeature: DeleteFeatureTool,
@@ -265,10 +269,6 @@ proto.start = function() {
 proto.stop = function() {
   if (this.isStarted()) {
     if (this.stopTool()) {
-      if (form) {
-        GUI.closeForm(form);
-        this.form = null;
-      }
       //distruggo l'edit buffer
       this._editBuffer.destroy();
       //lo setto a null
@@ -751,6 +751,7 @@ proto._openEditorForm = function(isNew, feature, next) {
         relations: relations,
         relationOne: self.checkOneRelation,
         tools: self._formTools,
+        formComponent: self._formComponent,
         editor: self,
         buttons:[
           {
