@@ -68,7 +68,7 @@ function Editor(options) {
       deletefeature: DeleteFeatureTool,
       editattributes: PickFeatureTool
     },
-    'MuliPoint': {
+    'MultiPoint': {
       addfeature: AddFeatureTool,
       movefeature: MoveFeatureTool,
       deletefeature: DeleteFeatureTool,
@@ -84,12 +84,14 @@ function Editor(options) {
     },
     'Polygon': {
       addfeature: AddFeatureTool,
+      modifyvertex: ModifyFeatureTool,
       movefeature: MoveFeatureTool,
       deletefeature: DeleteFeatureTool,
       editattributes: PickFeatureTool
     },
     'MultiPolygon': {
       addfeature: AddFeatureTool,
+      modifyvertex: ModifyFeatureTool,
       movefeature: MoveFeatureTool,
       deletefeature: DeleteFeatureTool,
       editattributes: PickFeatureTool
