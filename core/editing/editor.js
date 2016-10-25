@@ -93,7 +93,7 @@ function Editor(options) {
       movefeature: MoveFeatureTool,
       deletefeature: DeleteFeatureTool,
       editattributes: PickFeatureTool
-    },
+    }
   };
   //ACTIVE TOOL -- ISTANZA CON I SUOI METODI E ATTRIBUTI
   this._activeTool = new function() {

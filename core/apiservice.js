@@ -14,7 +14,7 @@ function ApiService(){
     this._baseUrl = config.urls.api;
     this._apiEndpoints = config.urls.apiEndpoints;
   };
-  
+  //incrementi
   var howManyAreLoading = 0;
   this._incrementLoaders = function(){
     if (howManyAreLoading == 0){
@@ -29,7 +29,6 @@ function ApiService(){
       this.emit('apiqueryend');
     }
   };
-  
   this.get = function(api, options) {
     var self = this;
     var apiEndPoint = this._apiEndpoints[api];

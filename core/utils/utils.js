@@ -73,7 +73,6 @@ var utils = {
 
   merge: function merge(destination, source) {
       var key;
-
       for (key in source) {
           if (utils.hasOwn(source, key)) {
               destination[key] = source[key];

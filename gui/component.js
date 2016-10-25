@@ -24,15 +24,48 @@ proto.getInternalComponent = function() {
 proto.setInternalComponent = function(internalComponent) {
   this.internalComponent = internalComponent;
 };
-
+// estendo il servizio
 proto.extendService = function(serviceOptions) {
-  var service = this.getService();
-  merge(service, serviceOptions);
+  if (this.componentService) {
+    merge(this.componentService.proto, serviceOptions);
+  }
+};
+// estende in modo generico il vue component
+proto.extendInternalComponent = function(internalComponentOptions) {
+  var self = this;
+  if (this.vueComponent) {
+    _.forEach(internalComponentOptions, function(value, key) {
+      switch(key) {
+        case 'methods':
+          self.extendInternalComponentMethods(value);
+          break;
+        default:
+          merge(self.vueComponent[key], value);
+      }
+    });
+  }
+};
+// estende in i methods il vue component
+proto.extendInternalComponentMethods = function(methods) {
+  if (methods) {
+    // ciclo sulle chiavi dell'oggetto per verificare che sia una funzione
+    _.forEach(methods, function (value, key) {
+      if (!(value instanceof Function)){
+        delete methods[key];
+      }
+    });
+    merge(this.vueComponent.methods, methods);
+  }
 };
 
-proto.extendInternalComponent = function(internalComponentOptions) {
-  merge(this.internalComponent, internalComponentOptions);
+proto.setInternalComponentTemplate = function(template) {
+  // dovrò poi aggiungere regole per verificare se il
+  // tenplate è compatibile ad un template o no
+  if (template) {
+    this.vueComponent.template = template;
+  }
 };
+
 
 proto.getId = function() {
   return this.id;
@@ -58,9 +91,7 @@ proto.setService = function(serviceInstance) {
 };
 
 ////////// fine metodi Service Components //////////
-
 /* HOOKS */
-
 /* 
  * Il metodo permette al componente di montarsi nel DOM
  * parentEl: elemento DOM padre, su cui inserirsi; 

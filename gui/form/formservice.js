@@ -19,10 +19,12 @@ Inputs.simpleFieldTypes = [Inputs.STRING,Inputs.INTEGER,Inputs.FLOAT];
 
 Inputs.TEXTAREA = 'textarea';
 Inputs.SELECT = 'select';
+Inputs.RADIO = 'radio';
+Inputs.CHECKBOX = 'checkbox';
 Inputs.LAYERPICKER = 'layerpicker';
 Inputs.FILE = 'file';
 
-Inputs.specialInputs = [Inputs.TEXTAREA, Inputs.SELECT, Inputs.LAYERPICKER];
+Inputs.specialInputs = [Inputs.TEXTAREA, Inputs.SELECT, Inputs.RADIO, Inputs.CHECKBOX, Inputs.LAYERPICKER];
 
 function FormService() {
   this._actions = {};
@@ -257,8 +259,16 @@ function FormService() {
   this._isSelect = function(field) {
     return (_.includes(Inputs.specialInputs,field.input.type) && field.input.type == Inputs.SELECT);
   };
+  // verifica se è tipo radio button
+  this._isRadio = function(field) {
+    return (_.includes(Inputs.specialInputs,field.input.type) && field.input.type == Inputs.RADIO);
+  };
+  // verifica se è tipo checkbox
+  this._isCheckbox = function(field) {
+    return (_.includes(Inputs.specialInputs,field.input.type) && field.input.type == Inputs.RADIO);
+  };
   // verifica se il campo è un picklayer
-  this._isLayerPicker = function(field){
+  this._isLayerPicker = function(field) {
     return (_.includes(Inputs.specialInputs,field.input.type) && field.input.type == Inputs.LAYERPICKER);
   };
   // verifica se il campo è di tipo file

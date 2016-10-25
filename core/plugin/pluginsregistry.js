@@ -15,7 +15,7 @@ function PluginsRegistry() {
       }
     }
   };
-  
+
   base(this);
   
   this.init = function(options){

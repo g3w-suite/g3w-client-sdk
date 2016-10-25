@@ -64,13 +64,32 @@ var vueComponentOptions = {
     isSelect: function(field){
       return this.$options.formService._isSelect(field);
     },
+    isRadio: function(field) {
+      return this.$options.formService._isRadio(field);
+    },
+    isCheckbox: function(field) {
+      return this.$options.formService._isCheckbox(field);
+    },
+    multiCheckBoxValue: function(evt, field) {
+      if (!field.value) {
+        filed.value = [];
+      }
+      if (evt.target.checked) {
+        field.push(evt.target.value);
+      } else {
+        _.remove(field, function(n) {
+          return n == evt.target.value;
+        });
+      }
+      console.log(field.value);
+    },
     isLayerPicker: function(field){
       return this.$options.formService._isLayerPicker(field);
     },
     isFile: function(field) {
       return this.$options.formService._isFile(field);
     },
-    layerPickerPlaceHolder: function(field){
+    layerPickerPlaceHolder: function(field) {
       return this.$options.formService._getlayerPickerLayerName(field.input.options.layerid);
     },
     pickLayer: function(field, relation) {
@@ -255,9 +274,14 @@ var vueComponentOptions = {
 var InternalComponent = Vue.extend(vueComponentOptions);
 
 function FormComponent(options) {
+
   // proprietà necessarie. In futuro le mettermo in una classe Panel
   // da cui deriveranno tutti i pannelli che vogliono essere mostrati nella sidebar
   base(this, options);
+  // qui vado a tenere traccia delle due cose che mi permettono di customizzare
+  // vue component e service
+  this.vueComponent = vueComponentOptions;
+  this.componentService = FormService;
   this.id = options.id; // id del del componente
   merge(this, options);
   // dichiaro l'internal Component
@@ -266,11 +290,10 @@ function FormComponent(options) {
   this.template = options.template || FormTemplate;
   // settor il service del component
   this._service = options.service || new FormService;
-  // verifico se esiste nell'oprione un componente interno
-  var InternalComponentForm = options.internalComponent || InternalComponent;
   // setto il componente interno
   this.setInternalComponent = function () {
-    this.internalComponent = new InternalComponentForm({
+    var InternalComponent = Vue.extend(this.vueComponent);
+    this.internalComponent = new InternalComponent({
       formService: this._service,
       template: this.template
     });
@@ -291,7 +314,6 @@ function FormComponent(options) {
 }
 
 inherit(FormComponent, Component);
-
 
 module.exports = FormComponent;
 
