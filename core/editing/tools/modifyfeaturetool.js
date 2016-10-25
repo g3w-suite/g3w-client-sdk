@@ -7,6 +7,7 @@ var EditingTool = require('./editingtool');
 
 function ModifyFeatureTool(editor,options){
   var self = this;
+  options = options || {};
   this.editor = editor;
   this.isPausable = true;
   this.drawInteraction = null;

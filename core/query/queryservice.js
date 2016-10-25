@@ -117,9 +117,7 @@ function QueryService(){
 
     var x2js = new X2JS();
     var layerFeatureCollectionXML = x2js.json2xml_str(layerData);
-    console.log(layerFeatureCollectionXML);
     var parser = new ol.format.WMSGetFeatureInfo();
-    console.log(parser.readFeatures(layerFeatureCollectionXML));
     return parser.readFeatures(layerFeatureCollectionXML);
   };
 
@@ -128,8 +126,6 @@ function QueryService(){
     var parser = new ol.format.WMSGetFeatureInfo({
       layers: [queryLayer.getQueryLayerName()]
     });
-    console.log(data);
-    console.log(parser.readFeatures(data));
     return parser.readFeatures(data);
   };
   
