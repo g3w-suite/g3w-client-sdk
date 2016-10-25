@@ -20,7 +20,7 @@ function PluginsRegistry() {
   
   this.init = function(options){
     var self = this;
-    this.pluginsBaseUrl = options.pluginsBaseUrl
+    this.pluginsBaseUrl = options.pluginsBaseUrl;
     this.pluginsConfigs = options.pluginsConfigs;
     _.forEach(this.pluginsConfigs,function(pluginConfig,name){
       self._setup(name,pluginConfig);

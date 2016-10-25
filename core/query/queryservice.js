@@ -175,8 +175,6 @@ function QueryService(){
     var jsonresponse;
     var featuresForLayers = [];
     var parser, data;
-    console.log(infoFormat);
-    console.log(response);
     switch (infoFormat) {
       case 'json':
         parser = this._parseLayerGeoJSON;
