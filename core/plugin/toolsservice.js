@@ -21,7 +21,7 @@ function ToolsService(){
   this.registerToolsProvider = function(plugin){
     self._mergeTools(plugin.getTools());
     self._addActions(plugin);
-  }
+  };
   
   this.fireAction = function(actionid){
     var plugin = this._actions[actionid];

@@ -29,6 +29,7 @@ Inputs.specialInputs = [Inputs.TEXTAREA, Inputs.SELECT, Inputs.RADIO, Inputs.CHE
 function FormService() {
   this._actions = {};
   this.state = null;
+  this._pickInteraction = null;
   this.setters = {
     setInitForm: function(options) {
       this._setInitForm(options);
@@ -101,7 +102,10 @@ function FormService() {
     // qui associo lo state del pannello allo ste del form
     this._setFormTools(this.tools);
   };
-
+  this.createPickInteraction = function() {
+    this._pickInteraction = new PickCoordinatesInteraction;
+    return this._pickInteraction;
+  };
   this.getState = function () {
     return this.state;
   };
@@ -299,8 +303,7 @@ function FormService() {
     var layer = mapService.getProject().getLayerById(field.input.options.layerid);
     var relFieldName = field.input.options.field;
     var relFieldLabel = layer.getAttributeLabel(field.input.options.field);
-    this._pickInteraction = new PickCoordinatesInteraction();
-    mapService.addInteraction(this._pickInteraction);
+    mapService.addInteraction(this.createPickInteraction());
     this._pickInteraction.on('picked',function(e){
       QueryService.queryByLocation(e.coordinate, [layer])
         .then(function(response){
@@ -341,10 +344,8 @@ function FormService() {
     var mapService = GUI.getComponent('map').getService();
     var vectorLayer = this.editor.getVectorLayer();
     var layer = mapService.getProject().getLayerById(vectorLayer.id);
-    // creo il pickCoordinate interaction da permettermi così di interagire con la mappa
-    this._pickInteraction = new PickCoordinatesInteraction();
     // l'aggiungo alla mappa
-    mapService.addInteraction(this._pickInteraction);
+    mapService.addInteraction(this.createPickInteraction());
     // on picked
     this._pickInteraction.on('picked', function(e) {
       // qui passo lo stessso layer su cui sto agendo
@@ -380,11 +381,9 @@ function FormService() {
   this._getDefaultValue = function(field) {
     if (field.input && field.input.options && field.input.options.default) {
       return field.input.options.default;
-    }
-    else if (this._isSelect(field)) {
+    } else if (this._isSelect(field)) {
       return field.input.options.values[0].key;
     }
-
     return '';
   };
 // restituisce il nome del layer che si è appena cliccato con il picklayer
