@@ -265,7 +265,7 @@ function FormService() {
   };
   // verifica se è tipo checkbox
   this._isCheckbox = function(field) {
-    return (_.includes(Inputs.specialInputs,field.input.type) && field.input.type == Inputs.RADIO);
+    return (_.includes(Inputs.specialInputs,field.input.type) && field.input.type == Inputs.CHECKBOX);
   };
   // verifica se il campo è un picklayer
   this._isLayerPicker = function(field) {
