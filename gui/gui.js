@@ -22,7 +22,7 @@ function GUI() {
   // nel caso di queryByLocation avrà anche options.coordinate
   this.showQueryResults = function(options) {};
   this.hideQueryResults = noop;
-  /* panel */
+  /* editorpanel */
   this.showPanel = noop;
   this.hidePanel = noop;
   //metodi componente

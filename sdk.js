@@ -25,8 +25,6 @@ g3w.core = {
 
 g3w.gui = {
   GUI: require('gui/gui'),
-  //Form: require('gui/form/form').Form,
-  //FormPanel: require('gui/form/form').FormPanel,
   Panel: require('gui/panel'),
   vue: {
     SearchComponent: require('gui/search/vue/search'),
@@ -34,10 +32,10 @@ g3w.gui = {
     MapComponent: require('gui/map/vue/map'),
     ToolsComponent: require('gui/tools/vue/tools'),
     QueryResultsComponent : require('gui/queryresults/vue/queryresults'),
-    FormComponent: require('gui/form/vue/form')
+    FormComponent: require('gui/form/vue/form'),
+    PanelComponent: require('gui/editorpanel/vue/panel')
   }
 };
-
 module.exports = {
   core: g3w.core,
   gui: g3w.gui

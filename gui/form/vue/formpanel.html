@@ -86,10 +86,10 @@
                                   <input type="radio" value="{{ value.value }}" v-model="field.value" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" :id="field.name + value.value" :placeholder="{{ value.key }}">
                                 </template>
                               </div>
-                              <div v-if="isCheckbox(field)">
+                              <div v-if="isCheckBox(field)">
                                 <template v-for="(index, value) in field.input.options.values">
                                   <label for="{{ field.name }}{{ value.value }}">{{ value.key }} </label>
-                                  <input type="checkbox" value="{{ value.value }}" v-model="field.value" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" :id="field.name + value.value" :placeholder="{{ value.key }}">
+                                  <input type="radio" value="{{ value.value }}" v-model="field.value" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" :id="field.name + value.value" :placeholder="{{ value.key }}">
                                 </template>
                               </div>
                               <div v-if="isLayerPicker(field)">
