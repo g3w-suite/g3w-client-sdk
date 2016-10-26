@@ -1,6 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var merge = require('core/utils/utils').merge;
 var G3WObject = require('core/g3wobject');
+var VUECOMPONENTSATTRIBUTES = ['methods', 'computed', 'data'];
 
 var Component = function(options) {
   var options = options || {};
@@ -45,7 +46,7 @@ proto.extendInternalComponent = function(internalComponentOptions) {
     });
   }
 };
-// estende in i methods il vue component
+// estende i methods il vue component
 proto.extendInternalComponentMethods = function(methods) {
   if (methods) {
     // ciclo sulle chiavi dell'oggetto per verificare che sia una funzione
@@ -55,6 +56,33 @@ proto.extendInternalComponentMethods = function(methods) {
       }
     });
     merge(this.vueComponent.methods, methods);
+  }
+};
+
+// estende i computed del vue component
+proto.extendInternalComponentMethods = function(computed) {
+  if (computed) {
+    // ciclo sulle chiavi dell'oggetto per verificare che sia una funzione
+    _.forEach(computed, function (value, key) {
+      if (!(value instanceof Function)){
+        delete computed[key];
+      }
+    });
+    merge(this.vueComponent.computed, computed);
+  }
+};
+
+// proto extend attribute of vue component (es. methods computed)
+
+proto.extendInternalComponentAttribute = function(attribute, options) {
+  if (options && (VUECOMPONENTSATTRIBUTES.indexOf(attribute) > - 1)) {
+    // ciclo sulle chiavi dell'oggetto per verificare che sia una funzione
+    _.forEach(options, function (value, key) {
+      if (!(value instanceof Function)){
+        delete options[key];
+      }
+    });
+    merge(this.vueComponent[attribute], options);
   }
 };
 

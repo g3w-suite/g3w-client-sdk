@@ -17,18 +17,17 @@ function PluginsRegistry() {
   };
 
   base(this);
-  
-  this.init = function(options){
+
+  this.init = function(options) {
     var self = this;
     this.pluginsBaseUrl = options.pluginsBaseUrl;
     this.pluginsConfigs = options.pluginsConfigs;
-    _.forEach(this.pluginsConfigs,function(pluginConfig,name){
-      self._setup(name,pluginConfig);
+    _.forEach(this.pluginsConfigs, function(pluginConfig, name){
+      self._setup(name, pluginConfig);
     })
   };
   
-  this._setup = function(name,pluginConfig) {
-
+  this._setup = function(name, pluginConfig) {
     if (pluginConfig){
       var url = this.pluginsBaseUrl+name+'/js/plugin.js';
       $script(url);
@@ -43,4 +42,4 @@ function PluginsRegistry() {
 
 inherit(PluginsRegistry,G3WObject);
 
-module.exports = new PluginsRegistry
+module.exports = new PluginsRegistry;

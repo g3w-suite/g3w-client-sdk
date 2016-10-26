@@ -1,4 +1,5 @@
 var inherit = require('core/utils/utils').inherit;
+var noop = require('core/utils/utils').noop;
 var GUI = require('gui/gui');
 var Component = require('gui/vue/component');
 var FormService = require('gui/form/formservice');
@@ -267,6 +268,7 @@ var vueComponentOptions = {
       buttonName: "btn-primary",
       iconName: "glyphicon glyphicon-camera"
     });
+    this.$options.formService.postRender();
   }
 };
 
