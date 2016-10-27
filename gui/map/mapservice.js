@@ -733,10 +733,10 @@ proto._reset = function() {
   this._mapLayers = [];
 };
 
-proto._setMapView = function() {
+proto._setMapView = function(center) {
   var bbox = this.viewer.getBBOX();
   var resolution = this.viewer.getResolution();
-  var center = this.viewer.getCenter();
+  var center = center || this.viewer.getCenter();
   this.setMapView(bbox, resolution, center);
 };
 

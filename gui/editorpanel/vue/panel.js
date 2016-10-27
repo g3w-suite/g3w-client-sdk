@@ -66,6 +66,7 @@ var vueComponentOptions = {
 var InternalComponent = Vue.extend(vueComponentOptions);
 
 function PanelComponent(options) {
+
   var self = this;
   // proprietà necessarie. In futuro le mettermo in una classe Panel
   // da cui deriveranno tutti i pannelli che vogliono essere mostrati nella sidebar
@@ -105,6 +106,7 @@ function PanelComponent(options) {
       }
     });
     this.internalComponent.state = this._service.state;
+    return this.internalComponent;
   };
 }
 
