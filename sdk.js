@@ -27,6 +27,7 @@ g3w.gui = {
   GUI: require('gui/gui'),
   Panel: require('gui/panel'),
   vue: {
+    Component: require('gui/vue/component'),
     SearchComponent: require('gui/search/vue/search'),
     CatalogComponent: require('gui/catalog/vue/catalog'),
     MapComponent: require('gui/map/vue/map'),
