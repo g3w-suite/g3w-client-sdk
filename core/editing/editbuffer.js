@@ -2,7 +2,8 @@ var inherit = require('core/utils/utils').inherit;
 var G3WObject = require('core/g3wobject');
 var RelationEditBuffer = require('./relationeditbuffer');
 
-function EditBuffer(editor) {
+function EditBuffer(editor, options) {
+  var options = options || {};
   //editor a cui appartiene
   this._editor = editor;
   // clone del vector layer originale
@@ -17,7 +18,11 @@ function EditBuffer(editor) {
   this._attributesBuffer = {};
   // buffer degli attributi delle relazioni
   this._relationsBuffers = {};
+  // verifico se sono state passate optioni come
+  //ad esempio il relationEditBuffer
+  this._relationEditBuffer = options.relationEditBuffer || RelationEditBuffer;
 }
+
 inherit(EditBuffer, G3WObject);
 
 module.exports = EditBuffer;
@@ -304,7 +309,7 @@ proto._addDeleteRelationsBuffers = function(relations) {
       // editando
       if (!_.has(self._relationsBuffers[fid], relation.name)) {
         // se non presente creo una nuova istanza di RelationEditBuffer
-        self._relationsBuffers[fid][relation.name] = new RelationEditBuffer(self, relation.name);
+        self._relationsBuffers[fid][relation.name] = new self._relationEditBuffer(self, relation.name);
       }
       // prendo l'istanza di RelationEditBuffer (creata sul momento o esistente)
       var relationBuffer = self._relationsBuffers[fid][relation.name];
@@ -348,7 +353,7 @@ proto._addEditToValuesBuffers = function(feature, relations) {
       // editando
       if (!_.has(self._relationsBuffers[fid], relation.name)) {
         // se non presente creo una nuova istanza di RelationEditBuffer
-        self._relationsBuffers[fid][relation.name] = new RelationEditBuffer(self, relation.name);
+        self._relationsBuffers[fid][relation.name] = new self._relationEditBuffer(self, relation.name);
       }
       // prendo l'istanza di RelationEditBuffer (creata sul momento o esistente)
       var relationBuffer = self._relationsBuffers[fid][relation.name];

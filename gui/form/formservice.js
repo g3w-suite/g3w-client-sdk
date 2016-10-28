@@ -503,7 +503,7 @@ function FormService() {
 
   this._removeRelationElement = function(relation, element){
     var self = this;
-    _.forEach(relation.elements,function(_element,idxToRemove){
+    _.forEach(relation.elements,function(_element, idxToRemove){
       if (_element.id == element.id) {
         //relation.elements.splice(idxToRemove,1);
         element.state = element.state+'_DELETED'; // lo marco come elminato

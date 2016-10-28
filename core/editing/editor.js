@@ -21,6 +21,7 @@ function Editor(options) {
   this._mapService = options.mapService || {};
   this._vectorLayer = null;
   this._editVectorLayer = null;
+  this._editBufferClass = options.editBufferClass || EditBuffer;
   this._editBuffer = null;
   // tool attivo
   this._activeTool = null;
@@ -259,7 +260,7 @@ proto.start = function() {
     // tutte le modifice del layer
     this.addEditingLayerToMap(this._vectorLayer.geometrytype);
     // istanzio l'EditBuffer
-    this._editBuffer = new EditBuffer(this);
+    this._editBuffer = new this._editBufferClass(this);
     //assegno all'attributo _started true;
     this._setStarted(true);
     res = true;
@@ -421,7 +422,6 @@ proto.getEditedFeatures = function() {
     add: this._editBuffer.collectFeatures('new', true),
     update: this._editBuffer.collectFeatures('updated',true),
     delete: this._editBuffer.collectFeatures('deleted',true),
-    //relations: this._editBuffer.collectRelationsAttributes(),
     relationsedits: this.collectRelations(),
     lockids: lockIds
   }
@@ -443,7 +443,7 @@ proto.setFieldsWithValues = function(feature, fields, relations) {
   // setto i campi della feature con i valori editati nel form
   feature.setProperties(attributes);
   // vado a scrivere neln'edit buffer relativo ai campi
-  // la festure e le relazioni che cono state create o modificate
+  // la features e le relazioni che cono state create o modificate
   this._editBuffer.updateFields(feature, relations);
   if (relations) {
     // se ci sono relazioni vado a settare i dai delle relazioni nel layervettoriale originale
@@ -503,6 +503,7 @@ proto.createRelationElement = function(relation) {
   var element = {};
   element.fields = _.cloneDeep(this._vectorLayer.getRelationFields(relation));
   element.id = this.generateId();
+  console.log(element);
   element.state = 'NEW';
   return element;
 };

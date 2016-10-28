@@ -170,7 +170,7 @@ var vueComponentOptions = {
     addRelationElement: function(relation) {
       this.$options.formService._addRelationElement(relation);
     },
-    removeRelationElement: function(relation,element){
+    removeRelationElement: function(relation, element){
       this.$options.formService._removeRelationElement(relation, element);
     },
     fieldsSubset: function(fields) {

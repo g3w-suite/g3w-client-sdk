@@ -20,7 +20,9 @@ g3w.core = {
    i18n: require('core/i18n/i18n.service'),
    Plugin: require('core/plugin/plugin'),
    PluginsRegistry: require('core/plugin/pluginsregistry'),
-   Editor: require('core/editing/editor')
+   Editor: require('core/editing/editor'),
+   EditBuffer: require('core/editing/editbuffer'),
+   RelationEditBuffer: require('core/editing/relationeditbuffer')
 };
 
 g3w.gui = {
