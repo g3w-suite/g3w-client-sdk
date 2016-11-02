@@ -5,7 +5,7 @@ var G3WObject = require('core/g3wobject');
 var SearchPanel = require('gui/search/vue/panel/searchpanel');
 
 function SearchesService(){
-  var self = this;
+
   //this._searchPanelService = new SearchPanelService();
   this.init = function(searchesObject) {
     var searches = searchesObject || ProjectsRegistry.getCurrentProject().state.search;
@@ -14,7 +14,6 @@ function SearchesService(){
   this.state = {
     searches: []
   };
-
   this.showSearchPanel = function(panelConfig) {
     var panel =  new SearchPanel();// creo panello search
     panel.init(panelConfig);//inizializzo pannello se
@@ -31,8 +30,7 @@ function SearchesService(){
     deferred.resolve();
     return deferred.promise();
   };
-
-};
+}
 
 // Make the public service en Event Emitter
 inherit(SearchesService, G3WObject);

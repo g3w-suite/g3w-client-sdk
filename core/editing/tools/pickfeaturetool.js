@@ -48,7 +48,6 @@ proto.run = function() {
   this.pickFeatureInteraction = new PickFeatureInteraction({
     layers: layers
   });
-  
   this.pickFeatureInteraction.on('picked', function(e) {
     self.editor.setPickedFeature(e.feature);
     if (!self._busy) {
@@ -74,7 +73,6 @@ proto.pause = function(pause){
     this.pickFeatureInteraction.setActive(true);
   }
 };
-
 // metodo eseguito alla disattivazione del tool
 proto.stop = function(){
   this.removeInteraction(this.pickFeatureInteraction);

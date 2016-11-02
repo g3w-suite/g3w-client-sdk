@@ -370,7 +370,6 @@ proto.getRelationsWithValuesFromFks = function(fks, newRelation){
   var relationsRequests = [];
 
   _.forEach(relations,function(relation){
-
     relation.elements = []; // creo la proprietà che accoglierà gli elementi della relazione ( e che quindi li cacherà)
     var url = relation.url;
     var keyVals = [];

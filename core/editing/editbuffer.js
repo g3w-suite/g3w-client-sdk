@@ -156,7 +156,6 @@ proto.collectFeatureIds = function() {
 proto.collectFeatures = function(state, asGeoJSON){
   var self = this;
   var geometriesBuffers = this._geometriesBuffer;
-
   var attributesBuffers = this._attributesBuffer;
   var asGeoJSON = asGeoJSON || false;
   // prendo il jsono format per poter poi fare il posto verso il server
@@ -225,7 +224,7 @@ proto.collectRelations = function() {
 
       var relationName = relationBuffer.getRelationName();
       var newElements = relationBuffer.getRelationElementsOnlyFieldsValues('NEW');
-      var updatedElements = relationBuffer.getRelationElementsOnlyFieldsValues('OLD'); // nel buffer vengono inseriti sempre tutti gli elementi preesistenti (che siano effettivamente affiornati o meno)
+      var updatedElements = relationBuffer.getRelationElementsOnlyFieldsValues('OLD'); // nel buffer vengono inseriti sempre tutti gli elementi preesistenti (che siano effettivamente aggiornati o meno)
       var deletedElements = relationBuffer.getRelationElementsOnlyFieldsValues('OLD_DELETED');
 
       var newElementsEdits = [];

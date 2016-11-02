@@ -93,7 +93,6 @@ proto.getRelationElements = function(filter, onlyfieldsvalues) {
     var element = elementBuffer.slice(-1)[0];
     if (element || (filter=='ALL')) { // lo prenso solo se non Ã¨ null
       if (!filter || (filter && element.state==filter)) {
-
         if(onlyfieldsvalues) {
           element = _.cloneDeep(element);
           element.fields = _.map(element.fields,function(field){

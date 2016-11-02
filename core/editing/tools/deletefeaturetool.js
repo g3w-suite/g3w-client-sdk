@@ -40,8 +40,12 @@ var red = [255, 0, 0, 1];
 var width = 3;
 styles[ol.geom.GeometryType.POLYGON] = [
   new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: 'red',
+      width: 3
+    }),
     fill: new ol.style.Fill({
-      color: [255, 255, 255, 0.5]
+      color: 'rgba(255, 0, 0, 0.1)'
     })
   })
 ];
