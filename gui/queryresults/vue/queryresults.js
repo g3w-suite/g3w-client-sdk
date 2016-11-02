@@ -108,7 +108,7 @@ var vueComponentOptions = {
     cellWidth: function(index,layer) {
       var subsetLength = this.attributesSubsetLength(layer.attributes)
       var diff = maxSubsetLength - subsetLength;
-      actionsCellWidth = this.layerHasActions(layer) ? headerActionsCellWidth : 0;
+      actionsCellWidth = layer.hasgeometry ? headerActionsCellWidth : 0;
       var headerAttributeCellTotalWidth = 100 - headerExpandActionCellWidth - actionsCellWidth;
       var baseCellWidth = headerAttributeCellTotalWidth / maxSubsetLength;
       if ((index == subsetLength-1) && diff>0) {
@@ -117,6 +117,16 @@ var vueComponentOptions = {
       else {
         return baseCellWidth;
       }
+    },
+    featureBoxColspan: function(layer) {
+      var colspan = this.attributesSubsetLength(layer.attributes);
+      if (layer.expandable) {
+        colspan += 1;
+      }
+      if (layer.hasgeometry) {
+        colspan += 1;
+      }
+      return colspan;
     },
     relationsAttributesSubsetLength: function(elements) {
       return this.relationsAttributesSubset(elements).length;
