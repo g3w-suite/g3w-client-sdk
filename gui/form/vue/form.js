@@ -82,13 +82,12 @@ var vueComponentOptions = {
           return n == evt.target.value;
         });
       }
-      console.log(field.value);
     },
     isLayerPicker: function(field){
       return this.$options.formService._isLayerPicker(field);
     },
-    isFile: function(field) {
-      return this.$options.formService._isFile(field);
+    isImage: function(field) {
+      return this.$options.formService._isImage(field);
     },
     layerPickerPlaceHolder: function(field) {
       return this.$options.formService._getlayerPickerLayerName(field.input.options.layerid);
@@ -101,7 +100,6 @@ var vueComponentOptions = {
       this.$options.formService._pickLayerInputFieldChange(field, relation);
     },
     pickLayerToClipBoard: function() {
-      var self = this;
       this.checkPickLayer();
       this.$options.formService._pickLayerToClipBoard()
       .then(function() {
@@ -262,7 +260,7 @@ var vueComponentOptions = {
         }
       });
     }
-    // al momento lo devo forzare qui
+    //al momento lo devo forzare qui
     $('input:file').filestyle({
       buttonText: " Foto",
       buttonName: "btn-primary",

@@ -22,7 +22,7 @@ Inputs.SELECT = 'select';
 Inputs.RADIO = 'radio';
 Inputs.CHECKBOX = 'checkbox';
 Inputs.LAYERPICKER = 'layerpicker';
-Inputs.FILE = 'file';
+Inputs.IMAGE = 'image';
 
 Inputs.specialInputs = [Inputs.TEXTAREA, Inputs.SELECT, Inputs.RADIO, Inputs.CHECKBOX, Inputs.LAYERPICKER];
 
@@ -276,8 +276,8 @@ function FormService() {
     return (_.includes(Inputs.specialInputs,field.input.type) && field.input.type == Inputs.LAYERPICKER);
   };
   // verifica se il campo è di tipo file
-  this._isFile = function(field) {
-    return (field.input.type == Inputs.FILE);
+  this._isImage = function(field) {
+    return (field.input.type == Inputs.IMAGE);
   };
   //una volta cliccato sulla mappa dopo un picklayer ripulisce
   this._cleanUpPickLayer = function() {

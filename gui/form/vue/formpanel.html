@@ -36,9 +36,9 @@
                       <input type="radio" value="{{ value.value }}" v-model="field.value" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" :id="field.name + value.value" :placeholder="{{ value.key }}">
                     </template>
                   </div>
-                  <div v-if="isFile(field)">
+                  <div v-if="isImage(field)">
                     <img v-if="checkFileSrc(field.value)" class="photo-preview img-responsive img-thumbnail"  :src="field.value" />
-                    <input type="file" :name="field.name" data-url="{{ field.uploadurl }}" :field="field.name" title="Foto" accept="image/*;capture=camera"  @change="onFileChange(field, $event)">
+                    <input type="file" :name="field.name" data-url="{{ field.uploadurl }}" :field="field.name" title="Foto" accept="image/*;capture=camera" class="filestyle" @change="onFileChange(field, $event)">
                   </div>
                 </div>
               </div>
