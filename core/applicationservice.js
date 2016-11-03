@@ -14,6 +14,9 @@ var ApplicationService = function(){
   this.complete = false;
   this._modalOverlay = null;
   this._acquirePostBoostrap = false;
+  // oggetto che tiene tutti i servizi dei vari sidebar etc..
+  // utili per il plugin
+  this._applicationServices = {};
   this.config = {};
   // chiama il costruttore di G3WObject (che in questo momento non fa niente)
   base(this);
@@ -77,6 +80,16 @@ var ApplicationService = function(){
       });
     }
   };
+  this.registerService = function(element, service) {
+    this._applicationServices[element] = service;
+  };
+  this.unregisterService = function(element) {
+    delete this._applicationServices[element];
+  };
+  this.getService = function(element) {
+    return this._applicationServices[element];
+  }
+
 };
 
 inherit(ApplicationService,G3WObject);
