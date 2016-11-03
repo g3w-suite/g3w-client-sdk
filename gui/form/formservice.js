@@ -24,7 +24,7 @@ Inputs.CHECKBOX = 'checkbox';
 Inputs.LAYERPICKER = 'layerpicker';
 Inputs.IMAGE = 'image';
 
-Inputs.specialInputs = [Inputs.TEXTAREA, Inputs.SELECT, Inputs.RADIO, Inputs.CHECKBOX, Inputs.LAYERPICKER];
+Inputs.specialInputs = [Inputs.TEXTAREA, Inputs.SELECT, Inputs.RADIO, Inputs.CHECKBOX, Inputs.LAYERPICKER, Inputs.IMAGE];
 
 function FormService() {
   this._actions = {};
@@ -249,11 +249,12 @@ function FormService() {
     return field.editable;
   };
   // verifica se il campo è considerato tra i seimple(es text)
-  this._isSimple = function(field){
-    if (_.includes(Inputs.specialInputs,field.input.type)){
+  this._isSimple = function(field) {
+
+    if (_.includes(Inputs.specialInputs, field.input.type)){
       return false;
     }
-    return _.includes(Inputs.simpleFieldTypes,field.type)
+    return _.includes(Inputs.simpleFieldTypes, field.type)
   };
   // verifica se l'input è una textarea
   this._isTextarea = function(field) {
