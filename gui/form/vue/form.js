@@ -274,7 +274,7 @@ var vueComponentOptions = {
 var InternalComponent = Vue.extend(vueComponentOptions);
 
 function FormComponent(options) {
-
+  var options = options || {};
   // proprietà necessarie. In futuro le mettermo in una classe Panel
   // da cui deriveranno tutti i pannelli che vogliono essere mostrati nella sidebar
   base(this, options);
@@ -305,7 +305,7 @@ function FormComponent(options) {
     var self = this;
     // richiama il mont padre
     return base(this, 'mount', parent, append)
-    .then(function(){
+    .then(function() {
       self._service._setupFields();
       self._service._setupRelationsFields();
       GUI.setModal(true);

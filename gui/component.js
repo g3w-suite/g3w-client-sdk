@@ -25,10 +25,21 @@ proto.getInternalComponent = function() {
 proto.setInternalComponent = function(internalComponent) {
   this.internalComponent = internalComponent;
 };
+proto.overwriteServiceMethod = function(methodName, method) {
+  this._service[methodName] = method;
+};
+
+proto.overwriteServiceMethods = function(methodsOptions) {
+  var self = this;
+  _.forEach(methodsOptions, function(method, methodName) {
+    self.overwriteServiceMethod(methodName, method);
+  })
+};
+
 // estendo il servizio
 proto.extendService = function(serviceOptions) {
-  if (this.componentService) {
-    merge(this.componentService.proto, serviceOptions);
+  if (this._service) {
+    merge(this._service, serviceOptions);
   }
 };
 // estende in modo generico il vue component

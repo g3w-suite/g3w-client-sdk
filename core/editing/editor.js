@@ -503,7 +503,6 @@ proto.createRelationElement = function(relation) {
   var element = {};
   element.fields = _.cloneDeep(this._vectorLayer.getRelationFields(relation));
   element.id = this.generateId();
-  console.log(element);
   element.state = 'NEW';
   return element;
 };

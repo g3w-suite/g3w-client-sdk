@@ -60,7 +60,7 @@
                   </thead>
                   <tbody>
                   <template v-for="element in visibleElements(relation)">
-                    <tr class="attributes-preview" @click="toggleElementBox(relation,element)">
+                    <tr class="attributes-preview" @click="toggleElementBox(relation, element)">
                       <td v-for="relfield in fieldsSubset(element.fields)">
                         <span>{{relfield.value}}</span>
                       </td>
@@ -69,6 +69,7 @@
                         <i class="glyphicon glyphicon-option-horizontal link morelink"></i>
                       </td>
                     </tr>
+                    {{ collapseElementBox(relation,element) }}
                     <tr v-show="!collapseElementBox(relation,element)" class="queryresults-featurebox">
                       <td :colspan="fieldsSubsetLength(element.fields)+1">
                         <template v-for="field in element.fields">

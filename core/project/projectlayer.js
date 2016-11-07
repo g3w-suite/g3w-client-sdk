@@ -38,7 +38,6 @@ function ProjectLayer(state) {
     selected: options.selected | false,
     disabled: options.disabled | false
   }*/
-
   // lo stato è sincronizzato con quello del layerstree
   this.state = state;
 
@@ -51,6 +50,7 @@ function ProjectLayer(state) {
 
   this._project = null;
 }
+
 
 var proto = ProjectLayer.prototype;
 
