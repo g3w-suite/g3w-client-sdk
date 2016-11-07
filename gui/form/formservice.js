@@ -63,6 +63,7 @@ function FormService() {
       // un opportunità per i listener di intervenire sul DOM
     }
   };
+  // inizializzo il form con l'opzioni passate dall'editor al momento del'apertura del form
   this._setInitForm = function(options) {
     this.provider = options.provider || null; // è l' editor che lo chiama
     this.formId = options.formId;
@@ -83,7 +84,7 @@ function FormService() {
     var formLayer = this.formId.split('form')[0];
     this._pickedPromise = null;
     // setto lo stato
-    this.setState({
+    this.state = {
       fields: null,
       relations: null,
       editor: this.editor,
@@ -92,8 +93,7 @@ function FormService() {
       tools: {},
       relationOne: this.relationOne,
       canpaste: _.has(this._clipBoard._data, formLayer)
-    });
-    this._setFormTools(this.tools);
+    };
     //chiamo i setter
     this.setFormFields(options.fields);
     this.setFormRelations(options.relations);

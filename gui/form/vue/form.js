@@ -184,7 +184,8 @@ var vueComponentOptions = {
         return this.state.elementsBoxes[boxid].collapsed;
       }
     },
-    toggleElementBox: function(relation, element) {
+    toggleElementBox
+      : function(relation, element) {
       var boxid = this.getUniqueRelationElementId(relation, element);
       this.state.elementsBoxes[boxid].collapsed = !this.state.elementsBoxes[boxid].collapsed;
     },
@@ -289,6 +290,7 @@ function FormComponent(options) {
   //template from component
   this.template = options.template || FormTemplate;
   // settor il service del component
+  console.log(options.service);
   this._service = options.service || new FormService;
   // setto il componente interno
   this.setInternalComponent = function () {
