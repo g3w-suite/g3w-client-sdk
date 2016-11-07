@@ -290,7 +290,6 @@ function FormComponent(options) {
   //template from component
   this.template = options.template || FormTemplate;
   // settor il service del component
-  console.log(options.service);
   this._service = options.service || new FormService;
   // setto il componente interno
   this.setInternalComponent = function () {
