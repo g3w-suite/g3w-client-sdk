@@ -603,6 +603,11 @@ proto.extentToWGS84 = function(extent){
   return ol.proj.transformExtent(extent,'EPSG:'+this.project.state.crs,'EPSG:4326');
 };
 
+proto.getResolutionForMeters = function(meters) {
+  var viewport = this.viewer.map.getViewport();
+  return meters / Math.max(viewport.clientWidth,viewport.clientHeight);
+};
+
 var highlightLayer = null;
 var animatingHighlight = false;
 
@@ -628,15 +633,15 @@ proto.highlightGeometry = function(geometryObj,options) {
   
   var geometryType = geometry.getType();
   if (zoom) {
-    if (geometryType == 'Point') {
+    if (geometryType == 'Point' || (geometryType == 'MultiPoint' && geometry.getPoints().length == 1)) {
+      var coordinates = geometryType == 'Point' ? geometry.getCoordinates() : geometry.getPoint(0).getCoordinates();
       if (this.project.state.crs != 4326 && this.project.state.crs != 3857) {
-        var viewport = this.viewer.map.getViewport();
         // zoom ad una risoluzione in cui la mappa copra 100m
-        var res = 100 / Math.max(viewport.clientWidth,viewport.clientHeight);
-        this.viewer.goToRes(geometry.getCoordinates(),res);
+        var res = this.getResolutionForMeters(100);
+        this.viewer.goToRes(coordinates,res);
       }
       else {
-        this.viewer.goTo(geometry.getCoordinates(),6);
+        this.viewer.goTo(coordinates,6);
       }
     }
     else {
@@ -664,7 +669,7 @@ proto.highlightGeometry = function(geometryObj,options) {
           });
           styles.push(style);
         }
-        else if (geometryType == 'Point') {
+        else if (geometryType == 'Point' || geometryType == 'MultiPoint') {
           var style = new ol.style.Style({
             image: new ol.style.Circle({
               radius: 6,
