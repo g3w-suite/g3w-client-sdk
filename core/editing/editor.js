@@ -16,15 +16,21 @@ var EditBuffer = require('./editbuffer');
 // Editor di vettori puntuali
 function Editor(options) {
   var options = options || {};
-  // formComponent
+  // indica il componente for che verrà utilizzato dall'editor
+  // in caso di operazione di editing (nuovo/edit) di una feature
   this._formComponent = options.formComponent || null;
+  // servizio che gestisce l'interazione con la mappa e i suoi elementi
   this._mapService = options.mapService || {};
+  // layer vettoriale associato all'editor
   this._vectorLayer = null;
+  // vecort layer temporaneo dove vengono effettuati gli editing temporaneamente
   this._editVectorLayer = null;
+  // è la classe buffer che contiene tutte le operazioni di editing fatte
   this._editBufferClass = options.editBufferClass || EditBuffer;
   this._editBuffer = null;
   // tool attivo
   this._activeTool = null;
+  // indica nel caso di true che è stato modificato il layer vettoriale
   this._dirty = false;
   // prefisso delle nuove  feature
   this._newPrefix = '_new_';
@@ -36,8 +42,6 @@ function Editor(options) {
   this._editingVectorStyle = options.editingVectorStyle || null;
   // verifica se bisogna attivare le relazioni ONE all'aggiunta di una nuova feature
   this.checkOneRelation = options.checkOneRelation || false;
-  // regole copy and paste campi non sovrascrivibili
-  this._saveFromEditForm = false;
   // mi indicano quale campi non devono essere sovrascritti nel copy and paste
   this._copyAndPasteFieldsNotOverwritable = options.copyAndPasteFieldsNotOverwritable || {};
   // mi indicano i campi del layer che sono in relazione con campi di relazioni
@@ -60,7 +64,6 @@ function Editor(options) {
     'Polygon',
     'MultiPolygon'
   ];
-
   // elenco dei tool e delle relative classi per tipo di geometria (in base a vector.geometrytype)
   this._toolsForGeometryTypes = {
     'Point': {

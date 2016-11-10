@@ -1,11 +1,11 @@
 var inherit = require('core/utils/utils').inherit;
-var noop = require('core/utils/utils').noop;
 var GUI = require('gui/gui');
 var Component = require('gui/vue/component');
-var FormService = require('gui/form/formservice');
+var Service = require('gui/form/formservice');
 var base = require('core/utils/utils').base;
-var merge = require('core/utils/utils').merge;
-var FormTemplate = require('./formpanel.html');
+var Template = require('./templateform.html');
+
+// FILTRI VUE
 
 Vue.filter('startcase', function (value) {
   return _.startCase(value);
@@ -19,6 +19,10 @@ Vue.filter('relationplural', function (relation) {
   return (relation.plural) ? relation.plural : _.startCase(relation.name);
 });
 
+//FINE FILTRI VUE
+
+//VUE VALIDATOR
+
 Vue.validator('email', function (val) {
   return /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(val)
 });
@@ -27,6 +31,9 @@ Vue.validator('integer', function (val) {
   return /^(-?[1-9]\d*|0)$/.test(val);
 });
 
+//FINE VUE VALIDATOR
+
+//Definisco l'oggetto che contiene i dati necessari per instanziare un vue component
 var vueComponentOptions = {
   template: null,
   data: function() {
@@ -36,6 +43,12 @@ var vueComponentOptions = {
         copypaste: false
       }
     }
+  },
+  components: {
+    'pippo': {
+      template: '<div>Pippo</div>'
+    }
+    //è possibile inserire componenti custom dai vari plugin,
   },
   transitions: {'addremovetransition': 'showhide'},
   methods: {
@@ -226,7 +239,6 @@ var vueComponentOptions = {
     },
     createImage: function(file, field) {
       var reader = new FileReader();
-      var self = this;
       reader.onload = function(e) {
         field.value = e.target.result;
       };
@@ -271,44 +283,43 @@ var vueComponentOptions = {
   }
 };
 
-// se lo voglio istanziare manualmente
-var InternalComponent = Vue.extend(vueComponentOptions);
-
 function FormComponent(options) {
   var options = options || {};
+  options.id = options.id || 'form';
+  // qui vado a tenere traccia delle tre cose che mi permettono di customizzare
+  // vue component, service e template
+  this.vueComponent = options.vueComponentOptions || vueComponentOptions;
   // proprietà necessarie. In futuro le mettermo in una classe Panel
   // da cui deriveranno tutti i pannelli che vogliono essere mostrati nella sidebar
   base(this, options);
-  // qui vado a tenere traccia delle due cose che mi permettono di customizzare
-  // vue component e service
-  this.vueComponent = vueComponentOptions;
-  this.componentService = FormService;
-  this.id = options.id; // id del del componente
-  merge(this, options);
-  // dichiaro l'internal Component
-  this.internalComponent = null;
-  //template from component
-  this.template = options.template || FormTemplate;
-  // settor il service del component
-  this._service = options.service || new FormService;
-  // setto il componente interno
+  //settor il service del component (lo istanzio tutte le volte che inizializzo un componente
+  var service = options.service ?  new options.service : new Service;
+  this.setService(service);
+  var template = options.template || Template;
+  this.setInternalComponentTemplate(template);
+  // funzione che permette di settare il componente interno
   this.setInternalComponent = function () {
     var InternalComponent = Vue.extend(this.vueComponent);
     this.internalComponent = new InternalComponent({
-      formService: this._service,
-      template: this.template
+      formService: this.getService(),
+      template: this.getInternalTemplate()
     });
-    this.internalComponent.state = this._service.state;
+    // associo lo state del componente interno a quello del service
+    // perchè le funxioni che maipolano lo stato del componente sono delegate al service nella
+    // maggior parte dei casi
+    this.internalComponent.state = this.getService().state;
   };
-  // viene richiamato dalla toolbar quando
+  // Sovrascrivo il metodo mount padre. Viene richiamato dalla toolbar quando
   // il plugin chiede di mostrare un proprio pannello nella GUI (GUI.showPanel)
   this.mount = function(parent, append) {
     var self = this;
     // richiama il mont padre
     return base(this, 'mount', parent, append)
+      // una volta footo il mount
     .then(function() {
-      self._service._setupFields();
-      self._service._setupRelationsFields();
+      self.getService().setupFields();
+      self.getService().setupRelationsFields();
+      // setto il modale a true
       GUI.setModal(true);
     });
   };

@@ -42,6 +42,12 @@ function FormService() {
     setFormFields: function (fields) {
       this.state.fields = fields;
     },
+    setupFields: function() {
+      this._setupFields();
+    },
+    setupRelationsFields: function() {
+      this._setupRelationsFields();
+    },
     // setter sull'inserimento dei dati del form
     setFormData: function(fields, relations) {
       this.setFormFields(fields);
@@ -220,11 +226,11 @@ function FormService() {
   };
   // funzione che server per incollare i dati dalla clipboard nel form
   this._pasteClipBoardToForm = function(layerForm) {
-
     var formData = this._clipBoard.get(layerForm);
     this._pasteStateWithoutPk(formData.fields, formData.relations);
     this.state.canpaste = false;
   };
+
   // funzione che verifica se la featuare su cui stiamo lavorando
   // è nuova o vecchia
   this._isNew = function(){
@@ -240,6 +246,9 @@ function FormService() {
     });
     return someFieldsRequired || someRelationsRequired;
   };
+
+  // VERIFICA CAMPI
+
   // funzione che restituisce true/false a seconda se il campo è visibile o no
   this._isVisible = function(field) {
     return !(!field.editable && (field.value == "" || _.isNull(field.value)));
@@ -280,6 +289,9 @@ function FormService() {
   this._isImage = function(field) {
     return (field.input.type == Inputs.IMAGE);
   };
+
+  // FINE VERIFICA CAMPI
+
   //una volta cliccato sulla mappa dopo un picklayer ripulisce
   this._cleanUpPickLayer = function() {
     var mapService = GUI.getComponent('map').getService();
@@ -287,11 +299,10 @@ function FormService() {
     this._pickInteraction = null;
     GUI.setModal(true);
   };
-
   this._pickLayerInputFieldChange = function(field, relation) {
     console.log('funzione che deve essere sovrascritta dal plugin');
   };
-// funzione chiata nel caso pick layer
+  // funzione chiata nel caso pick layer
   this._pickLayer = function(field, relation) {
     // ritorno una promessa, se qualcun altro volesse usare
     // il risultato (es. per settare altri campi in base alla feature selezionata)
@@ -378,7 +389,7 @@ function FormService() {
     });
     return d.promise();
   };
-
+  // funzione che ritorna il valore di default del campo
   this._getDefaultValue = function(field) {
     if (field.input && field.input.options && field.input.options.default) {
       return field.input.options.default;
@@ -387,7 +398,7 @@ function FormService() {
     }
     return '';
   };
-// restituisce il nome del layer che si è appena cliccato con il picklayer
+  // restituisce il nome del layer che si è appena cliccato con il picklayer
   this._getlayerPickerLayerName = function(layerId){
     mapService = GUI.getComponent('map').getService();
     var layer = mapService.getProject().getLayerById(layerId);
@@ -396,12 +407,12 @@ function FormService() {
     }
     return "";
   };
-
+  // da cancellare?
   this._shouldShowRelation = function(relation) {
     return true;
   };
 
-// per definire i valori di default nel caso si tratta di un nuovo inserimento
+  // per definire i valori di default nel caso si tratta di un nuovo inserimento
   this._setupFields = function() {
     var self = this;
     var fields = _.filter(this.state.fields,function(field){

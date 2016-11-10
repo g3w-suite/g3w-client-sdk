@@ -722,13 +722,15 @@ proto.refreshMap = function() {
     wmsLayer.getOLLayer().getSource().updateParams({"time": Date.now()});
   });
 };
-
+// funzione mi server per poter in pratica
+// fare l'updatesize della mappa qundo il div che la contine cambia
+// in questo modo la mappa non si streccia
 proto.layout = function(width,height) {
   if (!this.viewer) {
     this.setupViewer(width,height);
   }
   if (this.viewer) {
-    this.setHidden((width == 0 || height == 0))
+    this.setHidden((width == 0 || height == 0));
     this.getMap().updateSize();
     this._setMapView();
   }

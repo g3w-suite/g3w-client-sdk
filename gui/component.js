@@ -1,7 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var merge = require('core/utils/utils').merge;
 var G3WObject = require('core/g3wobject');
-var VUECOMPONENTSATTRIBUTES = ['methods', 'computed', 'data'];
+var VUECOMPONENTSATTRIBUTES = ['methods', 'computed', 'data', 'components'];
 
 var Component = function(options) {
   var options = options || {};
@@ -18,25 +18,53 @@ inherit(Component, G3WObject);
 
 var proto = Component.prototype;
 
+// restituisce id del componente
+proto.getId = function() {
+  return this.id;
+};
+// setta id del component
+proto.setId = function(id) {
+  this.id = id;
+};
+// restituice il titolo del componente
+proto.getTitle = function() {
+  return this.state.title;
+};
+//setta il titolo del componente
+proto.setTitle = function(title) {
+  this.state.title = title;
+};
+//implementati due metodi per poter unificare il metodo di recupero del servizio
+//legato al componente
+// resituisce il service del componente
+proto.getService = function() {
+  return this._service;
+};
+// setta il service del componente
+proto.setService = function(service) {
+  this._service = service;
+};
+// restituisce il componente vue interno
 proto.getInternalComponent = function() {
   return this.internalComponent;
 };
-
+// setta il nuovo internalcomponent
 proto.setInternalComponent = function(internalComponent) {
+  // internal component è un'istanza e non una classe
   this.internalComponent = internalComponent;
 };
+// sovrascrive il metodo del service originale con uno nuovo
 proto.overwriteServiceMethod = function(methodName, method) {
   this._service[methodName] = method;
 };
-
+// sovrascrive i metodi che hanno chiave uguale a quelli presenti nel servizio
 proto.overwriteServiceMethods = function(methodsOptions) {
   var self = this;
   _.forEach(methodsOptions, function(method, methodName) {
     self.overwriteServiceMethod(methodName, method);
   })
 };
-
-// estendo il servizio
+// estendo il servizio con nuovi metodi
 proto.extendService = function(serviceOptions) {
   if (this._service) {
     merge(this._service, serviceOptions);
@@ -47,14 +75,25 @@ proto.extendInternalComponent = function(internalComponentOptions) {
   var self = this;
   if (this.vueComponent) {
     _.forEach(internalComponentOptions, function(value, key) {
-      switch(key) {
-        case 'methods':
-          self.extendInternalComponentMethods(value);
-          break;
-        default:
-          merge(self.vueComponent[key], value);
+      if (VUECOMPONENTSATTRIBUTES.indexOf(key) > -1) {
+        switch (key) {
+          case 'methods':
+            self.extendInternalComponentMethods(value);
+            break;
+          case 'components':
+            self.extendInternalComponentComponents(value);
+            break;
+          default:
+            merge(self.vueComponent[key], value);
+        }
       }
     });
+  }
+};
+//funzione che estende l'attributo components dell'oggetto vue Component
+proto.extendInternalComponentComponents = function(components) {
+  if (components) {
+    merge(this.vueComponent.components, components);
   }
 };
 // estende i methods il vue component
@@ -69,9 +108,8 @@ proto.extendInternalComponentMethods = function(methods) {
     merge(this.vueComponent.methods, methods);
   }
 };
-
 // estende i computed del vue component
-proto.extendInternalComponentMethods = function(computed) {
+proto.extendInternalComponentComputed = function(computed) {
   if (computed) {
     // ciclo sulle chiavi dell'oggetto per verificare che sia una funzione
     _.forEach(computed, function (value, key) {
@@ -82,21 +120,7 @@ proto.extendInternalComponentMethods = function(computed) {
     merge(this.vueComponent.computed, computed);
   }
 };
-
-// proto extend attribute of vue component (es. methods computed)
-
-proto.extendInternalComponentAttribute = function(attribute, options) {
-  if (options && (VUECOMPONENTSATTRIBUTES.indexOf(attribute) > - 1)) {
-    // ciclo sulle chiavi dell'oggetto per verificare che sia una funzione
-    _.forEach(options, function (value, key) {
-      if (!(value instanceof Function)){
-        delete options[key];
-      }
-    });
-    merge(this.vueComponent[attribute], options);
-  }
-};
-
+//setto il template del componente vue
 proto.setInternalComponentTemplate = function(template) {
   // dovrò poi aggiungere regole per verificare se il
   // tenplate è compatibile ad un template o no
@@ -104,31 +128,9 @@ proto.setInternalComponentTemplate = function(template) {
     this.vueComponent.template = template;
   }
 };
-
-
-proto.getId = function() {
-  return this.id;
+proto.getInternalTemplate = function() {
+  return this.vueComponent.template;
 };
-
-proto.getTitle = function() {
-  return this.state.title;
-};
-
-proto.setTitle = function(title) {
-  this.state.title = title;
-};
-
-//implementati due metodi per poter unificare il metodo di recupero del servizio
-//legato al componente
-
-proto.getService = function() {
-  return this._service;
-};
-
-proto.setService = function(serviceInstance) {
-  this._service = serviceInstance;
-};
-
 ////////// fine metodi Service Components //////////
 /* HOOKS */
 /* 
@@ -136,15 +138,15 @@ proto.setService = function(serviceInstance) {
  * parentEl: elemento DOM padre, su cui inserirsi; 
  * ritorna una promise, risolta nel momento in cui sarà terminato il montaggio
 */
-proto.mount = function(parent){};
+proto.mount = function(parent) {};
 
 /*
  * Metodo richiamato quando si vuole rimuovere il componente.
  * Ritorna una promessa che sarà risolta nel momento in cui il componente avrà completato la propria rimozione (ed eventuale rilascio di risorse dipendenti)
 */
-proto.unmount = function(){};
+proto.unmount = function() {};
 
-proto.ismount = function(){
+proto.ismount = function() {
   return true;
 };
 
@@ -154,7 +156,7 @@ proto.ismount = function(){
  * parentWidth: nuova larghezza del parent
  * richiamato ogni volta che il parent subisce un ridimensionamento
 */
-proto.layout = function(parentWidth,parentHeight){};
+proto.layout = function(parentWidth, parentHeight) {};
 
 
 module.exports = Component;

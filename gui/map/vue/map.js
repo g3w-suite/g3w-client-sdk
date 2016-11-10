@@ -49,9 +49,10 @@ function MapComponent(options) {
 inherit(MapComponent, Component);
 
 var proto = MapComponent.prototype;
-// funzione che ne definisce il layout
+// funzione che ne definisce il layout della mappa
+// ed è chamata dall viewport per risettare le size delle due view
 proto.layout = function(width, height) {
-  // im particolare larghezza e altezza
+  // setto alterzza e larghezza nuove
   $('#'+this.target).height(height);
   $('#'+this.target).width(width);
   this._service.layout(width,height);
