@@ -45,9 +45,6 @@ var vueComponentOptions = {
     }
   },
   components: {
-    'pippo': {
-      template: '<div>Pippo</div>'
-    }
     //è possibile inserire componenti custom dai vari plugin,
   },
   transitions: {'addremovetransition': 'showhide'},
@@ -197,8 +194,7 @@ var vueComponentOptions = {
         return this.state.elementsBoxes[boxid].collapsed;
       }
     },
-    toggleElementBox
-      : function(relation, element) {
+    toggleElementBox: function(relation, element) {
       var boxid = this.getUniqueRelationElementId(relation, element);
       this.state.elementsBoxes[boxid].collapsed = !this.state.elementsBoxes[boxid].collapsed;
     },
