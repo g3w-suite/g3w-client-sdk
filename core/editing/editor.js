@@ -441,6 +441,9 @@ proto.collectRelations = function() {
 proto.setFieldsWithValues = function(feature, fields, relations) {
   var attributes = {};
   _.forEach(fields, function(field) {
+      if (field.value == 'null') {
+        field.value = null;
+      }
       attributes[field.name] = field.value;
   });
   // setto i campi della feature con i valori editati nel form

@@ -23,8 +23,8 @@
                   <input v-if="isSimple(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
                   <textarea v-if="isTextarea(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
                   </textarea>
-                  <select v-if="isSelect(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
-                    <option v-for="value in field.input.options.values" value="{{ value.key }}">{{ value.value }}</option>
+                  <select v-if="isSelect(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="isSelectOptionsNull(field.value)" :id="field.name" :placeholder="field.input.label">
+                    <option v-for="value in field.input.options.values"  :value="isSelectOptionsNull(value.key)" >{{ value.value }}</option>
                   </select>
                   <div v-if="isLayerPicker(field)">
                     <input class="form-control picklayerinput" @click="pickLayer(field)" @change="pickLayerInputChange" :field="field.name" v-validate="field.validate" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(field) }}' o scrivilo direttamente qui" v-disabled="!isEditable(field)" v-model="field.value" :id="field.name" :placeholder="'['+layerPickerPlaceHolder(field)+']'">
@@ -37,6 +37,7 @@
                     </template>
                   </div>
                   <div v-if="isImage(field)">
+                    <i v-if="checkFileSrc(field.value)" class="glyphicon glyphicon glyphicon-trash pull-right link trash" @click="removeImage(field)"></i>
                     <img v-if="checkFileSrc(field.value)" class="photo-preview img-responsive img-thumbnail"  :src="field.value" />
                     <input type="file" :name="field.name" data-url="{{ field.uploadurl }}" :field="field.name" title="Foto" accept="image/*;capture=camera" class="filestyle" @change="onFileChange(field, $event)">
                   </div>
@@ -77,8 +78,8 @@
                             <div class="col-sm-8">
                               <input v-if="isSimple(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
                               <textarea v-if="isTextarea(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label"></textarea>
-                              <select v-if="isSelect(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
-                                <option v-for="value in field.input.options.values" value="{{ value.key }}">{{ value.value }}</option>
+                              <select v-if="isSelect(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="isSelectOptionsNull(field.value)" :id="field.name" :placeholder="field.input.label">
+                                <option v-for="value in field.input.options.values" :value="isSelectOptionsNull(value.key)">{{ value.value }}</option>
                               </select>
                               <div v-if="isRadio(field)">
                                 <template v-for="(index, value) in field.input.options.values">

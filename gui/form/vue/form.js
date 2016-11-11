@@ -72,6 +72,13 @@ var vueComponentOptions = {
     isTextarea: function(field) {
       return this.$options.formService._isTextarea(field);
     },
+    isSelectOptionsNull : function(key) {
+      if (_.isNil(key)) {
+        return 'null';
+      } else {
+        return key;
+      }
+    },
     isSelect: function(field){
       return this.$options.formService._isSelect(field);
     },
@@ -95,6 +102,9 @@ var vueComponentOptions = {
     },
     isLayerPicker: function(field){
       return this.$options.formService._isLayerPicker(field);
+    },
+    removeImage: function(field) {
+      field.value = null;
     },
     isImage: function(field) {
       return this.$options.formService._isImage(field);
@@ -239,9 +249,6 @@ var vueComponentOptions = {
         field.value = e.target.result;
       };
       reader.readAsDataURL(file);
-    },
-    removeImage: function (e) {
-      this.image = '';
     },
     checkFileSrc: function(value) {
       var value = value;
