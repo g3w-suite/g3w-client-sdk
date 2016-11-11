@@ -10,6 +10,7 @@ var Inputs = {};
 Inputs.STRING = 'string';
 Inputs.INTEGER = 'integer';
 Inputs.FLOAT = 'float';
+Inputs.BOOLEAN = 'boolean';
 
 Inputs.defaults = {};
 Inputs.defaults[Inputs.STRING] = "";
@@ -275,7 +276,7 @@ function FormService() {
   };
   // verifica se è tipo radio button
   this._isRadio = function(field) {
-    return (_.includes(Inputs.specialInputs,field.input.type) && field.input.type == Inputs.RADIO);
+    return (_.includes(Inputs.specialInputs, field.input.type) && field.input.type == Inputs.RADIO);
   };
   // verifica se è tipo checkbox
   this._isCheckbox = function(field) {

@@ -32,8 +32,8 @@
                   </div>
                   <div v-if="isRadio(field)">
                     <template v-for="(index, value) in field.input.options.values">
-                      <label for="{{ field.name }}{{ value.value }}">{{ value.key }} </label>
-                      <input type="radio" value="{{ value.value }}" v-model="field.value" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" :id="field.name + value.value" :placeholder="{{ value.key }}">
+                      <input class="magic-radio" type="radio" value="{{ value.value }}" v-model="field.value" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" :id="field.name + value.value" :placeholder="{{ value.key }}">
+                      <label for="{{ field.name }}{{ value.value }}">{{ value.key }}</label>
                     </template>
                   </div>
                   <div v-if="isImage(field)">
@@ -82,8 +82,8 @@
                               </select>
                               <div v-if="isRadio(field)">
                                 <template v-for="(index, value) in field.input.options.values">
+                                  <input class="magic-radio" type="radio" value="{{ value.value }}" v-model="field.value" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" :id="field.name + value.value" :placeholder="{{ value.key }}">
                                   <label for="{{ field.name }}{{ value.value }}">{{ value.key }} </label>
-                                  <input type="radio" value="{{ value.value }}" v-model="field.value" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" :id="field.name + value.value" :placeholder="{{ value.key }}">
                                 </template>
                               </div>
                               <div v-if="isCheckBox(field)">
