@@ -72,11 +72,11 @@ var vueComponentOptions = {
     isTextarea: function(field) {
       return this.$options.formService._isTextarea(field);
     },
-    isSelectOptionsNull : function(key) {
-      if (_.isNil(key)) {
+    isSelectOptionsNull : function(value) {
+      if (_.isNil(value)) {
         return 'null';
       } else {
-        return key;
+        return value;
       }
     },
     isSelect: function(field){
@@ -220,6 +220,9 @@ var vueComponentOptions = {
     },
     copyToClipBoard : function() {
       this.$options.formService._copyFormToClipBoard();
+    },
+    onSelectChange: function(field, evt) {
+      field.value = evt.target.value;
     },
     onFileChange: function(field, e) {
       // verifico se esiste il tocken di django
