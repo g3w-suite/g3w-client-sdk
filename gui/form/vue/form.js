@@ -336,6 +336,7 @@ function FormComponent(options) {
     var headerHeight = $(this.internalComponent.$el).find(".g3w-form-component_header").height();
     var bodyHeight = height - headerHeight;
     $(this.internalComponent.$el).find(".g3w-form-component_body").height(bodyHeight);
+    $(".nano").nanoScroller();
   }
 }
 
