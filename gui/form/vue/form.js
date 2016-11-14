@@ -58,7 +58,7 @@ var vueComponentOptions = {
       GUI.closeForm();
     },
     btnEnabled: function(button) {
-      return button.type != 'save' || (button.type == 'save' && this.$validation.valid && this.isValidForm());
+      return button.type != 'save' || (button.type == 'save' && this.isValidForm());
     },
     hasFieldsRequired: function() {
       return this.$options.formService._hasFieldsRequired();
@@ -130,9 +130,11 @@ var vueComponentOptions = {
       var self = this;
       var valid = this.$options.formService._checkFieldsValidation(this.state.fields);
       _.forEach(this.state.relations, function(relation) {
-        _.forEach(relation.elements, function(element) {
-          valid = valid && self.$options.formService._checkFieldsValidation(element.fields);
-        })
+        if (self.showRelation(relation)) {
+          _.forEach(relation.elements, function (element) {
+            valid = valid && self.$options.formService._checkFieldsValidation(element.fields);
+          })
+        }
       });
       return valid;
     },
@@ -152,7 +154,7 @@ var vueComponentOptions = {
         return (element.state != 'NEW_DELETED' && element.state != 'OLD_DELETED');
       });
     },
-    showRelation: function(relation){
+    showRelation: function(relation) {
       return this.$options.formService._shouldShowRelation(relation);
     },
     relationPkFieldName: function(relation) {
