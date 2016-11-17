@@ -57,7 +57,6 @@ PickFeatureInteraction.handleMoveEvent_ = function(event) {
 
 PickFeatureInteraction.prototype.featuresAtPixel_ = function(pixel, map) {
   var found = null;
-  console.log(isMobile.any);
   var intersectingFeature = map.forEachFeatureAtPixel(pixel,
       function(feature) {
         if (this.features_) {
@@ -76,7 +75,6 @@ PickFeatureInteraction.prototype.featuresAtPixel_ = function(pixel, map) {
   
   if(intersectingFeature){
     found = intersectingFeature;
-    console.log(found);
   }
   return found;
 };
