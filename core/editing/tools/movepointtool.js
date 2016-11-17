@@ -37,11 +37,13 @@ proto.run = function(){
   this._selectInteraction = new ol.interaction.Select({
     layers: [this.layer, this.editingLayer],
     condition: ol.events.condition.click,
-    style: style
+    style: style,
+    hitTolerance: (isMobile && isMobile.any) ? 10 : 0
   });
   this.addInteraction(this._selectInteraction);
   this._translateInteraction = new ol.interaction.Translate({
-    features: this._selectInteraction.getFeatures()
+    features: this._selectInteraction.getFeatures(),
+    hitTolerance: (isMobile && isMobile.any) ? 10 : 0
   });
   this.addInteraction(this._translateInteraction);
   

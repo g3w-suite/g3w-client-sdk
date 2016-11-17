@@ -3,7 +3,7 @@ var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var resolve = require('core/utils/utils').resolve;
 //definisco il filtro ol3
-var ol3OGCFilter = ol.format.ogc.filter;
+var ol3OGCFilter = ol.format.filter;
 
 //oggetto che viene passato per effetturare il la search
 var ol3GetFeatureRequestObject = {
