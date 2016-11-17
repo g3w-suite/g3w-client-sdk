@@ -43,4 +43,5 @@ proto.ismount = function() {
   return this.internalComponent && this.internalComponent.$el;
 };
 
+
 module.exports = Component;

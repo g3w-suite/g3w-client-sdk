@@ -247,7 +247,7 @@ function QueryResultsComponent(options) {
   };
 
   this.layout = function(width,height) {
-    console.log("Layout di queryresults: "+width+" - "+height);
+    //
   }
 }
 inherit(QueryResultsComponent, Component);

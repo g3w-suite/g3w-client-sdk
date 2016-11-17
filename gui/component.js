@@ -50,8 +50,13 @@ proto.getInternalComponent = function() {
 };
 // setta il nuovo internalcomponent
 proto.setInternalComponent = function(internalComponent) {
-  // internal component è un'istanza e non una classe
-  this.internalComponent = internalComponent;
+  if (!internalComponent && this.internalComponentClass) {
+    this.internalComponent = new this.internalComponentClass;
+  }
+  else {
+    // internal component è un'istanza e non una classe
+    this.internalComponent = internalComponent;
+  }
 };
 // sovrascrive il metodo del service originale con uno nuovo
 proto.overwriteServiceMethod = function(methodName, method) {
