@@ -50,10 +50,14 @@ var vueComponentOptions = {
     });
     
     this.$on('treenodeselected',function(node){
+      var mapservice = GUI.getComponent('map').getService();
       if (!node.selected) {
         self.project.selectLayer(node.id);
+        // emetto il segnale layer selezionato dal catalogo
+        mapservice.emit('cataloglayerselected');
       } else {
         self.project.unselectLayer(node.id);
+        mapservice.emit('cataloglayerunselected');
       }
     });
   }

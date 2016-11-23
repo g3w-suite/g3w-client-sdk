@@ -3,7 +3,6 @@ var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var QueryWFSProvider = require('./queryWFSProvider');
 var QueryQGISWMSProvider = require('./queryQGISWMSProvider');
-var GUI = require('gui/gui');
 var ComponentsRegistry = require('gui/componentsregistry');
 
 var Provider = {
@@ -101,7 +100,6 @@ function QueryService(){
   // Brutto ma per ora unica soluzione trovata per dividere per layer i risultati di un doc xml wfs.FeatureCollection.
   // OL3 li parserizza tutti insieme non distinguendo le features dei diversi layers
   this._parseLayerFeatureCollection = function(queryLayer, data) {
-    var features = [];
     var layerName = queryLayer.getWMSLayerName();
     var layerData = _.cloneDeep(data);
     layerData.FeatureCollection.featureMember = [];

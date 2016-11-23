@@ -10,10 +10,13 @@ var WMSLayer = require('core/map/layer/wmslayer');
 var ControlsFactory = require('gui/map/control/factory');
 var QueryService = require('core/query/queryservice');
 
+
 function MapService(options) {
   var self = this;
   this.viewer;
   this.target;
+  this.project;
+  this.selectedLayer;
   this._mapControls = [],
   this._mapLayers = [];
   this.mapBaseLayers = {};
@@ -49,9 +52,7 @@ function MapService(options) {
       GUI.hideSpinner('maploadspinner');
     }
   };
-  
 
-  this.project
   if(!_.isNil(options.project)) {
     this.project = options.project;
   }
@@ -106,22 +107,7 @@ function MapService(options) {
     var initxRes = ol.extent.getWidth(initextent) / width;
     var inityRes = ol.extent.getHeight(initextent) / height;
     var initResolution = Math.max(initxRes,inityRes);
-    
-    /*var constrain_extent;
-    if (this.config.constraintextent) {
-      var extent = this.config.constraintextent;
-      var dx = extent[2]-extent[0];
-      var dy = extent[3]-extent[1];
-      var dx4 = dx/4;
-      var dy4 = dy/4;
-      var bbox_xmin = extent[0] + dx4;
-      var bbox_xmax = extent[2] - dx4;
-      var bbox_ymin = extent[1] + dy4;
-      var bbox_ymax = extent[3] - dy4;
-      
-      constrain_extent = [bbox_xmin,bbox_ymin,bbox_xmax,bbox_ymax];
-    }*/
-    
+
     this.viewer = ol3helpers.createViewer({
       id: this.target,
       view: {
@@ -176,6 +162,33 @@ function MapService(options) {
   
   this.project.onafter('setBaseLayer',function(){
     self.updateMapLayers(self.mapBaseLayers);
+  });
+  this.on('cataloglayerselected', function() {
+   var self = this;
+   var layer = this.project.getLayers({
+      SELECTED: true
+    });
+   if (layer) {
+     this.selectLayer = layer[0];
+     _.forEach(this._mapControls, function(mapcontrol) {
+       if (_.indexOf(_.keysIn(mapcontrol.control), 'onSelectLayer') > -1 && mapcontrol.control.onSelectLayer()) {
+         if (mapcontrol.control.getGeometryTypes().indexOf(self.selectLayer.getGeometryType()) > -1 ) {
+           mapcontrol.control.setEnable(true);
+         } else {
+           mapcontrol.control.setEnable(false);
+         }
+       }
+     })
+   }
+  });
+
+  this.on('cataloglayerunselected', function() {
+    this.selectLayer = null;
+    _.forEach(this._mapControls, function(mapcontrol) {
+      if (_.indexOf(_.keysIn(mapcontrol.control),'onSelectLayer') > -1 && mapcontrol.control.onSelectLayer()) {
+        mapcontrol.control.setEnable(false);
+      }
+    })
   });
   
   base(this);
@@ -400,7 +413,13 @@ proto.checkWFSLayers = function() {
   return iswfs
 };
 
-proto.addControl = function(type,control){
+proto.addControl = function(type, control) {
+  // verico che il controllo abbia la funzione on selectLayer
+  if (_.indexOf(_.keysIn(control),'onSelectLayer') > -1 && control.onSelectLayer()) {
+    if (!this.selectLayer) {
+      control.setEnable(false);
+    }
+  }
   this.viewer.map.addControl(control);
   this._mapControls.push({
     type: type,
@@ -579,7 +598,7 @@ proto.setupLayers = function(){
 };
 
 proto.getOverviewMapLayers = function(project) {
-  var self = this;
+
   var projectLayers = project.getLayers({
     'VISIBLE': true
   });
