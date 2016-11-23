@@ -319,12 +319,6 @@ function QueryService(){
     var self = this;
     var d = $.Deferred();
     var f = ol.format.filter;
-    var featureRequest = new ol.format.WFS().writeGetFeature({
-      featureTypes: ['civici'],
-      filter: f.intersects('the_geom', geometry)
-    });
-    var query = featureRequest.childNodes[0];
-    var filter = query.innerHTML;
     var urlsForLayers = this.getUrlsForLayers(layers, true);
     var epsg = self._mapService.getEpsg();
     var resolution = self._mapService.getResolution();
@@ -336,12 +330,17 @@ function QueryService(){
       var layers = _.map(queryLayers, function (layer) {
         return layer.getQueryLayerName()
       });
-      layers = layers.join(',');
+      var featureRequest = new ol.format.WFS().writeGetFeature({
+        featureTypes: layers,
+        filter: f.intersects('the_geom', geometry)
+      });
+      var query = featureRequest.childNodes[0];
+      var filter = query.innerHTML;
       var params = {
         SERVICE: 'WFS',
         VERSION: '1.3.0',
         REQUEST: 'GetFeature',
-        TYPENAME: layers,
+        TYPENAME: layers.join(','),
         OUTPUTFORMAT: infoFormat,
         SRSNAME: epsg,
         FILTER: filter
