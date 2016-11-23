@@ -611,6 +611,7 @@ proto.highlightGeometry = function(geometryObj,options) {
   this.clearHighlightGeometry();
   var options = options || {};
   var zoom = (typeof options.zoom == 'boolean') ? options.zoom : true;
+  var highlight = (typeof options.highlight == 'boolean') ? options.highlight : true;
   var duration = options.duration;
   
   var view = this.viewer.map.getView();
@@ -646,9 +647,7 @@ proto.highlightGeometry = function(geometryObj,options) {
     }
   }
 
-  var doHighlight = options.highlight || true;
-
-  if (doHighlight) {
+  if (highlight) {
     var feature = new ol.Feature({
       geometry: geometry
     });
