@@ -5,10 +5,7 @@ var InteractionControl = function(options){
   this._interactionClass = options.interactionClass || null;
   this._interaction = null;
   this._autountoggle = options.autountoggle || false;
-
-  
   options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
-  
   Control.call(this,options);
 };
 ol.inherits(InteractionControl, Control);
@@ -16,7 +13,7 @@ ol.inherits(InteractionControl, Control);
 var proto = InteractionControl.prototype;
 
 proto.toggle = function(toggle){
-  var toggle = toggle !== undefined ? toggle : !this._toggled
+  var toggle = toggle !== undefined ? toggle : !this._toggled;
   this._toggled = toggle;
   var map = this.getMap();
   var controlButton = $(this.element).find('button').first();

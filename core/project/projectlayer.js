@@ -185,6 +185,10 @@ proto.setInfoFormat = function(infoFormat) {
   this.state.infoformat = infoFormat;
 };
 
+proto.getWfsCapabilities = function() {
+  return this.state.wfscapabilities;
+};
+
 proto.getWmsUrl = function() {
   var url;
   if (this.state.source && this.state.source.type == 'wms' && this.state.source.url){

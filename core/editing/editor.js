@@ -507,7 +507,11 @@ proto.getRelationsWithValues = function(feature) {
 
 proto.createRelationElement = function(relation) {
   var element = {};
-  element.fields = _.cloneDeep(this._vectorLayer.getRelationFields(relation));
+  var fields = _.cloneDeep(this._vectorLayer.getRelationFields(relation));
+  _.forEach(fields, function(field) {
+      field.value = null; // DACAPIRE MEGLIO
+  });
+  element.fields = fields;
   element.id = this.generateId();
   element.state = 'NEW';
   return element;

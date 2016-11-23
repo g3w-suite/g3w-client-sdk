@@ -11,11 +11,10 @@ var QueryControl = function(options){
     label: "\uea0f",
     interactionClass: PickCoordinatesInteraction
   };
-  
   options = utils.merge(options,_options);
-  
   InteractionControl.call(this,options);
 };
+
 ol.inherits(QueryControl, InteractionControl);
 
 var proto = QueryControl.prototype;
@@ -26,7 +25,7 @@ proto.setMap = function(map) {
   this._interaction.on('boxstart',function(e){
     self._startCoordinate = e.coordinate;
   });
-  
+
   this._interaction.on('picked',function(e){
     self.dispatchEvent({
       type: 'picked',

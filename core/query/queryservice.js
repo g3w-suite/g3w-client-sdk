@@ -3,6 +3,8 @@ var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var QueryWFSProvider = require('./queryWFSProvider');
 var QueryQGISWMSProvider = require('./queryQGISWMSProvider');
+var GUI = require('gui/gui');
+var ComponentsRegistry = require('gui/componentsregistry');
 
 var Provider = {
   'QGIS': QueryQGISWMSProvider,
@@ -108,7 +110,7 @@ function QueryService(){
     featureMembers = _.isArray(featureMembers) ? featureMembers : [featureMembers];
     _.forEach(featureMembers,function(featureMember){
       layerName = layerName.replace(/ /g,''); // QGIS SERVER rimuove gli spazi dal nome del layer per creare l'elemento FeatureMember
-      var isLayerMember = _.get(featureMember,layerName)
+      var isLayerMember = _.get(featureMember,layerName);
 
       if (isLayerMember) {
         layerData.FeatureCollection.featureMember.push(featureMember);
@@ -224,7 +226,6 @@ function QueryService(){
   // query basato sul filtro
 
   this.queryByFilter = function(queryFilterObject) {
-
     var self = this;
     var d = $.Deferred();
     //parte da rivedere nel filtro
@@ -252,21 +253,9 @@ function QueryService(){
   this.queryByLocation = function(coordinates, layers) {
     var self = this;
     var d = $.Deferred();
-    var urlsForLayers = {};
-    _.forEach(layers, function(layer){
-      var queryUrl = layer.getQueryUrl();
-      var urlHash = queryUrl.hashCode().toString();
-      if (_.keys(urlsForLayers).indexOf(urlHash) == -1) {
-        urlsForLayers[urlHash] = {
-          url: queryUrl,
-          layers: []
-        };
-      }
-      urlsForLayers[urlHash].layers.push(layer);
-    });
-
-    var resolution = self._mapService.getResolution();
-    var epsg = self._mapService.getEpsg();
+    var urlsForLayers = this.getUrlsForLayers(layers);
+    var resolution = this._mapService.getResolution();
+    var epsg = this._mapService.getEpsg();
     var queryUrlsForLayers = [];
     _.forEach(urlsForLayers,function(urlForLayers) {
       var sourceParam = urlForLayers.url.split('SOURCE');
@@ -299,6 +288,134 @@ function QueryService(){
         queryLayers: queryLayers
       });
     });
+    this.makeQueryForLayers(queryUrlsForLayers, coordinates, resolution)
+      .then(function(response) {
+        d.resolve(response)
+      })
+      .fail(function(e){
+        d.reject(e);
+      });
+    return d.promise();
+  };
+
+  this.doRequestAndParse = function(url,infoFormat,queryLayers) {
+    var self = this;
+    var d = $.Deferred();
+    $.get(url).
+    done(function(response) {
+      var featuresForLayers = self.handleQueryResponseFromServer(response, infoFormat, queryLayers);
+      d.resolve(featuresForLayers);
+    })
+    .fail(function(){
+      d.reject();
+    });
+    return d;
+  };
+
+  //query by Polyon
+  this.queryByPolygon = function(geometry, layers) {
+    if (geometry) {
+      var mapService = ComponentsRegistry.getComponent('map').getService();
+      mapService.highlightGeometry(geometry,{zoom: false});
+    }
+    var self = this;
+    var d = $.Deferred();
+    var f = ol.format.filter;
+    var featureRequest = new ol.format.WFS().writeGetFeature({
+      featureTypes: ['civici'],
+      filter: f.intersects('the_geom', geometry)
+    });
+    var query = featureRequest.childNodes[0];
+    var filter = query.innerHTML;
+    var urlsForLayers = this.getUrlsForLayers(layers, true);
+    var epsg = self._mapService.getEpsg();
+    var resolution = self._mapService.getResolution();
+    var queryUrlsForLayers = [];
+    _.forEach(urlsForLayers, function (urlForLayers) {
+      var queryLayers = urlForLayers.layers;
+      // forzo infdo forma sempre
+      var infoFormat = 'application/vnd.ogc.gml';
+      var layers = _.map(queryLayers, function (layer) {
+        return layer.getQueryLayerName()
+      });
+      layers = layers.join(',');
+      var params = {
+        SERVICE: 'WFS',
+        VERSION: '1.3.0',
+        REQUEST: 'GetFeature',
+        TYPENAME: layers,
+        OUTPUTFORMAT: infoFormat,
+        SRSNAME: epsg,
+        FILTER: filter
+      };
+      var urlParams = $.param(params);
+      var url = urlForLayers.url + '?' + urlParams;
+      queryUrlsForLayers.push({
+        url: url,
+        infoformat: infoFormat,
+        queryLayers: queryLayers
+      });
+    });
+    this.makeQueryForLayers(queryUrlsForLayers, geometry, resolution)
+      .then(function (response) {
+        d.resolve(response)
+      })
+      .fail(function (e) {
+        d.reject(e);
+      })
+      .always(function(){
+        mapService.clearHighlightGeometry();
+      });
+    return d.promise();
+  };
+  //query by BBOX
+  this.queryByBBox = function(bbox, layers) {
+    var self = this;
+    var d = $.Deferred();
+    var urlsForLayers = this.getUrlsForLayers(layers, true);
+    var epsg = self._mapService.getEpsg();
+    var resolution = self._mapService.getResolution();
+    var queryUrlsForLayers = [];
+    _.forEach(urlsForLayers, function(urlForLayers) {
+      var queryLayers = urlForLayers.layers;
+      // forzo infdo forma sempre
+      var infoFormat = 'application/vnd.ogc.gml';
+      var layers = _.map(queryLayers,function(layer){ return layer.getQueryLayerName()});
+      layers = layers.join(',');
+      var params = {
+        SERVICE:'WFS',
+        VERSION:'1.3.0',
+        REQUEST:'GetFeature',
+        TYPENAME:layers,
+        OUTPUTFORMAT:infoFormat,
+        SRSNAME:epsg,
+        BBOX:''+bbox
+      };
+      var urlParams = $.param(params);
+      var url = urlForLayers.url + '?' + urlParams;
+      queryUrlsForLayers.push({
+        url: url,
+        infoformat: infoFormat,
+        queryLayers: queryLayers
+      });
+    });
+    this.makeQueryForLayers(queryUrlsForLayers, bbox, resolution)
+    .then(function(response) {
+      d.resolve(response)
+    })
+    .fail(function(e){
+      d.reject(e);
+    });
+    return d.promise();
+  };
+  // da verificare generalizzazione
+  this.makeQueryForLayers = function(queryUrlsForLayers, coordinates, resolution) {
+    var self = this;
+    var d = $.Deferred();
+    var queryInfo = {
+      coordinates: coordinates,
+      resolution: resolution
+    };
     if (queryUrlsForLayers.length > 0) {
       var queryRequests = [];
       var featuresForLayers = [];
@@ -320,10 +437,7 @@ function QueryService(){
         featuresForLayers = self.handleResponseFeaturesAndRelations(featuresForLayers);
         d.resolve({
           data: featuresForLayers,
-          query: {
-            coordinates: coordinates,
-            resolution: resolution
-          }
+          query: queryInfo
         });
       })
       .fail(function(e){
@@ -331,34 +445,52 @@ function QueryService(){
       });
     }
     else {
-      d.resolve(coordinates,0,{});
+      d.resolve({
+        data: null,
+        query: queryInfo
+      });
     }
-    return d.promise();
+    return d.promise()
   };
-  
-  this.doRequestAndParse = function(url,infoFormat,queryLayers){
+  //
+  this.getUrlsForLayers = function(layers, wfs) {
+    // wfs specifica se deve essere fatta chiamata wfs o no
+    var urlsForLayers = {};
+    _.forEach(layers, function(layer) {
+      if (wfs) {
+        var queryUrl = layer.getProject().getWmsUrl();
+      } else {
+        var queryUrl = layer.getQueryUrl();
+      }
+      var urlHash = queryUrl.hashCode().toString();
+      if (_.keys(urlsForLayers).indexOf(urlHash) == -1) {
+        urlsForLayers[urlHash] = {
+          url: queryUrl,
+          layers: []
+        };
+      }
+      urlsForLayers[urlHash].layers.push(layer);
+    });
+    return urlsForLayers;
+  };
+
+  this.doRequestAndParse = function(url,infoFormat,queryLayers) {
     var self = this;
     var d = $.Deferred();
     $.get(url).
     done(function(response) {
-      var featuresForLayers = self.handleQueryResponseFromServer(response, infoFormat, queryLayers);;
+      var featuresForLayers = self.handleQueryResponseFromServer(response, infoFormat, queryLayers);
       d.resolve(featuresForLayers);
     })
-    .fail(function(){
-      d.reject();
-    });
+      .fail(function(){
+        d.reject();
+      });
     return d;
   };
-
-  //query by BBOX
-  this.queryByBoundingBox = function(bbox) {
-    //codice qui
-  };
-
 
   base(this);
 }
 inherit(QueryService,G3WObject);
 
-module.exports =  new QueryService
+module.exports =  new QueryService;
 

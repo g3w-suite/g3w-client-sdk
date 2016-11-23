@@ -297,6 +297,58 @@ proto.setupControls = function(){
           });
           self.addControl(controlType,control);
           break;
+        case 'querybypolygon':
+          control = ControlsFactory.create({
+            type: controlType
+          });
+          control.on('picked',function(e) {
+            var coordinates = e.coordinates;
+            var showQueryResults = GUI.showContentFactory('query');
+            var layers = self.project.getLayers({
+              QUERYABLE: true,
+              SELECTEDORALL: true
+            });
+            //faccio query by location su i layers selezionati o tutti
+            var queryResultsPanel = showQueryResults('interrogazione');
+            QueryService.queryByLocation(coordinates, layers)
+              .then(function(results) {
+                if (results && results.data[0].features.length) {
+                  var geometry = results.data[0].features[0].getGeometry();
+                  var layers = self.project.getLayers({
+                    QUERYABLE: true,
+                    ALLNOTSELECTED: true
+                  });
+                  QueryService.queryByPolygon(geometry, layers)
+                  .then(function(results) {
+                    queryResultsPanel.setQueryResponse(results,coordinates,self.state.resolution);
+                  })
+                }
+              });
+          });
+          self.addControl(controlType,control);
+          break;
+        case 'querybbox':
+          if (!isMobile.any && self.checkWFSLayers()) {
+            control = ControlsFactory.create({
+              type: controlType
+            });
+            control.on('bboxend', function (e) {
+              var showQueryResults = GUI.showContentFactory('query');
+              var layers = self.project.getLayers({
+                QUERYABLE: true,
+                SELECTEDORALL: true
+              });
+              var bbox = e.extent;
+              //faccio query by location su i layers selezionati o tutti
+              var queryResultsPanel = showQueryResults('interrogazione');
+              QueryService.queryByBBox(bbox, layers)
+                .then(function(results){
+                  queryResultsPanel.setQueryResponse(results,bbox,self.state.resolution);
+                });
+            });
+            self.addControl(controlType, control);
+          }
+          break;
         case 'scaleline':
           control = ControlsFactory.create({
             type: controlType,
@@ -331,6 +383,21 @@ proto.setupControls = function(){
       }
     });
   }
+};
+// verifica se esistono layer querabili che hanno wfs capabilities
+proto.checkWFSLayers = function() {
+  var iswfs = false;
+  var layers = this.project.getLayers({
+    QUERYABLE: true,
+    SELECTEDORALL: true
+  });
+  _.forEach(layers, function(layer) {
+    if (layer.getWfsCapabilities()) {
+      iswfs = true;
+      return false
+    }
+  });
+  return iswfs
 };
 
 proto.addControl = function(type,control){

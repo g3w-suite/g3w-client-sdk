@@ -240,6 +240,7 @@ proto.getFieldsWithValues = function(obj) {
       field.value = null;
     }
   });
+
   return fields;
 };
 // funzione che setta e relazione del layer vettoriale
