@@ -49,9 +49,7 @@ function MapService(options) {
       GUI.hideSpinner('maploadspinner');
     }
   };
-  
 
-  this.project
   if(!_.isNil(options.project)) {
     this.project = options.project;
   }
@@ -161,8 +159,6 @@ function MapService(options) {
     this.viewer.map.on('moveend',function(e) {
       self._setMapView();
     });
-    //AL MOMENTO LASCIO COSÌ POI VEDIAMO
-    QueryService.setMapService(this);
     this.emit('ready');
   };
   

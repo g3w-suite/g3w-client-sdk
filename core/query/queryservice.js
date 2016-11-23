@@ -28,10 +28,6 @@ function QueryService(){
   this.url = "";
   this.filterObject = {};
   this.queryFilterObject = {};
-  //me lo porto da mapqueryservice ma vediamo cosa succede
-  this.setMapService = function(mapService){
-    this._mapService = mapService;
-  };
 
   this.setFilterObject = function(filterObject){
     this.filterObject = filterObject;
@@ -250,6 +246,9 @@ function QueryService(){
   };
   
   this.queryByLocation = function(coordinates, layers) {
+    // TODO Rimuovere dipendenza da GUI
+    var GUI = require('gui/gui');
+    var mapservice = GUI.getComponent('map').getService();
     var self = this;
     var d = $.Deferred();
     var urlsForLayers = {};
@@ -265,8 +264,8 @@ function QueryService(){
       urlsForLayers[urlHash].layers.push(layer);
     });
 
-    var resolution = self._mapService.getResolution();
-    var epsg = self._mapService.getEpsg();
+    var resolution = mapservice.getResolution();
+    var epsg = mapservice.getEpsg();
     var queryUrlsForLayers = [];
     _.forEach(urlsForLayers,function(urlForLayers) {
       var sourceParam = urlForLayers.url.split('SOURCE');
@@ -290,7 +289,7 @@ function QueryService(){
         G3W_TOLERANCE: PIXEL_TOLERANCE * resolution
       };
 
-      var getFeatureInfoUrl = self._mapService.getGetFeatureInfoUrlForLayer(queryLayers[0],coordinates,resolution,epsg,params);
+      var getFeatureInfoUrl = mapservice.getGetFeatureInfoUrlForLayer(queryLayers[0],coordinates,resolution,epsg,params);
       var queryString = getFeatureInfoUrl.split('?')[1];
       var url = urlForLayers.url+'?'+queryString + sourceParam;
       queryUrlsForLayers.push({
