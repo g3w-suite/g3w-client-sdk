@@ -296,11 +296,17 @@ function QueryService(){
     return d.promise();
   };
 
-  this.doRequestAndParse = function(url,infoFormat,queryLayers) {
+  this.doRequestAndParse = function(url,infoFormat,queryLayers, postData) {
     var self = this;
     var d = $.Deferred();
-    $.get(url).
-    done(function(response) {
+    var request;
+    if (postData) {
+      request = $.post(url, postData);
+    } else {
+      request = $.get(url);
+    }
+    request
+      .done(function(response) {
       var featuresForLayers = self.handleQueryResponseFromServer(response, infoFormat, queryLayers);
       d.resolve(featuresForLayers);
     })
@@ -334,23 +340,21 @@ function QueryService(){
         featureTypes: layers,
         filter: f.intersects('the_geom', geometry)
       });
-      var query = featureRequest.childNodes[0];
-      var filter = query.innerHTML;
+      var filter = featureRequest.innerHTML;
       var params = {
         SERVICE: 'WFS',
         VERSION: '1.3.0',
         REQUEST: 'GetFeature',
-        TYPENAME: layers.join(','),
         OUTPUTFORMAT: infoFormat,
         SRSNAME: epsg,
         FILTER: filter
       };
-      var urlParams = $.param(params);
-      var url = urlForLayers.url + '?' + urlParams;
+      var url = urlForLayers.url + '/';
       queryUrlsForLayers.push({
         url: url,
         infoformat: infoFormat,
-        queryLayers: queryLayers
+        queryLayers: queryLayers,
+        postData: params
       });
     });
     this.makeQueryForLayers(queryUrlsForLayers, geometry, resolution)
@@ -420,7 +424,9 @@ function QueryService(){
         var url = queryUrlForLayers.url;
         var queryLayers = queryUrlForLayers.queryLayers;
         var infoFormat = queryUrlForLayers.infoformat;
-        var request = self.doRequestAndParse(url,infoFormat,queryLayers);
+        var postData = queryUrlForLayers.postData;
+        console.log(postData);
+        var request = self.doRequestAndParse(url,infoFormat,queryLayers, postData);
         queryRequests.push(request);
       });
       $.when.apply(this, queryRequests).
@@ -471,11 +477,17 @@ function QueryService(){
     return urlsForLayers;
   };
 
-  this.doRequestAndParse = function(url,infoFormat,queryLayers) {
+  this.doRequestAndParse = function(url,infoFormat,queryLayers, postData) {
     var self = this;
     var d = $.Deferred();
-    $.get(url).
-    done(function(response) {
+    var request;
+    if (postData) {
+      request = $.post(url, postData)
+    } else {
+      request = $.get(url);
+    }
+    request
+    .done(function(response) {
       var featuresForLayers = self.handleQueryResponseFromServer(response, infoFormat, queryLayers);
       d.resolve(featuresForLayers);
     })
