@@ -358,7 +358,7 @@ function QueryService(){
 
   base(this);
 }
-inherit(QueryService,G3WObject);
+inherit(QueryService, G3WObject);
 
-module.exports =  new QueryService
+module.exports =  new QueryService;
 
