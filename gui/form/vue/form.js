@@ -288,6 +288,10 @@ var vueComponentOptions = {
       iconName: "glyphicon glyphicon-camera"
     });
     this.$options.formService.postRender();
+  },
+  beforeDestroy: function() {
+    // prima di distruggerlo mi assicuro che venga rimosso l'eventuale picklayer interaction
+    this.$options.formService._cleanUpPickLayer();
   }
 };
 

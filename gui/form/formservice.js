@@ -128,7 +128,9 @@ function FormService() {
     _.forEach(fields, function(field) {
       if (self._isEditable(field) && self._isVisible(field) && field.validate && field.validate.required) {
         if (_.isNil(field.value) || !_.trim(field.value)) {
-          fieldValid = false;
+          if (!self._isSelect(field)) {
+            fieldValid = false;
+          }
         }
         valid = valid && fieldValid;
       }
@@ -252,7 +254,7 @@ function FormService() {
 
   // funzione che restituisce true/false a seconda se il campo è visibile o no
   this._isVisible = function(field) {
-    return !(!field.editable && (field.value == "" || _.isNull(field.value)));
+    return !(!field.editable && (field.value == "" || _.isNull(field.value))) && field.name !=this.pk;
   };
   //verifica se il campo è editabile o no
   this._isEditable = function(field) {
