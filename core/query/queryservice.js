@@ -427,7 +427,6 @@ function QueryService(){
         var queryLayers = queryUrlForLayers.queryLayers;
         var infoFormat = queryUrlForLayers.infoformat;
         var postData = queryUrlForLayers.postData;
-        console.log(postData);
         var request = self.doRequestAndParse(url,infoFormat,queryLayers, postData);
         queryRequests.push(request);
       });

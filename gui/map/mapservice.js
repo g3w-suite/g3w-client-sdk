@@ -329,7 +329,8 @@ proto.setupControls = function(){
                   var geometry = results.data[0].features[0].getGeometry();
                   var layers = self.project.getLayers({
                     QUERYABLE: true,
-                    ALLNOTSELECTED: true
+                    ALLNOTSELECTED: true,
+                    WFS: true
                   });
                   QueryService.queryByPolygon(geometry, layers)
                   .then(function(results) {
@@ -349,7 +350,8 @@ proto.setupControls = function(){
               var showQueryResults = GUI.showContentFactory('query');
               var layers = self.project.getLayers({
                 QUERYABLE: true,
-                SELECTEDORALL: true
+                SELECTEDORALL: true,
+                WFS: true
               });
               var bbox = e.extent;
               //faccio query by location su i layers selezionati o tutti

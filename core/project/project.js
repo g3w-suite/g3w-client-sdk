@@ -102,6 +102,7 @@ proto.getLayersDict = function(options){
   var filterSelected = options.SELECTED;
   var filterSelectedOrAll = options.SELECTEDORALL;
   var filterAllNotSelected = options.ALLNOTSELECTED;
+  var filterWfs = options.WFS;
   if (filterSelectedOrAll) {
     filterSelected = null;
   }
@@ -112,6 +113,7 @@ proto.getLayersDict = function(options){
   var layers = this._layers;
   
   if (filterQueryable) {
+
     layers = _.filter(layers,function(layer){
       return filterQueryable && layer.isQueryable();
     });
@@ -142,6 +144,15 @@ proto.getLayersDict = function(options){
     var _layers = layers;
     layers = _.filter(layers,function(layer){
       return !layer.isSelected();
+    });
+    layers = layers.length ? layers : _layers;
+  }
+
+  // filtra solo i quelli wfs
+  if (filterWfs) {
+    var _layers = layers;
+    layers = _.filter(layers,function(layer){
+      return layer.getWfsCapabilities();
     });
     layers = layers.length ? layers : _layers;
   }
