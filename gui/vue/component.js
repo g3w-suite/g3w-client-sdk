@@ -43,5 +43,9 @@ proto.ismount = function() {
   return this.internalComponent && this.internalComponent.$el;
 };
 
-
+proto.layout = function(width,height) {
+  if (this.internalComponent) {
+    this.internalComponent.$broadcast('layout');
+  }
+};
 module.exports = Component;
