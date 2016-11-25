@@ -340,12 +340,14 @@ function QueryService(){
         featureTypes: layers,
         filter: f.intersects('the_geom', geometry)
       });
-      var filter = featureRequest.innerHTML;
+      var filter = featureRequest.children[0].innerHTML;
+      var layers = layers.join(',');
       var params = {
         SERVICE: 'WFS',
         VERSION: '1.3.0',
         REQUEST: 'GetFeature',
         OUTPUTFORMAT: infoFormat,
+        TYPENAME: layers,
         SRSNAME: epsg,
         FILTER: filter
       };
