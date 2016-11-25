@@ -296,32 +296,8 @@ function QueryService(){
     return d.promise();
   };
 
-  this.doRequestAndParse = function(url,infoFormat,queryLayers, postData) {
-    var self = this;
-    var d = $.Deferred();
-    var request;
-    if (postData) {
-      request = $.post(url, postData);
-    } else {
-      request = $.get(url);
-    }
-    request
-      .done(function(response) {
-      var featuresForLayers = self.handleQueryResponseFromServer(response, infoFormat, queryLayers);
-      d.resolve(featuresForLayers);
-    })
-    .fail(function(){
-      d.reject();
-    });
-    return d;
-  };
-
   //query by Polyon
   this.queryByPolygon = function(geometry, layers) {
-    if (geometry) {
-      var mapService = ComponentsRegistry.getComponent('map').getService();
-      mapService.highlightGeometry(geometry,{zoom: false});
-    }
     var self = this;
     var d = $.Deferred();
     var f = ol.format.filter;
@@ -371,6 +347,7 @@ function QueryService(){
       });
     return d.promise();
   };
+
   //query by BBOX
   this.queryByBBox = function(bbox, layers) {
     var self = this;
@@ -411,6 +388,7 @@ function QueryService(){
     });
     return d.promise();
   };
+
   // da verificare generalizzazione
   this.makeQueryForLayers = function(queryUrlsForLayers, coordinates, resolution) {
     var self = this;
@@ -456,7 +434,7 @@ function QueryService(){
     }
     return d.promise()
   };
-  //
+
   this.getUrlsForLayers = function(layers, wfs) {
     // wfs specifica se deve essere fatta chiamata wfs o no
     var urlsForLayers = {};
