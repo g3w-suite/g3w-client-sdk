@@ -41,15 +41,13 @@ function QueryService(){
   this.getFilterObject = function() {
     return this.filterObject;
   };
+
   //dato l'oggetto filter restituito dal server ricostruisco la struttura del filterObject
   //interpretato da queryWMSProvider
   this.createQueryFilterFromConfig = function(filter) {
-
     var queryFilter = {};
-    var attribute;
     var operator;
     var field;
-    var operatorObject = {};
     var booleanObject = {};
     //funzione che costruisce l'oggetto operatore es. {'=':{'nomecampo':null}}
     function createOperatorObject(obj) {
@@ -87,9 +85,9 @@ function QueryService(){
     return queryFilter;
   };
 
-  this.createQueryFilterObject = function(layer, filterObject){
+  this.createQueryFilterObject = function(type, layer, filterObject){
     return {
-      type: 'standard',
+      type: type || 'standard',
       queryLayer: layer,
       filterObject : filterObject
     };
@@ -205,7 +203,6 @@ function QueryService(){
             break;
         }
     }
-    
     var nfeatures = 0;
     if (parser) {
       _.forEach(queryLayers, function(queryLayer) {
@@ -221,8 +218,8 @@ function QueryService(){
 
     return featuresForLayers;
   };
-  // query basato sul filtro
 
+  // query basato sul filtro
   this.queryByFilter = function(queryFilterObject) {
     var self = this;
     var d = $.Deferred();

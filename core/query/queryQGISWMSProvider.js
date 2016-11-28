@@ -47,7 +47,7 @@ function QueryQGISWMSProvider() {
 
   //funzione che fa la ricerca
   this.doSearch = function(queryFilterObject) {
-    var d = $.Deferred()
+    var d = $.Deferred();
     var querylayer = queryFilterObject.queryLayer;
     var url = querylayer.getQueryUrl();
     var crs = querylayer.getCrs();
@@ -117,6 +117,99 @@ function QueryQGISWMSProvider() {
     } else {
       return false
     }
+  };
+
+  //query by Polyon
+  this.queryByPolygon = function(geometry, layers) {
+    var self = this;
+    var d = $.Deferred();
+    var f = ol.format.filter;
+    var urlsForLayers = this.getUrlsForLayers(layers, true);
+    var epsg = self._mapService.getEpsg();
+    var resolution = self._mapService.getResolution();
+    var queryUrlsForLayers = [];
+    _.forEach(urlsForLayers, function (urlForLayers) {
+      var queryLayers = urlForLayers.layers;
+      // forzo infdo forma sempre
+      var infoFormat = 'application/vnd.ogc.gml';
+      var layers = _.map(queryLayers, function (layer) {
+        return layer.getQueryLayerName()
+      });
+      var featureRequest = new ol.format.WFS().writeGetFeature({
+        featureTypes: layers,
+        filter: f.intersects('the_geom', geometry)
+      });
+      var filter = featureRequest.children[0].innerHTML;
+      var layers = layers.join(',');
+      var params = {
+        SERVICE: 'WFS',
+        VERSION: '1.3.0',
+        REQUEST: 'GetFeature',
+        OUTPUTFORMAT: infoFormat,
+        TYPENAME: layers,
+        SRSNAME: epsg,
+        FILTER: filter
+      };
+      var url = urlForLayers.url + '/';
+      queryUrlsForLayers.push({
+        url: url,
+        infoformat: infoFormat,
+        queryLayers: queryLayers,
+        postData: params
+      });
+    });
+    this.makeQueryForLayers(queryUrlsForLayers, geometry, resolution)
+      .then(function (response) {
+        d.resolve(response)
+      })
+      .fail(function (e) {
+        d.reject(e);
+      })
+      .always(function(){
+        mapService.clearHighlightGeometry();
+      });
+    return d.promise();
+  };
+
+  //query by BBOX
+  this.queryByBBox = function(bbox, layers) {
+    var self = this;
+    var d = $.Deferred();
+    var urlsForLayers = this.getUrlsForLayers(layers, true);
+    var epsg = self._mapService.getEpsg();
+    var resolution = self._mapService.getResolution();
+    var queryUrlsForLayers = [];
+    _.forEach(urlsForLayers, function(urlForLayers) {
+      var queryLayers = urlForLayers.layers;
+      // forzo infdo forma sempre
+      var infoFormat = 'application/vnd.ogc.gml';
+      var layers = _.map(queryLayers,function(layer){ return layer.getQueryLayerName()});
+      layers = layers.join(',');
+      var params = {
+        SERVICE:'WFS',
+        VERSION:'1.3.0',
+        REQUEST:'GetFeature',
+        TYPENAME:layers,
+        OUTPUTFORMAT:infoFormat,
+        SRSNAME:epsg,
+        BBOX:''+bbox
+      };
+      var urlParams = $.param(params);
+      var url = urlForLayers.url + '?' + urlParams;
+      queryUrlsForLayers.push({
+        url: url,
+        infoformat: infoFormat,
+        queryLayers: queryLayers
+      });
+    });
+    this.makeQueryForLayers(queryUrlsForLayers, bbox, resolution)
+      .then(function(response) {
+        d.resolve(response)
+      })
+      .fail(function(e){
+        d.reject(e);
+      });
+    return d.promise();
   };
 
 }
