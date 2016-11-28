@@ -154,6 +154,9 @@ var vueComponentOptions = {
         return (element.state != 'NEW_DELETED' && element.state != 'OLD_DELETED');
       });
     },
+    visibleElementsLength: function(relation) {
+      return this.visibleElements(relation).length;
+    },
     showRelation: function(relation) {
       return this.$options.formService._shouldShowRelation(relation);
     },
@@ -193,7 +196,14 @@ var vueComponentOptions = {
     removeRelationElement: function(relation, element){
       this.$options.formService._removeRelationElement(relation, element);
     },
+    visibleElementFields: function(fields) {
+      var self = this;
+      return _.filter(fields, function (field) {
+        return self.isVisible(field);
+      })
+    },
     fieldsSubset: function(fields) {
+      //var fields = this.visibleElementFields(fields);
       var end = Math.min(3,fields.length);
       return fields.slice(0,end);
     },
