@@ -747,6 +747,9 @@ proto._openEditorForm = function(isNew, feature, next) {
   //var queryResultsPanel = showQueryResults('interrogazione');
   relationsPromise
     .then(function(relations) {
+      // creo un clone perchè altrimenti se faccio modifice anche temporanee
+      // alle relazionimi restano e vanna ad impattare nel cancella
+      var relations = _.cloneDeep(relations);
       showForm({
         provider: self,
         name: "Edita attributi "+vectorLayer.name,

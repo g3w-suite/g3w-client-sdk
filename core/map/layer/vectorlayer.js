@@ -321,7 +321,7 @@ proto.getRelationsWithValues = function(fid) {
     // rirotno array vuoto
     resolve([]);
   }
-  // altrimenti creo un cloe dell'attributo relations
+  // altrimenti creo un clone dell'attributo relations
   var relations = _.cloneDeep(this._relations);
   // -- DA CAPIRE MEGLIO --
   if (!fid && !this.getFeatureById(fid)) {
@@ -342,7 +342,6 @@ proto.getRelationsWithValues = function(fid) {
             fks[fkKey] = attributes[fkKey];
           });
         });
-
         this.getRelationsWithValuesFromFks(fks)
           .then(function(relationsResponse){
             self._relationsDataLoaded[fid] = relationsResponse;
@@ -408,7 +407,7 @@ proto.getRelationsWithValuesFromFks = function(fks, newRelation){
 
 proto.getNewRelationsWithValuesFromFks = function(fks){
   return this.getRelationsWithValuesFromFks(fks, true)
-}
+};
 
 // data una feature verifico se ha tra gli attributi i valori delle FK delle (eventuali) relazioni
 proto.featureHasRelationsFksWithValues = function(feature){
