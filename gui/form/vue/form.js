@@ -243,6 +243,12 @@ var vueComponentOptions = {
       if (csrftoken) {
         formData.csrfmiddlewaretoken = csrftoken;
       }
+      GUI.showSpinner({
+        container: $('#foto-spinner'),
+        id: 'fotoloadspinner',
+        style: 'white',
+        center: true
+      });
       $(e.target).fileupload({
         dataType: 'json',
         formData : formData,
@@ -250,6 +256,9 @@ var vueComponentOptions = {
           $.each(data.result, function (key, value) {
             field.value = value.filename
           });
+        },
+        always: function() {
+          GUI.hideSpinner('fotoloadspinner');
         }
       });
       //verifico se è stato caricato un file
