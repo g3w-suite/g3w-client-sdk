@@ -123,7 +123,7 @@ function Editor(options) {
       this.type = null;
       this.instance = null;
     };
-  }
+  };
   // TOOLS
   //terrà traccia dei tool attivi per quel layer vettoriale
   //ad esempio nel caso di un layer Point
