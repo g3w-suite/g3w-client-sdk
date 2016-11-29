@@ -221,8 +221,7 @@ function FormService() {
       })
     });
     // setto i nuovi fields e relations lasciando quelli vecchi
-    this.setFormRelations(relations);
-    this.setFormFields(fields);
+    this.setFormData(fields, relations);
     var elementsBoxes = this.getUniqueRelationsElementId(false);
     this.state.elementsBoxes = elementsBoxes;
     return true;

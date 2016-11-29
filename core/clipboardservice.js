@@ -6,7 +6,6 @@ function ClipboardService() {
     // se e solo se si riferisce allo stesso id
     var formLayer = formId.split('form')[0];
     this._data[formLayer] = data;
-    console.log(data);
   };
 
   this.get = function(formLayer) {

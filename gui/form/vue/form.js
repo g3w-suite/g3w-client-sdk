@@ -280,6 +280,13 @@ var vueComponentOptions = {
         value = ''
       }
       return value
+    },
+    setImageStyleInput: function() {
+      $('input:file').filestyle({
+        buttonText: " Foto",
+        buttonName: "btn-primary",
+        iconName: "glyphicon glyphicon-camera"
+      });
     }
   },
   computed: {
@@ -288,6 +295,13 @@ var vueComponentOptions = {
     },
     hasRelations: function() {
       return this.state.relations.length;
+    }
+  },
+  //aggiunta per  permettere al copia e incolla
+  // di aggiornare stile upload image input
+  watch: {
+    'state.fields': function() {
+      this.setImageStyleInput();
     }
   },
   ready: function() {
@@ -300,12 +314,7 @@ var vueComponentOptions = {
         }
       });
     }
-    //al momento lo devo forzare qui
-    $('input:file').filestyle({
-      buttonText: " Foto",
-      buttonName: "btn-primary",
-      iconName: "glyphicon glyphicon-camera"
-    });
+    this.setImageStyleInput();
     this.$options.formService.postRender();
   },
   beforeDestroy: function() {
