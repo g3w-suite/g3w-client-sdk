@@ -298,10 +298,11 @@ function QueryService(){
     var self = this;
     var d = $.Deferred();
     var f = ol.format.filter;
-    var urlsForLayers = this.getUrlsForLayers(layers, true);
+    var urlsForLayers = this.getUrlsForLayers(layers, true); // sepcifico che sto chiedendo servizo wfs
     var epsg = self._mapService.getEpsg();
     var resolution = self._mapService.getResolution();
     var queryUrlsForLayers = [];
+    // ciclo sull'array di oggetti url - layers
     _.forEach(urlsForLayers, function (urlForLayers) {
       var queryLayers = urlForLayers.layers;
       // forzo infdo forma sempre
@@ -431,11 +432,15 @@ function QueryService(){
     }
     return d.promise()
   };
-
+  // funzione che in base ai layers e alla tipologia di servizio
+  // restituisce gli url per ogni layer o gruppo di layers
+  // che condividono lo stesso indirizzo di servizio
   this.getUrlsForLayers = function(layers, wfs) {
     // wfs specifica se deve essere fatta chiamata wfs o no
     var urlsForLayers = {};
+    // scooro sui ogni layer e catturo il queryUrl
     _.forEach(layers, function(layer) {
+      // se wfs prendo l'api fornite dal server
       if (wfs) {
         var queryUrl = layer.getProject().getWmsUrl();
       } else {
@@ -450,6 +455,7 @@ function QueryService(){
       }
       urlsForLayers[urlHash].layers.push(layer);
     });
+    // restituisce un oggetto contente oggetti avente l'url condiviso da più layers
     return urlsForLayers;
   };
 
