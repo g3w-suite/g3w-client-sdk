@@ -4,12 +4,12 @@ var G3WObject = require('core/g3wobject');
 // Oggetto RelationEditBuffer
 // Utilizzato dall'editor per tenere traccia delle modifiche alle relazioni
 // legate alla particolare feature del layer in editing in quel momento
-function RelationEditBuffer(editor, relationName) {
+function RelationEditBuffer(editorBuffer, relationName) {
   // i due parametry sono l'editor buffer a cui si lega la relazione/i
   //il nome della relazione che non è altro che il nome del layer legato al
   // layer che stiamo editando
   this._relationName = relationName;
-  this._editor = editor;
+  this._editorBuffer = editorBuffer;
   // buffer degli elementi
   this._elementsBuffer = {};
 }
@@ -36,7 +36,7 @@ proto.getRelationName = function() {
 };
 // generare id della relazione (utile quando si crea una nuova relazione)
 proto.generateId = function(){
-  return this._editor.generateId();
+  return this._editorBuffer.generateId();
 };
 
 proto.getAddedElements = function() {
@@ -91,7 +91,7 @@ proto.getRelationElements = function(filter, onlyfieldsvalues) {
     // element buffer sono gli arry ( e quindi le modifche) di ogni elemento della
     // relazione
     var element = elementBuffer.slice(-1)[0];
-    if (element || (filter=='ALL')) { // lo prenso solo se non Ã¨ null
+    if (element || (filter=='ALL')) { // lo prenso solo se non è null
       if (!filter || (filter && element.state==filter)) {
         if(onlyfieldsvalues) {
           element = _.cloneDeep(element);
@@ -125,7 +125,7 @@ proto.hasRelationElements = function(){
 // la funzione setDirty server per far scatenre la funzione
 // _setDirtu dall 'editor delle relazioni (qui) all'editor buffer all' editor
 proto._setDirty = function(bool) {
-  this._editor._setDirty(bool);
+  this._editorBuffer._setDirty(bool);
 };
 // non fa altro che risettare gli elements buffer a oggetto vuoto
 // e settare _setDirty a false
