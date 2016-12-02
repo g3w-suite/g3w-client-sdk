@@ -5,6 +5,7 @@ var PanelService = require('gui/editorpanel/panelservice');
 var base = require('core/utils/utils').base;
 var merge = require('core/utils/utils').merge;
 var PanelTemplate = require('./panel.html');
+var resolve = require('core/utils/utils').resolve;
 
 var vueComponentOptions = {
   template: null,
@@ -62,8 +63,6 @@ var vueComponentOptions = {
   }
 };
 
-// se lo voglio istanziare manualmente
-var InternalComponent = Vue.extend(vueComponentOptions);
 
 function PanelComponent(options) {
 
@@ -74,8 +73,7 @@ function PanelComponent(options) {
   // qui vado a tenere traccia delle due cose che mi permettono di customizzare
   // vue component e service
   this.vueComponent = vueComponentOptions;
-  this.componentService = PanelService;
-  this.id = options.id; // id del del componente
+  this.name = options.name || 'Gestione dati';
   merge(this, options);
   // dichiaro l'internal Component
   this.internalComponent = null;
@@ -107,6 +105,10 @@ function PanelComponent(options) {
     });
     this.internalComponent.state = this._service.state;
     return this.internalComponent;
+  };
+  // sovrascrivo richiamando il padre in append
+  this.mount = function(parent) {
+    return base(this, 'mount', parent, true)
   };
 }
 

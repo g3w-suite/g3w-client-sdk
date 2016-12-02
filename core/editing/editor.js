@@ -23,7 +23,7 @@ function Editor(options) {
   this._mapService = options.mapService || {};
   // layer vettoriale associato all'editor
   this._vectorLayer = null;
-  // vecort layer temporaneo dove vengono effettuati gli editing temporaneamente
+  // vector layer temporaneo dove vengono effettuati gli editing temporaneamente
   this._editVectorLayer = null;
   // è la classe buffer che contiene tutte le operazioni di editing fatte
   this._editBufferClass = options.editBufferClass || EditBuffer;
@@ -50,6 +50,8 @@ function Editor(options) {
   this._formTools = options.formTools || ['copypaste'];
   // la picked feature
   this._pickedFeature = null;
+  // form service
+  this._formService = null;
   // setters listeners
   this._setterslisteners = {
     before: {},
@@ -195,6 +197,18 @@ proto.setcopyAndPasteFieldsNotOverwritable = function(obj) {
 proto.getfieldsLayerbindToRelationsFileds = function() {
   return this._fieldsLayerbindToRelationsFileds;
 };
+// setta il form service
+
+proto.setFormService = function(formService) {
+  this._formService = formService;
+};
+
+// prendo il form Service
+
+proto.getFormService = function() {
+  return this._formService;
+};
+
 // restituisce il mapservice
 proto.getMapService = function() {
   return this._mapService;
@@ -211,6 +225,11 @@ proto.setPickedFeature = function(pickedFeature) {
 proto.cleanUpPickedFeature = function() {
   this._pickedFeature.setStyle(null);
   this._pickedFeature = null;
+};
+
+// setto i dati del form
+proto.setFormData = function(formData) {
+  this.formData = formData;
 };
 
 // associa l'oggetto VectorLayer su cui si vuole fare l'editing
@@ -363,8 +382,17 @@ proto.isToolActive = function(toolType) {
   return false;
 };
 
-proto.commit = function(newFeatures) {
-  this._editBuffer.commit(newFeatures);
+proto.commit = function(responseNew) {
+  // il parametro newFeatureData contiene informazioni
+  // ritornate dal server nel caso di inserimento di nuove relazioni
+  // con id
+  this._editBuffer.commit();
+  // vad ad eliminare le feature cancellate (quelle con stato DELETE)
+  // perchè non mi servono più come relazione temporanee e rinominare
+  // lo stato delle relazioni NEW to OLD con l'id ritornato dal server
+  if (this._formService) {
+    this._formService.cleanStateAfterCommit(responseNew);
+  }
 };
 
 proto.undoAll = function() {
@@ -441,10 +469,12 @@ proto.collectRelations = function() {
 proto.setFieldsWithValues = function(feature, fields, relations) {
   var attributes = {};
   _.forEach(fields, function(field) {
-      if (field.value == 'null') {
-        field.value = null;
-      }
-      attributes[field.name] = field.value;
+    // mi serve nel caso delle select ch devo forzare il valore a 'null'
+    //
+    if (field.value == 'null') {
+      field.value = null;
+    }
+    attributes[field.name] = field.value;
   });
   // setto i campi della feature con i valori editati nel form
   feature.setProperties(attributes);
@@ -741,14 +771,14 @@ proto._openEditorForm = function(isNew, feature, next) {
       }
     });
   }
-  var relationsPromise = this.getRelationsWithValues(feature);
-  // recupero la funzione per visualizzazre il componente Form
   var showForm  = GUI.showContentFactory('form');
+  // recupero la funzione per visualizzazre il componente Form
+  var relationsPromise = this.getRelationsWithValues(feature);
   //var queryResultsPanel = showQueryResults('interrogazione');
   relationsPromise
     .then(function(relations) {
       // creo un clone perchè altrimenti se faccio modifice anche temporanee
-      // alle relazionimi restano e vanna ad impattare nel cancella
+      // alle relazionimi restano e vanno ad impattare nel cancella
       var relations = _.cloneDeep(relations);
       showForm({
         provider: self,

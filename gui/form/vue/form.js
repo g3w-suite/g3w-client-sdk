@@ -132,6 +132,8 @@ var vueComponentOptions = {
       _.forEach(this.state.relations, function(relation) {
         if (self.showRelation(relation)) {
           _.forEach(relation.elements, function (element) {
+            // non tengo conto dell'elementi della relazione eliminati
+            if (element.state.indexOf('DELETE') > -1) {return true}
             valid = valid && self.$options.formService._checkFieldsValidation(element.fields);
           })
         }

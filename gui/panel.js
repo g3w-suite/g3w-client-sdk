@@ -21,6 +21,16 @@ proto.getTitle = function(){
   return this.title;
 };
 
+proto.getInternalPanel = function() {
+  return this.internalPanel;
+};
+
+proto.setInternalPanel = function(internalPanel) {
+  this.internalPanel = internalPanel;
+};
+
+
+
 /* HOOKS */
 
 /*

@@ -108,6 +108,32 @@ function FormService() {
     this.state.elementsBoxes = elementsBoxes;
     // qui associo lo state del pannello allo ste del form
     this._setFormTools(this.tools);
+    this.editor.setFormService(this);
+  };
+  this.cleanStateAfterCommit = function(newRelationIds) {
+    // verifico che ci sia stato un aggiunta di relazioni
+    var addedRelations = (newRelationIds && newRelationIds.length > 0) ? newRelationIds[0].relations :  {};
+    // cliclo sulle relazioni e faccio "pulizia"
+    _.forEach(this.state.relations, function (relation) {
+      var addedRelation = addedRelations[relation.name];
+      _.forEach(relation.elements, function (element, index) {
+        // verifico gli elementi che sono stati cancellati e cancello
+        if(element.state.indexOf('DELETE') > -1) {
+          relation.elements.splice(index, 1);
+        }
+        // nela caso di elementi nuovi inseriti
+        if (element.state == 'NEW') {
+          _.forEach(addedRelation, function(newElement){
+            if (element.id == newElement.clientid) {
+              element.id = newElement.id;
+              return false
+            }
+          });
+          // assegno lo stato OLD
+          element.state = 'OLD';
+        }
+      });
+    });
   };
   this.createPickInteraction = function() {
     this._pickInteraction = new PickCoordinatesInteraction;
@@ -369,10 +395,13 @@ function FormService() {
           // verifico se ci sono features selezionate
           if (featuresForLayers.length && featuresForLayers[0].features.length) {
             // rpendo la prima feature
-            var feature = featuresForLayers[0].features[0];
+            var featureLayer = featuresForLayers[0].features[0];
             var pk = vectorLayer.getPk();
+            var feature = vectorLayer.getFeatureById(featureLayer.get(pk));
             // prendo dal vectorLayer la feature basato sull'id della richiesta
-            feature = vectorLayer.getFeatureById(feature.get(pk));
+            if (!feature) {
+              feature = vectorLayer.getFeatureById(featureLayer.getId());
+            }
             var fields = vectorLayer.getFieldsWithValues(feature);
             var relationsPromise = self.editor.getRelationsWithValues(feature);
             relationsPromise
