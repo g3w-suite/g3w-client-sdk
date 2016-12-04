@@ -66,6 +66,10 @@ proto.setInternalComponent = function(internalComponent) {
   }
 };
 
+proto.createVueComponent = function (vueObjOptions) {
+  return _.cloneDeep(vueObjOptions);
+};
+
 // aggiunge dati all'internalComponent
 proto.addInternalComponentData = function(data) {
   _.merge(this.internalComponent, data)
@@ -95,6 +99,7 @@ proto.extendService = function(serviceOptions) {
 proto.extendInternalComponent = function(internalComponentOptions) {
   var self = this;
   if (this.vueComponent) {
+    // faccio il clone altrimenti ho problem con i components
     _.forEach(internalComponentOptions, function(value, key) {
       if (VUECOMPONENTSATTRIBUTES.indexOf(key) > -1) {
         switch (key) {
@@ -109,6 +114,8 @@ proto.extendInternalComponent = function(internalComponentOptions) {
         }
       }
     });
+  } else {
+    this.vueComponent = internalComponentOptions;
   }
 };
 

@@ -330,17 +330,19 @@ function FormComponent(options) {
   options.id = options.id || 'form';
   // qui vado a tenere traccia delle tre cose che mi permettono di customizzare
   // vue component, service e template
-  this.vueComponent = options.vueComponentOptions || vueComponentOptions;
   // proprietà necessarie. In futuro le mettermo in una classe Panel
   // da cui deriveranno tutti i pannelli che vogliono essere mostrati nella sidebar
   base(this, options);
   //settor il service del component (lo istanzio tutte le volte che inizializzo un componente
   var service = options.service ?  new options.service : new Service;
+  var vueComponent = options.vueComponentOptions || vueComponentOptions;
+  // lo devo fare per problemi con compoents
+  this.vueComponent = this.createVueComponent(vueComponent);
   this.setService(service);
   var template = options.template || Template;
   this.setInternalComponentTemplate(template);
   // funzione che permette di settare il componente interno
-  this.setInternalComponent = function () {
+  this.setInternalComponent = function() {
     var InternalComponent = Vue.extend(this.vueComponent);
     this.internalComponent = new InternalComponent({
       formService: this.getService(),
