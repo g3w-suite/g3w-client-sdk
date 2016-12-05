@@ -1,13 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var merge = require('core/utils/utils').merge;
-var t = require('core/i18n/i18n.service').t;
-var resolve = require('core/utils/utils').resolve;
 var Component = require('gui/vue/component');
-var GUI = require('gui/gui');
-var ProjectsRegistry = require('core/project/projectsregistry');
-var G3WObject = require('core/g3wobject');
-var SearchPanel = require('gui/search/vue/panel/searchpanel');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var SearchesService = require('gui/search/searchesservice');
 
@@ -20,7 +14,7 @@ var vueComponentOptions = {
    },
    methods: {
     showSearchPanel: function(search) {
-        var panel = this.$options.searchesService.showSearchPanel(search);
+        this.$options.searchesService.showSearchPanel(search);
     }
   }
 };

@@ -330,10 +330,21 @@ proto.setupControls = function(){
                     ALLNOTSELECTED: true,
                     WFS: true
                   });
-                  QueryService.queryByPolygon(geometry, layers)
+                  self.highlightGeometry(geometry);
+                  var filterObject = QueryService.createQueryFilterObject({
+                    queryLayers: layers,
+                    ogcService : 'wfs',
+                    filter: {
+                      geometry: geometry
+                    }
+                  });
+                  QueryService.queryByFilter(filterObject)
                   .then(function(results) {
                     queryResultsPanel.setQueryResponse(results,coordinates,self.state.resolution);
                   })
+                  .always(function(){
+                    self.clearHighlightGeometry();
+                  });
                 }
               });
           });
@@ -354,7 +365,15 @@ proto.setupControls = function(){
               var bbox = e.extent;
               //faccio query by location su i layers selezionati o tutti
               var queryResultsPanel = showQueryResults('interrogazione');
-              QueryService.queryByBBox(bbox, layers)
+              var filterObject = QueryService.createQueryFilterObject({
+                queryLayers: layers,
+                ogcService : 'wfs',
+                filter: {
+                  bbox: bbox
+                }
+              });
+              QueryService.queryByFilter(filterObject)
+              //QueryService.queryByBBox(bbox, layers)
                 .then(function(results){
                   queryResultsPanel.setQueryResponse(results,bbox,self.state.resolution);
                 });

@@ -1,14 +1,8 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
-var QueryWFSProvider = require('./queryWFSProvider');
-var QueryQGISWMSProvider = require('./queryQGISWMSProvider');
-
-
-var Provider = {
-  'QGIS': QueryQGISWMSProvider,
-  'OGC': QueryWFSProvider
-};
+var GUI = require('gui/gui');
+var QueryProvider = require('./providers/queryprovider');
 
 /*var PickToleranceParams = {};
 PickToleranceParams[ProjectTypes.QDJANGO] = {};
@@ -84,13 +78,22 @@ function QueryService(){
     });
     return queryFilter;
   };
-
-  this.createQueryFilterObject = function(type, layer, filterObject){
-    return {
-      type: type || 'standard',
-      queryLayer: layer,
-      filterObject : filterObject
-    };
+  // funzione che in base ai layer coinvolti nella chaita del filtro,
+  // creerà un'array di oggetti a seconda del tipo di layer
+  this.createQueryFilterObject = function(options) {
+    var options = options || {};
+    var queryLayers = options.queryLayers || [];
+    var ogcService = options.ogcService || 'wms';
+    var filter =  options.filter || {};
+    var queryFilters = [];
+    _.forEach(this.getUrlsForLayers(queryLayers, ogcService), function(object) {
+      queryFilters.push(_.merge(object, {
+        // Servizio ogc: wfs, wms etc..
+        ogcService: ogcService,
+        filter : filter // oggetto che descrive come dovrà essere composto il filtro dal provider
+      }));
+    });
+    return queryFilters
   };
 
   /////PARSERS //////////////////
@@ -208,7 +211,6 @@ function QueryService(){
       _.forEach(queryLayers, function(queryLayer) {
         var features = parser.call(self, queryLayer, data);
         nfeatures += features.length;
-
         featuresForLayers.push({
           layer: queryLayer,
           features: features
@@ -220,37 +222,43 @@ function QueryService(){
   };
 
   // query basato sul filtro
-  this.queryByFilter = function(queryFilterObject) {
+  this.queryByFilter = function(queryFilterObjects) {
     var self = this;
     var d = $.Deferred();
-    //parte da rivedere nel filtro
-    var provider = Provider[queryFilterObject.queryLayer.getServerType()];
-    //ritorna una promise poi gestita da che la chiede
-    provider.doSearch(queryFilterObject).
-    then(function(response) {
-      //al momento qui replico struttura per i parser
-      var queryLayer = queryFilterObject.queryLayer;
-      var featuresForLayers = self.handleQueryResponseFromServer(response, queryLayer.getInfoFormat(), [queryLayer]);
-      self.handleResponseFeaturesAndRelations(featuresForLayers);
-      d.resolve({
-        data: featuresForLayers,
-        query: {
-          filter: queryFilterObject
-        }
-      });
-    })
-    .fail(function(e){
-          d.reject(e);
+    // creo l'array di promises chiamate get post per efftuare multiple chimate a seconda
+    // del provider e del ogcservice
+    var doSearches = [];
+    /// cliclo sul query filter objects
+    _.forEach(queryFilterObjects, function(queryFilterObject) {
+      // si crea il provider
+      var provider = new QueryProvider(queryFilterObject);
+      //ritorna una promise poi gestita da che la chiede
+      doSearches.push(provider.doSearch(queryFilterObject))
     });
+    $.when.apply(this, doSearches)
+      .done(function(response) {
+       var allFeaturesFoLayers = [];
+        _.forEach(queryFilterObjects, function(queryFilterObject) {
+          var featuresForLayers = self.handleQueryResponseFromServer(response, queryFilterObject.layers[0].getInfoFormat(), queryFilterObject.layers);
+          allFeaturesFoLayers = _.union(allFeaturesFoLayers,self.handleResponseFeaturesAndRelations(featuresForLayers));
+        });
+        d.resolve({
+          data: allFeaturesFoLayers
+        });
+      })
+      .fail(function(e){
+            d.reject(e);
+      });
     return d.promise();
   };
-  
+
+  // queryByLocation
   this.queryByLocation = function(coordinates, layers) {
-    var self = this;
     var d = $.Deferred();
+    var mapService = GUI.getComponent('map').getService();
     var urlsForLayers = this.getUrlsForLayers(layers);
-    var resolution = this._mapService.getResolution();
-    var epsg = this._mapService.getEpsg();
+    var resolution = mapService.getResolution();
+    var epsg = mapService.getEpsg();
     var queryUrlsForLayers = [];
     _.forEach(urlsForLayers,function(urlForLayers) {
       var sourceParam = urlForLayers.url.split('SOURCE');
@@ -274,7 +282,7 @@ function QueryService(){
         G3W_TOLERANCE: PIXEL_TOLERANCE * resolution
       };
 
-      var getFeatureInfoUrl = self._mapService.getGetFeatureInfoUrlForLayer(queryLayers[0],coordinates,resolution,epsg,params);
+      var getFeatureInfoUrl = mapService.getGetFeatureInfoUrlForLayer(queryLayers[0],coordinates,resolution,epsg,params);
       var queryString = getFeatureInfoUrl.split('?')[1];
       var url = urlForLayers.url+'?'+queryString + sourceParam;
       queryUrlsForLayers.push({
@@ -290,100 +298,6 @@ function QueryService(){
       .fail(function(e){
         d.reject(e);
       });
-    return d.promise();
-  };
-
-  //query by Polyon
-  this.queryByPolygon = function(geometry, layers) {
-    var self = this;
-    var d = $.Deferred();
-    var f = ol.format.filter;
-    var urlsForLayers = this.getUrlsForLayers(layers, true); // sepcifico che sto chiedendo servizo wfs
-    var epsg = self._mapService.getEpsg();
-    var resolution = self._mapService.getResolution();
-    var queryUrlsForLayers = [];
-    // ciclo sull'array di oggetti url - layers
-    _.forEach(urlsForLayers, function (urlForLayers) {
-      var queryLayers = urlForLayers.layers;
-      // forzo infdo forma sempre
-      var infoFormat = 'application/vnd.ogc.gml';
-      var layers = _.map(queryLayers, function (layer) {
-        return layer.getQueryLayerName()
-      });
-      var featureRequest = new ol.format.WFS().writeGetFeature({
-        featureTypes: layers,
-        filter: f.intersects('the_geom', geometry)
-      });
-      var filter = featureRequest.children[0].innerHTML;
-      var layers = layers.join(',');
-      var params = {
-        SERVICE: 'WFS',
-        VERSION: '1.3.0',
-        REQUEST: 'GetFeature',
-        OUTPUTFORMAT: infoFormat,
-        TYPENAME: layers,
-        SRSNAME: epsg,
-        FILTER: filter
-      };
-      var url = urlForLayers.url + '/';
-      queryUrlsForLayers.push({
-        url: url,
-        infoformat: infoFormat,
-        queryLayers: queryLayers,
-        postData: params
-      });
-    });
-    this.makeQueryForLayers(queryUrlsForLayers, geometry, resolution)
-      .then(function (response) {
-        d.resolve(response)
-      })
-      .fail(function (e) {
-        d.reject(e);
-      })
-      .always(function(){
-        mapService.clearHighlightGeometry();
-      });
-    return d.promise();
-  };
-
-  //query by BBOX
-  this.queryByBBox = function(bbox, layers) {
-    var self = this;
-    var d = $.Deferred();
-    var urlsForLayers = this.getUrlsForLayers(layers, true);
-    var epsg = self._mapService.getEpsg();
-    var resolution = self._mapService.getResolution();
-    var queryUrlsForLayers = [];
-    _.forEach(urlsForLayers, function(urlForLayers) {
-      var queryLayers = urlForLayers.layers;
-      // forzo infdo forma sempre
-      var infoFormat = 'application/vnd.ogc.gml';
-      var layers = _.map(queryLayers,function(layer){ return layer.getQueryLayerName()});
-      layers = layers.join(',');
-      var params = {
-        SERVICE:'WFS',
-        VERSION:'1.3.0',
-        REQUEST:'GetFeature',
-        TYPENAME:layers,
-        OUTPUTFORMAT:infoFormat,
-        SRSNAME:epsg,
-        BBOX:''+bbox
-      };
-      var urlParams = $.param(params);
-      var url = urlForLayers.url + '?' + urlParams;
-      queryUrlsForLayers.push({
-        url: url,
-        infoformat: infoFormat,
-        queryLayers: queryLayers
-      });
-    });
-    this.makeQueryForLayers(queryUrlsForLayers, bbox, resolution)
-    .then(function(response) {
-      d.resolve(response)
-    })
-    .fail(function(e){
-      d.reject(e);
-    });
     return d.promise();
   };
 
@@ -403,7 +317,12 @@ function QueryService(){
         var queryLayers = queryUrlForLayers.queryLayers;
         var infoFormat = queryUrlForLayers.infoformat;
         var postData = queryUrlForLayers.postData;
-        var request = self.doRequestAndParse(url,infoFormat,queryLayers, postData);
+        var request = self.doRequestAndParse({
+          url: url,
+          infoFormat: infoFormat,
+          queryLayers: queryLayers,
+          postData: postData
+        });
         queryRequests.push(request);
       });
       $.when.apply(this, queryRequests).
@@ -435,13 +354,13 @@ function QueryService(){
   // funzione che in base ai layers e alla tipologia di servizio
   // restituisce gli url per ogni layer o gruppo di layers
   // che condividono lo stesso indirizzo di servizio
-  this.getUrlsForLayers = function(layers, wfs) {
+  this.getUrlsForLayers = function(layers, ogcService) {
     // wfs specifica se deve essere fatta chiamata wfs o no
     var urlsForLayers = {};
     // scooro sui ogni layer e catturo il queryUrl
     _.forEach(layers, function(layer) {
       // se wfs prendo l'api fornite dal server
-      if (wfs) {
+      if (ogcService == 'wfs') {
         var queryUrl = layer.getProject().getWmsUrl();
       } else {
         var queryUrl = layer.getQueryUrl();
@@ -450,7 +369,9 @@ function QueryService(){
       if (_.keys(urlsForLayers).indexOf(urlHash) == -1) {
         urlsForLayers[urlHash] = {
           url: queryUrl,
-          layers: []
+          layers: [],
+          crs: layer.getCrs(), // dovrebbe essere comune a tutti
+          serverType: layer.getServerType() // aggiungo anche il tipo di server
         };
       }
       urlsForLayers[urlHash].layers.push(layer);
@@ -459,7 +380,12 @@ function QueryService(){
     return urlsForLayers;
   };
 
-  this.doRequestAndParse = function(url,infoFormat,queryLayers, postData) {
+  this.doRequestAndParse = function(options) {
+    var options = options || {};
+    var url = options.url;
+    var infoFormat = options.infoFormat;
+    var queryLayers = options.queryLayers;
+    var postData = options.postData || null;
     var self = this;
     var d = $.Deferred();
     var request;
