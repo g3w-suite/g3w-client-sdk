@@ -69,6 +69,14 @@ proto.setProjectType = function(projectType) {
    this.projectType = projectType;
 };
 
+proto.getConfig = function() {
+  return this.config;
+};
+
+proto.getState = function() {
+  return this.state;
+};
+
 proto.setupState = function() {
   var self = this;
   
