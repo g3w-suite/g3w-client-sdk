@@ -44,6 +44,7 @@ function VectorLayer(config) {
   this.lazyRelations = true;
   this._relations = null;
   this._editingMode = config.editing || false;
+  this._loadedIds = [];
   this._featureLocks = null;
   this._crs = null;
 
@@ -60,6 +61,7 @@ proto.getPk = function() {
 proto.setData = function(featuresData) {
 
   var self = this;
+  var Ids = []
   var features;
   if (this.format) {
     switch (this.format){
@@ -74,11 +76,12 @@ proto.setData = function(featuresData) {
         break;
     }
     if (this._editingMode && this._featureLocks) {
-      features = _.filter(features, function(feature){
+      features = _.filter(features, function(feature) {
         var hasFeatureLock = false;
         _.forEach(self._featureLocks,function(featureLock){
           if (featureLock.featureid == feature.getId()) {
             hasFeatureLock = true;
+            Ids.push(feature.getId());
           }
         });
         return hasFeatureLock;
@@ -91,16 +94,15 @@ proto.setData = function(featuresData) {
           return self._featuresFilter(feature);
         });
       }
-      
-      var alreadyLoadedIds = this.getFeatureIds();
-      var featuresToLoad = _.filter(features,function(feature){
-        return !_.includes(alreadyLoadedIds,feature.getId());
+
+      var featuresToLoad = _.filter(features,function(feature) {
+        return !_.includes(self._loadedIds,feature.getId());
       });
       this._olSource.addFeatures(featuresToLoad);
-      
       // verifico, prendendo la prima feature, se la PK è presente o meno tra gli attributi
       var attributes = this.getSource().getFeatures()[0].getProperties();
       this._PKinAttributes = _.get(attributes,this.pk) ? true : false;
+      this._loadedIds = _.union(this._loadedIds, Ids);
     }
   }
   else {
@@ -123,18 +125,21 @@ proto.addLockId = function(lockId) {
   this._featureLocks.push(lockId);
 };
 
-proto.setFeatureData = function(oldfid,fid,geometry,attributes){
+proto.setFeatureData = function(oldfid,fid,geometry,attributes) {
+
   var feature = this.getFeatureById(oldfid);
-  if (fid){
-    feature.setId(fid);
-  }
-  if (geometry){
-    feature.setGeometry(geometry);
-  }
-  if (attributes){
-    var oldAttributes = feature.getProperties();
-    var newAttributes =_.assign(oldAttributes,attributes);
-    feature.setProperties(newAttributes);
+  if (feature) {
+    if(fid) {
+      feature.setId(fid);
+    }
+    if(geometry) {
+      feature.setGeometry(geometry);
+    }
+    if(attributes) {
+      var oldAttributes = feature.getProperties();
+      var newAttributes = _.assign(oldAttributes, attributes);
+      feature.setProperties(newAttributes);
+    }
   }
   return feature;
 };
@@ -191,7 +196,7 @@ proto.getFeatures = function(){
 };
 
 proto.getFeatureIds = function(){
-  var featureIds = _.map(this.getSource().getFeatures(),function(feature){
+  var featureIds = _.map(this.getSource().getFeatures(), function(feature){
     return feature.getId();
   });
   return featureIds
@@ -322,7 +327,7 @@ proto.getRelationsWithValues = function(fid) {
     // rirotno array vuoto
     resolve([]);
   }
-  // altrimenti creo un cloe dell'attributo relations
+  // altrimenti creo un clone dell'attributo relations
   var relations = _.cloneDeep(this._relations);
   // -- DA CAPIRE MEGLIO --
   if (!fid && !this.getFeatureById(fid)) {
@@ -343,7 +348,6 @@ proto.getRelationsWithValues = function(fid) {
             fks[fkKey] = attributes[fkKey];
           });
         });
-
         this.getRelationsWithValuesFromFks(fks)
           .then(function(relationsResponse){
             self._relationsDataLoaded[fid] = relationsResponse;
@@ -409,7 +413,7 @@ proto.getRelationsWithValuesFromFks = function(fks, newRelation){
 
 proto.getNewRelationsWithValuesFromFks = function(fks){
   return this.getRelationsWithValuesFromFks(fks, true)
-}
+};
 
 // data una feature verifico se ha tra gli attributi i valori delle FK delle (eventuali) relazioni
 proto.featureHasRelationsFksWithValues = function(feature){

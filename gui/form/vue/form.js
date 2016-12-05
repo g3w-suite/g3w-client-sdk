@@ -132,6 +132,8 @@ var vueComponentOptions = {
       _.forEach(this.state.relations, function(relation) {
         if (self.showRelation(relation)) {
           _.forEach(relation.elements, function (element) {
+            // non tengo conto dell'elementi della relazione eliminati
+            if (element.state.indexOf('DELETE') > -1) {return true}
             valid = valid && self.$options.formService._checkFieldsValidation(element.fields);
           })
         }
@@ -153,6 +155,9 @@ var vueComponentOptions = {
       return _.filter(relation.elements,function(element){
         return (element.state != 'NEW_DELETED' && element.state != 'OLD_DELETED');
       });
+    },
+    visibleElementsLength: function(relation) {
+      return this.visibleElements(relation).length;
     },
     showRelation: function(relation) {
       return this.$options.formService._shouldShowRelation(relation);
@@ -193,7 +198,14 @@ var vueComponentOptions = {
     removeRelationElement: function(relation, element){
       this.$options.formService._removeRelationElement(relation, element);
     },
+    visibleElementFields: function(fields) {
+      var self = this;
+      return _.filter(fields, function (field) {
+        return self.isVisible(field);
+      })
+    },
     fieldsSubset: function(fields) {
+      //var fields = this.visibleElementFields(fields);
       var end = Math.min(3,fields.length);
       return fields.slice(0,end);
     },
@@ -233,6 +245,12 @@ var vueComponentOptions = {
       if (csrftoken) {
         formData.csrfmiddlewaretoken = csrftoken;
       }
+      GUI.showSpinner({
+        container: $('#foto-spinner'),
+        id: 'fotoloadspinner',
+        style: 'white',
+        center: true
+      });
       $(e.target).fileupload({
         dataType: 'json',
         formData : formData,
@@ -240,6 +258,9 @@ var vueComponentOptions = {
           $.each(data.result, function (key, value) {
             field.value = value.filename
           });
+        },
+        always: function() {
+          GUI.hideSpinner('fotoloadspinner');
         }
       });
       //verifico se è stato caricato un file
@@ -261,6 +282,13 @@ var vueComponentOptions = {
         value = ''
       }
       return value
+    },
+    setImageStyleInput: function() {
+      $('input:file').filestyle({
+        buttonText: " Foto",
+        buttonName: "btn-primary",
+        iconName: "glyphicon glyphicon-camera"
+      });
     }
   },
   computed: {
@@ -269,6 +297,13 @@ var vueComponentOptions = {
     },
     hasRelations: function() {
       return this.state.relations.length;
+    }
+  },
+  //aggiunta per  permettere al copia e incolla
+  // di aggiornare stile upload image input
+  watch: {
+    'state.fields': function() {
+      this.setImageStyleInput();
     }
   },
   ready: function() {
@@ -281,13 +316,12 @@ var vueComponentOptions = {
         }
       });
     }
-    //al momento lo devo forzare qui
-    $('input:file').filestyle({
-      buttonText: " Foto",
-      buttonName: "btn-primary",
-      iconName: "glyphicon glyphicon-camera"
-    });
+    this.setImageStyleInput();
     this.$options.formService.postRender();
+  },
+  beforeDestroy: function() {
+    // prima di distruggerlo mi assicuro che venga rimosso l'eventuale picklayer interaction
+    this.$options.formService._cleanUpPickLayer();
   }
 };
 
@@ -296,17 +330,19 @@ function FormComponent(options) {
   options.id = options.id || 'form';
   // qui vado a tenere traccia delle tre cose che mi permettono di customizzare
   // vue component, service e template
-  this.vueComponent = options.vueComponentOptions || vueComponentOptions;
   // proprietà necessarie. In futuro le mettermo in una classe Panel
   // da cui deriveranno tutti i pannelli che vogliono essere mostrati nella sidebar
   base(this, options);
   //settor il service del component (lo istanzio tutte le volte che inizializzo un componente
   var service = options.service ?  new options.service : new Service;
+  var vueComponent = options.vueComponentOptions || vueComponentOptions;
+  // lo devo fare per problemi con compoents
+  this.vueComponent = this.createVueComponent(vueComponent);
   this.setService(service);
   var template = options.template || Template;
   this.setInternalComponentTemplate(template);
   // funzione che permette di settare il componente interno
-  this.setInternalComponent = function () {
+  this.setInternalComponent = function() {
     var InternalComponent = Vue.extend(this.vueComponent);
     this.internalComponent = new InternalComponent({
       formService: this.getService(),

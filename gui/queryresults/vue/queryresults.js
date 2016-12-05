@@ -154,9 +154,10 @@ var vueComponentOptions = {
       this.layersFeaturesBoxes[boxid].collapsed = !this.layersFeaturesBoxes[boxid].collapsed;
     },
     toggleFeatureBoxAndZoom: function(layer, feature, relation_index) {
-      if (this.collapsedFeatureBox(layer, feature, relation_index)) {
+      // Disattivo zoom to sul toggle della featurebox. Casomai lo ripristineremo quando sarà gestito tramite qualche setting
+      /*if (this.collapsedFeatureBox(layer, feature, relation_index)) {
         this.trigger('gotogeometry',layer,feature)
-      }
+      }*/
       this.toggleFeatureBox(layer, feature, relation_index);
     },
     trigger: function(action,layer,feature) {

@@ -1,7 +1,6 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var resolve = require('core/utils/utils').resolve;
-var reject = require('core/utils/utils').reject;
 var BaseComponent = require('gui/component');
 // classe componente
 var Component = function(options) {
@@ -43,5 +42,9 @@ proto.ismount = function() {
   return this.internalComponent && this.internalComponent.$el;
 };
 
-
+proto.layout = function(width,height) {
+  if (this.internalComponent) {
+    this.internalComponent.$broadcast('layout');
+  }
+};
 module.exports = Component;

@@ -147,8 +147,6 @@ function MapService(options) {
     this.viewer.map.on('moveend',function(e) {
       self._setMapView();
     });
-    //AL MOMENTO LASCIO COSÌ POI VEDIAMO
-    QueryService.setMapService(this);
     this.emit('ready');
   };
   
@@ -700,8 +698,10 @@ var highlightLayer = null;
 var animatingHighlight = false;
 
 proto.highlightGeometry = function(geometryObj,options) {
+  this.clearHighlightGeometry();
   var options = options || {};
   var zoom = (typeof options.zoom == 'boolean') ? options.zoom : true;
+  var highlight = (typeof options.highlight == 'boolean') ? options.highlight : true;
   var duration = options.duration;
   
   var view = this.viewer.map.getView();
@@ -736,66 +736,68 @@ proto.highlightGeometry = function(geometryObj,options) {
       this.viewer.fit(geometry,options);
     }
   }
-  
-  var feature = new ol.Feature({
-    geometry: geometry
-  });
 
-
-  if (!highlightLayer) {
-    highlightLayer = new ol.layer.Vector({
-      source: new ol.source.Vector(),
-      style: function(feature){
-        var styles = [];
-        var geometryType = feature.getGeometry().getType();
-        if (geometryType == 'LineString') {
-          var style = new ol.style.Style({
-            stroke: new ol.style.Stroke({
-              color: 'rgb(255,255,0)',
-              width: 4
-            })
-          });
-          styles.push(style);
-        }
-        else if (geometryType == 'Point' || geometryType == 'MultiPoint') {
-          var style = new ol.style.Style({
-            image: new ol.style.Circle({
-              radius: 6,
-              fill: new ol.style.Fill({
-                color: 'rgb(255,255,0)'
-              })
-            }),
-            zIndex: Infinity
-          });
-          styles.push(style);
-        } else if (geometryType == 'MultiPolygon' || geometryType == 'Polygon') {
-          var style = new ol.style.Style({
-            stroke: new ol.style.Stroke({
-              color: 'rgb(255,255,0)',
-              width: 4
-            }),
-            fill: new ol.style.Fill({
-              color: 'rgba(255, 255, 0, 0.5)'
-            })
-          });
-          styles.push(style);
-        }
-        return styles;
-      }
+  if (highlight) {
+    var feature = new ol.Feature({
+      geometry: geometry
     });
 
-    highlightLayer.setMap(this.viewer.map);
-  }
 
-  highlightLayer.getSource().clear();
-  highlightLayer.getSource().addFeature(feature);
+    if (!highlightLayer) {
+      highlightLayer = new ol.layer.Vector({
+        source: new ol.source.Vector(),
+        style: function(feature){
+          var styles = [];
+          var geometryType = feature.getGeometry().getType();
+          if (geometryType == 'LineString') {
+            var style = new ol.style.Style({
+              stroke: new ol.style.Stroke({
+                color: 'rgb(255,255,0)',
+                width: 4
+              })
+            });
+            styles.push(style);
+          }
+          else if (geometryType == 'Point' || geometryType == 'MultiPoint') {
+            var style = new ol.style.Style({
+              image: new ol.style.Circle({
+                radius: 6,
+                fill: new ol.style.Fill({
+                  color: 'rgb(255,255,0)'
+                })
+              }),
+              zIndex: Infinity
+            });
+            styles.push(style);
+          } else if (geometryType == 'MultiPolygon' || geometryType == 'Polygon') {
+            var style = new ol.style.Style({
+              stroke: new ol.style.Stroke({
+                color: 'rgb(255,255,0)',
+                width: 4
+              }),
+              fill: new ol.style.Fill({
+                color: 'rgba(255, 255, 0, 0.5)'
+              })
+            });
+            styles.push(style);
+          }
+          return styles;
+        }
+      });
 
-  if (duration) {
-    animatingHighlight = true;
-    setTimeout(function(){
-      highlightLayer.getSource().clear();
-      animatingHighlight = false;
-    },duration);
+      highlightLayer.setMap(this.viewer.map);
+    }
+
+    highlightLayer.getSource().clear();
+    highlightLayer.getSource().addFeature(feature);
+
+    if (duration) {
+      animatingHighlight = true;
+      setTimeout(function(){
+        highlightLayer.getSource().clear();
+        animatingHighlight = false;
+      },duration);
+    }
   }
 };
 

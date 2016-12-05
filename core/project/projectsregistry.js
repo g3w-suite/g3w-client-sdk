@@ -25,6 +25,8 @@ function ProjectsRegistry() {
   this.setters = {
     setCurrentProject: function(project){
       self.state.currentProject = project;
+      //aggiunto tipo progetto
+      self.setProjectType(project.state.type);
     }
   };
   //stato del registro progetti
@@ -59,8 +61,6 @@ proto.init = function(config) {
     return this.getProject(config.initproject)
     .then(function(project) {
       self.setCurrentProject(project);
-      //aggiunto tipo progetto
-      self.setProjectType(project.state.type);
     });
   }
 };
@@ -70,7 +70,6 @@ proto.setProjectType = function(projectType) {
 };
 
 proto.setupState = function() {
-
   var self = this;
   
   self.state.baseLayers = self.config.baselayers;

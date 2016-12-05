@@ -103,7 +103,7 @@ proto.deleteFeature = function(feature, relations) {
 // funzione che server per fare update di una feature
 proto.updateFields = function(feature, relations) {
   // nel caso di una nuova feature
-  if(!feature.getId()) {
+  if (!feature.getId()) {
     // genero id random e lo setto alla feature
     feature.setId(this.generateId());
   }// vado a chiamare la funzione che mi aggiorna i campi della feature e delle relazioni
@@ -155,8 +155,6 @@ proto.collectFeatureIds = function() {
 // dall'editor o passaggio da un editing isNewdi un layer all'altro
 proto.collectFeatures = function(state, asGeoJSON){
   var self = this;
-  var geometriesBuffers = this._geometriesBuffer;
-  var attributesBuffers = this._attributesBuffer;
   var asGeoJSON = asGeoJSON || false;
   // prendo il jsono format per poter poi fare il posto verso il server
   var GeoJSONFormat = new ol.format.GeoJSON();
@@ -291,7 +289,8 @@ proto._addEditToGeometryBuffer = function(feature, operation) {
   this._setDirty(true);
 };
 
-proto._addDeleteRelationsBuffers = function(relations) {
+proto._addDeleteRelationsBuffers = function(relations, fid) {
+  var self = this;
   // se snono state passate relazioni
   if (relations) {
     // clico su ognuna di essere
@@ -320,7 +319,6 @@ proto._addDeleteRelationsBuffers = function(relations) {
 // funzione che mette in relazione feature e relazioni
 // e aggiorna i campi della feature nell'editbuffer
 proto._addEditToValuesBuffers = function(feature, relations) {
-  var self = this;
   // prende id della feature
   var fid = feature.getId();
   // prende gli attributi della feature
@@ -337,29 +335,8 @@ proto._addEditToValuesBuffers = function(feature, relations) {
   // dentro negli attributi c'è anche la geometria
   attributesBuffer[fid].push(attributes);
   // se snono state passate relazioni
-  if (relations) {
-    // ciclo su ognuna di esse
-    _.forEach(relations, function(relation) {
-      //se esiste già nell'oggetto relation buffer legate a quella feature
-      if (!_.has(self._relationsBuffers, fid)) {
-        // atrimenti faccio come ho fatto sopra per il buffer degli attributi
-        // ma ora sul buffer delle relazioni e non più un array ma un ogetto
-        // caratterizzato dal nome della relazione
-        self._relationsBuffers[fid] = {};
-      }
-      // verifico oltre alla chiave della feature se contiene il nome della relazione
-      // che non è altro il nome del layer che in relazione con la feature del layer che si sta
-      // editando
-      if (!_.has(self._relationsBuffers[fid], relation.name)) {
-        // se non presente creo una nuova istanza di RelationEditBuffer
-        self._relationsBuffers[fid][relation.name] = new self._relationEditBuffer(self, relation.name);
-      }
-      // prendo l'istanza di RelationEditBuffer (creata sul momento o esistente)
-      var relationBuffer = self._relationsBuffers[fid][relation.name];
-      // chiamo il metodo updateRelation dell'istanza
-      relationBuffer.updateRelation(relation);
-    });
-  }
+  this._addDeleteRelationsBuffers(relations, fid);
+  // setto l'edito a dirty
   this._setDirty(true);
 };
 
@@ -382,6 +359,7 @@ proto._resetVectorLayer = function(){
   this._editor.vectoLayer = this._origVectorLayer;
   this._origVectorLayer.getSource().clear();
 };
+
 // fa il cela di tutti i buffers
 // e chiama il setDirty dell'edito passanogli false
 // quindi disabilitando il tasto salva per inviare le modifiche
@@ -389,6 +367,7 @@ proto._clearBuffers = function() {
   this._geometriesBuffer = {};
   this._attributesBuffer = {};
   this._relationsAttributesBuffer = {};
+  this._relationsBuffers = {};
   this._editor._setDirty(false);
 };
 //funzione cloneLayer

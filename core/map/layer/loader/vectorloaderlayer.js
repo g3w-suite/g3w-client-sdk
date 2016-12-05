@@ -113,21 +113,22 @@ proto.loadAllVectorsData = function(layerCodes) {
     var deferred = $.Deferred();
     var layers = this._layers;
     // verifico che il BBOX attuale non sia stato già  caricato
+  // prondo il bbox
     var bbox = this._mapService.state.bbox;
     var loadedExtent = this._loadedExtent;
     if (loadedExtent && ol.extent.containsExtent(loadedExtent, bbox)) {
-        return resolvedValue();
+      return resolvedValue();
     }
-    if (!loadedExtent){
-        this._loadedExtent = bbox;
+    if (!loadedExtent) {
+      this._loadedExtent = bbox;
     } else {
-        this._loadedExtent = ol.extent.extend(loadedExtent, bbox);
+      this._loadedExtent = ol.extent.extend(loadedExtent, bbox);
     }
     if (layerCodes) {
-        layers = [];
-        _.forEach(layerCodes, function(layerCode) {
-            layers.push(self._layers[layerCode]);
-        });
+      layers = [];
+      _.forEach(layerCodes, function(layerCode) {
+        layers.push(self._layers[layerCode]);
+      });
     }
     //per ogni layer del plugin che non ha il layer vado a caricare i dati del layer vettoriale
     var vectorDataRequests = _.map(layers, function(Layer) {
