@@ -3,7 +3,7 @@ var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var QueryWFSProvider = require('./queryWFSProvider');
 var QueryQGISWMSProvider = require('./queryQGISWMSProvider');
-var GUI = require('gui/gui');
+
 
 var Provider = {
   'QGIS': QueryQGISWMSProvider,
