@@ -62,4 +62,4 @@ function QueryQGISWFSProvider() {
 
 inherit(QueryQGISWFSProvider, G3WObject);
 
-module.exports =  QueryQGISWFSProvider;
+module.exports =  new QueryQGISWFSProvider;

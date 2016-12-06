@@ -123,4 +123,4 @@ function QueryQGISWMSProvider() {
 
 inherit(QueryQGISWMSProvider, G3WObject);
 
-module.exports =  QueryQGISWMSProvider;
+module.exports =  new QueryQGISWMSProvider;

@@ -24,7 +24,7 @@ function QueryProvider(options) {
   var options = options || {};
   var serverType = options.serverType || 'QGIS';
   var ogcService = options.ogcService || 'wms';
-  this._provider = new Providers[serverType][ogcService];
+  this._provider = Providers[serverType][ogcService];
   this.doSearch = function() {
     return this._provider.doSearch(options);
   };
