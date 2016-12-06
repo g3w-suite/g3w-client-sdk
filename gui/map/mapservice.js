@@ -10,10 +10,13 @@ var WMSLayer = require('core/map/layer/wmslayer');
 var ControlsFactory = require('gui/map/control/factory');
 var QueryService = require('core/query/queryservice');
 
+
 function MapService(options) {
   var self = this;
   this.viewer;
   this.target;
+  this.project;
+  this.selectedLayer;
   this._mapControls = [],
   this._mapLayers = [];
   this.mapBaseLayers = {};
@@ -49,9 +52,7 @@ function MapService(options) {
       GUI.hideSpinner('maploadspinner');
     }
   };
-  
 
-  this.project
   if(!_.isNil(options.project)) {
     this.project = options.project;
   }
@@ -106,22 +107,7 @@ function MapService(options) {
     var initxRes = ol.extent.getWidth(initextent) / width;
     var inityRes = ol.extent.getHeight(initextent) / height;
     var initResolution = Math.max(initxRes,inityRes);
-    
-    /*var constrain_extent;
-    if (this.config.constraintextent) {
-      var extent = this.config.constraintextent;
-      var dx = extent[2]-extent[0];
-      var dy = extent[3]-extent[1];
-      var dx4 = dx/4;
-      var dy4 = dy/4;
-      var bbox_xmin = extent[0] + dx4;
-      var bbox_xmax = extent[2] - dx4;
-      var bbox_ymin = extent[1] + dy4;
-      var bbox_ymax = extent[3] - dy4;
-      
-      constrain_extent = [bbox_xmin,bbox_ymin,bbox_xmax,bbox_ymax];
-    }*/
-    
+
     this.viewer = ol3helpers.createViewer({
       id: this.target,
       view: {
@@ -161,8 +147,6 @@ function MapService(options) {
     this.viewer.map.on('moveend',function(e) {
       self._setMapView();
     });
-    //AL MOMENTO LASCIO COSÌ POI VEDIAMO
-    QueryService.setMapService(this);
     this.emit('ready');
   };
   
@@ -176,6 +160,33 @@ function MapService(options) {
   
   this.project.onafter('setBaseLayer',function(){
     self.updateMapLayers(self.mapBaseLayers);
+  });
+  this.on('cataloglayerselected', function() {
+   var self = this;
+   var layer = this.project.getLayers({
+      SELECTED: true
+    });
+   if (layer) {
+     this.selectLayer = layer[0];
+     _.forEach(this._mapControls, function(mapcontrol) {
+       if (_.indexOf(_.keysIn(mapcontrol.control), 'onSelectLayer') > -1 && mapcontrol.control.onSelectLayer()) {
+         if (mapcontrol.control.getGeometryTypes().indexOf(self.selectLayer.getGeometryType()) > -1 ) {
+           mapcontrol.control.setEnable(true);
+         } else {
+           mapcontrol.control.setEnable(false);
+         }
+       }
+     })
+   }
+  });
+
+  this.on('cataloglayerunselected', function() {
+    this.selectLayer = null;
+    _.forEach(this._mapControls, function(mapcontrol) {
+      if (_.indexOf(_.keysIn(mapcontrol.control),'onSelectLayer') > -1 && mapcontrol.control.onSelectLayer()) {
+        mapcontrol.control.setEnable(false);
+      }
+    })
   });
   
   base(this);
@@ -297,6 +308,79 @@ proto.setupControls = function(){
           });
           self.addControl(controlType,control);
           break;
+        case 'querybypolygon':
+          control = ControlsFactory.create({
+            type: controlType
+          });
+          control.on('picked',function(e) {
+            var coordinates = e.coordinates;
+            var showQueryResults = GUI.showContentFactory('query');
+            var layers = self.project.getLayers({
+              QUERYABLE: true,
+              SELECTEDORALL: true
+            });
+            //faccio query by location su i layers selezionati o tutti
+            var queryResultsPanel = showQueryResults('interrogazione');
+            QueryService.queryByLocation(coordinates, layers)
+              .then(function(results) {
+                if (results && results.data[0].features.length) {
+                  var geometry = results.data[0].features[0].getGeometry();
+                  var layers = self.project.getLayers({
+                    QUERYABLE: true,
+                    ALLNOTSELECTED: true,
+                    WFS: true
+                  });
+                  self.highlightGeometry(geometry);
+                  var filterObject = QueryService.createQueryFilterObject({
+                    queryLayers: layers,
+                    ogcService : 'wfs',
+                    filter: {
+                      geometry: geometry
+                    }
+                  });
+                  QueryService.queryByFilter(filterObject)
+                  .then(function(results) {
+                    queryResultsPanel.setQueryResponse(results,coordinates,self.state.resolution);
+                  })
+                  .always(function(){
+                    self.clearHighlightGeometry();
+                  });
+                }
+              });
+          });
+          self.addControl(controlType,control);
+          break;
+        case 'querybbox':
+          if (!isMobile.any && self.checkWFSLayers()) {
+            control = ControlsFactory.create({
+              type: controlType
+            });
+            control.on('bboxend', function (e) {
+              var showQueryResults = GUI.showContentFactory('query');
+              var layers = self.project.getLayers({
+                QUERYABLE: true,
+                SELECTEDORALL: true,
+                WFS: true
+              });
+              var bbox = e.extent;
+              //faccio query by location su i layers selezionati o tutti
+              var queryResultsPanel = showQueryResults('interrogazione');
+              var filterObject = QueryService.createQueryFilterObject({
+                queryLayers: layers,
+                ogcService : 'wfs',
+                filter: {
+                  bbox: bbox
+                }
+              });
+              QueryService.queryByFilter(filterObject)
+              //QueryService.queryByBBox(bbox, layers)
+                .then(function(results){
+                  queryResultsPanel.setQueryResponse(results,bbox,self.state.resolution);
+                });
+            });
+            self.addControl(controlType, control);
+          }
+          break;
         case 'scaleline':
           control = ControlsFactory.create({
             type: controlType,
@@ -332,8 +416,29 @@ proto.setupControls = function(){
     });
   }
 };
+// verifica se esistono layer querabili che hanno wfs capabilities
+proto.checkWFSLayers = function() {
+  var iswfs = false;
+  var layers = this.project.getLayers({
+    QUERYABLE: true,
+    SELECTEDORALL: true
+  });
+  _.forEach(layers, function(layer) {
+    if (layer.getWfsCapabilities()) {
+      iswfs = true;
+      return false
+    }
+  });
+  return iswfs
+};
 
-proto.addControl = function(type,control){
+proto.addControl = function(type, control) {
+  // verico che il controllo abbia la funzione on selectLayer
+  if (_.indexOf(_.keysIn(control),'onSelectLayer') > -1 && control.onSelectLayer()) {
+    if (!this.selectLayer) {
+      control.setEnable(false);
+    }
+  }
   this.viewer.map.addControl(control);
   this._mapControls.push({
     type: type,
@@ -512,7 +617,7 @@ proto.setupLayers = function(){
 };
 
 proto.getOverviewMapLayers = function(project) {
-  var self = this;
+
   var projectLayers = project.getLayers({
     'VISIBLE': true
   });
@@ -612,8 +717,10 @@ var highlightLayer = null;
 var animatingHighlight = false;
 
 proto.highlightGeometry = function(geometryObj,options) {
+  this.clearHighlightGeometry();
   var options = options || {};
   var zoom = (typeof options.zoom == 'boolean') ? options.zoom : true;
+  var highlight = (typeof options.highlight == 'boolean') ? options.highlight : true;
   var duration = options.duration;
   
   var view = this.viewer.map.getView();
@@ -648,66 +755,68 @@ proto.highlightGeometry = function(geometryObj,options) {
       this.viewer.fit(geometry,options);
     }
   }
-  
-  var feature = new ol.Feature({
-    geometry: geometry
-  });
 
-
-  if (!highlightLayer) {
-    highlightLayer = new ol.layer.Vector({
-      source: new ol.source.Vector(),
-      style: function(feature){
-        var styles = [];
-        var geometryType = feature.getGeometry().getType();
-        if (geometryType == 'LineString') {
-          var style = new ol.style.Style({
-            stroke: new ol.style.Stroke({
-              color: 'rgb(255,255,0)',
-              width: 4
-            })
-          });
-          styles.push(style);
-        }
-        else if (geometryType == 'Point' || geometryType == 'MultiPoint') {
-          var style = new ol.style.Style({
-            image: new ol.style.Circle({
-              radius: 6,
-              fill: new ol.style.Fill({
-                color: 'rgb(255,255,0)'
-              })
-            }),
-            zIndex: Infinity
-          });
-          styles.push(style);
-        } else if (geometryType == 'MultiPolygon' || geometryType == 'Polygon') {
-          var style = new ol.style.Style({
-            stroke: new ol.style.Stroke({
-              color: 'rgb(255,255,0)',
-              width: 4
-            }),
-            fill: new ol.style.Fill({
-              color: 'rgba(255, 255, 0, 0.5)'
-            })
-          });
-          styles.push(style);
-        }
-        return styles;
-      }
+  if (highlight) {
+    var feature = new ol.Feature({
+      geometry: geometry
     });
 
-    highlightLayer.setMap(this.viewer.map);
-  }
 
-  highlightLayer.getSource().clear();
-  highlightLayer.getSource().addFeature(feature);
+    if (!highlightLayer) {
+      highlightLayer = new ol.layer.Vector({
+        source: new ol.source.Vector(),
+        style: function(feature){
+          var styles = [];
+          var geometryType = feature.getGeometry().getType();
+          if (geometryType == 'LineString') {
+            var style = new ol.style.Style({
+              stroke: new ol.style.Stroke({
+                color: 'rgb(255,255,0)',
+                width: 4
+              })
+            });
+            styles.push(style);
+          }
+          else if (geometryType == 'Point' || geometryType == 'MultiPoint') {
+            var style = new ol.style.Style({
+              image: new ol.style.Circle({
+                radius: 6,
+                fill: new ol.style.Fill({
+                  color: 'rgb(255,255,0)'
+                })
+              }),
+              zIndex: Infinity
+            });
+            styles.push(style);
+          } else if (geometryType == 'MultiPolygon' || geometryType == 'Polygon') {
+            var style = new ol.style.Style({
+              stroke: new ol.style.Stroke({
+                color: 'rgb(255,255,0)',
+                width: 4
+              }),
+              fill: new ol.style.Fill({
+                color: 'rgba(255, 255, 0, 0.5)'
+              })
+            });
+            styles.push(style);
+          }
+          return styles;
+        }
+      });
 
-  if (duration) {
-    animatingHighlight = true;
-    setTimeout(function(){
-      highlightLayer.getSource().clear();
-      animatingHighlight = false;
-    },duration);
+      highlightLayer.setMap(this.viewer.map);
+    }
+
+    highlightLayer.getSource().clear();
+    highlightLayer.getSource().addFeature(feature);
+
+    if (duration) {
+      animatingHighlight = true;
+      setTimeout(function(){
+        highlightLayer.getSource().clear();
+        animatingHighlight = false;
+      },duration);
+    }
   }
 };
 

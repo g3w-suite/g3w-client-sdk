@@ -3,21 +3,23 @@ var InteractionControl = require('./interactioncontrol');
 
 var PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
 
-var QueryControl = function(options){
+var QueryByPolygonControl = function(options){
   var self = this;
   var _options = {
-    name: "querylayer",
-    tipLabel: "Query layer",
+    name: "querybypolygon",
+    tipLabel: "Query By Polygon",
     label: "\uea0f",
+    geometryTypes: ['Polygon', 'MultiPolygon'],
+    onselectlayer: true,
     interactionClass: PickCoordinatesInteraction
   };
   options = utils.merge(options,_options);
   InteractionControl.call(this,options);
 };
 
-ol.inherits(QueryControl, InteractionControl);
+ol.inherits(QueryByPolygonControl, InteractionControl);
 
-var proto = QueryControl.prototype;
+var proto = QueryByPolygonControl.prototype;
 
 proto.setMap = function(map) {
   var self = this;
@@ -37,4 +39,4 @@ proto.setMap = function(map) {
   });
 };
 
-module.exports = QueryControl;
+module.exports = QueryByPolygonControl;

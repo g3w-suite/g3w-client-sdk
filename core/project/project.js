@@ -97,18 +97,15 @@ proto.getOverviewProjectGid = function() {
 
 proto.getLayersDict = function(options){
   var options = options || {};
-
   var filterQueryable = options.QUERYABLE;
-
   var filterVisible = options.VISIBLE;
-
   var filterSelected = options.SELECTED;
   var filterSelectedOrAll = options.SELECTEDORALL;
-
+  var filterAllNotSelected = options.ALLNOTSELECTED;
+  var filterWfs = options.WFS;
   if (filterSelectedOrAll) {
     filterSelected = null;
   }
-
   if (_.isUndefined(filterQueryable) && _.isUndefined(filterVisible) && _.isUndefined(filterSelected) && _.isUndefined(filterSelectedOrAll)) {
     return this._layers;
   }
@@ -116,6 +113,7 @@ proto.getLayersDict = function(options){
   var layers = this._layers;
   
   if (filterQueryable) {
+
     layers = _.filter(layers,function(layer){
       return filterQueryable && layer.isQueryable();
     });
@@ -132,7 +130,7 @@ proto.getLayersDict = function(options){
       return filterSelected && layer.isSelected();
     });
   }
-  
+  // filtra solo i selezionati
   if (filterSelectedOrAll) {
     var _layers = layers;
     layers = _.filter(layers,function(layer){
@@ -140,7 +138,25 @@ proto.getLayersDict = function(options){
     });
     layers = layers.length ? layers : _layers;
   }
-  
+
+  // filtra solo i quelli non selezionati
+  if (filterAllNotSelected) {
+    var _layers = layers;
+    layers = _.filter(layers,function(layer){
+      return !layer.isSelected();
+    });
+    layers = layers.length ? layers : _layers;
+  }
+
+  // filtra solo i quelli wfs
+  if (filterWfs) {
+    var _layers = layers;
+    layers = _.filter(layers,function(layer){
+      return layer.getWfsCapabilities();
+    });
+    layers = layers.length ? layers : _layers;
+  }
+
   return layers;
 };
 

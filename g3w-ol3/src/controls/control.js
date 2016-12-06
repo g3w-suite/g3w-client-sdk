@@ -10,7 +10,6 @@ var Control = function(options){
     var className = "ol-"+this.name.split(' ').join('-').toLowerCase();
     var tipLabel = options.tipLabel || this.name;
     var label = options.label || "?";
-    
     options.element = $('<div class="'+className+' ol-unselectable ol-control"><button type="button" title="'+tipLabel+'">'+label+'</button></div>')[0];
   }
   

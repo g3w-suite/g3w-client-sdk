@@ -108,6 +108,32 @@ function FormService() {
     this.state.elementsBoxes = elementsBoxes;
     // qui associo lo state del pannello allo ste del form
     this._setFormTools(this.tools);
+    this.editor.setFormService(this);
+  };
+  this.cleanStateAfterCommit = function(newRelationIds) {
+    // verifico che ci sia stato un aggiunta di relazioni
+    var addedRelations = (newRelationIds && newRelationIds.length > 0) ? newRelationIds[0].relations :  {};
+    // cliclo sulle relazioni e faccio "pulizia"
+    _.forEach(this.state.relations, function (relation) {
+      var addedRelation = addedRelations[relation.name];
+      _.forEach(relation.elements, function (element, index) {
+        // verifico gli elementi che sono stati cancellati e cancello
+        if(element.state.indexOf('DELETE') > -1) {
+          relation.elements.splice(index, 1);
+        }
+        // nela caso di elementi nuovi inseriti
+        if (element.state == 'NEW') {
+          _.forEach(addedRelation, function(newElement){
+            if (element.id == newElement.clientid) {
+              element.id = newElement.id;
+              return false
+            }
+          });
+          // assegno lo stato OLD
+          element.state = 'OLD';
+        }
+      });
+    });
   };
   this.createPickInteraction = function() {
     this._pickInteraction = new PickCoordinatesInteraction;
@@ -128,7 +154,9 @@ function FormService() {
     _.forEach(fields, function(field) {
       if (self._isEditable(field) && self._isVisible(field) && field.validate && field.validate.required) {
         if (_.isNil(field.value) || !_.trim(field.value)) {
-          fieldValid = false;
+          if (!self._isSelect(field)) {
+            fieldValid = false;
+          }
         }
         valid = valid && fieldValid;
       }
@@ -219,8 +247,7 @@ function FormService() {
       })
     });
     // setto i nuovi fields e relations lasciando quelli vecchi
-    this.setFormRelations(relations);
-    this.setFormFields(fields);
+    this.setFormData(fields, relations);
     var elementsBoxes = this.getUniqueRelationsElementId(false);
     this.state.elementsBoxes = elementsBoxes;
     return true;
@@ -252,7 +279,7 @@ function FormService() {
 
   // funzione che restituisce true/false a seconda se il campo è visibile o no
   this._isVisible = function(field) {
-    return !(!field.editable && (field.value == "" || _.isNull(field.value)));
+    return !(!field.editable && (field.value == "" || _.isNull(field.value))) && field.name !=this.pk;
   };
   //verifica se il campo è editabile o no
   this._isEditable = function(field) {
@@ -368,10 +395,13 @@ function FormService() {
           // verifico se ci sono features selezionate
           if (featuresForLayers.length && featuresForLayers[0].features.length) {
             // rpendo la prima feature
-            var feature = featuresForLayers[0].features[0];
+            var featureLayer = featuresForLayers[0].features[0];
             var pk = vectorLayer.getPk();
+            var feature = vectorLayer.getFeatureById(featureLayer.get(pk));
             // prendo dal vectorLayer la feature basato sull'id della richiesta
-            feature = vectorLayer.getFeatureById(feature.get(pk));
+            if (!feature) {
+              feature = vectorLayer.getFeatureById(featureLayer.getId());
+            }
             var fields = vectorLayer.getFieldsWithValues(feature);
             var relationsPromise = self.editor.getRelationsWithValues(feature);
             relationsPromise

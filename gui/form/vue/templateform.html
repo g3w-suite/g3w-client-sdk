@@ -41,6 +41,7 @@
                   <div v-if="isImage(field)">
                     <i v-if="checkFileSrc(field.value)" class="glyphicon glyphicon glyphicon-trash pull-right link trash" @click="removeImage(field)"></i>
                     <img v-if="checkFileSrc(field.value)" class="photo-preview img-responsive img-thumbnail"  :src="field.value" />
+                    <div id="foto-spinner"></div>
                     <input type="file" :name="field.name" data-url="{{ field.uploadurl }}" :field="field.name" title="Foto" accept="image/*;capture=camera" class="filestyle" @change="onFileChange(field, $event)">
                   </div>
                 </div>
@@ -55,7 +56,7 @@
                 <h3 class="box-title">{{ relation | relationplural }}</h3>
               </div>
               <div class="box-body">
-                <table v-if="relation.elements.length" class="table table-striped">
+                <table v-if="visibleElementsLength(relation)" class="table table-striped">
                   <thead>
                   <tr>
                     <th v-for="field in fieldsSubset(relation.fields)">{{field.label}}</th>

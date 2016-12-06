@@ -22,32 +22,39 @@ var proto = Component.prototype;
 proto.getId = function() {
   return this.id;
 };
+
 // setta id del component
 proto.setId = function(id) {
   this.id = id;
 };
+
 // restituice il titolo del componente
 proto.getTitle = function() {
   return this.state.title;
 };
+
 //setta il titolo del componente
 proto.setTitle = function(title) {
   this.state.title = title;
 };
+
 //implementati due metodi per poter unificare il metodo di recupero del servizio
 //legato al componente
 // resituisce il service del componente
 proto.getService = function() {
   return this._service;
 };
+
 // setta il service del componente
 proto.setService = function(service) {
   this._service = service;
 };
+
 // restituisce il componente vue interno
 proto.getInternalComponent = function() {
   return this.internalComponent;
 };
+
 // setta il nuovo internalcomponent
 proto.setInternalComponent = function(internalComponent) {
   if (!internalComponent && this.internalComponentClass) {
@@ -58,10 +65,21 @@ proto.setInternalComponent = function(internalComponent) {
     this.internalComponent = internalComponent;
   }
 };
+
+proto.createVueComponent = function (vueObjOptions) {
+  return _.cloneDeep(vueObjOptions);
+};
+
+// aggiunge dati all'internalComponent
+proto.addInternalComponentData = function(data) {
+  _.merge(this.internalComponent, data)
+};
+
 // sovrascrive il metodo del service originale con uno nuovo
 proto.overwriteServiceMethod = function(methodName, method) {
   this._service[methodName] = method;
 };
+
 // sovrascrive i metodi che hanno chiave uguale a quelli presenti nel servizio
 proto.overwriteServiceMethods = function(methodsOptions) {
   var self = this;
@@ -69,16 +87,19 @@ proto.overwriteServiceMethods = function(methodsOptions) {
     self.overwriteServiceMethod(methodName, method);
   })
 };
+
 // estendo il servizio con nuovi metodi
 proto.extendService = function(serviceOptions) {
   if (this._service) {
     merge(this._service, serviceOptions);
   }
 };
+
 // estende in modo generico il vue component
 proto.extendInternalComponent = function(internalComponentOptions) {
   var self = this;
   if (this.vueComponent) {
+    // faccio il clone altrimenti ho problem con i components
     _.forEach(internalComponentOptions, function(value, key) {
       if (VUECOMPONENTSATTRIBUTES.indexOf(key) > -1) {
         switch (key) {
@@ -93,14 +114,18 @@ proto.extendInternalComponent = function(internalComponentOptions) {
         }
       }
     });
+  } else {
+    this.vueComponent = internalComponentOptions;
   }
 };
+
 //funzione che estende l'attributo components dell'oggetto vue Component
 proto.extendInternalComponentComponents = function(components) {
   if (components) {
     merge(this.vueComponent.components, components);
   }
 };
+
 // estende i methods il vue component
 proto.extendInternalComponentMethods = function(methods) {
   if (methods) {
@@ -113,6 +138,7 @@ proto.extendInternalComponentMethods = function(methods) {
     merge(this.vueComponent.methods, methods);
   }
 };
+
 // estende i computed del vue component
 proto.extendInternalComponentComputed = function(computed) {
   if (computed) {
@@ -125,6 +151,7 @@ proto.extendInternalComponentComputed = function(computed) {
     merge(this.vueComponent.computed, computed);
   }
 };
+
 //setto il template del componente vue
 proto.setInternalComponentTemplate = function(template) {
   // dovrò poi aggiungere regole per verificare se il
@@ -133,6 +160,7 @@ proto.setInternalComponentTemplate = function(template) {
     this.vueComponent.template = template;
   }
 };
+
 proto.getInternalTemplate = function() {
   return this.vueComponent.template;
 };
