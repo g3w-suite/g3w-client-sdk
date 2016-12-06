@@ -22,7 +22,7 @@ function QueryQGISWMSProvider() {
 
   self = this;
   //funzione che fa la richiesta vera e propria al server qgis
-  this.submitGetFeatureInfo = function(options) {
+  this._submitGetFeatureInfo = function(options) {
     var url = options.url || '';
     var layername = options.layername || null;
     var filter = options.filter || null;
@@ -46,20 +46,22 @@ function QueryQGISWMSProvider() {
    };
 
   //funzione che fa la ricerca
-  this.doSearch = function(queryFilterObject) {
+  this.doSearch = function(options) {
+    var options = options || {};
     var d = $.Deferred();
-    var layers = queryFilterObject.layers;
-    var url = queryFilterObject.url;
-    var crs = queryFilterObject.crs;
-    var filterObject = queryFilterObject.filter;
+    var layers = options.layers;
+    var url = options.url;
+    var crs = options.crs;
+    var filterObject = options.filter;
     //creo il filtro
-    var filter = this.createFilter(filterObject, layers[0].getQueryLayerName());
+    // DA MIGLIORARE CASO FILTRO WMS SINGOLO LAYER / MULTIPLE LAYER
+    var filter = this._createFilter(filterObject, layers[0].getQueryLayerName());
     // nel caso in cui il filtro è vuoto
     if (!filter) {
       return d.reject().promise();
     }
     //eseguo la richiesta e restituisco come risposta la promise del $.get
-    var request = this.submitGetFeatureInfo({
+    var request = this._submitGetFeatureInfo({
       url: url,
       crs: crs,
       filter: filter,
@@ -68,7 +70,7 @@ function QueryQGISWMSProvider() {
     return request;
   };
 
-  this.createFilter = function(filterObject, layername) {
+  this._createFilter = function(filterObject, layername) {
     /////inserisco il nome del layer (typename) ///
     var filter = [];
     function createSingleFilter(booleanObject) {
@@ -117,101 +119,8 @@ function QueryQGISWMSProvider() {
       return false
     }
   };
-
-  //query by Polyon
-  this.queryByPolygon = function(geometry, layers) {
-    var self = this;
-    var d = $.Deferred();
-    var f = ol.format.filter;
-    var urlsForLayers = this.getUrlsForLayers(layers, true);
-    var epsg = self._mapService.getEpsg();
-    var resolution = self._mapService.getResolution();
-    var queryUrlsForLayers = [];
-    _.forEach(urlsForLayers, function (urlForLayers) {
-      var queryLayers = urlForLayers.layers;
-      // forzo infdo forma sempre
-      var infoFormat = 'application/vnd.ogc.gml';
-      var layers = _.map(queryLayers, function (layer) {
-        return layer.getQueryLayerName()
-      });
-      var featureRequest = new ol.format.WFS().writeGetFeature({
-        featureTypes: layers,
-        filter: f.intersects('the_geom', geometry)
-      });
-      var filter = featureRequest.children[0].innerHTML;
-      var layers = layers.join(',');
-      var params = {
-        SERVICE: 'WFS',
-        VERSION: '1.3.0',
-        REQUEST: 'GetFeature',
-        OUTPUTFORMAT: infoFormat,
-        TYPENAME: layers,
-        SRSNAME: epsg,
-        FILTER: filter
-      };
-      var url = urlForLayers.url + '/';
-      queryUrlsForLayers.push({
-        url: url,
-        infoformat: infoFormat,
-        queryLayers: queryLayers,
-        postData: params
-      });
-    });
-    this.makeQueryForLayers(queryUrlsForLayers, geometry, resolution)
-      .then(function (response) {
-        d.resolve(response)
-      })
-      .fail(function (e) {
-        d.reject(e);
-      })
-      .always(function(){
-        mapService.clearHighlightGeometry();
-      });
-    return d.promise();
-  };
-
-  //query by BBOX
-  this.queryByBBox = function(bbox, layers) {
-    var self = this;
-    var d = $.Deferred();
-    var urlsForLayers = this.getUrlsForLayers(layers, true);
-    var epsg = self._mapService.getEpsg();
-    var resolution = self._mapService.getResolution();
-    var queryUrlsForLayers = [];
-    _.forEach(urlsForLayers, function(urlForLayers) {
-      var queryLayers = urlForLayers.layers;
-      // forzo infdo forma sempre
-      var infoFormat = 'application/vnd.ogc.gml';
-      var layers = _.map(queryLayers,function(layer){ return layer.getQueryLayerName()});
-      layers = layers.join(',');
-      var params = {
-        SERVICE:'WFS',
-        VERSION:'1.3.0',
-        REQUEST:'GetFeature',
-        TYPENAME:layers,
-        OUTPUTFORMAT:infoFormat,
-        SRSNAME:epsg,
-        BBOX:''+bbox
-      };
-      var urlParams = $.param(params);
-      var url = urlForLayers.url + '?' + urlParams;
-      queryUrlsForLayers.push({
-        url: url,
-        infoformat: infoFormat,
-        queryLayers: queryLayers
-      });
-    });
-    this.makeQueryForLayers(queryUrlsForLayers, bbox, resolution)
-      .then(function(response) {
-        d.resolve(response)
-      })
-      .fail(function(e){
-        d.reject(e);
-      });
-    return d.promise();
-  };
-
 }
+
 inherit(QueryQGISWMSProvider, G3WObject);
 
 module.exports =  QueryQGISWMSProvider;

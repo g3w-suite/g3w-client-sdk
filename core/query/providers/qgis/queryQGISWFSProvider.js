@@ -5,12 +5,26 @@ var G3WObject = require('core/g3wobject');
 function QueryQGISWFSProvider() {
   base(this);
   self = this;
-  this.createUrlRequestAndParameters = function(queryFilterObject) {
-    var url = queryFilterObject.url;
-    var crs = queryFilterObject.crs;
-    var filter = queryFilterObject.filter;
-    var infoFormat = 'application/vnd.ogc.gml';
-    var layers = queryFilterObject.layers;
+  // post request
+  this._post = function(url, params) {
+    url = url + '/';
+    return request = $.post(url, params)
+  };
+
+  // get request
+  this._get = function(url, params) {
+    var urlParams = $.param(params);
+    url = url + '?' + urlParams;
+    return $.get(url)
+  };
+
+  this._doRequest = function(options) {
+    var options = options || {};
+    var url = options.url;
+    var crs = options.crs;
+    var filter = options.filter;
+    var infoFormat = options.infoFormat;
+    var layers = options.layers;
     var layers = _.map(layers,function(layer){
       return layer.getQueryLayerName()
     });
@@ -24,9 +38,8 @@ function QueryQGISWFSProvider() {
     };
     if (filter.bbox) {
       params.BBOX = '' + filter.bbox;
-      var urlParams = $.param(params);
-      url = url + '?' + urlParams;
-      request = $.get(url)
+      request = this._get(url, params)
+
     } else {
       var geometry = filter.geometry;
       var f = ol.format.filter;
@@ -36,14 +49,14 @@ function QueryQGISWFSProvider() {
       });
       filter = featureRequest.children[0].innerHTML;
       params.FILTER = filter;
-      url = url + '/';
-      request = $.post(url, params)
+      request = this._post(url, params)
+
     }
     return request
   };
   //funzione che fa la ricerca
-  this.doSearch = function(queryFilterObject) {
-   return this.createUrlRequestAndParameters(queryFilterObject);
+  this.doSearch = function(options) {
+   return this._doRequest(options);
   };
 }
 

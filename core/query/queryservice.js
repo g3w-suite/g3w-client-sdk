@@ -86,8 +86,10 @@ function QueryService(){
     var ogcService = options.ogcService || 'wms';
     var filter =  options.filter || {};
     var queryFilters = [];
-    _.forEach(this.getUrlsForLayers(queryLayers, ogcService), function(object) {
-      queryFilters.push(_.merge(object, {
+    var infoFromLayers = this.getInfoFromLayers(queryLayers, ogcService);
+    _.forEach(infoFromLayers, function(info) {
+      // vado a creare un oggetto/array di oggetti con informazioni rigurdanti layers in comune
+      queryFilters.push(_.merge(info, {
         // Servizio ogc: wfs, wms etc..
         ogcService: ogcService,
         filter : filter // oggetto che descrive come dovrà essere composto il filtro dal provider
@@ -172,7 +174,6 @@ function QueryService(){
   // dal server così da avere una risposta coerente in termini di formato risultati da presentare
   // nel componente QueryResults
   this.handleQueryResponseFromServer = function(response, infoFormat, queryLayers) {
-
     var jsonresponse;
     var featuresForLayers = [];
     var parser, data;
@@ -221,26 +222,34 @@ function QueryService(){
     return featuresForLayers;
   };
 
-  // query basato sul filtro
-  this.queryByFilter = function(queryFilterObjects) {
+  /* query basato sul filtro
+     tale funzione prende in considerazione casi come:
+     1- search: Ogni layer ha campie attributi su cui viene fatto il filtro
+     2- bbox: filtro per bbox
+     3- polygon/geometry: filtro per geometria
+     In pratica si specifica il tipo di servizion ogc wfs, wms il tipo di server
+     a cui fare la richiesta (qgis, mapserver etc..)
+     Il parametro filters è un array che contiene layer e attributi
+  */
+  this.queryByFilter = function(filters) {
     var self = this;
     var d = $.Deferred();
     // creo l'array di promises chiamate get post per efftuare multiple chimate a seconda
     // del provider e del ogcservice
     var doSearches = [];
     /// cliclo sul query filter objects
-    _.forEach(queryFilterObjects, function(queryFilterObject) {
+    _.forEach(filters, function(filter) {
       // si crea il provider
-      var provider = new QueryProvider(queryFilterObject);
+      var provider = new QueryProvider(filter);
       //ritorna una promise poi gestita da che la chiede
-      doSearches.push(provider.doSearch(queryFilterObject))
+      doSearches.push(provider.doSearch(filter))
     });
     $.when.apply(this, doSearches)
       .done(function(response) {
        var allFeaturesFoLayers = [];
-        _.forEach(queryFilterObjects, function(queryFilterObject) {
-          var featuresForLayers = self.handleQueryResponseFromServer(response, queryFilterObject.layers[0].getInfoFormat(), queryFilterObject.layers);
-          allFeaturesFoLayers = _.union(allFeaturesFoLayers,self.handleResponseFeaturesAndRelations(featuresForLayers));
+        _.forEach(filters, function(filter) {
+          var featuresForLayers = self.handleQueryResponseFromServer(response, filter.infoFormat, filter.layers);
+          allFeaturesFoLayers = _.union(allFeaturesFoLayers, self.handleResponseFeaturesAndRelations(featuresForLayers));
         });
         d.resolve({
           data: allFeaturesFoLayers
@@ -256,7 +265,7 @@ function QueryService(){
   this.queryByLocation = function(coordinates, layers) {
     var d = $.Deferred();
     var mapService = GUI.getComponent('map').getService();
-    var urlsForLayers = this.getUrlsForLayers(layers);
+    var urlsForLayers = this.getInfoFromLayers(layers);
     var resolution = mapService.getResolution();
     var epsg = mapService.getEpsg();
     var queryUrlsForLayers = [];
@@ -354,7 +363,7 @@ function QueryService(){
   // funzione che in base ai layers e alla tipologia di servizio
   // restituisce gli url per ogni layer o gruppo di layers
   // che condividono lo stesso indirizzo di servizio
-  this.getUrlsForLayers = function(layers, ogcService) {
+  this.getInfoFromLayers = function(layers, ogcService) {
     // wfs specifica se deve essere fatta chiamata wfs o no
     var urlsForLayers = {};
     // scooro sui ogni layer e catturo il queryUrl
@@ -370,6 +379,7 @@ function QueryService(){
         urlsForLayers[urlHash] = {
           url: queryUrl,
           layers: [],
+          infoFormat: layer.getInfoFormat(),
           crs: layer.getCrs(), // dovrebbe essere comune a tutti
           serverType: layer.getServerType() // aggiungo anche il tipo di server
         };

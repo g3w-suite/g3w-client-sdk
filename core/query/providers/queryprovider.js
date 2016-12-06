@@ -1,7 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
-var resolve = require('core/utils/utils').resolve;
+// providers
 var QueryWFSProvider = require('./ogc/queryWFSProvider');
 var QueryWMSProvider = require('./ogc/queryWFSProvider');
 var QueryQGISWMSProvider = require('./qgis/queryQGISWMSProvider');
@@ -18,6 +18,8 @@ var Providers = {
   }
 };
 
+// classe costruttore che permette a seconda delle caratteristiche dei layers
+// ogcservice etc... di chiamare il proprio providers per effettuare le chiamte al server
 function QueryProvider(options) {
   var options = options || {};
   var serverType = options.serverType || 'QGIS';
@@ -28,6 +30,7 @@ function QueryProvider(options) {
   };
   base(this);
 }
+
 inherit(QueryProvider, G3WObject);
 
 module.exports =  QueryProvider;
