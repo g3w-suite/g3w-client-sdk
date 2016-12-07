@@ -30,6 +30,10 @@ function MapService(options) {
   };
   this._interactionsStack = [];
   this._greyListenerKey = null;
+  this._drawShadow = {
+    outer: null,
+    inner: null
+  };
   this.config = options.config || ApplicationService.getConfig();
   
   this._howManyAreLoading = 0;
@@ -356,13 +360,13 @@ proto.setupControls = function(){
               type: controlType
             });
             control.on('bboxend', function (e) {
+              var bbox = e.extent;
               var showQueryResults = GUI.showContentFactory('query');
               var layers = self.project.getLayers({
                 QUERYABLE: true,
                 SELECTEDORALL: true,
                 WFS: true
               });
-              var bbox = e.extent;
               //faccio query by location su i layers selezionati o tutti
               var queryResultsPanel = showQueryResults('interrogazione');
               var filterObject = QueryService.createQueryFilterObject({
@@ -856,10 +860,46 @@ proto._setMapView = function() {
   this.setMapView(bbox, resolution, center);
 };
 
-// funzione grigio mappa precompose mapcompose
-proto.startDrawGreyCover = function(bbox) {
-  // after rendering the layer, restore the canvas context
+proto.getMapSize = function() {
   var map = this.viewer.map;
+  return map.getSize();
+};
+
+proto.setInnerGreyCoverBBox = function(options) {
+  var options = options || {};
+  var map = this.viewer.map;
+  var type = options.type || 'coordinate';
+  var bbox = options.bbox || null;
+  var rotation = options.rotation || 0;
+  var scale = options.scale || 1;
+  var x_y_bbox_min;
+  var x_y_bbox_max;
+  switch (type) {
+    case 'coordinate':
+      x_y_bbox_min = map.getPixelFromCoordinate([bbox[0], bbox[1]]);
+      x_y_bbox_max = map.getPixelFromCoordinate([bbox[2],bbox[3]]);
+      break;
+    case 'pixel':
+      x_y_bbox_min = [bbox[0], bbox[1]];
+      x_y_bbox_max = [bbox[2], bbox[3]];
+      break
+  }
+  var y_min = x_y_bbox_min[1] * ol.has.DEVICE_PIXEL_RATIO;
+  var x_min = x_y_bbox_min[0] * ol.has.DEVICE_PIXEL_RATIO;
+  var y_max = x_y_bbox_max[1] * ol.has.DEVICE_PIXEL_RATIO;
+  var x_max= x_y_bbox_max[0] * ol.has.DEVICE_PIXEL_RATIO;
+  this._drawShadow.inner = [x_min, y_min, x_max, y_max, rotation, scale];
+  if (this._drawShadow.outer) {
+    map.render();
+  }
+};
+
+// funzione grigio mappa precompose mapcompose
+proto.startDrawGreyCover = function() {
+  var self = this;
+    // after rendering the layer, restore the canvas context
+  var map = this.viewer.map;
+  var x_min, x_max, y_min, y_max, rotation, scale;
   //verifico che non ci sia già un greyListener
   if (this._greyListenerKey) {
       this.stopDrawGreyCover();
@@ -867,9 +907,11 @@ proto.startDrawGreyCover = function(bbox) {
     this._greyListenerKey = map.on('postcompose', function (evt) {
       var ctx = evt.context;
       var size = this.getSize();
+      var extend = this.getCoordinateFromPixel(size);
       // Inner polygon,must be counter-clockwise
       var height = size[1] * ol.has.DEVICE_PIXEL_RATIO;
       var width = size[0] * ol.has.DEVICE_PIXEL_RATIO;
+      self._drawShadow.outer = [0,0,width, height];
       ctx.beginPath();
       // Outside polygon, must be clockwise
       ctx.moveTo(0, 0);
@@ -878,19 +920,26 @@ proto.startDrawGreyCover = function(bbox) {
       ctx.lineTo(0, height);
       ctx.lineTo(0, 0);
       ctx.closePath();
-      if (bbox) {
-       var minx = bbox[0];
-       var miny = bbox[1];
-       var maxx = bbox[2];
-       var maxy = bbox[3];
-       // Inner polygon,must be counter-clockwise
-       ctx.moveTo(minx, miny);
-       ctx.lineTo(minx, maxy);
-       ctx.lineTo(maxx, maxy);
-       ctx.lineTo(maxx, miny);
-       ctx.lineTo(minx, miny);
-       ctx.closePath();
-       }
+      ctx.save()
+      // fine bbox esterno (tutta la mappa-)
+      if (self._drawShadow.inner) {
+        x_min = self._drawShadow.inner[0];
+        y_min = self._drawShadow.inner[1];
+        x_max = self._drawShadow.inner[2];
+        y_max = self._drawShadow.inner[3];
+        rotation = self._drawShadow.inner[4];
+        scale = self._drawShadow.inner[5];
+       // Inner polygon,must be counter-clockwise antiorario
+        ctx.moveTo(x_max, y_min);
+        ctx.lineTo(x_max, y_max);
+        ctx.lineTo(x_min, y_max);
+        ctx.lineTo(x_min, y_min);
+        ctx.lineTo(x_max, y_min);
+        ctx.rotate(rotation);
+        //ctx.scale(scale, scale);
+        ctx.closePath();
+        // fine bbox interno
+      }
       ctx.fillStyle = 'rgba(0, 5, 25, 0.55)';
       ctx.fill();
       ctx.restore();
@@ -900,7 +949,6 @@ proto.startDrawGreyCover = function(bbox) {
 };
 
 proto.stopDrawGreyCover = function() {
-
   var map = this.viewer.map;
   map.unByKey(this._greyListenerKey);
   this._greyListenerKey = null;

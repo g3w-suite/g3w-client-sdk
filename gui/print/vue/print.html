@@ -1,0 +1,27 @@
+<ul id="print" class="treeview-menu">
+  <li>
+    <form id="g3w-search-form" class="form-horizonal">
+      <div class="box-body">
+        <label for="templates">Tipo</label>
+        <select :field="field.name" class="form-control" @change="onChangeTemplate"  id="templates" :placeholder="Seleziona il template">
+          <option v-for="print in state" value="print.name" >{{ print.name }}</option>
+        </select>
+        <label for="scala">Scala</label>
+        <select :field="field.name" class="form-control" @change="onChangeScale"  id="scala" :placeholder="Seleziona il template">
+          <option v-for="scala in scale" value="scala" >{{ scala }}</option>
+        </select>
+        <label for="dpi">dpi</label>
+        <select :field="field.name" class="form-control" @change="onChangeDpi"  id="dpi" :placeholder="Seleziona il template">
+          <option v-for="dpi in dpis" value="dpi" >{{ dpi }}</option>
+        </select>
+        <label for="rotazione">Rotazione</label>
+        <input min="0" max="360" @change="onChangeRotation" id="rotazione" value="0" class="form-control" type="number">
+      </div>
+      <div class="box-footer" style="background-color: transparent">
+        <span v-for="button in buttons">
+          <button style="width:100%" class="btn " :class="[button.class, isAnnullaButton(button.type) ? 'pull-right' : '' ]" @click.stop.prevent="exec(button.cbk)" v-disabled="!btnEnabled(button)">{{ button.title }}</button>
+        </span>
+      </div>
+    </form>
+  </li>
+</ul>

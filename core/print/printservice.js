@@ -4,7 +4,7 @@ var G3WObject = require('core/g3wobject');
 var QGISPrinter = require('./printers/qgisprinter');
 
 var Printers  = {
-  'QGIS': QGISPrintService
+  'QGIS': QGISPrinter
 };
 
 function PrintService() {
@@ -35,8 +35,8 @@ function PrintService() {
     var printer = this.this.getPrinter();
     printer.print(options);
   };
-
 }
+
 inherit(PrintService, G3WObject);
 
-module.exports = PrintService;
+module.exports = new PrintService;
