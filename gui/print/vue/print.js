@@ -5,7 +5,7 @@ var PrintService = require('gui/print/printservice');
 var base = require('core/utils/utils').base;
 var merge = require('core/utils/utils').merge;
 
-var scale = ['1:500', '1:1000'];
+var scale = [{value:1, label:'1:500'}, {value:2,label:'1:1000'}];
 var dpis = [300, 700];
 
 
@@ -41,13 +41,13 @@ var vueComponentOptions = {
 
     },
     // metodo per il cambio di scala
-    onChangeScale: function() {
-
+    onChangeScale: function(evt) {
+      var value = evt.target.value;
+      this.$options.service.changeScale(value)
     },
     // metodo per il cambio di rotazione
     onChangeRotation: function(evt) {
       var value = evt.target.value;
-      console.log(value);
       this.$options.service.changeRotation(value);
     },
     // lancia il print

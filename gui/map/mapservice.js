@@ -31,8 +31,8 @@ function MapService(options) {
   this._interactionsStack = [];
   this._greyListenerKey = null;
   this._drawShadow = {
-    outer: null,
-    inner: null
+    outer: [],
+    inner: []
   };
   this.config = options.config || ApplicationService.getConfig();
   
@@ -870,25 +870,40 @@ proto.setInnerGreyCoverBBox = function(options) {
   var map = this.viewer.map;
   var type = options.type || 'coordinate';
   var bbox = options.bbox || null;
-  var rotation = options.rotation || 0;
-  var scale = options.scale || 1;
+  var rotation = options.rotation;
+  var scale = options.scale;
   var x_y_bbox_min;
   var x_y_bbox_max;
-  switch (type) {
-    case 'coordinate':
-      x_y_bbox_min = map.getPixelFromCoordinate([bbox[0], bbox[1]]);
-      x_y_bbox_max = map.getPixelFromCoordinate([bbox[2],bbox[3]]);
-      break;
-    case 'pixel':
-      x_y_bbox_min = [bbox[0], bbox[1]];
-      x_y_bbox_max = [bbox[2], bbox[3]];
-      break
+  if (bbox) {
+    switch (type) {
+      case 'coordinate':
+        x_y_bbox_min = map.getPixelFromCoordinate([bbox[0], bbox[1]]);
+        x_y_bbox_max = map.getPixelFromCoordinate([bbox[2], bbox[3]]);
+        break;
+      case 'pixel':
+        x_y_bbox_min = [bbox[0], bbox[1]];
+        x_y_bbox_max = [bbox[2], bbox[3]];
+        break
+    }
+    var y_min = x_y_bbox_min[1] * ol.has.DEVICE_PIXEL_RATIO;
+    var x_min = x_y_bbox_min[0] * ol.has.DEVICE_PIXEL_RATIO;
+    var y_max = x_y_bbox_max[1] * ol.has.DEVICE_PIXEL_RATIO;
+    var x_max = x_y_bbox_max[0] * ol.has.DEVICE_PIXEL_RATIO;
+    this._drawShadow.inner[0] = x_min;
+    this._drawShadow.inner[1] = y_min;
+    this._drawShadow.inner[2] = x_max;
+    this._drawShadow.inner[3] = y_max;
   }
-  var y_min = x_y_bbox_min[1] * ol.has.DEVICE_PIXEL_RATIO;
-  var x_min = x_y_bbox_min[0] * ol.has.DEVICE_PIXEL_RATIO;
-  var y_max = x_y_bbox_max[1] * ol.has.DEVICE_PIXEL_RATIO;
-  var x_max= x_y_bbox_max[0] * ol.has.DEVICE_PIXEL_RATIO;
-  this._drawShadow.inner = [x_min, y_min, x_max, y_max, rotation, scale];
+  if (_.isNil(rotation)) {
+    this._drawShadow.inner[4] = this._drawShadow.inner[4] || 0;
+  } else {
+    this._drawShadow.inner[4] = rotation;
+  }
+  if (_.isNil(scale)) {
+    this._drawShadow.inner[5] = this._drawShadow.inner[5] || 1;
+  } else {
+    this._drawShadow.inner[5] = scale;
+  }
   if (this._drawShadow.outer) {
     map.render();
   }
@@ -912,6 +927,7 @@ proto.startDrawGreyCover = function() {
       var height = size[1] * ol.has.DEVICE_PIXEL_RATIO;
       var width = size[0] * ol.has.DEVICE_PIXEL_RATIO;
       self._drawShadow.outer = [0,0,width, height];
+      ctx.restore();
       ctx.beginPath();
       // Outside polygon, must be clockwise
       ctx.moveTo(0, 0);
@@ -920,23 +936,26 @@ proto.startDrawGreyCover = function() {
       ctx.lineTo(0, height);
       ctx.lineTo(0, 0);
       ctx.closePath();
-      ctx.save()
+      ctx.save();
       // fine bbox esterno (tutta la mappa-)
       if (self._drawShadow.inner) {
         x_min = self._drawShadow.inner[0];
-        y_min = self._drawShadow.inner[1];
+        y_min = self._drawShadow.inner[3];
         x_max = self._drawShadow.inner[2];
-        y_max = self._drawShadow.inner[3];
+        y_max = self._drawShadow.inner[1];
         rotation = self._drawShadow.inner[4];
         scale = self._drawShadow.inner[5];
-       // Inner polygon,must be counter-clockwise antiorario
-        ctx.moveTo(x_max, y_min);
-        ctx.lineTo(x_max, y_max);
-        ctx.lineTo(x_min, y_max);
-        ctx.lineTo(x_min, y_min);
-        ctx.lineTo(x_max, y_min);
-        ctx.rotate(rotation);
-        //ctx.scale(scale, scale);
+        // Inner polygon,must be counter-clockwise antiorario
+        ctx.translate((x_max+x_min)/2, (y_max+y_min)/2);
+        ctx.rotate(rotation*Math.PI / 180);
+        //ctx.translate(-(x_max-x_min), -(y_max-y_min));
+        //ctx.fillRect(0,0,100,50);
+        ctx.scale(scale, scale);
+        ctx.moveTo(-((x_max-x_min)/2),((y_max-y_min)/2));
+        ctx.lineTo(((x_max-x_min)/2),((y_max-y_min)/2));
+        ctx.lineTo(((x_max-x_min)/2),-((y_max-y_min)/2));
+        ctx.lineTo(-((x_max-x_min)/2),-((y_max-y_min)/2));
+        ctx.lineTo(-((x_max-x_min)/2),((y_max-y_min)/2));
         ctx.closePath();
         // fine bbox interno
       }

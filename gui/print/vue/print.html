@@ -8,14 +8,14 @@
         </select>
         <label for="scala">Scala</label>
         <select :field="field.name" class="form-control" @change="onChangeScale"  id="scala" :placeholder="Seleziona il template">
-          <option v-for="scala in scale" value="scala" >{{ scala }}</option>
+          <option v-for="scala in scale" value="{{ scala.value }}" >{{ scala.label }}</option>{{scala.value}}
         </select>
         <label for="dpi">dpi</label>
         <select :field="field.name" class="form-control" @change="onChangeDpi"  id="dpi" :placeholder="Seleziona il template">
           <option v-for="dpi in dpis" value="dpi" >{{ dpi }}</option>
         </select>
         <label for="rotazione">Rotazione</label>
-        <input min="0" max="360" @change="onChangeRotation" id="rotazione" value="0" class="form-control" type="number">
+        <input min="0" max="360"  @input="onChangeRotation" id="rotazione" value="0" class="form-control" type="number">
       </div>
       <div class="box-footer" style="background-color: transparent">
         <span v-for="button in buttons">
