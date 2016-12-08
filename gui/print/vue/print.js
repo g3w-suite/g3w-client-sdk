@@ -47,8 +47,10 @@ var vueComponentOptions = {
     },
     // metodo per il cambio di rotazione
     onChangeRotation: function(evt) {
-      var value = evt.target.value;
-      this.$options.service.changeRotation(value);
+      var rotation = evt.target.value;
+      rotation = (rotation > 360) ? 360: rotation;
+      evt.target.value = rotation;
+      this.$options.service.changeRotation(rotation);
     },
     // lancia il print
     print: function() {
