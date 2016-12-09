@@ -6,17 +6,15 @@ var ProjectsRegistry = require('core/project/projectsregistry');
 var PrintService = require('core/print/printservice');
 
 var BBOXHARDCODED = [1600982.263324788, 4861416.702669956, 1601660.8876835187, 4862126.173590447];
-var PIXELBBOXHARDCODED = [200, 600, 500, 350];
-var PIXELBBOXHARDCODED2 = [100, 400, 400, 300];
 
 function PrintComponentService() {
   base(this);
-  this._zoomKeyEvent = null;
+  this._moveMapKeyEvent = null;
   this.state = ProjectsRegistry.getCurrentProject().state.print;
   //var mapService = GUI.getComponent('map').getSevice();
   // metodo per il cambio di template
   this.changeTemplate = function(template) {
-
+    //TODO
   };
   // metodo per il cambio di scala
   this.changeScale = function(scale) {
@@ -38,20 +36,16 @@ function PrintComponentService() {
     //PrintService.print();
     alert('Stampo');
   };
+
   // metodo per la visualizzazione dell'area grigia o meno
   this.showPrintArea = function(bool) {
     var mapService = GUI.getComponent('map').getService();
     var map = mapService.viewer.map;
-    var zoom = map.getView().getZoom();
-
-    this._zoomKeyEvent = map.on('moveend', function() {
-      //if (this.getView().getZoom() != zoom) {
-        mapService.setInnerGreyCoverBBox({
-          type: 'coordinate',
-          bbox: BBOXHARDCODED
-        });
-     //   zoom = this.getView().getZoom();
-     // }
+    this._moveMapKeyEvent = map.on('moveend', function() {
+      mapService.setInnerGreyCoverBBox({
+        type: 'coordinate',
+        bbox: BBOXHARDCODED
+      });
     });
     if (bool) {
       // setto le caratteristiche del bbox interno
@@ -64,10 +58,11 @@ function PrintComponentService() {
       mapService.startDrawGreyCover();
     } else {
       mapService.stopDrawGreyCover();
-      map.unByKey(this._zoomKeyEvent);
-      this._zoomKeyEvent = null;
+      map.unByKey(this._moveMapKeyEvent);
+      this._moveMapKeyEvent = null;
     }
   };
+
   // metodo richiamato dal template sidebar
   this.showContex = function(bool) {
     this.showPrintArea(bool);
