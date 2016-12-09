@@ -11,6 +11,7 @@ var PIXELBBOXHARDCODED2 = [100, 400, 400, 300];
 
 function PrintComponentService() {
   base(this);
+  this._zoomKeyEvent = null;
   this.state = ProjectsRegistry.getCurrentProject().state.print;
   //var mapService = GUI.getComponent('map').getSevice();
   // metodo per il cambio di template
@@ -21,9 +22,7 @@ function PrintComponentService() {
   this.changeScale = function(scale) {
     var mapService = GUI.getComponent('map').getService();
     var map = mapService.viewer.map;
-    mapService.setInnerGreyCoverBBox({
-      scale: scale
-    });
+    mapService.setInnerGreyCoverScale(scale);
   };
   // metodo per il cambio di rotazione
   this.changeRotation = function(rotation) {
@@ -42,18 +41,34 @@ function PrintComponentService() {
   // metodo per la visualizzazione dell'area grigia o meno
   this.showPrintArea = function(bool) {
     var mapService = GUI.getComponent('map').getService();
+    var map = mapService.viewer.map;
+    var zoom = map.getView().getZoom();
+
+    this._zoomKeyEvent = map.on('moveend', function() {
+      //if (this.getView().getZoom() != zoom) {
+        mapService.setInnerGreyCoverBBox({
+          type: 'coordinate',
+          bbox: BBOXHARDCODED
+        });
+     //   zoom = this.getView().getZoom();
+     // }
+    });
     if (bool) {
+      // setto le caratteristiche del bbox interno
       mapService.setInnerGreyCoverBBox({
-        type: 'pixel',
-        bbox: PIXELBBOXHARDCODED,
+        type: 'coordinate',
+        bbox: BBOXHARDCODED,
         rotation: 0,
         scale:1
       });
       mapService.startDrawGreyCover();
     } else {
       mapService.stopDrawGreyCover();
+      map.unByKey(this._zoomKeyEvent);
+      this._zoomKeyEvent = null;
     }
   };
+  // metodo richiamato dal template sidebar
   this.showContex = function(bool) {
     this.showPrintArea(bool);
   }

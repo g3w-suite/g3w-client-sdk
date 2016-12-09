@@ -28,11 +28,14 @@ function MapService(options) {
       loading: false,
       hidden: true
   };
-  this._interactionsStack = [];
+
   this._greyListenerKey = null;
   this._drawShadow = {
+    type: 'coordinate',
     outer: [],
-    inner: []
+    inner: [],
+    scale: null,
+    rotation: null
   };
   this.config = options.config || ApplicationService.getConfig();
   
@@ -865,6 +868,17 @@ proto.getMapSize = function() {
   return map.getSize();
 };
 
+proto.setInnerGreyCoverRotation = function(rotation) {
+  this._drawShadow.rotation = rotation;
+};
+
+
+proto.setInnerGreyCoverScale = function(scale) {
+  this._drawShadow.scale = scale;
+};
+
+
+
 proto.setInnerGreyCoverBBox = function(options) {
   var options = options || {};
   var map = this.viewer.map;
@@ -894,15 +908,15 @@ proto.setInnerGreyCoverBBox = function(options) {
     this._drawShadow.inner[2] = x_max;
     this._drawShadow.inner[3] = y_max;
   }
-  if (_.isNil(rotation)) {
-    this._drawShadow.inner[4] = this._drawShadow.inner[4] || 0;
-  } else {
-    this._drawShadow.inner[4] = rotation;
-  }
   if (_.isNil(scale)) {
-    this._drawShadow.inner[5] = this._drawShadow.inner[5] || 1;
+    this._drawShadow.scale = this._drawShadow.scale || 1;
   } else {
-    this._drawShadow.inner[5] = scale;
+    this._drawShadow.scale = scale;
+  }
+  if (_.isNil(rotation)) {
+    this._drawShadow.rotation = this._drawShadow.rotation || 0;
+  } else {
+    this._drawShadow.rotation = rotation;
   }
   if (this._drawShadow.outer) {
     map.render();
@@ -918,53 +932,49 @@ proto.startDrawGreyCover = function() {
   //verifico che non ci sia già un greyListener
   if (this._greyListenerKey) {
       this.stopDrawGreyCover();
-  } else {
-    this._greyListenerKey = map.on('postcompose', function (evt) {
-      var ctx = evt.context;
-      var size = this.getSize();
-      var extend = this.getCoordinateFromPixel(size);
-      // Inner polygon,must be counter-clockwise
-      var height = size[1] * ol.has.DEVICE_PIXEL_RATIO;
-      var width = size[0] * ol.has.DEVICE_PIXEL_RATIO;
-      self._drawShadow.outer = [0,0,width, height];
-      ctx.restore();
-      ctx.beginPath();
-      // Outside polygon, must be clockwise
-      ctx.moveTo(0, 0);
-      ctx.lineTo(width, 0);
-      ctx.lineTo(width, height);
-      ctx.lineTo(0, height);
-      ctx.lineTo(0, 0);
-      ctx.closePath();
-      ctx.save();
-      // fine bbox esterno (tutta la mappa-)
-      if (self._drawShadow.inner) {
-        x_min = self._drawShadow.inner[0];
-        y_min = self._drawShadow.inner[3];
-        x_max = self._drawShadow.inner[2];
-        y_max = self._drawShadow.inner[1];
-        rotation = self._drawShadow.inner[4];
-        scale = self._drawShadow.inner[5];
-        // Inner polygon,must be counter-clockwise antiorario
-        ctx.translate((x_max+x_min)/2, (y_max+y_min)/2);
-        ctx.rotate(rotation*Math.PI / 180);
-        //ctx.translate(-(x_max-x_min), -(y_max-y_min));
-        //ctx.fillRect(0,0,100,50);
-        ctx.scale(scale, scale);
-        ctx.moveTo(-((x_max-x_min)/2),((y_max-y_min)/2));
-        ctx.lineTo(((x_max-x_min)/2),((y_max-y_min)/2));
-        ctx.lineTo(((x_max-x_min)/2),-((y_max-y_min)/2));
-        ctx.lineTo(-((x_max-x_min)/2),-((y_max-y_min)/2));
-        ctx.lineTo(-((x_max-x_min)/2),((y_max-y_min)/2));
-        ctx.closePath();
-        // fine bbox interno
-      }
-      ctx.fillStyle = 'rgba(0, 5, 25, 0.55)';
-      ctx.fill();
-      ctx.restore();
-    });
-    map.render();
   }
+  this._greyListenerKey = map.on('postcompose', function (evt) {
+    var ctx = evt.context;
+    var size = this.getSize();
+    // Inner polygon,must be counter-clockwise
+    var height = size[1] * ol.has.DEVICE_PIXEL_RATIO;
+    var width = size[0] * ol.has.DEVICE_PIXEL_RATIO;
+    self._drawShadow.outer = [0,0,width, height];
+    ctx.restore();
+    ctx.beginPath();
+    // Outside polygon, must be clockwise
+    ctx.moveTo(0, 0);
+    ctx.lineTo(width, 0);
+    ctx.lineTo(width, height);
+    ctx.lineTo(0, height);
+    ctx.lineTo(0, 0);
+    ctx.closePath();
+    ctx.save();
+    // fine bbox esterno (tutta la mappa-)
+    if (self._drawShadow.inner) {
+      x_min = self._drawShadow.inner[0];
+      y_min = self._drawShadow.inner[3];
+      x_max = self._drawShadow.inner[2];
+      y_max = self._drawShadow.inner[1];
+      rotation = self._drawShadow.rotation;
+      scale = self._drawShadow.scale;
+      // Inner polygon,must be counter-clockwise antiorario
+      ctx.translate((x_max+x_min)/2, (y_max+y_min)/2);
+      ctx.rotate(rotation*Math.PI / 180);
+      ctx.scale(scale, scale);
+      ctx.moveTo(-((x_max-x_min)/2),((y_max-y_min)/2));
+      ctx.lineTo(((x_max-x_min)/2),((y_max-y_min)/2));
+      ctx.lineTo(((x_max-x_min)/2),-((y_max-y_min)/2));
+      ctx.lineTo(-((x_max-x_min)/2),-((y_max-y_min)/2));
+      ctx.lineTo(-((x_max-x_min)/2),((y_max-y_min)/2));
+      ctx.closePath();
+      // fine bbox interno
+    }
+    ctx.fillStyle = 'rgba(0, 5, 25, 0.55)';
+    ctx.fill();
+    ctx.restore();
+    this.render()
+  });
 };
 
 proto.stopDrawGreyCover = function() {
