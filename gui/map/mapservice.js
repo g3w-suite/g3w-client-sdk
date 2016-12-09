@@ -877,6 +877,19 @@ proto.setInnerGreyCoverScale = function(scale) {
   this._drawShadow.scale = scale;
 };
 
+proto.getCurrentScale = function () {
+
+  //map.getView().calculateExtent(map.getSize()) mi restituisce il bbox della mappa
+
+  var map = this.viewer.map;
+  var view = map.getView();
+  var resolution = view.getResolution();
+  prote =  map.getView().getProjection();
+  var mpu = map.getView().getProjection().getMetersPerUnit();
+  var dpi = 25.4 / 0.28;
+  var scale = resolution * mpu * 39.37 * dpi;
+  return scale;
+};
 
 
 proto.setInnerGreyCoverBBox = function(options) {
@@ -961,7 +974,7 @@ proto.startDrawGreyCover = function() {
       // Inner polygon,must be counter-clockwise antiorario
       ctx.translate((x_max+x_min)/2, (y_max+y_min)/2);
       ctx.rotate(rotation*Math.PI / 180);
-      ctx.scale(scale, scale);
+      //ctx.scale(scale, scale);
       ctx.moveTo(-((x_max-x_min)/2),((y_max-y_min)/2));
       ctx.lineTo(((x_max-x_min)/2),((y_max-y_min)/2));
       ctx.lineTo(((x_max-x_min)/2),-((y_max-y_min)/2));

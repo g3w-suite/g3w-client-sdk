@@ -4,13 +4,23 @@ var GUI = require('gui/gui');
 var G3WObject = require('core/g3wobject');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var PrintService = require('core/print/printservice');
+var resToScale = require('core/utils/geo').resToScale;
+var scaleToRes = require('core/utils/geo').scaleToRes;
 
 var BBOXHARDCODED = [1600982.263324788, 4861416.702669956, 1601660.8876835187, 4862126.173590447];
 
 function PrintComponentService() {
   base(this);
   this._moveMapKeyEvent = null;
-  this.state = ProjectsRegistry.getCurrentProject().state.print;
+  this.state = {};
+  this.state.print = ProjectsRegistry.getCurrentProject().state.print;
+  this.state.visible = this.state.print.length ? true : false;
+  // qui da vedere meglio
+  this.state.rotation = 0;
+  this.state.bbox = null;
+  this.state.center = null;
+  this.state.size = null;
+  this.state.scala = null;
   //var mapService = GUI.getComponent('map').getSevice();
   // metodo per il cambio di template
   this.changeTemplate = function(template) {
@@ -20,7 +30,13 @@ function PrintComponentService() {
   this.changeScale = function(scale) {
     var mapService = GUI.getComponent('map').getService();
     var map = mapService.viewer.map;
-    mapService.setInnerGreyCoverScale(scale);
+    this.state.scala = scale;
+    this._setBBoxPrintArea();
+    mapService.setInnerGreyCoverBBox({
+      type: 'coordinate',
+      bbox: this.state.bbox
+    });
+
   };
   // metodo per il cambio di rotazione
   this.changeRotation = function(rotation) {
@@ -36,24 +52,41 @@ function PrintComponentService() {
     //PrintService.print();
     alert('Stampo');
   };
+  this._setBBoxPrintArea = function() {
+    var scale = this.state.scala || 1000;
+    var resolution = scaleToRes(scale);
+    var height = this.state.size[1]/2; // numero di pixel raggio altezza
+    var width = this.state.size[0]/2; // numero di pixel raggio larghezza
+    x_min = this.state.center[0] - (width*resolution);
+    y_min = this.state.center[1] - (height*resolution);
+    x_max = this.state.center[0] + (width*resolution);
+    y_max = this.state.center[1] + (height*resolution);
+    this.state.bbox =  [x_min, y_min, x_max, y_max]
+  };
 
   // metodo per la visualizzazione dell'area grigia o meno
   this.showPrintArea = function(bool) {
+    var self = this;
     var mapService = GUI.getComponent('map').getService();
     var map = mapService.viewer.map;
+    this.state.size = map.getSize();
+    var zoom = map.getView().getZoom();
+    this.state.center = map.getView().getCenter();
+    this._setBBoxPrintArea();
     this._moveMapKeyEvent = map.on('moveend', function() {
+      self.state.center = this.getView().getCenter();
+      self._setBBoxPrintArea();
       mapService.setInnerGreyCoverBBox({
         type: 'coordinate',
-        bbox: BBOXHARDCODED
+        bbox: self.state.bbox
       });
     });
     if (bool) {
       // setto le caratteristiche del bbox interno
       mapService.setInnerGreyCoverBBox({
         type: 'coordinate',
-        bbox: BBOXHARDCODED,
-        rotation: 0,
-        scale:1
+        bbox: self.state.bbox,
+        rotation: 0
       });
       mapService.startDrawGreyCover();
     } else {

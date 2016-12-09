@@ -1,11 +1,43 @@
 var inherit = require('core/utils/utils').inherit;
-var GUI = require('gui/gui');
 var Component = require('gui/vue/component');
 var PrintService = require('gui/print/printservice');
 var base = require('core/utils/utils').base;
 var merge = require('core/utils/utils').merge;
 
-var scale = [{value:1, label:'1:500'}, {value:2,label:'1:1000'}];
+var scale = [
+  {
+    value:500,
+    label:'1:500'
+  },
+  {
+    value:1000,
+    label:'1:1000'
+  },
+  {
+    value:2000,
+    label:'1:2000'
+  },
+  {
+    value:3000,
+    label:'1:3000'
+  },
+  {
+    value:5000,
+    label:'1:5000'
+  },
+  {
+    value:7500,
+    label:'1:7500'
+  },
+  {
+    value:10000,
+    label:'1:10000'
+  },
+  {
+    value:12000,
+    label:'1:12000'
+  }
+];
 var dpis = [300, 700];
 
 
@@ -14,8 +46,7 @@ var vueComponentOptions = {
   data: function() {
     var self = this;
     return {
-      state: this.$options.service.state,
-      scale: scale,
+      state: null,
       dpis: dpis,
       buttons: [
         {
@@ -59,9 +90,6 @@ var vueComponentOptions = {
     // metodo per la visualizzazione dell'area grigia o meno
     showPrintArea: function() {
       this.$options.service.showPrintArea();
-    },
-    showContex: function(bool) {
-      console.log('eccomi');
     }
   }
 };
@@ -86,8 +114,13 @@ function PrintComponent(options) {
     this.internalComponent = new InternalComponent({
       service: this._service
     });
+    this.internalComponent.state = _.merge(this.state, this._service.state);
+    this.internalComponent.state.scale = scale;
+    this.internalComponent.state.scala = 5000;
+    this._service.state.scala = 5000;
     return this.internalComponent;
   };
+
 }
 
 inherit(PrintComponent, Component);
