@@ -868,29 +868,9 @@ proto.getMapSize = function() {
   return map.getSize();
 };
 
-proto.setInnerGreyCoverRotation = function(rotation) {
-  this._drawShadow.rotation = rotation;
-};
-
-
 proto.setInnerGreyCoverScale = function(scale) {
   this._drawShadow.scale = scale;
 };
-
-proto.getCurrentScale = function () {
-
-  //map.getView().calculateExtent(map.getSize()) mi restituisce il bbox della mappa
-
-  var map = this.viewer.map;
-  var view = map.getView();
-  var resolution = view.getResolution();
-  prote =  map.getView().getProjection();
-  var mpu = map.getView().getProjection().getMetersPerUnit();
-  var dpi = 25.4 / 0.28;
-  var scale = resolution * mpu * 39.37 * dpi;
-  return scale;
-};
-
 
 proto.setInnerGreyCoverBBox = function(options) {
   var options = options || {};

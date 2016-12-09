@@ -3,43 +3,9 @@ var Component = require('gui/vue/component');
 var PrintService = require('gui/print/printservice');
 var base = require('core/utils/utils').base;
 var merge = require('core/utils/utils').merge;
-
-var scale = [
-  {
-    value:500,
-    label:'1:500'
-  },
-  {
-    value:1000,
-    label:'1:1000'
-  },
-  {
-    value:2000,
-    label:'1:2000'
-  },
-  {
-    value:3000,
-    label:'1:3000'
-  },
-  {
-    value:5000,
-    label:'1:5000'
-  },
-  {
-    value:7500,
-    label:'1:7500'
-  },
-  {
-    value:10000,
-    label:'1:10000'
-  },
-  {
-    value:12000,
-    label:'1:12000'
-  }
-];
-var dpis = [300, 700];
-
+var config = require('./config');
+var scale = config.scale;
+var dpis= config.dpis;
 
 var vueComponentOptions = {
   template: require('./print.html'),
