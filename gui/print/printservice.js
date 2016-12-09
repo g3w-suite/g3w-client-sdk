@@ -6,8 +6,9 @@ var ProjectsRegistry = require('core/project/projectsregistry');
 var PrintService = require('core/print/printservice');
 var resToScale = require('core/utils/geo').resToScale;
 var scaleToRes = require('core/utils/geo').scaleToRes;
-
-var BBOXHARDCODED = [1600982.263324788, 4861416.702669956, 1601660.8876835187, 4862126.173590447];
+var config = require('./config');
+var scale = config.scale;
+var dpis= config.dpis;
 
 function PrintComponentService() {
   base(this);
@@ -20,7 +21,9 @@ function PrintComponentService() {
   this.state.bbox = null;
   this.state.center = null;
   this.state.size = null;
-  this.state.scala = null;
+  this.state.scala = 5000;
+  this.state.scale = scale;
+  this.state.dpis = dpis;
   //var mapService = GUI.getComponent('map').getSevice();
   // metodo per il cambio di template
   this.changeTemplate = function(template) {

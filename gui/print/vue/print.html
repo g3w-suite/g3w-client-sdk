@@ -12,10 +12,10 @@
         </select>
         <label for="dpi">dpi</label>
         <select :field="field.name" class="form-control" @change="onChangeDpi"  id="dpi" :placeholder="Seleziona il template">
-          <option v-for="dpi in dpis" value="dpi" >{{ dpi }}</option>
+          <option v-for="dpi in state.dpis" value="dpi" >{{ dpi }}</option>
         </select>
         <label for="rotation">Rotazione</label>
-        <input min="0" max="360"  @input="onChangeRotation" v-model="state.rotation" id="rotation" class="form-control" type="number">
+        <input min="0" max="360"  @input="onChangeRotation" :value="state.rotation" id="rotation" class="form-control" type="number">
       </div>
       <div class="box-footer" style="background-color: transparent">
         <span v-for="button in buttons">

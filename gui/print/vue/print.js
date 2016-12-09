@@ -3,9 +3,6 @@ var Component = require('gui/vue/component');
 var PrintService = require('gui/print/printservice');
 var base = require('core/utils/utils').base;
 var merge = require('core/utils/utils').merge;
-var config = require('./config');
-var scale = config.scale;
-var dpis= config.dpis;
 
 var vueComponentOptions = {
   template: require('./print.html'),
@@ -13,7 +10,6 @@ var vueComponentOptions = {
     var self = this;
     return {
       state: null,
-      dpis: dpis,
       buttons: [
         {
           title: "Crea PDF",
@@ -81,9 +77,6 @@ function PrintComponent(options) {
       service: this._service
     });
     this.internalComponent.state = _.merge(this.state, this._service.state);
-    this.internalComponent.state.scale = scale;
-    this.internalComponent.state.scala = 5000;
-    this._service.state.scala = 5000;
     return this.internalComponent;
   };
 
