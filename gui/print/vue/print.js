@@ -31,19 +31,25 @@ var vueComponentOptions = {
     },
     // metodo per il cambio di template
     onChangeTemplate: function() {
-
+      this.$options.service.changeTemplate();
     },
     // metodo per il cambio di scala
-    onChangeScale: function(evt) {
-      var value = evt.target.value;
-      this.$options.service.changeScale(value)
+    onChangeScale: function() {
+      this.$options.service.changeScale()
     },
     // metodo per il cambio di rotazione
     onChangeRotation: function(evt) {
-      var rotation = evt.target.value;
-      rotation = (rotation > 360) ? 360: rotation;
-      evt.target.value = rotation;
-      this.$options.service.changeRotation(rotation);
+      if (this.state.rotation >= 0 && !_.isNil(this.state.rotation) && this.state.rotation != '') {
+        this.state.rotation = (this.state.rotation > 360) ? 360 : this.state.rotation;
+        evt.target.value = this.state.rotation;
+      } else if (this.state.rotation < 0) {
+        this.state.rotation = (this.state.rotation < -360) ? -360 : this.state.rotation;
+        evt.target.value = this.state.rotation;
+      } else {
+        this.state.rotation = 0;
+      }
+
+      this.$options.service.changeRotation();
     },
     // lancia il print
     print: function() {
@@ -76,7 +82,10 @@ function PrintComponent(options) {
     this.internalComponent = new InternalComponent({
       service: this._service
     });
-    this.internalComponent.state = _.merge(this.state, this._service.state);
+    // faccio il merge tra lo state del service e quello del componente
+    this._service.state = _.merge(this.state, this._service.state);
+    // assegno all'internal compoent lo state mergiato
+    this.internalComponent.state = this._service.state;
     return this.internalComponent;
   };
 

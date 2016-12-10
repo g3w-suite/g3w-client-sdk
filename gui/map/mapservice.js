@@ -875,27 +875,27 @@ proto.setInnerGreyCoverScale = function(scale) {
 proto.setInnerGreyCoverBBox = function(options) {
   var options = options || {};
   var map = this.viewer.map;
-  var type = options.type || 'coordinate';
-  var bbox = options.bbox || null;
+  var type = options.type || 'coordinate'; // di solito sollo coordinate
+  var inner = options.inner || null;
   var rotation = options.rotation;
   var scale = options.scale;
-  var x_y_bbox_min;
-  var x_y_bbox_max;
-  if (bbox) {
+  var lowerLeftInner;
+  var upperRightInner;
+  if (inner) {
     switch (type) {
       case 'coordinate':
-        x_y_bbox_min = map.getPixelFromCoordinate([bbox[0], bbox[1]]);
-        x_y_bbox_max = map.getPixelFromCoordinate([bbox[2], bbox[3]]);
+        lowerLeftInner = map.getPixelFromCoordinate([inner[0], inner[1]]);
+        upperRightInner = map.getPixelFromCoordinate([inner[2], inner[3]]);
         break;
       case 'pixel':
-        x_y_bbox_min = [bbox[0], bbox[1]];
-        x_y_bbox_max = [bbox[2], bbox[3]];
+        lowerLeftInner = [inner[0], inner[1]];
+        upperRightInner = [inner[2], inner[3]];
         break
     }
-    var y_min = x_y_bbox_min[1] * ol.has.DEVICE_PIXEL_RATIO;
-    var x_min = x_y_bbox_min[0] * ol.has.DEVICE_PIXEL_RATIO;
-    var y_max = x_y_bbox_max[1] * ol.has.DEVICE_PIXEL_RATIO;
-    var x_max = x_y_bbox_max[0] * ol.has.DEVICE_PIXEL_RATIO;
+    var y_min = lowerLeftInner[1] * ol.has.DEVICE_PIXEL_RATIO;
+    var x_min = lowerLeftInner[0] * ol.has.DEVICE_PIXEL_RATIO;
+    var y_max = upperRightInner[1] * ol.has.DEVICE_PIXEL_RATIO;
+    var x_max = upperRightInner[0] * ol.has.DEVICE_PIXEL_RATIO;
     this._drawShadow.inner[0] = x_min;
     this._drawShadow.inner[1] = y_min;
     this._drawShadow.inner[2] = x_max;
@@ -954,7 +954,6 @@ proto.startDrawGreyCover = function() {
       // Inner polygon,must be counter-clockwise antiorario
       ctx.translate((x_max+x_min)/2, (y_max+y_min)/2);
       ctx.rotate(rotation*Math.PI / 180);
-      //ctx.scale(scale, scale);
       ctx.moveTo(-((x_max-x_min)/2),((y_max-y_min)/2));
       ctx.lineTo(((x_max-x_min)/2),((y_max-y_min)/2));
       ctx.lineTo(((x_max-x_min)/2),-((y_max-y_min)/2));

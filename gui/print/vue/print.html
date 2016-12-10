@@ -2,20 +2,20 @@
   <li>
     <form id="g3w-search-form" class="form-horizonal">
       <div class="box-body">
-        <label for="templates">Tipo</label>
-        <select :field="field.name" class="form-control" @change="onChangeTemplate"  id="templates" :placeholder="Seleziona il template">
-          <option v-for="print in state.print" value="print.name" >{{ print.name }}</option>
+        <label for="templates">Template</label>
+        <select :field="field.name" class="form-control" @change="onChangeTemplate" v-model="state.template" id="templates" :placeholder="Seleziona il template">
+          <option v-for="print in state.print">{{ print.name }}</option>
         </select>
         <label for="scala">Scala</label>
-        <select :field="field.name" class="form-control" @change="onChangeScale"  :value="state.scala" id="scala" :placeholder="Seleziona il template">
-          <option v-for="scala in state.scale" value="{{ scala.value }}" >{{ scala.label }}</option>
+        <select :field="field.name" class="form-control" @change="onChangeScale"  v-model="state.scala" id="scala" :placeholder="Seleziona il template">
+          <option v-for="scala in state.scale" value="{{ scala.value }}" >{{ scala.label }}</option>{{state.scala}}
         </select>
         <label for="dpi">dpi</label>
-        <select :field="field.name" class="form-control" @change="onChangeDpi"  id="dpi" :placeholder="Seleziona il template">
-          <option v-for="dpi in state.dpis" value="dpi" >{{ dpi }}</option>
+        <select :field="field.name" class="form-control" @change="onChangeDpi"  v-model="state.dpi" id="dpi" :placeholder="Seleziona il template">
+          <option v-for="dpi in state.dpis" >{{ dpi }}</option>
         </select>
         <label for="rotation">Rotazione</label>
-        <input min="0" max="360"  @input="onChangeRotation" :value="state.rotation" id="rotation" class="form-control" type="number">
+        <input min="-360" max="360"  @input="onChangeRotation" v-model="state.rotation" id="rotation" class="form-control" type="number">
       </div>
       <div class="box-footer" style="background-color: transparent">
         <span v-for="button in buttons">

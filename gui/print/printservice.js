@@ -6,53 +6,79 @@ var ProjectsRegistry = require('core/project/projectsregistry');
 var PrintService = require('core/print/printservice');
 var resToScale = require('core/utils/geo').resToScale;
 var scaleToRes = require('core/utils/geo').scaleToRes;
-var config = require('./config');
-var scale = config.scale;
-var dpis= config.dpis;
+var printConfig = require('./printconfig');
+var scale = printConfig.scale;
+var dpis = printConfig.dpis;
 
 function PrintComponentService() {
   base(this);
   this._moveMapKeyEvent = null;
   this.state = {};
+  this._project = ProjectsRegistry.getCurrentProject();
   this.state.print = ProjectsRegistry.getCurrentProject().state.print;
   this.state.visible = this.state.print.length ? true : false;
-  // qui da vedere meglio
-  this.state.rotation = 0;
-  this.state.bbox = null;
-  this.state.center = null;
-  this.state.size = null;
-  this.state.scala = 5000;
-  this.state.scale = scale;
-  this.state.dpis = dpis;
+  if (this.state.visible) {
+    // Imposto le configurazioni inziali da rivedere
+    this.state.template = this.state.print[0].name;
+    this.state.rotation = 0;
+    this.state.inner = null;
+    this.state.center = null;
+    this.state.size = null;
+    this.state.scala = 5000;
+    this.state.scale = scale;
+    this.state.dpi = dpis[0];
+    this.state.dpis = dpis;
+  }
   //var mapService = GUI.getComponent('map').getSevice();
   // metodo per il cambio di template
   this.changeTemplate = function(template) {
     //TODO
   };
   // metodo per il cambio di scala
-  this.changeScale = function(scale) {
+  this.changeScale = function() {
     var mapService = GUI.getComponent('map').getService();
     var map = mapService.viewer.map;
-    this.state.scala = scale;
     this._setBBoxPrintArea();
     mapService.setInnerGreyCoverBBox({
-      type: 'coordinate',
-      bbox: this.state.bbox
+      inner: this.state.inner
     });
 
   };
   // metodo per il cambio di rotazione
-  this.changeRotation = function(rotation) {
+  this.changeRotation = function() {
     var mapService = GUI.getComponent('map').getService();
     var map = mapService.viewer.map;
     mapService.setInnerGreyCoverBBox({
-      rotation: rotation
+      rotation: this.state.rotation
     });
+  };
+
+  this._getPrintParams = function() {
+    var layers = this._project.getLayers({
+      QUERYABLE: true,
+      SELECTEDORALL: true
+    });
+    layers = _.map(layers,function(layer){
+      return layer.getQueryLayerName()
+    });
+    return {
+      TEMPLATE: this.state.template,
+      SCALE: this.state.scala,
+      ROTATION: this.state.rotation,
+      EXTENT:'map0:'+this.state.inner.join(), // per ora solo map0 po vediamo
+      DPI: this.state.dpi,
+      FORMAT: 'pdf',
+      //HEIGHT:
+      //WIDTH:
+      LAYERS: layers.join()
+    }
+
   };
 
   // lancia il print
   this.print = function() {
     //PrintService.print();
+    console.log(this._getPrintParams());
     alert('Stampo');
   };
   this._setBBoxPrintArea = function() {
@@ -64,7 +90,7 @@ function PrintComponentService() {
     y_min = this.state.center[1] - (height*resolution);
     x_max = this.state.center[0] + (width*resolution);
     y_max = this.state.center[1] + (height*resolution);
-    this.state.bbox =  [x_min, y_min, x_max, y_max]
+    this.state.inner =  [x_min, y_min, x_max, y_max]
   };
 
   // metodo per la visualizzazione dell'area grigia o meno
@@ -73,22 +99,19 @@ function PrintComponentService() {
     var mapService = GUI.getComponent('map').getService();
     var map = mapService.viewer.map;
     this.state.size = map.getSize();
-    var zoom = map.getView().getZoom();
     this.state.center = map.getView().getCenter();
     this._setBBoxPrintArea();
     this._moveMapKeyEvent = map.on('moveend', function() {
       self.state.center = this.getView().getCenter();
       self._setBBoxPrintArea();
       mapService.setInnerGreyCoverBBox({
-        type: 'coordinate',
-        bbox: self.state.bbox
+        inner: self.state.inner
       });
     });
     if (bool) {
       // setto le caratteristiche del bbox interno
       mapService.setInnerGreyCoverBBox({
-        type: 'coordinate',
-        bbox: self.state.bbox,
+        inner: self.state.inner,
         rotation: 0
       });
       mapService.startDrawGreyCover();
@@ -98,12 +121,10 @@ function PrintComponentService() {
       this._moveMapKeyEvent = null;
     }
   };
-
   // metodo richiamato dal template sidebar
   this.showContex = function(bool) {
     this.showPrintArea(bool);
   }
-  
 }
 
 inherit(PrintComponentService, G3WObject);

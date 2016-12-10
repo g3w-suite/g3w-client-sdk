@@ -32,7 +32,7 @@ function QueryQGISWFSProvider() {
       SERVICE: 'WFS',
       VERSION: '1.3.0',
       REQUEST: 'GetFeature',
-      TYPENAME: layers.join(','),
+      TYPENAME: layers.join(),
       OUTPUTFORMAT: infoFormat,
       SRSNAME: 'EPSG:' + crs
     };
