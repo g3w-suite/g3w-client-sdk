@@ -1,26 +1,33 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
+var ProjectsRegistry = require('core/project/projectsregistry');
 
-function QGISPrinter() {
+
+function PrinterQGISProvider() {
   base(this);
-  this.print = function(options) {
+  this._project = ProjectsRegistry.getCurrentProject();
+  this._getPrintParams = function(options) {
     var options = options || {};
-    var url = options.url;
-    var params = options.params;
-  };
+    var layers = this._project.getLayers({
+      QUERYABLE: true,
+      SELECTEDORALL: true
+    });
+    layers = _.map(layers,function(layer){
+      return layer.getQueryLayerName()
+    });
+    return {
+      TEMPLATE: this.template,
+      SCALE: options.scala,
+      ROTATION: options.rotation,
+      EXTENT:'map0:'+options.extent, // per ora solo map0 po vediamo
+      DPI: options.dpi,
+      FORMAT: 'pdf',
+      //HEIGHT:
+      //WIDTH:
+      LAYERS: layers.join()
+    }
 
-  this.createParamsUrl = function(params) {
-    var urlParams = {
-      EXTENT: params.extent,
-      ROTATION: params.rotation,
-      SCALE: params.scale,
-      LAYERS: params.layers,
-      STYLES: params.styles || '',
-      GRID_INTERVAL_X: params.gridx || null,
-      GRID_INTERVAL_Y: params.gridy || null
-    };
-    return urlParams
   };
 
   this.print = function(options) {
@@ -30,8 +37,9 @@ function QGISPrinter() {
      params : oggetto contenete i parametri necessari alla creazione della richiesta
      come ad esempio filter etc ..
      */
-    if (!type) {var type = 'QGIS'}
-
+    var options = options || {};
+    var url = options.url;
+    var params = this._getPrintParams(options);
     printer.print(url, params)
       .then(function(){
         console.log('richiesta completatata')
@@ -39,9 +47,9 @@ function QGISPrinter() {
   };
 }
 
-inherit(QGISPrinter, G3WObject);
+inherit(PrinterQGISProvider, G3WObject);
 
-module.exports = QGISPrinter;
+module.exports = new PrinterQGISProvider;
 
 
 /*

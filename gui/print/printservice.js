@@ -53,33 +53,16 @@ function PrintComponentService() {
     });
   };
 
-  this._getPrintParams = function() {
-    var layers = this._project.getLayers({
-      QUERYABLE: true,
-      SELECTEDORALL: true
-    });
-    layers = _.map(layers,function(layer){
-      return layer.getQueryLayerName()
-    });
-    return {
-      TEMPLATE: this.state.template,
-      SCALE: this.state.scala,
-      ROTATION: this.state.rotation,
-      EXTENT:'map0:'+this.state.inner.join(), // per ora solo map0 po vediamo
-      DPI: this.state.dpi,
-      FORMAT: 'pdf',
-      //HEIGHT:
-      //WIDTH:
-      LAYERS: layers.join()
-    }
-
-  };
 
   // lancia il print
   this.print = function() {
-    //PrintService.print();
-    console.log(this._getPrintParams());
-    alert('Stampo');
+    var options = {
+      scale: this.state.scala,
+      extent: this.state.inner.join(),
+      rotation: this.state.rotation,
+      dpi: this.state.dpi
+    };
+    PrintService.print(options);
   };
   this._setBBoxPrintArea = function() {
     var scale = this.state.scala || 1000;
