@@ -7,6 +7,7 @@ var PrintService = require('core/print/printservice');
 var resToScale = require('core/utils/geo').resToScale;
 var scaleToRes = require('core/utils/geo').scaleToRes;
 var printConfig = require('./printconfig');
+var PrintPage = require('./vue/printpage');
 var scale = printConfig.scale;
 var dpis = printConfig.dpis;
 
@@ -53,17 +54,29 @@ function PrintComponentService() {
     });
   };
 
-
   // lancia il print
   this.print = function() {
     var options = {
       scale: this.state.scala,
       extent: this.state.inner.join(),
       rotation: this.state.rotation,
-      dpi: this.state.dpi
+      dpi: this.state.dpi,
+      template: this.state.template
+
     };
-    PrintService.print(options);
+    PrintService.print(options)
+    .then(function() {
+      // chaimao il metodo pushContent
+      console.log(PrintPage);
+      var page = new PrintPage();
+      console.log(page);
+      GUI.pushContent({
+        content: new PrintPage,
+        backonclose: true
+      });
+    })
   };
+
   this._setBBoxPrintArea = function() {
     var scale = this.state.scala || 1000;
     var resolution = scaleToRes(scale);

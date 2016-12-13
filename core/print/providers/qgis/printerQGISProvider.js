@@ -6,28 +6,35 @@ var ProjectsRegistry = require('core/project/projectsregistry');
 
 function PrinterQGISProvider() {
   base(this);
-  this._project = ProjectsRegistry.getCurrentProject();
-  this._getPrintParams = function(options) {
+  this._getPrintUrlAndParams = function(options) {
     var options = options || {};
-    var layers = this._project.getLayers({
+    var project =  ProjectsRegistry.getCurrentProject();
+    // devo fare il reverse perchè l'odine conta sulla visualizzazione del print
+    var layers = _.reverse(project.getLayers({
       QUERYABLE: true,
       SELECTEDORALL: true
-    });
+    }));
     layers = _.map(layers,function(layer){
       return layer.getQueryLayerName()
     });
     return {
-      TEMPLATE: this.template,
-      SCALE: options.scala,
-      ROTATION: options.rotation,
-      EXTENT:'map0:'+options.extent, // per ora solo map0 po vediamo
-      DPI: options.dpi,
-      FORMAT: 'pdf',
-      //HEIGHT:
-      //WIDTH:
-      LAYERS: layers.join()
+      params: {
+        SERVICE: 'WMS',
+        VERSION: '1.3.0',
+        REQUEST: 'GetPrint',
+        TEMPLATE: options.template,
+        'map0:SCALE': options.scale,
+        ROTATION: options.rotation,
+        'map0:EXTENT': options.extent, // per ora solo map0 po vediamo
+        DPI: options.dpi,
+        FORMAT: 'pdf',
+        CRS:'EPSG:3003',
+        //HEIGHT:
+        //WIDTH:
+        LAYERS: layers.join()
+      },
+      url: project.getWmsUrl()
     }
-
   };
 
   this.print = function(options) {
@@ -38,12 +45,9 @@ function PrinterQGISProvider() {
      come ad esempio filter etc ..
      */
     var options = options || {};
-    var url = options.url;
-    var params = this._getPrintParams(options);
-    printer.print(url, params)
-      .then(function(){
-        console.log('richiesta completatata')
-      })
+    var url_params = this._getPrintUrlAndParams(options);
+    return $.get(url_params.url, url_params.params)
+
   };
 }
 

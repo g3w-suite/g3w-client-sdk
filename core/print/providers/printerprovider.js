@@ -15,7 +15,8 @@ function PrinterProvider(options) {
   var options = options || {};
   var serverType = options.serverType || 'QGIS';
   this._provider = Providers[serverType];
-  this.print = function() {
+  this.print = function(options) {
+    console.log(options);
     return this._provider.print(options);
   };
   base(this);

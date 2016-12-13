@@ -3,12 +3,12 @@ var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var PrinterProvider = require('./providers/printerprovider');
 
-function PrintService(type) {
+function PrintService() {
   base(this);
-
   // funzione generica nel caso volessi lanciare il print
   // senza ottenere il printer
   this.print = function(options) {
+    console.log(options);
     /* options è un oggetto che contiene:
      type: tipo di printer server
      url: url a cui effettuare la richiesta
@@ -17,8 +17,8 @@ function PrintService(type) {
     */
     var options = options || {};
     var type = options.type || 'QGIS';
-    var provider = new PrinterProvider[type];
-    provider.print(options);
+    var provider = new PrinterProvider(type);
+    return provider.print(options);
   };
 }
 
