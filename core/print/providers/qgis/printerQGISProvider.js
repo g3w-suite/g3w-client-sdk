@@ -1,4 +1,5 @@
 var inherit = require('core/utils/utils').inherit;
+var resolve = require('core/utils/utils').resolve;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var ProjectsRegistry = require('core/project/projectsregistry');
@@ -6,9 +7,10 @@ var ProjectsRegistry = require('core/project/projectsregistry');
 
 function PrinterQGISProvider() {
   base(this);
-  this._getPrintUrlAndParams = function(options) {
+  this._getPrintUrl = function(options) {
     var options = options || {};
     var project =  ProjectsRegistry.getCurrentProject();
+    var url = project.getWmsUrl();
     // devo fare il reverse perchè l'odine conta sulla visualizzazione del print
     var layers = _.reverse(project.getLayers({
       QUERYABLE: true,
@@ -17,24 +19,24 @@ function PrinterQGISProvider() {
     layers = _.map(layers,function(layer){
       return layer.getQueryLayerName()
     });
-    return {
-      params: {
-        SERVICE: 'WMS',
-        VERSION: '1.3.0',
-        REQUEST: 'GetPrint',
-        TEMPLATE: options.template,
-        'map0:SCALE': options.scale,
-        ROTATION: options.rotation,
-        'map0:EXTENT': options.extent, // per ora solo map0 po vediamo
-        DPI: options.dpi,
-        FORMAT: 'pdf',
-        CRS:'EPSG:3003',
-        //HEIGHT:
-        //WIDTH:
-        LAYERS: layers.join()
-      },
-      url: project.getWmsUrl()
-    }
+    var params= {
+      SERVICE: 'WMS',
+      VERSION: '1.3.0',
+      REQUEST: 'GetPrint',
+      TEMPLATE: options.template,
+      'map0:SCALE': options.scale,
+      ROTATION: options.rotation,
+      'map0:EXTENT': options.extent, // per ora solo map0 po vediamo
+      DPI: options.dpi,
+      FORMAT: 'pdf',
+      CRS:'EPSG:3003',
+      //HEIGHT:
+      //WIDTH:
+      LAYERS: layers.join()
+    };
+    url = url + '?' + $.param(params);
+    return resolve(url);
+
   };
 
   this.print = function(options) {
@@ -45,8 +47,9 @@ function PrinterQGISProvider() {
      come ad esempio filter etc ..
      */
     var options = options || {};
-    var url_params = this._getPrintUrlAndParams(options);
-    return $.get(url_params.url, url_params.params)
+    var url = this._getPrintUrl(options);
+    return url
+    //return $.get(url_params.url, url_params.params)
 
   };
 }

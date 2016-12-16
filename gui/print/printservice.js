@@ -65,14 +65,14 @@ function PrintComponentService() {
 
     };
     PrintService.print(options)
-    .then(function() {
+    .then(function(url) {
       // chaimao il metodo pushContent
-      console.log(PrintPage);
-      var page = new PrintPage();
-      console.log(page);
-      GUI.pushContent({
-        content: new PrintPage,
-        backonclose: true
+      var page = new PrintPage({
+        url: url
+      });
+      GUI.setContent({
+        content: page,
+        perc: 99.9999
       });
     })
   };
@@ -94,17 +94,17 @@ function PrintComponentService() {
     var self = this;
     var mapService = GUI.getComponent('map').getService();
     var map = mapService.viewer.map;
-    this.state.size = map.getSize();
-    this.state.center = map.getView().getCenter();
-    this._setBBoxPrintArea();
-    this._moveMapKeyEvent = map.on('moveend', function() {
-      self.state.center = this.getView().getCenter();
-      self._setBBoxPrintArea();
-      mapService.setInnerGreyCoverBBox({
-        inner: self.state.inner
-      });
-    });
     if (bool) {
+      this.state.size = map.getSize();
+      this.state.center = map.getView().getCenter();
+      this._setBBoxPrintArea();
+      this._moveMapKeyEvent = map.on('moveend', function() {
+        self.state.center = this.getView().getCenter();
+        self._setBBoxPrintArea();
+        mapService.setInnerGreyCoverBBox({
+          inner: self.state.inner
+        });
+      });
       // setto le caratteristiche del bbox interno
       mapService.setInnerGreyCoverBBox({
         inner: self.state.inner,

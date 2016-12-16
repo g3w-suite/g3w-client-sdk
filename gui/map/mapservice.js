@@ -872,6 +872,16 @@ proto.setInnerGreyCoverScale = function(scale) {
   this._drawShadow.scale = scale;
 };
 
+proto._resetDrawShadowInner = function() {
+  this._drawShadow = {
+    type: 'coordinate',
+    outer: [],
+    inner: [],
+    scale: null,
+    rotation: null
+  };
+};
+
 proto.setInnerGreyCoverBBox = function(options) {
   var options = options || {};
   var map = this.viewer.map;
@@ -942,9 +952,9 @@ proto.startDrawGreyCover = function() {
     ctx.lineTo(0, height);
     ctx.lineTo(0, 0);
     ctx.closePath();
-    ctx.save();
     // fine bbox esterno (tutta la mappa-)
-    if (self._drawShadow.inner) {
+    if (self._drawShadow.inner.length) {
+      ctx.save();
       x_min = self._drawShadow.inner[0];
       y_min = self._drawShadow.inner[3];
       x_max = self._drawShadow.inner[2];
@@ -973,6 +983,9 @@ proto.stopDrawGreyCover = function() {
   var map = this.viewer.map;
   map.unByKey(this._greyListenerKey);
   this._greyListenerKey = null;
+  if (this._drawShadow.inner.length) {
+    this._resetDrawShadowInner();
+  }
   map.render();
 };
 

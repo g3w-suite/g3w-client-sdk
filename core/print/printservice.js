@@ -8,7 +8,6 @@ function PrintService() {
   // funzione generica nel caso volessi lanciare il print
   // senza ottenere il printer
   this.print = function(options) {
-    console.log(options);
     /* options è un oggetto che contiene:
      type: tipo di printer server
      url: url a cui effettuare la richiesta
