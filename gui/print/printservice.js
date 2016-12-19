@@ -70,9 +70,11 @@ function PrintComponentService() {
       var page = new PrintPage({
         url: url
       });
+
       GUI.setContent({
         content: page,
-        perc: 99.9999
+        push: false,
+        title: 'Stampa'
       });
     })
   };
