@@ -6,7 +6,7 @@ var QueryBBoxControl = function(options){
   var _options = {
     name: "querybbox",
     tipLabel: "Query BBox layer",
-    label: "\uea0f",
+    label: "\ue902",
     interactionClass: ol.interaction.DragBox
   };
   options = utils.merge(options,_options);
