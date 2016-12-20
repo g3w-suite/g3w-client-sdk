@@ -8,7 +8,7 @@ var QueryByPolygonControl = function(options){
   var _options = {
     name: "querybypolygon",
     tipLabel: "Query By Polygon",
-    label: "\uea0f",
+    label: "\ue903",
     geometryTypes: ['Polygon', 'MultiPolygon'],
     onselectlayer: true,
     interactionClass: PickCoordinatesInteraction
