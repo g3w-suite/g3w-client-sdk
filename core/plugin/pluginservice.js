@@ -326,7 +326,7 @@ function PluginService(options) {
 
   };
   //se non è ancora partito faccio partire lo start editor
-  this._startEditor = function(layer){
+  this._startEditor = function(layer) {
     // avvio l'editor
     // passandoli il service che lo accetta
     if (layer.editor.start(this)) {
@@ -336,6 +336,7 @@ function PluginService(options) {
     }
     return false;
   };
+
   //funzione che viene chiamata al click su un tool dell'editing e se
   //non è stato assegnato ancora nessun layer come current layer editing
   this._startEditingTool = function(layer, toolType, options) {
@@ -354,6 +355,7 @@ function PluginService(options) {
     // attraverso il metodo run
     if (canStartTool && layer.editor.setTool(toolType, options)) {
       this._updateEditingState();
+
       this.state.startingEditingTool = false;
       return true;
     }
@@ -361,7 +363,8 @@ function PluginService(options) {
     return false;
   };
 
-  this._stopEditor = function(reset){
+  // funzione che lancia lo stop sull'editor corrente
+  this._stopEditor = function(reset) {
     var ret = true;
     var layer = this._getCurrentEditingLayer();
     if (layer) {

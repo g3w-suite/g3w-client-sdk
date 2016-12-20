@@ -1,5 +1,4 @@
 var inherit = require('core/utils/utils').inherit;
-
 var PluginService = require('core/plugin/pluginservice');
 
 function PanelService() {
