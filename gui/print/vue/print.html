@@ -18,8 +18,8 @@
         <input min="-360" max="360"  @input="onChangeRotation" v-model="state.rotation" id="rotation" class="form-control" type="number">
       </div>
       <div class="box-footer" style="background-color: transparent">
-        <span v-for="button in buttons">
-          <button style="width:100%" class="btn " :class="[button.class, isAnnullaButton(button.type) ? 'pull-right' : '' ]" @click.stop.prevent="exec(button.cbk)" v-disabled="!btnEnabled(button)">{{ button.title }}</button>
+        <span>
+          <button style="width:100%" class="btn " :class="[button.class, isAnnullaButton(button.type) ? 'pull-right' : '' ]" @click.stop.prevent="exec(button.cbk)" v-disabled="btnEnabled(button)">{{ button.title }}</button>
         </span>
       </div>
     </form>

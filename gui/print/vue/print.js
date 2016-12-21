@@ -10,21 +10,23 @@ var vueComponentOptions = {
     var self = this;
     return {
       state: null,
-      buttons: [
-        {
-          title: "Crea PDF",
-          class: "btn-success",
-          type:"stampa",
-          cbk: function() {
-            self.print()
-          }
+      button: {
+        title: "Crea PDF",
+        class: "btn-success",
+        type:"stampa",
+        disabled: false,
+        cbk: function() {
+          self.print()
         }
-      ]
+      }
     }
   },
   methods: {
     exec: function(cbk) {
       cbk();
+    },
+    btnEnabled: function(button) {
+      return button.disabled;
     },
     isAnnullaButton: function(type) {
       return type == 'annulla'
@@ -59,7 +61,14 @@ var vueComponentOptions = {
     showPrintArea: function() {
       this.$options.service.showPrintArea();
     }
+  },
+  ready: function() {
+    var self = this;
+    this.$options.service.on('showpdf', function(bool) {
+      self.button.disabled = bool;
+    })
   }
+
 };
 
 

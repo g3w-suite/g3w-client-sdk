@@ -10,6 +10,7 @@ function PrinterQGISProvider() {
   this._getPrintUrl = function(options) {
     var options = options || {};
     var project =  ProjectsRegistry.getCurrentProject();
+    var templateMap = options.map || 'map0';
     var url = project.getWmsUrl();
     // devo fare il reverse perchè l'odine conta sulla visualizzazione del print
     var layers = _.reverse(project.getLayers({
@@ -19,21 +20,21 @@ function PrinterQGISProvider() {
     layers = _.map(layers,function(layer){
       return layer.getQueryLayerName()
     });
-    var params= {
+    var params = {
       SERVICE: 'WMS',
       VERSION: '1.3.0',
       REQUEST: 'GetPrint',
       TEMPLATE: options.template,
-      'map0:SCALE': options.scale,
-      ROTATION: options.rotation,
-      'map0:EXTENT': options.extent, // per ora solo map0 po vediamo
       DPI: options.dpi,
       FORMAT: 'pdf',
-      CRS:'EPSG:3003',
-      //HEIGHT:
-      //WIDTH:
+      CRS:'EPSG:'+project.state.crs,
+      HEIGHT: options.height,
+      WIDTH: options.width,
       LAYERS: layers.join()
     };
+    params[templateMap+':SCALE'] = options.scale;
+    params[templateMap+':EXTENT'] = options.extent;
+    params[templateMap+':ROTATION'] = options.rotation;
     url = url + '?' + $.param(params);
     return resolve(url);
 
@@ -48,7 +49,7 @@ function PrinterQGISProvider() {
      */
     var options = options || {};
     var url = this._getPrintUrl(options);
-    return url
+    return url;
     //return $.get(url_params.url, url_params.params)
 
   };
