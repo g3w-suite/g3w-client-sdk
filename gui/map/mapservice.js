@@ -94,7 +94,7 @@ function MapService(options) {
       self._setupViewer(width,height);
       self.state.bbox = this.viewer.getBBOX();
       self.state.resolution = this.viewer.getResolution();
-      self.state.center = this.viewer.getCenter()
+      self.state.center = this.viewer.getCenter();
       self.setupControls();
       self.setupLayers();
       self.emit('viewerset');
@@ -254,6 +254,7 @@ proto.getGetFeatureInfoUrlForLayer = function(layer,coordinates,resolution,epsg,
 proto.setupControls = function(){
   var self = this;
   var map = self.viewer.map;
+  var layers;
   if (this.config && this.config.mapcontrols) {
     _.forEach(this.config.mapcontrols,function(controlType){
       var control;
@@ -299,7 +300,7 @@ proto.setupControls = function(){
           control = ControlsFactory.create({
             type: controlType
           });
-          control.on('picked',function(e){
+          control.on('picked', function(e){
             var coordinates = e.coordinates;
             var showQueryResults = GUI.showContentFactory('query');
             var layers = self.project.getLayers({
@@ -316,76 +317,87 @@ proto.setupControls = function(){
           self.addControl(controlType,control);
           break;
         case 'querybypolygon':
+          layers = self.project.getLayers({
+            QUERYABLE: true,
+            SELECTEDORALL: true
+          });
           control = ControlsFactory.create({
-            type: controlType
+            type: controlType,
+            layers: layers
           });
-          control.on('picked',function(e) {
-            var coordinates = e.coordinates;
-            var showQueryResults = GUI.showContentFactory('query');
-            var layers = self.project.getLayers({
-              QUERYABLE: true,
-              SELECTEDORALL: true
-            });
-            //faccio query by location su i layers selezionati o tutti
-            var queryResultsPanel = showQueryResults('interrogazione');
-            QueryService.queryByLocation(coordinates, layers)
-              .then(function(results) {
-                if (results && results.data[0].features.length) {
-                  var geometry = results.data[0].features[0].getGeometry();
-                  var layers = self.project.getLayers({
-                    QUERYABLE: true,
-                    ALLNOTSELECTED: true,
-                    WFS: true
-                  });
-                  self.highlightGeometry(geometry);
-                  var filterObject = QueryService.createQueryFilterObject({
-                    queryLayers: layers,
-                    ogcService : 'wfs',
-                    filter: {
-                      geometry: geometry
-                    }
-                  });
-                  QueryService.queryByFilter(filterObject)
-                  .then(function(results) {
-                    queryResultsPanel.setQueryResponse(results,coordinates,self.state.resolution);
-                  })
-                  .always(function(){
-                    self.clearHighlightGeometry();
-                  });
-                }
-              });
-          });
-          self.addControl(controlType,control);
-          break;
-        case 'querybbox':
-          if (!isMobile.any && self.checkWFSLayers()) {
-            control = ControlsFactory.create({
-              type: controlType
-            });
-            control.on('bboxend', function (e) {
-              var bbox = e.extent;
+          if (control) {
+            control.on('picked', function (e) {
+              var coordinates = e.coordinates;
               var showQueryResults = GUI.showContentFactory('query');
-              var layers = self.project.getLayers({
-                QUERYABLE: true,
-                SELECTEDORALL: true,
-                WFS: true
-              });
               //faccio query by location su i layers selezionati o tutti
               var queryResultsPanel = showQueryResults('interrogazione');
-              var filterObject = QueryService.createQueryFilterObject({
-                queryLayers: layers,
-                ogcService : 'wfs',
-                filter: {
-                  bbox: bbox
-                }
+              layers = self.project.getLayers({
+                QUERYABLE: true,
+                SELECTED: true
               });
-              QueryService.queryByFilter(filterObject)
-              //QueryService.queryByBBox(bbox, layers)
-                .then(function(results){
-                  queryResultsPanel.setQueryResponse(results,bbox,self.state.resolution);
+              QueryService.queryByLocation(coordinates, layers)
+                .then(function (results) {
+                  if(results && results.data[0].features.length) {
+                    var geometry = results.data[0].features[0].getGeometry();
+                    var queryLayers = self.project.getLayers({
+                      QUERYABLE: true,
+                      ALLNOTSELECTED: true,
+                      WFS: true
+                    });
+                    self.highlightGeometry(geometry);
+                    var filterObject = QueryService.createQueryFilterObject({
+                      queryLayers: queryLayers,
+                      ogcService: 'wfs',
+                      filter: {
+                        geometry: geometry
+                      }
+                    });
+                    QueryService.queryByFilter(filterObject)
+                      .then(function (results) {
+                        queryResultsPanel.setQueryResponse(results, coordinates, self.state.resolution);
+                      })
+                      .always(function () {
+                        self.clearHighlightGeometry();
+                      });
+                  }
                 });
             });
             self.addControl(controlType, control);
+          }
+          break;
+        case 'querybbox':
+          if (!isMobile.any && self.checkWFSLayers()) {
+            layers = self.project.getLayers({
+              QUERYABLE: true,
+              SELECTEDORALL: true,
+              WFS: true
+            });
+            control = ControlsFactory.create({
+              type: controlType,
+              layers: layers
+            });
+            if (control) {
+              control.on('bboxend', function (e) {
+                var bbox = e.extent;
+                var showQueryResults = GUI.showContentFactory('query');
+                //faccio query by location su i layers selezionati o tutti
+                var queryResultsPanel = showQueryResults('interrogazione');
+                var filterObject = QueryService.createQueryFilterObject({
+                  queryLayers: layers,
+                  ogcService: 'wfs',
+                  filter: {
+                    bbox: bbox
+                  }
+                });
+                QueryService.queryByFilter(filterObject)
+                //QueryService.queryByBBox(bbox, layers)
+                  .then(function (results) {
+                    console.log(results);
+                    queryResultsPanel.setQueryResponse(results, bbox, self.state.resolution);
+                  });
+              });
+              self.addControl(controlType, control);
+            }
           }
           break;
         case 'scaleline':
@@ -689,9 +701,11 @@ proto.addInteraction = function(interaction) {
 
 proto.removeInteraction = function(interaction){
   this.viewer.map.removeInteraction(interaction);
+
 };
 
-// emetto evento quando viene attivata un interazione di tipo Pointer (utile ad es. per disattivare/riattivare i tool di editing)
+// emetto evento quando viene attivata un interazione di tipo Pointer
+// (utile ad es. per disattivare/riattivare i tool di editing)
 proto._watchInteraction = function(interaction) {
   var self = this;
   interaction.on('change:active',function(e){
@@ -936,7 +950,8 @@ proto.startDrawGreyCover = function() {
   if (this._greyListenerKey) {
       this.stopDrawGreyCover();
   }
-  this._greyListenerKey = map.on('postcompose', function (evt) {
+
+  function postcompose(evt) {
     var ctx = evt.context;
     var size = this.getSize();
     // Inner polygon,must be counter-clockwise
@@ -975,8 +990,8 @@ proto.startDrawGreyCover = function() {
     ctx.fillStyle = 'rgba(0, 5, 25, 0.55)';
     ctx.fill();
     ctx.restore();
-    this.render()
-  });
+  }
+  this._greyListenerKey = map.on('postcompose', postcompose);
 };
 
 proto.stopDrawGreyCover = function() {

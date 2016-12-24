@@ -78,8 +78,14 @@ function QueryResultsService() {
           features: [],
           hasgeometry: false,
           show: true,
-          expandable: true
+          expandable: true,
+          hasImageField: false // regola che mi permette di vedere se esiste un campo image
         };
+        _.forEach(layerObj.attributes, function(attribute) {
+          if (attribute.type == 'image') {
+            layerObj.hasImageField = true;
+          }
+        });
         _.forEach(featuresForLayer.features, function(feature){
           var fid = feature.getId() ? feature.getId() : id;
           var geometry = feature.getGeometry();
@@ -93,7 +99,6 @@ function QueryResultsService() {
             show: true
             // aggiungo le relazioni
           };
-          //console.log(featureObj);
           layerObj.features.push(featureObj);
           id += 1;
         });

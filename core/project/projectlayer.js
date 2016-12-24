@@ -172,8 +172,8 @@ proto.setQueryUrl = function(queryUrl) {
   this.state.inforurl = queryUrl;
 };
 
-proto.getInfoFormat = function() {
-  if (this.state.infoformat && this.state.infoformat != '') {
+proto.getInfoFormat = function(ogcService) {
+  if (this.state.infoformat && this.state.infoformat != '' && ogcService !='wfs') {
     return this.state.infoformat;
   }
   else {

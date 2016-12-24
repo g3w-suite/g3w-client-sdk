@@ -15,7 +15,7 @@ function PrinterQGISProvider() {
     // devo fare il reverse perchè l'odine conta sulla visualizzazione del print
     var layers = _.reverse(project.getLayers({
       QUERYABLE: true,
-      SELECTEDORALL: true
+      //SELECTEDORALL: true
     }));
     layers = _.map(layers,function(layer){
       return layer.getQueryLayerName()

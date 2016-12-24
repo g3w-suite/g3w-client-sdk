@@ -144,11 +144,11 @@ function PluginService(options) {
   // FINE METODI GETTERS SETTERS
 
   //stop
-  this.stop = function(){
+  this.stop = function() {
     var deferred = $.Deferred();
     if (this.state.editing.on) {
       this._cancelOrSave()
-        .then(function(){
+        .then(function() {
           self._stopEditing();
           deferred.resolve();
         })
@@ -175,7 +175,7 @@ function PluginService(options) {
       this._startEditing();
     }
     // altrimenti se è già in editing chiamo lo stop del plugin
-    // che non è altro che los topo dell'editing
+    // che non è altro che lo stop dell'editing
     else if (this.state.editing.on) {
       return this.stop();
     }

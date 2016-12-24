@@ -62,10 +62,10 @@ proto.unmount = function() {
   var panel = this.internalPanel;
   var deferred = $.Deferred();
   panel.$destroy(true);
-  deferred.resolve();
   if (panel.onClose) {
     panel.onClose();
   }
+  deferred.resolve();
   return deferred.promise();
 };
 

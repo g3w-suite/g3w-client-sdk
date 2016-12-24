@@ -11,7 +11,9 @@ var QueryByPolygonControl = function(options){
     label: "\ue903",
     geometryTypes: ['Polygon', 'MultiPolygon'],
     onselectlayer: true,
-    interactionClass: PickCoordinatesInteraction
+    interactionClass: PickCoordinatesInteraction,
+    help: '<h4>Guida - Query By Polygon</h4><ul><li>Seleziona uno strato poligonale</li><li>Clicca su una feature dello strato selezionato per lanciare la selezione</li></ul>',
+    onhover: true
   };
   options = utils.merge(options,_options);
   InteractionControl.call(this,options);

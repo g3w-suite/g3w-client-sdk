@@ -110,6 +110,13 @@ function PanelComponent(options) {
   this.mount = function(parent) {
     return base(this, 'mount', parent, true)
   };
+  this.unmount = function() {
+    // faccio in modo che venga disattivato l'eventuale tool attivo al momento del
+    // click sulla x
+    this._service._stopEditingTool();
+    GUI.closeForm();
+    return base(this, 'unmount');
+  }
 }
 
 inherit(PanelComponent, Component);

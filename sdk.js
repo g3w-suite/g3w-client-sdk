@@ -29,6 +29,7 @@ g3w.core = {
 g3w.gui = {
   GUI: require('gui/gui'),
   Panel: require('gui/panel'),
+  ControlFactory: require('gui/map/control/factory'),
   vue: {
     Component: require('gui/vue/component'),
     SearchComponent: require('gui/search/vue/search'),
@@ -41,7 +42,17 @@ g3w.gui = {
     PanelComponent: require('gui/editorpanel/vue/panel')
   }
 };
+
+g3w.ol3 = {
+  interactions : {
+    PickFeatureInteraction : require('g3w-ol3/src/interactions/pickfeatureinteraction')
+  },
+  controls: {
+  }
+};
+
 module.exports = {
   core: g3w.core,
-  gui: g3w.gui
+  gui: g3w.gui,
+  ol3: g3w.ol3
 };

@@ -2,10 +2,8 @@ var Control = function(options){
   var name = options.name || "?";
   this.name = name.split(' ').join('-').toLowerCase();
   this.id = this.name+'_'+(Math.floor(Math.random() * 1000000));
-  
   this.positionCode = options.position || 'tl';
-  
-  
+
   if (!options.element) {
     var className = "ol-"+this.name.split(' ').join('-').toLowerCase();
     var tipLabel = options.tipLabel || this.name;
@@ -14,11 +12,8 @@ var Control = function(options){
   }
   
   $(options.element).addClass("ol-control-"+this.positionCode);
-  
   var buttonClickHandler = options.buttonClickHandler || Control.prototype._handleClick.bind(this);
-  
   $(options.element).on('click',buttonClickHandler);
-  
   ol.control.Control.call(this,options);
   
   this._postRender();
@@ -35,11 +30,10 @@ proto.getPosition = function(positionCode) {
   return position;
 };
 
-proto._handleClick = function(event){
+proto._handleClick = function(event) {
   event.preventDefault();
   var self = this;
   var map = this.getMap();
-  
   var resetControl = null;
   // remove all the other, eventually toggled, interactioncontrols
   var controls = map.getControls();
@@ -57,6 +51,7 @@ proto._handleClick = function(event){
 };
 
 proto.layout = function(map) {
+  var self = this;
   if (map) {
     var position =  this.getPosition();
     var viewPort = map.getViewport();

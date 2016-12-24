@@ -7,7 +7,8 @@ var QueryBBoxControl = function(options){
     name: "querybbox",
     tipLabel: "Query BBox layer",
     label: "\ue902",
-    interactionClass: ol.interaction.DragBox
+    interactionClass: ol.interaction.DragBox,
+    help: '<h4>Guida - Query BBox layer</h4><ul><li>Disegna un rettangolo per selezionare i layers</li></ul>'
   };
   options = utils.merge(options,_options);
   InteractionControl.call(this,options);

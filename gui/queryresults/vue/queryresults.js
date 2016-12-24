@@ -91,6 +91,11 @@ var vueComponentOptions = {
       return feature.geometry ? true : false;
     },
     attributesSubset: function(attributes) {
+      // faccio un filtro sul campo immagine perchè non ha senso far vedere
+      // la stringa con il path dell'immagine
+      var attributes = _.filter(attributes, function(attribute) {
+        return attribute.type != 'image';
+      });
       var end = Math.min(maxSubsetLength, attributes.length);
       return attributes.slice(0, end);
     },
@@ -113,7 +118,7 @@ var vueComponentOptions = {
       return this.attributesSubset(attributes).length;
     },
     cellWidth: function(index,layer) {
-      var subsetLength = this.attributesSubsetLength(layer.attributes)
+      var subsetLength = this.attributesSubsetLength(layer.attributes);
       var diff = maxSubsetLength - subsetLength;
       actionsCellWidth = layer.hasgeometry ? headerActionsCellWidth : 0;
       var headerAttributeCellTotalWidth = 100 - headerExpandActionCellWidth - actionsCellWidth;
@@ -207,7 +212,7 @@ function QueryResultsComponent(options) {
     }
   };
 
-  this._service.onafter('setLayersData',function(){
+  this._service.onafter('setLayersData',function() {
     self.createLayersFeaturesBoxes();
   });
   merge(this, options);
@@ -215,11 +220,11 @@ function QueryResultsComponent(options) {
   this.createLayersFeaturesBoxes = function() {
     var layersFeaturesBoxes = {};
     var layers = this._service.state.layers;
-    _.forEach(layers, function(layer){
-      if (layer.attributes.length <= maxSubsetLength) {
+    _.forEach(layers, function(layer) {
+      if (layer.attributes.length <= maxSubsetLength && !layer.hasImageField) {
         layer.expandable = false;
       }
-      _.forEach(layer.features,function(feature,index){
+      _.forEach(layer.features, function(feature,index){
         // se è la prima feature e il layer ha più di maxSubsetLength attributi, allora la espando già in apertura
         //var collapsed = (index == 0 && layer.attributes.length > maxSubsetLength) ? false : true;
         var collapsed = true;
