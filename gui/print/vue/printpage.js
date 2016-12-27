@@ -6,27 +6,21 @@ var InternalComponent = Vue.extend({
   template: require('./printpage.html'),
   data: function() {
     return {
-      url: this.$options.url,
-      state: null
+      url: null
     }
   }
 });
 
 var PrintPage = function(options) {
-
-  var options = options || {};
-  var url = options.url;
-  var service = options.service;
   base(this);
+  var options = options || {};
+  var service = options.service;
   // istanzio il componente interno
-  var internalComponent = new InternalComponent({
-    url: url
-  });
+  var internalComponent = new InternalComponent();
   this.setInternalComponent(internalComponent);
   this.unmount = function() {
     var baseUnMount = base(this, 'unmount');
-    service._clearPrintService(false);
-    service.setInitialPrintArea();
+    service._enableDisablePrintButton(false);
     return baseUnMount;
   }
 };

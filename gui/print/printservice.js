@@ -13,16 +13,13 @@ var dpis = printConfig.dpis;
 
 function PrintComponentService() {
   base(this);
-  this._moveMapKeyEvent = null;
   this.state = {};
-  this._page = null;
-  this._mapService = null;
-  this._map = null;
   this._project = ProjectsRegistry.getCurrentProject();
   this.state.print = ProjectsRegistry.getCurrentProject().state.print;
   this.state.visible = this.state.print.length ? true : false;
   this.state.isShow = false;
   this.state.loading = false;
+  this.state.url = null;
   if (this.state.visible) {
     // Imposto le configurazioni inziali da rivedere
     this.state.template = this.state.print[0].name;
@@ -30,14 +27,19 @@ function PrintComponentService() {
     this.state.inner = null;
     this.state.center = null;
     this.state.size = null;
-    this.state.scala = 5000;
     this.state.scale = scale;
-    this.state.dpi = dpis[0];
+    this.state.scala = null;
     this.state.dpis = dpis;
+    this.state.dpi = dpis[0];
     this.state.map = this.state.print[0].maps[0].name;
     this.state.width = this.state.print[0].maps[0].w;
     this.state.height = this.state.print[0].maps[0].h;
   }
+  this._moveMapKeyEvent = null;
+  // istanzio il componete page per la visualizzazione del pdf
+  this._page = null;
+  this._mapService = null;
+  this._map = null;
   //var mapService = GUI.getComponent('map').getSevice();
   // metodo per il cambio di template
   this.changeTemplate = function() {
@@ -93,20 +95,22 @@ function PrintComponentService() {
   this.print = function() {
     var self = this;
     this._changePrintArea();
+    this._page = new PrintPage({
+      service: this
+    });
     var options = this._getOptionsPrint();
     PrintService.print(options)
     .then(function(url) {
-      // chiamo il metodo pushContent
-      self._page = new PrintPage({
-        url: url,
-        service: self
-      });
+      self.state.url = url;
+      self._page.internalComponent.url = url;
       GUI.setContent({
         content: self._page,
         title: 'Stampa'
       });
       if (!self.state.isShow) {
         self.state.isShow = true;
+        // emetto l'evento showpdf per disabilitare il bottone
+        //crea pdf
         self.emit('showpdf', true);
       }
     })
@@ -115,7 +119,7 @@ function PrintComponentService() {
 
   // funzione che setta il BBOX della printArea
   this._setBBoxPrintArea = function() {
-    var scale = this.state.scala || 1000;
+    var scale = this.state.scala;
     var resolution = scaleToRes(scale);
     // rapporto tra largheza e altezza della mappa nel template
     var rapportoMappaTemplate = this.state.width/this.state.height;
@@ -150,12 +154,10 @@ function PrintComponentService() {
   };
 
   // metodo chiusura print panel
-  this._clearPrintService = function(bool) {
-    var bool = _.isBoolean(bool) ? bool : true;
+  this._clearPrintService = function() {
+    // rimovo l'evento movend della mappa
     this._map.unByKey(this._moveMapKeyEvent);
     this._moveMapKeyEvent = null;
-    this.state.isShow = bool;
-    this.emit('showpdf', bool);
     this._changePrintArea();
   };
 
@@ -166,11 +168,29 @@ function PrintComponentService() {
       var options = this._getOptionsPrint();
       PrintService.print(options)
         .then(function (url) {
-          if (self._page) {
+          self.state.url = url;
+          if (self._page && self._page.internalComponent) {
+            //da rivedere
             self._page.internalComponent.url = url;
           }
         })
     }
+  };
+
+  this._getInitialScaleFromProject = function() {
+    var self = this;
+    var resolution = this._map.getView().getResolution();
+    var initialScala = resToScale(resolution);
+    _.forEach(printConfig.scale, function(scala, index) {
+      if (initialScala < scala.value) {
+        // da rivedere tutto il vue select
+        // al momento fatto con jquery
+        self.state.scala = printConfig.scale[index-1].value;
+        // da rivedere
+        $('#scala').val(printConfig.scale[index-1].value);
+        return false
+      }
+    });
   };
 
   //funzione che setta l'area iniziale
@@ -178,9 +198,13 @@ function PrintComponentService() {
     var self = this;
     this.state.center = this._map.getView().getCenter();
     this.state.size = this._map.getSize();
+    this._getInitialScaleFromProject();
     this._setBBoxPrintArea();
     this._moveMapKeyEvent = this._map.on('moveend', function() {
       self.state.center = this.getView().getCenter();
+      if (!self.state.isShow) {
+        self.state.size = this.getSize();
+      }
       self._setBBoxPrintArea();
       self._mapService.setInnerGreyCoverBBox({
         inner: self.state.inner
@@ -196,6 +220,11 @@ function PrintComponentService() {
     if (this.state.isShow) {
       this._changePrintOutput();
     }
+  };
+  // funzione che abilitita e disabilita il bottone crea pdf
+  this._enableDisablePrintButton = function(bool) {
+    this.state.isShow = bool;
+    this.emit('showpdf', bool);
   };
 
   // metodo per la visualizzazione dell'area grigia o meno

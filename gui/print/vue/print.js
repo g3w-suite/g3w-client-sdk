@@ -83,7 +83,7 @@ function PrintComponent(options) {
   merge(this, options);
   // dichiaro l'internal Component
   this.internalComponent = null;
-  // settor il service del component
+  // setto il service del component (istanzio il nuovo servizio)
   this._service = options.service || new PrintService;
   // setto il componente interno
   this.setInternalComponent = function () {
@@ -95,6 +95,7 @@ function PrintComponent(options) {
     this._service.state = _.merge(this.state, this._service.state);
     // assegno all'internal compoent lo state mergiato
     this.internalComponent.state = this._service.state;
+    // ritorno l'internal component
     return this.internalComponent;
   };
 
