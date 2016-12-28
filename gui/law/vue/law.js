@@ -7,7 +7,7 @@ var InternalComponent = Vue.extend({
   template: require('./law.html'),
   data: function() {
     return {
-      url: this.$options.url
+     state: null
     }
   }
 });
@@ -16,11 +16,10 @@ var LawComponent = function(options) {
   base(this);
   var options = options || {};
   var service = options.service || new LawService;
-  var url = service.getLaw(options);
-  var internalComponent = new InternalComponent({
-    url: url
-  });
+  this.setService(service);
+  var internalComponent = new InternalComponent;
   this.setInternalComponent(internalComponent);
+  this.internalComponent.state = service.state
 };
 
 inherit(LawComponent, Component);

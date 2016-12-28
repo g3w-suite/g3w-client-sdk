@@ -4,6 +4,9 @@ var base = require('core/utils/utils').base;
 
 function LawService() {
   base(this);
+  this.state = {
+    url: null
+  };
   this.getLaw = function(options) {
     var value = options.value || '';
     var delimiter = options.options.delimiter || ',';
@@ -14,7 +17,8 @@ function LawService() {
     var comma = parameters[2] || '';
     // costruisco l'url del pdf
     var url = api + '?article='+article+'&comma='+comma+'&law='+law+'&format=pdf';
-    return url
+    this.state.url = url;
+    return url;
   }
 }
 
