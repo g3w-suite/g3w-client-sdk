@@ -18,8 +18,11 @@ var LawComponent = function(options) {
   var delimiter = options.options.delimiter || ',';
   var api = options.options.lawurl || '';
   var parameters = value.split(delimiter);
+  var law = parameters[0];
+  var article = parameters[1];
+  var comma = parameters[2] || '';
   // costruisco l'url del pdf
-  var url = api + '/?article='+parameters[1]+'&comma='+parameters[2]+'&law='+parameters[0]+'&format=pdf';
+  var url = api + '?article='+article+'&comma='+comma+'&law='+law+'&format=pdf';
   var internalComponent = new InternalComponent({
     url: url
   });

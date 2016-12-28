@@ -66,7 +66,7 @@ var vueComponentOptions = {
     },
     isLaw: function(type, value, options) {
       var parameters = value.split(options.delimiter);
-      return (type == Fields.LAW && parameters.length == 3 && options.lawurl);
+      return (type == Fields.LAW && parameters.length > 1 && options.lawurl);
     },
     showLaw: function(value, options) {
       this.$options.queryResultsService.openLaw(value, options);
