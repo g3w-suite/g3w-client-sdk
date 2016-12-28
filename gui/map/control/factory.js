@@ -11,12 +11,16 @@ var ControlsFactory = {
   create: function(options) {
     var control;
     var ControlClass = ControlsFactory.CONTROLS[options.type];
-    var layers = options.layers; // optione che mi server per far visualizzare o meno il controllo
+    var layers = options.layers; // opzione che mi server per far visualizzare o meno il controllo
     if(ControlClass) {
       control = new ControlClass(options);
     }
     // nel caso siano stati specificati i layers del progetto su cui interrogare
     if (layers && control instanceof Control) {
+      // nel caso l'array dei layer è vuoto non visualizzo il controllo
+      if (!layers.length) {
+        return null
+      }
       // ricavo le geometry su cui deve essere fatto i layer
       var controlGeometryTypes = control.getGeometryTypes();
       // imposto il valore iniziale di visible se è un array vuoto vuol dire che non ho specificato nessuna
@@ -28,6 +32,7 @@ var ControlsFactory = {
           return false;
         }
       });
+
       if (visible) {
         return control;
       } else {

@@ -254,7 +254,6 @@ proto.getGetFeatureInfoUrlForLayer = function(layer,coordinates,resolution,epsg,
 proto.setupControls = function(){
   var self = this;
   var map = self.viewer.map;
-  var layers;
   if (this.config && this.config.mapcontrols) {
     _.forEach(this.config.mapcontrols,function(controlType){
       var control;
@@ -317,7 +316,7 @@ proto.setupControls = function(){
           self.addControl(controlType,control);
           break;
         case 'querybypolygon':
-          layers = self.project.getLayers({
+          var layers = self.project.getLayers({
             QUERYABLE: true,
             SELECTEDORALL: true
           });
@@ -367,7 +366,7 @@ proto.setupControls = function(){
           break;
         case 'querybbox':
           if (!isMobile.any && self.checkWFSLayers()) {
-            layers = self.project.getLayers({
+            var layers = self.project.getLayers({
               QUERYABLE: true,
               SELECTEDORALL: true,
               WFS: true
@@ -380,6 +379,7 @@ proto.setupControls = function(){
               control.on('bboxend', function (e) {
                 var bbox = e.extent;
                 var showQueryResults = GUI.showContentFactory('query');
+                console.log(layers);
                 //faccio query by location su i layers selezionati o tutti
                 var queryResultsPanel = showQueryResults('interrogazione');
                 var filterObject = QueryService.createQueryFilterObject({

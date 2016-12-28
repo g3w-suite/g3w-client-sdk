@@ -11,6 +11,7 @@ var InteractionControl = function(options) {
   this._enabled = (options.enabled === false) ? false : true;
   this._onhover = options.onhover || false;
   this._help = options.help || null;
+  this._closeNotifyButton = '<button>Ho Capito</button>';
   options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
   Control.call(this, options);
   this.setEnable(this._enabled);

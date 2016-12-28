@@ -1,6 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var Component = require('gui/vue/component');
+var LawService = require('gui/law/lawservice');
 
 var InternalComponent = Vue.extend({
   template: require('./law.html'),
@@ -14,15 +15,8 @@ var InternalComponent = Vue.extend({
 var LawComponent = function(options) {
   base(this);
   var options = options || {};
-  var value = options.value || '';
-  var delimiter = options.options.delimiter || ',';
-  var api = options.options.lawurl || '';
-  var parameters = value.split(delimiter);
-  var law = parameters[0];
-  var article = parameters[1];
-  var comma = parameters[2] || '';
-  // costruisco l'url del pdf
-  var url = api + '?article='+article+'&comma='+comma+'&law='+law+'&format=pdf';
+  var service = options.service || new LawService;
+  var url = service.getLaw(options);
   var internalComponent = new InternalComponent({
     url: url
   });
