@@ -53,7 +53,7 @@ var vueComponentOptions = {
 
       this.$options.service.changeRotation();
     },
-    // lancia il print
+    // lfunzione dedicata alla visualizzazione dell'ouput del print
     print: function() {
       this.$options.service.print();
     },
@@ -68,7 +68,6 @@ var vueComponentOptions = {
       self.button.disabled = bool;
     })
   }
-
 };
 
 
@@ -84,17 +83,19 @@ function PrintComponent(options) {
   // dichiaro l'internal Component
   this.internalComponent = null;
   // setto il service del component (istanzio il nuovo servizio)
-  this._service = options.service || new PrintService;
+  var service = options.service || new PrintService;
+  this.setService(service);
   // setto il componente interno
   this.setInternalComponent = function () {
     var InternalComponent = Vue.extend(this.vueComponent);
     this.internalComponent = new InternalComponent({
-      service: this._service
+      service: service
     });
-    // faccio il merge tra lo state del service e quello del componente
-    this._service.state = _.merge(this.state, this._service.state);
-    // assegno all'internal compoent lo state mergiato
-    this.internalComponent.state = this._service.state;
+    // setto la visibilità del print in base a quella del servizio calcolata sull'array
+    // print restituita dal server
+    this.state.visible = service.state.visible;
+    // assegno all'internal componente lo state mergiato
+    this.internalComponent.state = service.state;
     // ritorno l'internal component
     return this.internalComponent;
   };

@@ -6,8 +6,14 @@ var InternalComponent = Vue.extend({
   template: require('./printpage.html'),
   data: function() {
     return {
-      url: null
+      state: null
     }
+  },
+  ready: function() {
+    var self = this;
+    $('#pdf').load(function(){
+      self.state.loading = false;
+    })
   }
 });
 
@@ -16,8 +22,10 @@ var PrintPage = function(options) {
   var options = options || {};
   var service = options.service;
   // istanzio il componente interno
+  this.setService(service);
   var internalComponent = new InternalComponent();
   this.setInternalComponent(internalComponent);
+  this.internalComponent.state = service.state;
   this.unmount = function() {
     var baseUnMount = base(this, 'unmount');
     service._enableDisablePrintButton(false);
