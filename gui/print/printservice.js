@@ -13,9 +13,13 @@ var dpis = printConfig.dpis;
 
 function PrintComponentService() {
   base(this);
-  this.state = {};
+  // recupero il project
   this._project = ProjectsRegistry.getCurrentProject();
-  this.state.print = ProjectsRegistry.getCurrentProject().state.print;
+  // inizializzo lo state
+  this.state = {};
+  // prendo le informazioni del print
+  this.state.print = this._project.state.print;
+  // setto lo state visible
   this.state.visible = this.state.print.length ? true : false;
   this.state.isShow = false;
   this.state.loading = false;
@@ -36,6 +40,7 @@ function PrintComponentService() {
     this.state.height = this.state.print[0].maps[0].h;
   }
   this._moveMapKeyEvent = null;
+  this._loadPdfKey = null;
   // istanzio il componete page per la visualizzazione del pdf
   this._page = null;
   this._mapService = null;
@@ -102,7 +107,6 @@ function PrintComponentService() {
     PrintService.print(options)
     .then(function(url) {
       self.state.url = url;
-      self._page.internalComponent.url = url;
       GUI.setContent({
         content: self._page,
         title: 'Stampa'
@@ -165,14 +169,11 @@ function PrintComponentService() {
   this._changePrintOutput = function() {
     var self = this;
     if (this.state.isShow) {
+      this.state.loading = true;
       var options = this._getOptionsPrint();
       PrintService.print(options)
         .then(function (url) {
           self.state.url = url;
-          if (self._page && self._page.internalComponent) {
-            //da rivedere
-            self._page.internalComponent.url = url;
-          }
         })
     }
   };

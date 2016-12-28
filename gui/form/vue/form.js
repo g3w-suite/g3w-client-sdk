@@ -38,7 +38,7 @@ var vueComponentOptions = {
   template: null,
   data: function() {
     return {
-      state: this.$options.formService.state,
+      state: null,
       tools : {
         copypaste: false
       }
@@ -349,7 +349,7 @@ function FormComponent(options) {
       template: this.getInternalTemplate()
     });
     // associo lo state del componente interno a quello del service
-    // perchè le funxioni che maipolano lo stato del componente sono delegate al service nella
+    // perchè le funzioni che maipolano lo stato del componente sono delegate al service nella
     // maggior parte dei casi
     this.internalComponent.state = this.getService().state;
   };
