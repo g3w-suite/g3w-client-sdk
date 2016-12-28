@@ -173,6 +173,9 @@ function PrintComponentService() {
       var options = this._getOptionsPrint();
       PrintService.print(options)
         .then(function (url) {
+          if (self.state.url == url) {
+            self.state.loading = false;
+          }
           self.state.url = url;
         })
     }
