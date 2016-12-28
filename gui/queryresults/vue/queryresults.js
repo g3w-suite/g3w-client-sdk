@@ -11,14 +11,15 @@ Fields.LINK = 'link';
 Fields.PHOTO = 'photo';
 Fields.POINTLINK = 'pointlink';
 Fields.ROUTE = 'route';
+Fields.LAW = 'law';
 
-function getFieldType(layer,name,value) {
+function getFieldType(layer, name, value) {
+
   var URLPattern = /^(https?:\/\/[^\s]+)/g;
   var PhotoPattern = /[^\s]+.(png|jpg|jpeg)$/g;
   if (_.isNil(value)) {
     return Fields.SIMPLE;
   }
-
   value = value.toString();
 
   var extension = value.split('.').pop();
@@ -62,6 +63,13 @@ var vueComponentOptions = {
     },
     is: function(type,layer,attributeName,attributeValue) {
       return fieldIs(type,layer,attributeName,attributeValue);
+    },
+    isLaw: function(type, value, options) {
+      var parameters = value.split(options.delimiter);
+      return (type == Fields.LAW && parameters.length == 3 && options.lawurl);
+    },
+    showLaw: function(value, options) {
+      this.$options.queryResultsService.openLaw(value, options);
     },
     isRelativePath: function(url) {
       if (!_.startsWith(url,'/')) {
@@ -174,6 +182,9 @@ var vueComponentOptions = {
     },
     trigger: function(action,layer,feature) {
       this.$options.queryResultsService.trigger(action,layer,feature);
+    },
+    showLaw: function(article, comma, law, api) {
+      this.$options.queryResultsService.showLaw(article, comma, law, api);
     }
   },
   watch: {
@@ -224,7 +235,7 @@ function QueryResultsComponent(options) {
       if (layer.attributes.length <= maxSubsetLength && !layer.hasImageField) {
         layer.expandable = false;
       }
-      _.forEach(layer.features, function(feature,index){
+      _.forEach(layer.features, function(feature, index){
         // se è la prima feature e il layer ha più di maxSubsetLength attributi, allora la espando già in apertura
         //var collapsed = (index == 0 && layer.attributes.length > maxSubsetLength) ? false : true;
         var collapsed = true;

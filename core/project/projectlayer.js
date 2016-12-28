@@ -82,6 +82,15 @@ proto.getAttributes = function() {
   return this.state.fields;
 };
 
+proto.changeAttribute = function(attribute, type, options) {
+  _.forEach(this.state.fields, function(field) {
+    if (field.name == attribute) {
+      field.type = type;
+      field.options = options;
+    }
+  })
+};
+
 proto.getAttributeLabel = function(name) {
   var label;
   _.forEach(this.getAttributes(),function(field){

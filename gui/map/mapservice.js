@@ -392,7 +392,6 @@ proto.setupControls = function(){
                 QueryService.queryByFilter(filterObject)
                 //QueryService.queryByBBox(bbox, layers)
                   .then(function (results) {
-                    console.log(results);
                     queryResultsPanel.setQueryResponse(results, bbox, self.state.resolution);
                   });
               });
