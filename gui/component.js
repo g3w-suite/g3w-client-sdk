@@ -4,7 +4,8 @@ var G3WObject = require('core/g3wobject');
 var VUECOMPONENTSATTRIBUTES = ['methods', 'computed', 'data', 'components'];
 
 var Component = function(options) {
-  var options = options || {};
+  options = options || {};
+  this.options = options;
   this.internalComponent = null;
   this.id = options.id || Math.random() * 1000;
   this.title = options.title || '';

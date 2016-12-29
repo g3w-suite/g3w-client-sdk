@@ -41,6 +41,7 @@ gulp.task('browserify', [], function(done) {
       bundler = watchify(bundler);
     }*/
     bundler.transform(stringify, {
+      global: true,
       appliesTo: { includeExtensions: ['.html'] }
     });
     bundler.bundle()
