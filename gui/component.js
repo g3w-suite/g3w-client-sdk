@@ -1,18 +1,31 @@
 var inherit = require('core/utils/utils').inherit;
 var merge = require('core/utils/utils').merge;
+var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var VUECOMPONENTSATTRIBUTES = ['methods', 'computed', 'data', 'components'];
 
 var Component = function(options) {
+
   options = options || {};
-  this.options = options;
   this.internalComponent = null;
   this.id = options.id || Math.random() * 1000;
   this.title = options.title || '';
   this.state = {
     visible: options.visible || true,
     open: options.open || false
-  }
+  };
+  //setters
+  this.setters = {
+    setOpen: function(bool) {
+      this.state.open = bool;
+      this._setOpen();
+    },
+    setVisible: function(bool) {
+      this.state.visible = bool;
+      this._setVisible();
+    }
+  };
+  base(this);
 };
 
 inherit(Component, G3WObject);
@@ -165,6 +178,7 @@ proto.setInternalComponentTemplate = function(template) {
 proto.getInternalTemplate = function() {
   return this.vueComponent.template;
 };
+
 ////////// fine metodi Service Components //////////
 /* HOOKS */
 /* 
@@ -184,7 +198,15 @@ proto.ismount = function() {
   return true;
 };
 
-/* 
+// se si vuole usare il componete lo deve ridefinire
+proto._setOpen = function() {
+};
+
+
+// se si vuole usare il componete lo deve ridefinire
+proto._setVisible = function() {};
+
+/*
  * Metodo (opzionale) che offre l'opportunità di ricalcolare proprietà dipendenti dalle dimensioni del padre
  * parentHeight: nuova altezza del parent
  * parentWidth: nuova larghezza del parent
