@@ -183,8 +183,9 @@ var vueComponentOptions = {
     trigger: function(action,layer,feature) {
       this.$options.queryResultsService.trigger(action,layer,feature);
     },
-    showLaw: function(article, comma, law, api) {
-      this.$options.queryResultsService.showLaw(article, comma, law, api);
+    showLaw: function(value, options) {
+
+      this.$options.queryResultsService.showLaw(value, options);
     }
   },
   watch: {

@@ -221,7 +221,7 @@ Vue.component('legend-item',{
 /* FINE COMPONENTI FIGLI */
 
 /* INTERFACCIA PUBBLICA */
-function CatalogComponent(options){
+function CatalogComponent(options) {
   base(this);
   var self = this;
   this.id = "catalog-component";
@@ -232,7 +232,7 @@ function CatalogComponent(options){
   function listenToMapVisibility(map) {
     var mapService = map.getService();
     self.state.visible = !mapService.state.hidden;
-    mapService.onafter('setHidden',function(hidden){
+    mapService.onafter('setHidden',function(hidden) {
       self.state.visible = !mapService.state.hidden;
       self.state.expanded = true;
     })
@@ -251,7 +251,6 @@ function CatalogComponent(options){
       listenToMapVisibility(map)
     }
   }
-
   //mergio opzioni con proprità di default del componente
   merge(this, options);
 }

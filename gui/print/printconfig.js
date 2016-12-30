@@ -1,5 +1,21 @@
 var scale = [
   {
+    value:5,
+    label:'1:5'
+  },
+  {
+    value:10,
+    label:'1:10'
+  },
+  {
+    value:25,
+    label:'1:25'
+  },
+  {
+    value:50,
+    label:'1:50'
+  },
+  {
     value:100,
     label:'1:100'
   },

@@ -98,7 +98,7 @@ proto._onsetter = function(when,setter,listener,async,priority){ /*when=before|a
   }
 };*/
 
-proto._setupListenersChain = function(setters){
+proto._setupListenersChain = function(setters) {
   // inizializza tutti i metodi definiti nell'oggetto "setters" della classe figlia.
   var self = this;
   this.settersListeners = {
@@ -106,7 +106,8 @@ proto._setupListenersChain = function(setters){
     before:{}
   };
   // per ogni setter viene definito l'array dei listeners e fiene sostituito il metodo originale con la funzioni che gestisce la coda di listeners
-  _.forEach(setters,function(setterOption,setter){
+  _.forEach(setters,function(setterOption,setter) {
+
     var setterFnc = noop;
     var setterFallback = noop;
     if (_.isFunction(setterOption)){

@@ -20,6 +20,7 @@ var LawComponent = function(options) {
   var internalComponent = new InternalComponent;
   this.setInternalComponent(internalComponent);
   this.internalComponent.state = service.state
+  service.getLaw(options);
 };
 
 inherit(LawComponent, Component);

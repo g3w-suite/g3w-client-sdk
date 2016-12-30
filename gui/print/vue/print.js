@@ -79,7 +79,7 @@ function PrintComponent(options) {
   // qui vado a tenere traccia delle due cose che mi permettono di customizzare
   // vue component e service
   this.vueComponent = vueComponentOptions;
-  merge(this, options);
+  //merge(this, options);
   // dichiaro l'internal Component
   this.internalComponent = null;
   // setto il service del component (istanzio il nuovo servizio)
@@ -99,6 +99,12 @@ function PrintComponent(options) {
     // ritorno l'internal component
     return this.internalComponent;
   };
+
+  // funzione che viene chaimata quando viene visualizzato il contentuto del componente Stampa
+  // nella sidebar
+  this._setOpen = function() {
+    this._service.showPrintArea(this.state.open);
+  }
 
 }
 

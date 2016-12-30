@@ -11,8 +11,10 @@ var PrintPage = require('./vue/printpage');
 var scale = printConfig.scale;
 var dpis = printConfig.dpis;
 
+
 function PrintComponentService() {
   base(this);
+  this._initialized = false;
   // recupero il project
   this._project = ProjectsRegistry.getCurrentProject();
   // inizializzo lo state
@@ -40,11 +42,11 @@ function PrintComponentService() {
     this.state.height = this.state.print[0].maps[0].h;
   }
   this._moveMapKeyEvent = null;
-  this._loadPdfKey = null;
   // istanzio il componete page per la visualizzazione del pdf
   this._page = null;
   this._mapService = null;
   this._map = null;
+  this._changeScaleFromSelect = false;
   //var mapService = GUI.getComponent('map').getSevice();
   // metodo per il cambio di template
   this.changeTemplate = function() {
@@ -52,25 +54,33 @@ function PrintComponentService() {
     var template = this.state.template;
     _.forEach(this.state.print, function(print) {
       if (print.name == template) {
+        // al momento hardcoded mpa0
         self.state.width = print.maps[0].w;
         self.state.height = print.maps[0].h;
         self.state.map = print.maps[0].name;
       }
     });
     this._setBBoxPrintArea();
-    this._mapService.setInnerGreyCoverBBox({
-      inner: this.state.inner
-    });
     this._changePrintOutput();
   };
 
   // metodo per il cambio di scala
   this.changeScale = function() {
-    this._setBBoxPrintArea();
-    this._mapService.setInnerGreyCoverBBox({
-      inner: this.state.inner
+    var self = this;
+    var resolution;
+    this._changeScaleFromSelect = true;
+    var found = false;
+    _.forEach(this.state.scale, function(scala) {
+      if (scala.value > self.state.scala)   {
+        resolution = scaleToRes((scala.value + 1*self.state.scala)/2);
+        found = true;
+        return false
+      }
     });
-    this._changePrintOutput();
+    if (!found) {
+      resolution = scaleToRes(this.state.scala);
+    }
+    this._map.getView().setResolution(resolution);
   };
 
   // metodo per il cambio di rotazione
@@ -116,6 +126,7 @@ function PrintComponentService() {
         // emetto l'evento showpdf per disabilitare il bottone
         //crea pdf
         self.emit('showpdf', true);
+        self.state.size = self._map.getSize()
       }
     })
   };
@@ -123,25 +134,39 @@ function PrintComponentService() {
 
   // funzione che setta il BBOX della printArea
   this._setBBoxPrintArea = function() {
-    var scale = this.state.scala;
-    var resolution = scaleToRes(scale);
+    var resolution = scaleToRes(this.state.scala);
     // rapporto tra largheza e altezza della mappa nel template
     var rapportoMappaTemplate = this.state.width/this.state.height;
     // rapporto larghezza e altezza della mappa nel client (viewport)
     var rapportoMappaClient = this.state.size[0]/this.state.size[1];
     var width, height;
     if (rapportoMappaClient > 1) {
-      height = this.state.size[1] / 2; // numero di pixel raggio larghezza
-      width = height * rapportoMappaTemplate ; // numero di pixel raggio altezza
+      if (rapportoMappaTemplate > 1) {
+        width = this.state.size[0] / 2; // numero di pixel raggio larghezza
+        height = width / rapportoMappaTemplate; // numero di pixel raggio altezza
+      } else {
+        height = this.state.size[1] / 2; // numero di pixel raggio larghezza
+        width = height * rapportoMappaTemplate ; // numero di pixel raggio altezza
+      }
     } else {
-      width = this.state.size[0] / 2; // numero di pixel raggio larghezza
-      height = width / rapportoMappaTemplate; // numero di pixel raggio altezza
+      if (rapportoMappaTemplate > 1) {
+        width = this.state.size[0] / 2; // numero di pixel raggio larghezza
+        height = width / rapportoMappaTemplate; // numero di pixel raggio altezza
+      } else {
+        height = this.state.size[1] / 2; // numero di pixel raggio larghezza
+        width = height * rapportoMappaTemplate ; // numero di pixel raggio altezza
+      }
     }
     x_min = this.state.center[0] - (width*resolution);
     y_min = this.state.center[1] - (height*resolution);
     x_max = this.state.center[0] + (width*resolution);
     y_max = this.state.center[1] + (height*resolution);
+
     this.state.inner =  [x_min, y_min, x_max, y_max];
+    this._mapService.setInnerGreyCoverBBox({
+      inner: this.state.inner,
+      rotation: this.state.rotation
+    });
   };
 
   // funzione che ricalcola il centro e il size della mappa
@@ -149,9 +174,6 @@ function PrintComponentService() {
     this.state.center = this._map.getView().getCenter();
     this.state.size = this._map.getSize();
     this._setBBoxPrintArea();
-    this._mapService.setInnerGreyCoverBBox({
-      inner: this.state.inner
-    });
     this._changePrintOutput();
     // vado a risettare il centro della mappa in posizione originale
     this._map.getView().setCenter(this.state.center);
@@ -168,6 +190,7 @@ function PrintComponentService() {
   // funzione che fa il change dell'ouput
   this._changePrintOutput = function() {
     var self = this;
+    // verifico se l'otuput pdf è visibile
     if (this.state.isShow) {
       this.state.loading = true;
       var options = this._getOptionsPrint();
@@ -181,50 +204,78 @@ function PrintComponentService() {
     }
   };
 
-  this._getInitialScaleFromProject = function() {
+  // funzione che setta la massima e iniziale scala del progetto
+  this._getInitialScala = function() {
     var self = this;
+    // prendo la risoluzione della mappa
     var resolution = this._map.getView().getResolution();
+    // ci calcolo la scala associata
     var initialScala = resToScale(resolution);
-    _.forEach(printConfig.scale, function(scala, index) {
+    var indexMaxScale = 0;
+    _.forEach(this.state.scale, function(scala, index) {
       if (initialScala < scala.value) {
-        // da rivedere tutto il vue select
-        // al momento fatto con jquery
-        self.state.scala = printConfig.scale[index-1].value;
-        // da rivedere
-        $('#scala').val(printConfig.scale[index-1].value);
+        self.state.scala = self.state.scale[index-1].value;
+        $('#scala').val(self.state.scala);
+        indexMaxScale = index;
         return false
       }
+    });
+    if (! this._initialized) {
+      // vado a limitare le scale
+      this.state.scale.splice(indexMaxScale);
+      this._initialized = true;
+    }
+  };
+
+  //setta la sacala
+  this._setScalaFromScales = function(currentscale) {
+    var self = this;
+    var found = false;
+    _.forEach(this.state.scale, function(scala, index) {
+      if (currentscale < scala.value) {
+        if (index == 0) {
+          self.state.scala = self.state.scale[index].value;
+          $('#scala').val(self.state.scala);
+        } else {
+          self.state.scala = self.state.scale[index - 1].value;
+          $('#scala').val(self.state.scala);
+        }
+        found = true;
+        return false
+      }
+    });
+    if (!found) {
+      this.state.scala = this.state.scale[this.state.scale.length-1].value;
+      $('#scala').val(this.state.scala);
+    }
+  };
+
+  this._setMoveendMapEvent = function() {
+    var resolution;
+    var self = this;
+    this._moveMapKeyEvent = this._map.on('moveend', function() {
+      self.state.size = this.getSize();
+      self.state.center = this.getView().getCenter();
+      if (!self._changeScaleFromSelect) {
+        resolution = this.getView().getResolution();
+        self._setScalaFromScales(resToScale(resolution));
+      }
+      self._setBBoxPrintArea();
+      self._changePrintOutput();
+      self._changeScaleFromSelect = false;
     });
   };
 
   //funzione che setta l'area iniziale
-  this.setInitialPrintArea = function() {
-    var self = this;
+  this._setPrintArea = function() {
     this.state.center = this._map.getView().getCenter();
     this.state.size = this._map.getSize();
-    this._getInitialScaleFromProject();
     this._setBBoxPrintArea();
-    this._moveMapKeyEvent = this._map.on('moveend', function() {
-      self.state.center = this.getView().getCenter();
-      if (!self.state.isShow) {
-        self.state.size = this.getSize();
-      }
-      self._setBBoxPrintArea();
-      self._mapService.setInnerGreyCoverBBox({
-        inner: self.state.inner
-      });
-      self._changePrintOutput();
-    });
-    // setto le caratteristiche del bbox interno
-    this._mapService.setInnerGreyCoverBBox({
-      inner: self.state.inner,
-      rotation: 0
-    });
     this._mapService.startDrawGreyCover();
-    if (this.state.isShow) {
-      this._changePrintOutput();
-    }
+    this._changePrintOutput();
   };
+
+
   // funzione che abilitita e disabilita il bottone crea pdf
   this._enableDisablePrintButton = function(bool) {
     this.state.isShow = bool;
@@ -236,17 +287,22 @@ function PrintComponentService() {
     this._mapService = GUI.getComponent('map').getService();
     this._map = this._mapService.viewer.map;
     if (bool) {
-      this.setInitialPrintArea();
+      // registo il moveend map event
+      this._setMoveendMapEvent();
+      // setto la scala iniziale derivato dalle proprietà della mappa
+      // e limito la selezione delle scale
+      this._getInitialScala();
+      // setto la area di print
+      this._setPrintArea();
     } else {
+      // dico al mapservice di fermare il disegno del print area
       this._mapService.stopDrawGreyCover();
+      // vado a ripulire tutti le cose legate al print
       this._clearPrintService();
     }
   };
 
-  // metodo richiamato dal template sidebar
-  this.showContex = function(bool) {
-    this.showPrintArea(bool);
-  }
+
 }
 
 inherit(PrintComponentService, G3WObject);
