@@ -379,7 +379,6 @@ proto.setupControls = function(){
               control.on('bboxend', function (e) {
                 var bbox = e.extent;
                 var showQueryResults = GUI.showContentFactory('query');
-                console.log(layers);
                 //faccio query by location su i layers selezionati o tutti
                 var queryResultsPanel = showQueryResults('interrogazione');
                 var filterObject = QueryService.createQueryFilterObject({

@@ -65,8 +65,13 @@ var ApplicationService = function(){
         // registra i progetti
         ProjectsRegistry.init(this._config)
       ).then(function() {
+        // temporaneo
+        var currentProject = ProjectsRegistry.getCurrentProject();
+        if (currentProject.state.law && currentProject.state.law.length) {
+          self._config.plugins['law'] =  currentProject.state.law;
+        }
         // una volta inizializzati i progetti e l'api service
-        // registra i plugins passando gli statci urls e l'oggetto plugins
+        // registra i plugins passando gli static urls e l'oggetto plugins
         PluginsRegistry.init({
           pluginsBaseUrl: self._config.urls.staticurl,
           pluginsConfigs: self._config.plugins

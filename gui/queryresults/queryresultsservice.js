@@ -4,12 +4,9 @@ var GUI = require('gui/gui');
 var G3WObject = require('core/g3wobject');
 var ComponentsRegistry = require('gui/componentsregistry');
 var ProjectsRegistry = require('core/project/projectsregistry');
-var LawComponent = require('gui/law/vue/law');
 
 function QueryResultsService() {
   var self = this;
-  // verifica nel progetto se è stato attivato il widget law
-  this._lawConfig = ProjectsRegistry.getCurrentProject().state.law;
   this._actions = {
     'zoomto': QueryResultsService.zoomToElement,
     'highlightgeometry': QueryResultsService.highlightGeometry,
@@ -30,7 +27,7 @@ function QueryResultsService() {
       //setto i layers data
       this.setLayersData(layers, this);
     },
-    setLayersData: function(layers, self) {
+    setLayersData: function(layers) {
       // un opportunità per aggiungere / modificare i risultati dell'interrogazione
       this.state.loading = false;
       this.state.layers =  layers;
@@ -78,13 +75,6 @@ function QueryResultsService() {
     _.forEach(featuresForLayers, function(featuresForLayer) {
       // prendo il layer
       var layer = featuresForLayer.layer;
-      // verifico se esiste una configurazione law
-      // che riguarda quel paricolare layer
-      _.forEach(self._lawConfig, function(law) {
-        if (layer.getId() == law.options.layerid) {
-          layer.changeAttribute(law.options.field, 'law', law.options)
-        }
-      });
       // verifico che ci siano feature legate a quel layer che sono il risultato della query
       if (featuresForLayer.features.length) {
         // se si vado a csotrure un layer object
@@ -213,17 +203,6 @@ function QueryResultsService() {
     }
   };
 
-  // funzione che visualizza le normative
-  this.showLaw = function(value, options) {
-    var lawComponent = new LawComponent({
-      value: value,
-      options: options
-    });
-    GUI.pushContent({
-      content: lawComponent,
-      backonclose: true
-    })
-  };
 
   base(this);
 }

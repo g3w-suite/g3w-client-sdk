@@ -11,7 +11,6 @@ Fields.LINK = 'link';
 Fields.PHOTO = 'photo';
 Fields.POINTLINK = 'pointlink';
 Fields.ROUTE = 'route';
-Fields.LAW = 'law';
 
 function getFieldType(layer, name, value) {
 
@@ -64,13 +63,6 @@ var vueComponentOptions = {
     is: function(type,layer,attributeName,attributeValue) {
       return fieldIs(type,layer,attributeName,attributeValue);
     },
-    isLaw: function(type, value, options) {
-      var parameters = value.split(options.delimiter);
-      return (type == Fields.LAW && parameters.length > 1 && options.lawurl);
-    },
-    showLaw: function(value, options) {
-      this.$options.queryResultsService.openLaw(value, options);
-    },
     isRelativePath: function(url) {
       if (!_.startsWith(url,'/')) {
         return ProjectsRegistry.getConfig().mediaurl + url
@@ -93,8 +85,8 @@ var vueComponentOptions = {
       return this.geometryAvailable(feature);
     },
     /*getLayerActions: function(layer) {
-      return this.$options.queryResultsService.getLayerActions(layer);
-    },*/
+     return this.$options.queryResultsService.getLayerActions(layer);
+     },*/
     geometryAvailable: function(feature) {
       return feature.geometry ? true : false;
     },
@@ -176,8 +168,8 @@ var vueComponentOptions = {
     toggleFeatureBoxAndZoom: function(layer, feature, relation_index) {
       // Disattivo zoom to sul toggle della featurebox. Casomai lo ripristineremo quando sarà gestito tramite qualche setting
       /*if (this.collapsedFeatureBox(layer, feature, relation_index)) {
-        this.trigger('gotogeometry',layer,feature)
-      }*/
+       this.trigger('gotogeometry',layer,feature)
+       }*/
       this.toggleFeatureBox(layer, feature, relation_index);
     },
     trigger: function(action,layer,feature) {

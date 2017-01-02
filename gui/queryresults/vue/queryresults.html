@@ -52,7 +52,6 @@
                           <!--<img v-if="isPhoto(layer,feature,attribute)" data-url="{{getPhotoUrl(feature.attributes[attribute.name])}}" style="max-width:50px" :src="getPhotoUrl(feature.attributes[attribute.name],thumb)" />-->
                           <img v-if="is('photo',layer,attribute.name,feature.attributes[attribute.name])"  class="photo-preview img-responsive img-thumbnail" :src="isRelativePath(feature.attributes[attribute.name])">
                           <a v-if="is('link',layer,attribute.name,feature.attributes[attribute.name])" :href="feature.attributes[attribute.name]" target="_blank" class="glyphicon glyphicon-link"></a>
-                          <a v-if="isLaw(attribute.type, feature.attributes[attribute.name], attribute.options)" @click="showLaw(feature.attributes[attribute.name], attribute.options)" style="cursor:pointer" class="glyphicon glyphicon-book"></a>
                         </td>
                       </tr>
                     </table>
