@@ -13,6 +13,7 @@ var dpis = printConfig.dpis;
 
 
 function PrintComponentService() {
+
   base(this);
   this._initialized = false;
   // recupero il project
@@ -47,6 +48,10 @@ function PrintComponentService() {
   this._mapService = null;
   this._map = null;
   this._changeScaleFromSelect = false;
+  // oggetto che va a mappare scale e risoluzione
+  // si aggiornerà via via che verranno fatti zoom in e zoom out
+  // tramite l'evento moveend
+  this._scalesResolutions = {};
   //var mapService = GUI.getComponent('map').getSevice();
   // metodo per il cambio di template
   this.changeTemplate = function() {
@@ -64,22 +69,10 @@ function PrintComponentService() {
     this._changePrintOutput();
   };
 
-  // metodo per il cambio di scala
+  // metodo per il cambio di scala attraverso la select
   this.changeScale = function() {
-    var self = this;
-    var resolution;
     this._changeScaleFromSelect = true;
-    var found = false;
-    _.forEach(this.state.scale, function(scala) {
-      if (scala.value > self.state.scala)   {
-        resolution = scaleToRes((scala.value + 1*self.state.scala)/2);
-        found = true;
-        return false
-      }
-    });
-    if (!found) {
-      resolution = scaleToRes(this.state.scala);
-    }
+    var resolution = this._scalesResolutions[this.state.scala];
     this._map.getView().setResolution(resolution);
   };
 
@@ -140,20 +133,28 @@ function PrintComponentService() {
     // rapporto larghezza e altezza della mappa nel client (viewport)
     var rapportoMappaClient = this.state.size[0]/this.state.size[1];
     var width, height;
-    if (rapportoMappaClient > 1) {
+    if (rapportoMappaClient > 1) { // mappa orizzontale
       if (rapportoMappaTemplate > 1) {
-        width = this.state.size[0] / 2; // numero di pixel raggio larghezza
+        if (rapportoMappaTemplate > rapportoMappaClient) {
+          width = this.state.size[0] / 2; // numero di pixel raggio larghezza
+        } else {
+          width = (this.state.size[0] * (rapportoMappaTemplate/rapportoMappaClient))/2;
+        }
         height = width / rapportoMappaTemplate; // numero di pixel raggio altezza
       } else {
         height = this.state.size[1] / 2; // numero di pixel raggio larghezza
         width = height * rapportoMappaTemplate ; // numero di pixel raggio altezza
       }
-    } else {
+    } else { // mappa verticale
       if (rapportoMappaTemplate > 1) {
         width = this.state.size[0] / 2; // numero di pixel raggio larghezza
         height = width / rapportoMappaTemplate; // numero di pixel raggio altezza
       } else {
-        height = this.state.size[1] / 2; // numero di pixel raggio larghezza
+        if (rapportoMappaTemplate < rapportoMappaClient) {
+          height = this.state.size[1] / 2; // numero di pixel raggio larghezza
+        } else {
+          height = (this.state.size[1] * (rapportoMappaClient/rapportoMappaTemplate))/2;
+        }
         width = height * rapportoMappaTemplate ; // numero di pixel raggio altezza
       }
     }
@@ -204,6 +205,21 @@ function PrintComponentService() {
     }
   };
 
+  // funzione che popola l'oggetto che tiene legame tra risoluzione e le varie scale
+  this._fillScalesResolutions = function(initialResolution) {
+    var self = this;
+    var resolution = initialResolution;
+    var prevScala;
+    var orderScales = _.orderBy(this.state.scale, ['value'], ['desc']);
+    _.forEach(orderScales, function(scala) {
+      if (prevScala) {
+        resolution = resolution / (prevScala/scala.value);
+      }
+      self._scalesResolutions[scala.value] = resolution;
+      prevScala = scala.value;
+    });
+  };
+
   // funzione che setta la massima e iniziale scala del progetto
   this._getInitialScala = function() {
     var self = this;
@@ -220,10 +236,11 @@ function PrintComponentService() {
         return false
       }
     });
-    if (! this._initialized) {
+    if (!this._initialized) {
       // vado a limitare le scale
       this.state.scale.splice(indexMaxScale);
       this._initialized = true;
+      this._fillScalesResolutions(resolution);
     }
   };
 

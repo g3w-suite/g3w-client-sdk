@@ -1,13 +1,10 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
-var ApplicationService = require('core/applicationservice');
-
 var ProjectLayer = require('./projectlayer');
 
 function Project(projectConfig) {
   var self = this;
-  
   /* struttura oggetto 'project'
   {
     id,
@@ -22,9 +19,9 @@ function Project(projectConfig) {
   }
   */
   this.state = projectConfig;
-  
   this._layers = {};
-  function traverse(obj){
+
+  function traverse(obj) {
     _.forIn(obj, function (layerConfig, key) {
         //verifica che il valore dell'id non sia nullo
         if (!_.isNil(layerConfig.id)) {
@@ -37,9 +34,9 @@ function Project(projectConfig) {
         }
     });
   }
+
   traverse(projectConfig.layerstree);
 
-  
   this.setters = {
     setLayersVisible: function(layersIds,visible){
       _.forEach(layersIds,function(layerId){

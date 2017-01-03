@@ -51,7 +51,7 @@ proto.init = function(config) {
 
   var self = this;
   //verifico se è già stato inizilizzato
-  if (!this.initialized){
+  if (!this.initialized) {
     this.initialized = true;
     //salva la configurazione
     this.config = config;
@@ -78,19 +78,17 @@ proto.getState = function() {
 
 proto.setupState = function() {
   var self = this;
-  
   self.state.baseLayers = self.config.baselayers;
   self.state.minScale = self.config.minscale;
   self.state.maxScale = self.config.maxscale;
   self.state.crs = self.config.crs;
   self.state.proj4 = self.config.proj4;
-
   // setto  quale progetto deve essere impostato come overview
   //questo è settato da django-admin
   var overViewProject = (self.config.overviewproject && self.config.overviewproject.gid) ? self.config.overviewproject : null;
   //per ogni progetto ciclo e setto tutti gli attributi comuni
   // come i base layers etc ..
-  self.config.projects.forEach(function(project){
+  self.config.projects.forEach(function(project) {
     project.baselayers = _.cloneDeep(self.config.baselayers);
     project.minscale = self.config.minscale;
     project.maxscale = self.config.maxscale;
@@ -175,7 +173,8 @@ proto._getProjectFullConfig = function(projectBaseConfig) {
   return deferred.promise();
 };
 
-proto._buildProjectTree = function(project){
+// costruisce il layers tree del progetto
+proto._buildProjectTree = function(project) {
   var layers = _.keyBy(project.layers,'id');
   var layersTree = _.cloneDeep(project.layerstree);
   

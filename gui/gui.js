@@ -49,7 +49,7 @@ function GUI() {
     this.ready = true;
   };
   
-  this.guiResized = function(){
+  this.guiResized = function() {
     this.emit('guiresized');
   };
 

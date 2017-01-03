@@ -264,7 +264,7 @@ function QueryResultsComponent(options) {
   };
 
   this.layout = function(width,height) {
-    //
+    //TODO
   }
 }
 inherit(QueryResultsComponent, Component);

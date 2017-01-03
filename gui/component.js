@@ -5,7 +5,6 @@ var G3WObject = require('core/g3wobject');
 var VUECOMPONENTSATTRIBUTES = ['methods', 'computed', 'data', 'components'];
 
 var Component = function(options) {
-
   options = options || {};
   this.internalComponent = null;
   this.id = options.id || Math.random() * 1000;
@@ -71,6 +70,8 @@ proto.getInternalComponent = function() {
 
 // setta il nuovo internalcomponent
 proto.setInternalComponent = function(internalComponent) {
+  // se non è stato definito un internalCompoent e esisste un internalClass component
+  // lo istanzio e lo setto
   if (!internalComponent && this.internalComponentClass) {
     this.internalComponent = new this.internalComponentClass;
   }
