@@ -8,12 +8,20 @@ var scale = [
     label:'1:10'
   },
   {
-    value:25,
-    label:'1:25'
+    value:20,
+    label:'1:20'
+  },
+  {
+    value:30,
+    label:'1:30'
   },
   {
     value:50,
     label:'1:50'
+  },
+  {
+    value:75,
+    label:'1:75'
   },
   {
     value:100,
@@ -24,12 +32,16 @@ var scale = [
     label:'1:200'
   },
   {
-    value:250,
-    label:'1:250'
+    value:300,
+    label:'1:300'
   },
   {
     value:500,
     label:'1:500'
+  },
+  {
+    value:750,
+    label:'1:750'
   },
   {
     value:1000,
@@ -56,10 +68,6 @@ var scale = [
     label:'1:10000'
   },
   {
-    value:12000,
-    label:'1:12000'
-  },
-  {
     value:15000,
     label:'1:15000'
   },
@@ -84,6 +92,14 @@ var scale = [
     label:'1:100000'
   },
   {
+    value:150000,
+    label:'1:150000'
+  },
+  {
+    value:200000,
+    label:'1:200000'
+  },
+  {
     value:250000,
     label:'1:250000'
   },
@@ -92,8 +108,20 @@ var scale = [
     label:'1:500000'
   },
   {
+    value:750000,
+    label:'1:750000'
+  },
+  {
     value:1000000,
     label:'1:1000000'
+  },
+  {
+    value:1500000,
+    label:'1:1500000'
+  },
+  {
+    value:2000000,
+    label:'1:2000000'
   },
   {
     value:2500000,

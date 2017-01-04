@@ -53,13 +53,9 @@ var vueComponentOptions = {
 
       this.$options.service.changeRotation();
     },
-    // lfunzione dedicata alla visualizzazione dell'ouput del print
+    // funzione dedicata alla visualizzazione dell'ouput del print
     print: function() {
       this.$options.service.print();
-    },
-    // metodo per la visualizzazione dell'area grigia o meno
-    showPrintArea: function() {
-      this.$options.service.showPrintArea();
     }
   },
   ready: function() {

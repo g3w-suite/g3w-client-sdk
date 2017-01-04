@@ -72,7 +72,7 @@ function MapService(options) {
   }
 
   this.setters = {
-    setMapView: function(bbox,resolution,center){
+    setMapView: function(bbox, resolution, center) {
       this.state.bbox = bbox;
       this.state.resolution = resolution;
       this.state.center = center;
@@ -85,13 +85,12 @@ function MapService(options) {
       if (width == 0 || height == 0) {
         return
       }
-      //$script("http://epsg.io/"+ProjectService.state.project.crs+".js");
       proj4.defs("EPSG:"+self.project.state.crs,this.project.state.proj4);
       if (self.viewer) {
         self.viewer.destroy();
         self.viewer = null;
       }
-      self._setupViewer(width,height);
+      self._setupViewer(width, height);
       self.state.bbox = this.viewer.getBBOX();
       self.state.resolution = this.viewer.getResolution();
       self.state.center = this.viewer.getCenter();
@@ -100,15 +99,19 @@ function MapService(options) {
       self.emit('viewerset');
     }
   };
-  
+
+  // funzione che setta la view basata sulle informazioni del progetto
   this._setupViewer = function(width,height) {
     var self = this;
     var projection = this.getProjection();
+    // ricavo l'estensione iniziale del progetto)
     var initextent = this.project.state.initextent;
+    // ricavo l'estensione del progetto
     var extent = this.project.state.extent;
 
     var maxxRes = ol.extent.getWidth(extent) / width;
     var minyRes = ol.extent.getHeight(extent) / height;
+    // calcolo la massima risoluzione
     var maxResolution = Math.max(maxxRes,minyRes);
 
     var initxRes = ol.extent.getWidth(initextent) / width;
@@ -850,10 +853,11 @@ proto.refreshMap = function() {
     wmsLayer.getOLLayer().getSource().updateParams({"time": Date.now()});
   });
 };
+
 // funzione mi server per poter in pratica
 // fare l'updatesize della mappa qundo il div che la contine cambia
-// in questo modo la mappa non si streccia
-proto.layout = function(width,height) {
+// in questo modo la mappa non si streccia (chimata dalla viewport)
+proto.layout = function(width, height) {
   if (!this.viewer) {
     this.setupViewer(width,height);
   }
