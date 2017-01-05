@@ -47,7 +47,6 @@ function PrintComponentService() {
   this._page = null;
   this._mapService = null;
   this._map = null;
-  this._changeScaleFromSelect = false;
   // oggetto che va a mappare scale e risoluzione
   // si aggiornerà via via che verranno fatti zoom in e zoom out
   // tramite l'evento moveend
