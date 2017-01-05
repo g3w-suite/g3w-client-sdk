@@ -99,7 +99,7 @@ function PrintComponentService() {
   // funzione print
   this.print = function() {
     var self = this;
-    this._changePrintArea();
+    this._setPrintArea();
     this._page = new PrintPage({
       service: this
     });
@@ -184,13 +184,6 @@ function PrintComponentService() {
     });
     // vado a cambiare il pdf se è visualizzato
     this._changePrintOutput();
-  };
-
-  // funzione che ricalcola il centro e il size della mappa
-  this._changePrintArea = function() {
-    this._setPrintArea();
-    // vado a risettare il centro della mappa in posizione originale
-    this._map.getView().setCenter(this.state.center);
   };
 
   // metodo chiusura print panel
@@ -301,18 +294,22 @@ function PrintComponentService() {
 
   // funzione che setta la massima e iniziale scala del progetto
   this._initPrintConfig = function() {
-    // prendo la massima risoluzione della mappa
-    var maxResolution = this._map.getView().getMaxResolution();
-    // ricavo le scale adatte alle mie risoluzioni
-    this._setAllScalesBasedOnMaxResolution(maxResolution);
-    // setto la scala iniziale nella select in base alla risoluzione di partenza del progetto
-    this._setInitialScalaSelect();
-    // se non è stata ancora inizializzata allora vado a settare
+    var resolution;
     if (!this._initialized) {
-      // vado a riempire l'oggetto che mi mappa scale e risoluzioni della mappa
-      //this._fillScalesResolutions(maxResolution);
-      // dico che è stata inzializzata
+      // prendo la massima risoluzione della mappa
+      var maxResolution = this._map.getView().getMaxResolution();
+      // ricavo le scale adatte alle mie risoluzioni
+      this._setAllScalesBasedOnMaxResolution(maxResolution);
+      //se non è stata ancora inizializzata allora vado a settare
+      // setto la scala iniziale nella select in base alla risoluzione di partenza del progetto
+      this._setInitialScalaSelect();
+      //dico che è stata inzializzata
       this._initialized = true;
+    } else {
+      // prendo la risoluzione corrente
+      resolution = this._map.getView().getResolution();
+      // vado a cambiare la scala
+      this._setCurrentScala(resolution);
     }
   };
 
