@@ -10,41 +10,62 @@ var InteractionControl = function(options) {
   this._onSelectLayer = options.onselectlayer || false;
   this._enabled = (options.enabled === false) ? false : true;
   this._onhover = options.onhover || false;
-  this._help = options.help || null;
-  this._closeNotifyButton = '<button>Ho Capito</button>';
+  this._help = options.help  || null;
+  this._modalHelp = this._help ? (options.modalHelp || GUI.notify.info) : null;
   options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
   Control.call(this, options);
-  this.setEnable(this._enabled);
+  // vado a creare il modal help se esiste un messaggio
+  if (this._help) {
+    this._createModalHelp();
+  }
 };
 
 ol.inherits(InteractionControl, Control);
 
 var proto = InteractionControl.prototype;
 
-proto.showHideOnHoverHelp = function() {
+proto._clearModalHelp = function(id) {
   var self = this;
-  if (this._help && !this._enabled && this._onhover) {
-    $(this.element).hover(function() {
-      GUI.notify.info(self._help);
-    });
-  } else {
-    $(this.element).off('mouseenter mouseleave');
+  $('body').delegate('#'+id,'click', function() {
+    self._modalHelp = null;
+  });
+};
+
+//funzione che si occupa di  visualizzazre la modeal dell'help
+proto._showModalHelp = function() {
+  if (this._modalHelp) {
+    this._modalHelp(this._help);
   }
+};
+
+// funzione che crea la help modal
+proto._createModalHelp = function() {
+  var self = this;
+  var id = "close_button"+Math.floor(Math.random()*1000000)+""+Date.now();
+  this._help += '<button id="'+id+'" type="button" class="btn btn-default pull-right"> Non mostrare più </button>';
+  // verifico se abilitato e se settato proprietà onhover
+  if (this._onhover) {
+    $(this.element).hover(function() {
+      if (!self._enabled) {
+        self._showModalHelp();
+      }
+    });
+  }
+  this._clearModalHelp(id);
 };
 
 proto.getGeometryTypes = function() {
   return this._geometryTypes;
 };
 
+// funzione per la gestione premuto non premuto
 proto.toggle = function(toggle) {
   var toggle = toggle !== undefined ? toggle : !this._toggled;
   //stato del toogle;
   this._toggled = toggle;
   var controlButton = $(this.element).find('button').first();
   if (toggle) {
-    if (this._help) {
-      GUI.notify.info(this._help);
-    }
+    this._showModalHelp();
     if (this._interaction) {
       this._interaction.setActive(true);
     }
@@ -71,7 +92,6 @@ proto.setEnable = function(bool) {
     }
   }
   this._enabled = bool;
-  this.showHideOnHoverHelp();
 };
 
 proto.getEnable = function() {
@@ -100,12 +120,10 @@ proto.setMap = function(map) {
 };
 
 proto._handleClick = function(e) {
-
   if (this._enabled) {
     this.toggle();
     Control.prototype._handleClick.call(this,e);
   }
-
 };
 
 

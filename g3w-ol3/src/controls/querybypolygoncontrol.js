@@ -4,7 +4,6 @@ var InteractionControl = require('./interactioncontrol');
 var PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
 
 var QueryByPolygonControl = function(options){
-  var self = this;
   var _options = {
     name: "querybypolygon",
     tipLabel: "Query By Polygon",

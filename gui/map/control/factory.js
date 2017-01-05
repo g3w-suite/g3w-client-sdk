@@ -4,7 +4,6 @@ var ZoomBoxControl = require('g3w-ol3/src/controls/zoomboxcontrol');
 var QueryBBoxControl = require('g3w-ol3/src/controls/querybboxcontrol');
 var QueryByPolygonControl = require('g3w-ol3/src/controls/querybypolygoncontrol');
 var Control = require('g3w-ol3/src/controls/control');
-
 var OLControl = require('g3w-ol3/src/controls/olcontrol');
 
 var ControlsFactory = {
@@ -12,7 +11,8 @@ var ControlsFactory = {
     var control;
     var ControlClass = ControlsFactory.CONTROLS[options.type];
     var layers = options.layers; // opzione che mi server per far visualizzare o meno il controllo
-    if(ControlClass) {
+    if (ControlClass) {
+      // istanzio il controllo
       control = new ControlClass(options);
     }
     // nel caso siano stati specificati i layers del progetto su cui interrogare
@@ -32,7 +32,7 @@ var ControlsFactory = {
           return false;
         }
       });
-
+      // se visibile allora restituisco il controllo altrimenti null
       if (visible) {
         return control;
       } else {

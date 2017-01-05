@@ -1,4 +1,4 @@
-var Control = function(options){
+var Control = function(options) {
   var name = options.name || "?";
   this.name = name.split(' ').join('-').toLowerCase();
   this.id = this.name+'_'+(Math.floor(Math.random() * 1000000));
@@ -18,6 +18,8 @@ var Control = function(options){
   
   this._postRender();
 };
+
+// sotto classse della classe Control di OL3
 ol.inherits(Control, ol.control.Control);
 
 var proto = Control.prototype;
@@ -50,8 +52,8 @@ proto._handleClick = function(event) {
   }
 };
 
+// funzione che gestisce il layout
 proto.layout = function(map) {
-  var self = this;
   if (map) {
     var position =  this.getPosition();
     var viewPort = map.getViewport();
@@ -67,7 +69,7 @@ proto.layout = function(map) {
   }
 };
 
-proto.setMap = function(map){
+proto.setMap = function(map) {
   this.layout(map);
   ol.control.Control.prototype.setMap.call(this,map);
 };
