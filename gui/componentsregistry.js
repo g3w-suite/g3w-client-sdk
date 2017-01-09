@@ -22,6 +22,11 @@ function ComponentsRegistry() {
   this.getComponent = function(id) {
     return this.components[id];
   };
+
+  this.getComponents = function() {
+    return this.components;
+  };
+
   // toglie dal registro dei componenti il componete che si vuole eliminare
   this.unregisterComponent = function(id) {
     var component = this._components[id];

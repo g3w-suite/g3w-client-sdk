@@ -34,6 +34,8 @@ proto._clearModalHelp = function(id) {
 //funzione che si occupa di  visualizzazre la modeal dell'help
 proto._showModalHelp = function() {
   if (this._modalHelp) {
+    // se già presente un modale lo chiudo
+    GUI.notify.remove();
     this._modalHelp(this._help);
   }
 };

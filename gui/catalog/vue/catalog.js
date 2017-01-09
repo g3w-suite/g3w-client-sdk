@@ -7,6 +7,7 @@ var Component = require('gui/vue/component');
 var ComponentsRegistry = require('gui/componentsregistry');
 var GUI = require('gui/gui');
 var ProjectsRegistry = require('core/project/projectsregistry');
+var ApplicationService = require('core/applicationservice');
 
 var vueComponentOptions = {
   template: require('./catalog.html'),
@@ -49,7 +50,7 @@ var vueComponentOptions = {
       self.project.toggleLayers(layersIds,parentChecked);
     });
     
-    this.$on('treenodeselected',function(node){
+    this.$on('treenodeselected',function(node) {
       var mapservice = GUI.getComponent('map').getService();
       if (!node.selected) {
         self.project.selectLayer(node.id);
@@ -117,6 +118,7 @@ Vue.component('tristate-tree', {
       var isSelected = this.layerstree.selected ? "SI" : "NO";
       return isSelected;
     }
+
   },
   methods: {
     toggle: function (checkAllLayers) {
@@ -152,6 +154,10 @@ Vue.component('tristate-tree', {
       } else {
         return 'fa-square-o';
       }
+    },
+    isWfsCapabilities: function() {
+      var mapControls = ApplicationService.getConfig().mapcontrols;
+      return (mapControls.indexOf('querybbox') > -1 ) && (this.layerstree.wfscapabilities ? true: false);
     }
   }
 });
@@ -228,7 +234,6 @@ function CatalogComponent(options) {
   this.title = "catalog";
   this.mapComponentId = options.mapcomponentid;
   this.internalComponent = new InternalComponent;
-
   function listenToMapVisibility(map) {
     var mapService = map.getService();
     self.state.visible = !mapService.state.hidden;
