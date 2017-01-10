@@ -9,6 +9,7 @@ var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 var WMSLayer = require('core/map/layer/wmslayer');
 var ControlsFactory = require('gui/map/control/factory');
 var QueryService = require('core/query/queryservice');
+var ControlsRegistry = require('gui/map/control/registry');
 
 
 function MapService(options) {
@@ -464,7 +465,9 @@ proto.addControl = function(type, control) {
     type: type,
     control: control,
     visible: true
-  })
+  });
+  // vado a registrare il controllo aggiunto
+  ControlsRegistry.registerControl(type, control);
 };
 
 // mostra uno dei controlli disponibili (ovvero già istanziati in base alla configurazione)

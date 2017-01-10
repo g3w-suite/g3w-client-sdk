@@ -7,7 +7,7 @@ var Component = require('gui/vue/component');
 var ComponentsRegistry = require('gui/componentsregistry');
 var GUI = require('gui/gui');
 var ProjectsRegistry = require('core/project/projectsregistry');
-var ApplicationService = require('core/applicationservice');
+var ControlsRegistry = require('gui/map/control/registry');
 
 var vueComponentOptions = {
   template: require('./catalog.html'),
@@ -156,8 +156,7 @@ Vue.component('tristate-tree', {
       }
     },
     isWfsCapabilities: function() {
-      var mapControls = ApplicationService.getConfig().mapcontrols;
-      return (mapControls.indexOf('querybbox') > -1 ) && (this.layerstree.wfscapabilities ? true: false);
+      return (_.isNil(ControlsRegistry.getControl('querybbox'))) && (this.layerstree.wfscapabilities ? true: false);
     }
   }
 });
