@@ -38,7 +38,7 @@ function PrintComponentService() {
     this.state.scala = null;
     this.state.dpis = dpis;
     this.state.dpi = dpis[0];
-    this.state.map = null//;this.state.print[0].maps[0].name;
+    this.state.map = null;//;this.state.print[0].maps[0].name;
     this.state.width = null;//this.state.print[0].maps[0].w;
     this.state.height = null;//this.state.print[0].maps[0].h;
   }
