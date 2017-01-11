@@ -6,7 +6,7 @@ RasterLayers.TiledWMSLayer = function(layerObj,extraParams){
     layerObj: layerObj,
     extraParams: extraParams || {},
     tiled: true
-  }
+  };
   return RasterLayers._WMSLayer(options);
 };
 
@@ -14,7 +14,7 @@ RasterLayers.WMSLayer = function(layerObj,extraParams){
   var options = {
     layerObj: layerObj,
     extraParams: extraParams || {}
-  }
+  };
   return RasterLayers._WMSLayer(options);
 };
 
@@ -44,7 +44,7 @@ RasterLayers._WMSLayer = function(options){
     opacity: layerObj.opacity || 1.0,
     visible:layerObj.visible,
     maxResolution: layerObj.maxResolution
-  }
+  };
   
   var imageClass;
   var source;
@@ -54,7 +54,7 @@ RasterLayers._WMSLayer = function(options){
     //imageOptions.extent = [1134867,3873002,2505964,5596944];
   }
   else {
-    source = new ol.source.ImageWMS(sourceOptions)
+    source = new ol.source.ImageWMS(sourceOptions);
     imageClass = ol.layer.Image;
   }
   

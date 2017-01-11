@@ -14,7 +14,8 @@ function PrinterQGISProvider() {
     var url = project.getWmsUrl();
     // devo fare il reverse perchè l'odine conta sulla visualizzazione del print
     var layers = _.reverse(project.getLayers({
-      QUERYABLE: true,
+      ACTIVE: true,
+      VISIBLE: true
       //SELECTEDORALL: true
     }));
     layers = _.map(layers,function(layer){
@@ -37,7 +38,6 @@ function PrinterQGISProvider() {
     params[templateMap+':ROTATION'] = options.rotation;
     url = url + '?' + $.param(params);
     return resolve(url);
-
   };
 
   this.print = function(options) {

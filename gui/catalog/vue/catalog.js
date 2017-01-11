@@ -40,7 +40,6 @@ var vueComponentOptions = {
   },
   ready: function() {
     var self = this;
-
     this.$on('treenodetoogled',function(node){
       self.project.toggleLayer(node.id);
     });

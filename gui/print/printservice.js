@@ -111,13 +111,15 @@ function PrintComponentService() {
         content: self._page,
         title: 'Stampa'
       });
-      if (!self.state.isShow) {
+      /*if (!self.state.isShow) {
         self.state.isShow = true;
         // emetto l'evento showpdf per disabilitare il bottone
         //crea pdf
-        self.emit('showpdf', true);
+        //self.emit('showpdf', true);
         self.state.size = self._map.getSize()
-      }
+      }*/
+      self.state.size = self._map.getSize()
+
     })
   };
 
@@ -294,6 +296,7 @@ function PrintComponentService() {
 
   // funzione che setta la massima e iniziale scala del progetto
   this._initPrintConfig = function() {
+    var self = this;
     var resolution;
     if (!this._initialized) {
       // prendo la massima risoluzione della mappa
@@ -329,6 +332,7 @@ function PrintComponentService() {
   // metodo per la visualizzazione dell'area grigia o meno
   // chamata dal metodo _setOpen del componente
   this.showPrintArea = function(bool) {
+    var self = this;
     this._mapService = GUI.getComponent('map').getService();
     this._map = this._mapService.viewer.map;
     if (bool) {
