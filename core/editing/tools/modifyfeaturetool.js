@@ -28,7 +28,7 @@ module.exports = ModifyFeatureTool;
 
 var proto = ModifyFeatureTool.prototype;
 
-proto.run = function(){
+proto.run = function() {
   var self = this;
   this.layer = this.editor.getVectorLayer().getMapLayer();
   this.editingLayer = this.editor.getEditVectorLayer().getMapLayer();
@@ -48,7 +48,7 @@ proto.run = function(){
 
   this._modifyInteraction = new ol.interaction.Modify({
     features: this.pickedFeatures,
-    deleteCondition: this._deleteCondition,
+    deleteCondition: this._deleteCondition
   });
   this.addInteraction(this._modifyInteraction);
   

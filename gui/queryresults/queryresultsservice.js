@@ -3,6 +3,7 @@ var base = require('core/utils/utils').base;
 var GUI = require('gui/gui');
 var G3WObject = require('core/g3wobject');
 var ComponentsRegistry = require('gui/componentsregistry');
+var ProjectsRegistry = require('core/project/projectsregistry');
 
 function QueryResultsService() {
   var self = this;
@@ -20,10 +21,13 @@ function QueryResultsService() {
     setQueryResponse: function(queryResponse, coordinates, resolution) {
       this.state.layers = [];
       this.state.query = queryResponse.query;
+      //recupero tutti i mlayers dalll'attributo data della risposta
+      // costuendo il formato digeribile dal componente query
       var layers = this._digestFeaturesForLayers(queryResponse.data);
-      this.setLayersData(layers,this);
+      //setto i layers data
+      this.setLayersData(layers, this);
     },
-    setLayersData: function(layers, self) {
+    setLayersData: function(layers) {
       // un opportunità per aggiungere / modificare i risultati dell'interrogazione
       this.state.loading = false;
       this.state.layers =  layers;
@@ -66,10 +70,14 @@ function QueryResultsService() {
   this._digestFeaturesForLayers = function(featuresForLayers) {
     var self = this;
     var id = 0;
+    // variabile che tiene traccia dei layer sotto query
     var layers = [];
     _.forEach(featuresForLayers, function(featuresForLayer) {
+      // prendo il layer
       var layer = featuresForLayer.layer;
+      // verifico che ci siano feature legate a quel layer che sono il risultato della query
       if (featuresForLayer.features.length) {
+        // se si vado a csotrure un layer object
         var layerObj = {
           title: layer.state.title,
           id: layer.state.id,
@@ -78,14 +86,25 @@ function QueryResultsService() {
           features: [],
           hasgeometry: false,
           show: true,
-          expandable: true
+          expandable: true,
+          hasImageField: false // regola che mi permette di vedere se esiste un campo image
         };
+        // faccio una ricerca sugli attributi del layer se esiste un campo image
+        // se si lo setto a true
+        _.forEach(layerObj.attributes, function(attribute) {
+          if (attribute.type == 'image') {
+            layerObj.hasImageField = true;
+          }
+        });
+        // a questo punto scorro sulle features selezionate dal risultato della query
         _.forEach(featuresForLayer.features, function(feature){
           var fid = feature.getId() ? feature.getId() : id;
           var geometry = feature.getGeometry();
           if (geometry) {
+            // setto che ha geometria mi servirà per le action
             layerObj.hasgeometry = true
           }
+          // creo un feature object
           var featureObj = {
             id: fid,
             attributes: feature.getProperties(),
@@ -93,7 +112,6 @@ function QueryResultsService() {
             show: true
             // aggiungo le relazioni
           };
-          //console.log(featureObj);
           layerObj.features.push(featureObj);
           id += 1;
         });
@@ -130,6 +148,7 @@ function QueryResultsService() {
   };
 
   this.setActionsForLayers = function(layers) {
+    // scorro sui layers
     _.forEach(layers,function(layer){
       if (!self.state.layersactions[layer.id]) {
         self.state.layersactions[layer.id] = [];
@@ -183,7 +202,8 @@ function QueryResultsService() {
       }
     }
   };
-  
+
+
   base(this);
 }
 QueryResultsService.zoomToElement = function(layer,feature) {

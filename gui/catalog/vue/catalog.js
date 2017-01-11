@@ -7,6 +7,7 @@ var Component = require('gui/vue/component');
 var ComponentsRegistry = require('gui/componentsregistry');
 var GUI = require('gui/gui');
 var ProjectsRegistry = require('core/project/projectsregistry');
+var ControlsRegistry = require('gui/map/control/registry');
 
 var vueComponentOptions = {
   template: require('./catalog.html'),
@@ -49,11 +50,15 @@ var vueComponentOptions = {
       self.project.toggleLayers(layersIds,parentChecked);
     });
     
-    this.$on('treenodeselected',function(node){
+    this.$on('treenodeselected',function(node) {
+      var mapservice = GUI.getComponent('map').getService();
       if (!node.selected) {
         self.project.selectLayer(node.id);
+        // emetto il segnale layer selezionato dal catalogo
+        mapservice.emit('cataloglayerselected');
       } else {
         self.project.unselectLayer(node.id);
+        mapservice.emit('cataloglayerunselected');
       }
     });
   }
@@ -113,6 +118,7 @@ Vue.component('tristate-tree', {
       var isSelected = this.layerstree.selected ? "SI" : "NO";
       return isSelected;
     }
+
   },
   methods: {
     toggle: function (checkAllLayers) {
@@ -148,6 +154,9 @@ Vue.component('tristate-tree', {
       } else {
         return 'fa-square-o';
       }
+    },
+    isWfsCapabilities: function() {
+      return (_.isNil(ControlsRegistry.getControl('querybbox'))) && (this.layerstree.wfscapabilities ? true: false);
     }
   }
 });
@@ -217,18 +226,17 @@ Vue.component('legend-item',{
 /* FINE COMPONENTI FIGLI */
 
 /* INTERFACCIA PUBBLICA */
-function CatalogComponent(options){
+function CatalogComponent(options) {
   base(this);
   var self = this;
   this.id = "catalog-component";
   this.title = "catalog";
   this.mapComponentId = options.mapcomponentid;
   this.internalComponent = new InternalComponent;
-
   function listenToMapVisibility(map) {
     var mapService = map.getService();
     self.state.visible = !mapService.state.hidden;
-    mapService.onafter('setHidden',function(hidden){
+    mapService.onafter('setHidden',function(hidden) {
       self.state.visible = !mapService.state.hidden;
       self.state.expanded = true;
     })
@@ -247,7 +255,6 @@ function CatalogComponent(options){
       listenToMapVisibility(map)
     }
   }
-
   //mergio opzioni con proprità di default del componente
   merge(this, options);
 }

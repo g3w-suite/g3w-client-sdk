@@ -2,7 +2,8 @@ var G3WObject = require('core/g3wobject');
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 
-//classe Componet Registry
+//classe Componet Registry (singleton)
+// ha lo scopo di salvare tutti i componenti aggiunti
 function ComponentsRegistry() {
   // attributo componets che tiene traccia
   // dei componenti registrati
@@ -21,6 +22,11 @@ function ComponentsRegistry() {
   this.getComponent = function(id) {
     return this.components[id];
   };
+
+  this.getComponents = function() {
+    return this.components;
+  };
+
   // toglie dal registro dei componenti il componete che si vuole eliminare
   this.unregisterComponent = function(id) {
     var component = this._components[id];
@@ -38,6 +44,7 @@ function ComponentsRegistry() {
       this._components[id] = null;
     }
   };
+  base(this);
 }
 inherit(ComponentsRegistry,G3WObject);
 

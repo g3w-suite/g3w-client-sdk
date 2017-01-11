@@ -9,7 +9,7 @@ function PluginsRegistry() {
   this._plugins = {};
 
   this.setters = {
-    registerPlugin: function(plugin){
+    registerPlugin: function(plugin) {
       if (!self._plugins[plugin.name]) {
         self._plugins[plugin.name] = plugin;
       }
@@ -22,13 +22,13 @@ function PluginsRegistry() {
     var self = this;
     this.pluginsBaseUrl = options.pluginsBaseUrl;
     this.pluginsConfigs = options.pluginsConfigs;
-    _.forEach(this.pluginsConfigs, function(pluginConfig, name){
+    _.forEach(this.pluginsConfigs, function(pluginConfig, name) {
       self._setup(name, pluginConfig);
     })
   };
   
   this._setup = function(name, pluginConfig) {
-    if (pluginConfig){
+    if (pluginConfig) {
       var url = this.pluginsBaseUrl+name+'/js/plugin.js';
       $script(url);
     }

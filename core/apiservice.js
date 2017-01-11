@@ -6,9 +6,7 @@ var reject = require('core/utils/utils').reject;
 function ApiService(){
   this._config = null;
   this._baseUrl = null;
-  this._apiUrls = {};
   this.init = function(config) {
-
     this._config = config;
     // prende l'url base delle api dal config dell'applicazione
     this._baseUrl = config.urls.api;

@@ -61,7 +61,7 @@ proto.getPk = function() {
 proto.setData = function(featuresData) {
 
   var self = this;
-  var Ids = []
+  var Ids = [];
   var features;
   if (this.format) {
     switch (this.format){
@@ -206,6 +206,11 @@ proto.getFields = function(){
   return _.cloneDeep(this._fields);
 };
 
+// funzione che mi server per la query result nel caso di vector layer
+proto.getAttributes = function() {
+  return this._fields;
+};
+
 proto.getFieldsNames = function(){
   return _.map(this._fields,function(field){
     return field.name;
@@ -245,6 +250,7 @@ proto.getFieldsWithValues = function(obj) {
       field.value = null;
     }
   });
+
   return fields;
 };
 // funzione che setta e relazione del layer vettoriale

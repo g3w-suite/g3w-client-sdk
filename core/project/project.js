@@ -1,13 +1,10 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
-var ApplicationService = require('core/applicationservice');
-
 var ProjectLayer = require('./projectlayer');
 
 function Project(projectConfig) {
   var self = this;
-  
   /* struttura oggetto 'project'
   {
     id,
@@ -22,9 +19,9 @@ function Project(projectConfig) {
   }
   */
   this.state = projectConfig;
-  
   this._layers = {};
-  function traverse(obj){
+
+  function traverse(obj) {
     _.forIn(obj, function (layerConfig, key) {
         //verifica che il valore dell'id non sia nullo
         if (!_.isNil(layerConfig.id)) {
@@ -37,9 +34,9 @@ function Project(projectConfig) {
         }
     });
   }
+
   traverse(projectConfig.layerstree);
 
-  
   this.setters = {
     setLayersVisible: function(layersIds,visible){
       _.forEach(layersIds,function(layerId){
@@ -95,20 +92,18 @@ proto.getOverviewProjectGid = function() {
   return this.state.overviewprojectgid.gid;
 };
 
-proto.getLayersDict = function(options){
+proto.getLayersDict = function(options) {
+  var self = this;
   var options = options || {};
-
   var filterQueryable = options.QUERYABLE;
-
   var filterVisible = options.VISIBLE;
-
   var filterSelected = options.SELECTED;
   var filterSelectedOrAll = options.SELECTEDORALL;
-
+  var filterAllNotSelected = options.ALLNOTSELECTED;
+  var filterWfs = options.WFS;
   if (filterSelectedOrAll) {
     filterSelected = null;
   }
-
   if (_.isUndefined(filterQueryable) && _.isUndefined(filterVisible) && _.isUndefined(filterSelected) && _.isUndefined(filterSelectedOrAll)) {
     return this._layers;
   }
@@ -116,6 +111,7 @@ proto.getLayersDict = function(options){
   var layers = this._layers;
   
   if (filterQueryable) {
+
     layers = _.filter(layers,function(layer){
       return filterQueryable && layer.isQueryable();
     });
@@ -132,7 +128,7 @@ proto.getLayersDict = function(options){
       return filterSelected && layer.isSelected();
     });
   }
-  
+  // filtra solo i selezionati
   if (filterSelectedOrAll) {
     var _layers = layers;
     layers = _.filter(layers,function(layer){
@@ -140,7 +136,25 @@ proto.getLayersDict = function(options){
     });
     layers = layers.length ? layers : _layers;
   }
-  
+
+  // filtra solo i quelli non selezionati
+  if (filterAllNotSelected) {
+    var _layers = layers;
+    layers = _.filter(layers,function(layer){
+      return !layer.isSelected();
+    });
+    layers = layers.length ? layers : _layers;
+  }
+
+  // filtra solo i quelli wfs
+  if (filterWfs) {
+    var _layers = layers;
+    layers = _.filter(layers,function(layer) {
+      // specifico che deve evare lo stesso crs del progetto
+      return layer.getWfsCapabilities() && layer.state.crs == self.state.crs;
+    });
+    layers = layers.length ? layers : _layers;
+  }
   return layers;
 };
 

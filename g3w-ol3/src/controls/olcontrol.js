@@ -1,6 +1,5 @@
 var OLControl = function(options){
   this._control = null;
-  
   this.positionCode = options.position || 'tl';
   
   switch (options.type) {
@@ -23,6 +22,8 @@ var OLControl = function(options){
     element: this._control.element
   });
 };
+
+// sotto classe della classe control di OL3
 ol.inherits(OLControl, ol.control.Control);
 module.exports = OLControl;
 
@@ -35,7 +36,6 @@ proto.getPosition = function(positionCode) {
   position['left'] = (positionCode.indexOf('l') > -1) ? true : false;
   return position;
 };
-
 
 proto.layout = function(map) {
   if (map) {

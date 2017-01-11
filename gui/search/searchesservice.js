@@ -6,7 +6,6 @@ var SearchPanel = require('gui/search/vue/panel/searchpanel');
 
 function SearchesService(){
 
-  //this._searchPanelService = new SearchPanelService();
   this.init = function(searchesObject) {
     var searches = searchesObject || ProjectsRegistry.getCurrentProject().state.search;
     this.state.searches = searches;

@@ -10,11 +10,10 @@ var ZoomBoxControl = function(options){
       label: "\ue900",
       interactionClass: ol.interaction.DragBox
     };
-  
   options = utils.merge(options,_options);
-  
   InteractionControl.call(this,options);
-}
+
+};
 ol.inherits(ZoomBoxControl, InteractionControl);
 module.exports = ZoomBoxControl;
 

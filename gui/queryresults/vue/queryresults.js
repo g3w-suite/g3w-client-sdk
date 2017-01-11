@@ -12,13 +12,13 @@ Fields.PHOTO = 'photo';
 Fields.POINTLINK = 'pointlink';
 Fields.ROUTE = 'route';
 
-function getFieldType(layer,name,value) {
+function getFieldType(layer, name, value) {
+
   var URLPattern = /^(https?:\/\/[^\s]+)/g;
   var PhotoPattern = /[^\s]+.(png|jpg|jpeg)$/g;
   if (_.isNil(value)) {
     return Fields.SIMPLE;
   }
-
   value = value.toString();
 
   var extension = value.split('.').pop();
@@ -85,12 +85,17 @@ var vueComponentOptions = {
       return this.geometryAvailable(feature);
     },
     /*getLayerActions: function(layer) {
-      return this.$options.queryResultsService.getLayerActions(layer);
-    },*/
+     return this.$options.queryResultsService.getLayerActions(layer);
+     },*/
     geometryAvailable: function(feature) {
       return feature.geometry ? true : false;
     },
     attributesSubset: function(attributes) {
+      // faccio un filtro sul campo immagine perchè non ha senso far vedere
+      // la stringa con il path dell'immagine
+      var attributes = _.filter(attributes, function(attribute) {
+        return attribute.type != 'image';
+      });
       var end = Math.min(maxSubsetLength, attributes.length);
       return attributes.slice(0, end);
     },
@@ -113,7 +118,7 @@ var vueComponentOptions = {
       return this.attributesSubset(attributes).length;
     },
     cellWidth: function(index,layer) {
-      var subsetLength = this.attributesSubsetLength(layer.attributes)
+      var subsetLength = this.attributesSubsetLength(layer.attributes);
       var diff = maxSubsetLength - subsetLength;
       actionsCellWidth = layer.hasgeometry ? headerActionsCellWidth : 0;
       var headerAttributeCellTotalWidth = 100 - headerExpandActionCellWidth - actionsCellWidth;
@@ -163,12 +168,16 @@ var vueComponentOptions = {
     toggleFeatureBoxAndZoom: function(layer, feature, relation_index) {
       // Disattivo zoom to sul toggle della featurebox. Casomai lo ripristineremo quando sarà gestito tramite qualche setting
       /*if (this.collapsedFeatureBox(layer, feature, relation_index)) {
-        this.trigger('gotogeometry',layer,feature)
-      }*/
+       this.trigger('gotogeometry',layer,feature)
+       }*/
       this.toggleFeatureBox(layer, feature, relation_index);
     },
     trigger: function(action,layer,feature) {
       this.$options.queryResultsService.trigger(action,layer,feature);
+    },
+    showLaw: function(value, options) {
+
+      this.$options.queryResultsService.showLaw(value, options);
     }
   },
   watch: {
@@ -207,7 +216,7 @@ function QueryResultsComponent(options) {
     }
   };
 
-  this._service.onafter('setLayersData',function(){
+  this._service.onafter('setLayersData',function() {
     self.createLayersFeaturesBoxes();
   });
   merge(this, options);
@@ -215,11 +224,11 @@ function QueryResultsComponent(options) {
   this.createLayersFeaturesBoxes = function() {
     var layersFeaturesBoxes = {};
     var layers = this._service.state.layers;
-    _.forEach(layers, function(layer){
-      if (layer.attributes.length <= maxSubsetLength) {
+    _.forEach(layers, function(layer) {
+      if (layer.attributes.length <= maxSubsetLength && !layer.hasImageField) {
         layer.expandable = false;
       }
-      _.forEach(layer.features,function(feature,index){
+      _.forEach(layer.features, function(feature, index){
         // se è la prima feature e il layer ha più di maxSubsetLength attributi, allora la espando già in apertura
         //var collapsed = (index == 0 && layer.attributes.length > maxSubsetLength) ? false : true;
         var collapsed = true;
@@ -255,7 +264,7 @@ function QueryResultsComponent(options) {
   };
 
   this.layout = function(width,height) {
-    //
+    //TODO
   }
 }
 inherit(QueryResultsComponent, Component);

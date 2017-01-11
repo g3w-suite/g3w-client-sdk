@@ -38,6 +38,10 @@ function GUI() {
   this.getComponent = function(id) {
     return ComponentsRegistry.getComponent(id);
   };
+  // funzione che prende tutti i componenti registrati
+  this.getComponents = function() {
+    return ComponentsRegistry.getComponents();
+  };
   //fine metodi componente
 
   this.goto = function(url) {
@@ -49,7 +53,7 @@ function GUI() {
     this.ready = true;
   };
   
-  this.guiResized = function(){
+  this.guiResized = function() {
     this.emit('guiresized');
   };
 

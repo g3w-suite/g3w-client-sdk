@@ -58,14 +58,14 @@ proto.mount = function(parent) {
  * Metodo richiamato quando si vuole rimuovere il panello.
  * Ritorna una promessa che sarà risolta nel momento in cui il pannello avrà completato la propria rimozione (ed eventuale rilascio di risorse dipendenti)
 */
-proto.unmount = function(){
+proto.unmount = function() {
   var panel = this.internalPanel;
   var deferred = $.Deferred();
   panel.$destroy(true);
-  deferred.resolve();
   if (panel.onClose) {
     panel.onClose();
   }
+  deferred.resolve();
   return deferred.promise();
 };
 

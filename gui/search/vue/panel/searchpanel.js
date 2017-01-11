@@ -27,12 +27,12 @@ var SearchPanelComponet = Vue.extend({
       this.filterObject = this.fillFilterInputsWithValues(this.filterObject, this.formInputValues);
       var showQueryResults = GUI.showContentFactory('query');
       var queryResultsPanel = showQueryResults(self.title);
-      QueryService.queryByFilter(this.filterObject)
-      .then(function(results){
-        queryResultsPanel.setQueryResponse(results);
+      QueryService.queryByFilter([this.filterObject])
+      .then(function(results) {
+         queryResultsPanel.setQueryResponse(results);
       })
       .fail(function() {
-        queryResultsPanel.setQueryResponse({});
+         queryResultsPanel.setQueryResponse({});
       })
     }
   }
@@ -51,16 +51,23 @@ function SearchPanel() {
     this.config = config || {};
     this.name = this.config.name || this.name;
     this.id = this.config.id || this.id;
+    // rpendo il filtro restituito dal server
     this.filter = this.config.options.filter || this.filter;
     var queryLayerId = this.config.options.querylayerid || this.querylayerid;
+    // recupero il query layer dall'id della configurazione
     this.queryLayer = ProjectsRegistry.getCurrentProject().getLayerById(queryLayerId);
-    //vado a riempire gli input del form del pannello
+    //vado a riempire gli input del form del pannello con campo e valore
     this.fillInputsFormFromFilter();
     //creo e assegno l'oggetto filtro
     var filterObjFromConfig = QueryService.createQueryFilterFromConfig(this.filter);
     //alla fine creo l'ggetto finale del filtro da passare poi al provider QGISWMS o WFS etc.. che contiene sia
     //il filtro che url, il nome del layer il tipo di server etc ..
-    this.internalPanel.filterObject = QueryService.createQueryFilterObject(this.queryLayer, filterObjFromConfig);
+    this.internalPanel.filterObject = QueryService.createQueryFilterObject({
+      queryLayers: [this.queryLayer],
+      filter: filterObjFromConfig
+    });
+    // da migliorare
+    this.internalPanel.filterObject = this.internalPanel.filterObject[0];
     //soluzione momentanea assegno  la funzione del SearchPanle ma come pattern è sbagliato
     //vorrei delegarlo a SearchesService ma lo stesso stanzia questo (loop) come uscirne???
     //creare un searchpanelservice?
@@ -78,7 +85,7 @@ function SearchPanel() {
         //sempre nuovo oggetto
         formValue = {};
         //inserisco l'id all'input
-        input.id = id
+        input.id = id;
         //aggiungo il tipo al valore per fare conversione da stringa a tipo input
         formValue.type = input.input.type;
         ////TEMPORANEO !!! DEVO PRENDERE IL VERO VALORE DI DEFAULT
@@ -106,13 +113,14 @@ function SearchPanel() {
       return value;
     }
     //ciclo sull'oggetto filtro che ha come chiave root 'AND' o 'OR'
-    _.forEach(filterObject.filterObject, function(v,k) {
+    _.forEach(filterObject.filter, function(v,k) {
       //scorro attraverso l'array di elementi operazionali da confrontare
       _.forEach(v, function(input, idx) {
         //elemento operazionale {'=':{}}
         _.forEach(input, function(v, k, obj) {
           //vado a leggere l'oggetto attributo
           if (_.isArray(v)) {
+            console.log(input);
             //richiama la funzione ricorsivamente .. andrà bene ?
             fillFilterInputsWithValues(input, formInputValues, idx);
           } else {
@@ -131,4 +139,5 @@ function SearchPanel() {
 }
 
 inherit(SearchPanel, Panel);
+
 module.exports = SearchPanel;

@@ -19,7 +19,7 @@ proto.mount = function(parent, append) {
     this.setInternalComponent();
   }
   // verifica se è in append o no
-  if(append) {
+  if (append) {
     this.internalComponent.$mount().$appendTo(parent);
   }
   else {

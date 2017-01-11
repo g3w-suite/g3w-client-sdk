@@ -11,5 +11,16 @@ module.exports = {
         break
     }
     return scale;
+  },
+  scaleToRes: function(scale, metric) {
+    var metric = metric || 'm';
+    var resolution;
+    switch (metric) {
+      case 'm':
+        var resolution = (scale * OGC_PIXEL_WIDTH) / 1000;
+        break
+    }
+    return resolution;
+
   }
 };

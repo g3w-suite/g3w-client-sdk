@@ -58,7 +58,7 @@ var testFilter = {
           ]
       }
    ]
-}
+};
 //////////////
 
 ///FILTRI CUSTOM
@@ -88,7 +88,7 @@ var standardFilterTemplates = function() {
     like: "",
     ilike: "",
     AND: "<And>[AND]</And>",
-    OR: "<Or>[OR]</Or>",
+    OR: "<Or>[OR]</Or>"
   }
 }();
 
@@ -125,22 +125,22 @@ function QueryWFSProvider(){
       case 'OGC':
         filter = this.createStandardFilter(filterObject, querylayer);
         response = this.standardSearch(url, filter);
-        return resolve(response)
+        return resolve(response);
         break;
       case 'qgis':
         filter = this.createQgisFilter(filterObject);
         response = this.qgisSearch(querylayer, url, filter);
-        return resolve(response)
+        return resolve(response);
         break;
       case 'mapserver':
         filter = this.createMapserverFilter(filterObject);
         response = this.mapserverSearch(querylayer, url, filter);
-        return resolve(response)
+        return resolve(response);
         break;
       case 'geoserver':
         filter = this.createGeoserverFilter(filterObject);
         response = this.geoserverSearch(querylayer, url, filter);
-        return resolve(response)
+        return resolve(response);
         break;
       default:
         return false
@@ -174,7 +174,7 @@ function QueryWFSProvider(){
                   filterElement = filterElement(k, v);
                 });
               });
-            };
+            }
             filterElements.push(filterElement);
           });
         });
@@ -184,10 +184,10 @@ function QueryWFSProvider(){
           rootFilter = rootFilter.apply(this, filterElements);
         } else {
           rootFilter = filterElements[0];
-        };
+        }
       });
       return rootFilter;
-    };
+    }
     //assegno il filtro creato
     ol3GetFeatureRequestObject.filter = createSingleFilter(filterObject);
     //creo il filtro utilizzando ol3
@@ -223,5 +223,5 @@ function QueryWFSProvider(){
 }
 inherit(QueryWFSProvider,G3WObject);
 
-module.exports =  new QueryWFSProvider()
+module.exports =  new QueryWFSProvider;
 

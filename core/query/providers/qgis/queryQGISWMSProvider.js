@@ -22,9 +22,9 @@ function QueryQGISWMSProvider() {
 
   self = this;
   //funzione che fa la richiesta vera e propria al server qgis
-  this.submitGetFeatureInfo = function(options) {
+  this._submitGetFeatureInfo = function(options) {
     var url = options.url || '';
-    var querylayername = options.querylayername || null;
+    var layername = options.layername || null;
     var filter = options.filter || null;
     var bbox = options.bbox || ProjectsRegistry.getCurrentProject().state.extent.join(',');
     var simpleWmsSearchMaxResults = null;
@@ -33,8 +33,8 @@ function QueryQGISWMSProvider() {
         'SERVICE': 'WMS',
         'VERSION': '1.3.0',
         'REQUEST': 'GetFeatureInfo',
-        'LAYERS': querylayername,
-        'QUERY_LAYERS': querylayername,
+        'LAYERS': layername,
+        'QUERY_LAYERS': layername,
         'FEATURE_COUNT': simpleWmsSearchMaxResults ||  50,
         'INFO_FORMAT': 'application/vnd.ogc.gml',
         'CRS': 'EPSG:'+ crs,
@@ -46,29 +46,31 @@ function QueryQGISWMSProvider() {
    };
 
   //funzione che fa la ricerca
-  this.doSearch = function(queryFilterObject) {
-    var d = $.Deferred()
-    var querylayer = queryFilterObject.queryLayer;
-    var url = querylayer.getQueryUrl();
-    var crs = querylayer.getCrs();
-    var filterObject = queryFilterObject.filterObject;
+  this.doSearch = function(options) {
+    var options = options || {};
+    var d = $.Deferred();
+    var layers = options.layers;
+    var url = options.url;
+    var crs = options.crs;
+    var filterObject = options.filter;
     //creo il filtro
-    var filter = this.createFilter(filterObject, querylayer.getQueryLayerName());
+    // DA MIGLIORARE CASO FILTRO WMS SINGOLO LAYER / MULTIPLE LAYER
+    var filter = this._createFilter(filterObject, layers[0].getQueryLayerName());
     // nel caso in cui il filtro è vuoto
     if (!filter) {
       return d.reject().promise();
     }
     //eseguo la richiesta e restituisco come risposta la promise del $.get
-    var response = this.submitGetFeatureInfo({
+    var request = this._submitGetFeatureInfo({
       url: url,
       crs: crs,
       filter: filter,
-      querylayername: querylayer.getQueryLayerName()
+      layername: layers[0].getQueryLayerName()
     });
-    return response;
+    return request;
   };
 
-  this.createFilter = function(filterObject, querylayername) {
+  this._createFilter = function(filterObject, layername) {
     /////inserisco il nome del layer (typename) ///
     var filter = [];
     function createSingleFilter(booleanObject) {
@@ -97,14 +99,13 @@ function QueryQGISWMSProvider() {
               _.forEach(input, function(v, k, obj) {
                 _.forEach(v, function(v, k, obj) {
                   //verifico se il valore non è un numero e quindi aggiungo singolo apice
-                  if (!(_.isNull(v) || (_.isNaN(v) || _.trim(v) == ''))) {;
+                  if (!(_.isNull(v) || (_.isNaN(v) || _.trim(v) == ''))) {
                     filterElement = "\"" + k + "\" "+ filterOp +" " + valueQuotes + valueExtra + v + valueExtra + valueQuotes;
                     filterElements.push(filterElement);
                   }
                 });
               });
             }
-
           });
         });
         rootFilter = (filterElements.length > 0) ? filterElements.join(" "+ rootFilter + " ") : false;
@@ -113,13 +114,13 @@ function QueryQGISWMSProvider() {
     }
     //assegno il filtro creato
     if (createSingleFilter(filterObject)) {
-      return  querylayername + ":" + createSingleFilter(filterObject);
+      return  layername + ":" + createSingleFilter(filterObject);
     } else {
       return false
     }
   };
-
 }
+
 inherit(QueryQGISWMSProvider, G3WObject);
 
-module.exports =  new QueryQGISWMSProvider();
+module.exports =  new QueryQGISWMSProvider;

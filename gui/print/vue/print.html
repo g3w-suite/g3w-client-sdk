@@ -1,0 +1,38 @@
+<ul id="print" class="treeview-menu">
+  <li>
+    <form id="g3w-search-form" class="form-horizonal">
+      <div class="box-body">
+        <label for="templates">Template</label>
+        <select :field="field.name" class="form-control" @change="onChangeTemplate" v-model="state.template" id="templates" :placeholder="Seleziona il template">
+          <option v-for="print in state.print">{{ print.name }}</option>
+        </select>
+        <label for="scala">Scala</label>
+        <select :field="field.name" class="form-control" @change="onChangeScale" v-model="state.scala" id="scala" :placeholder="Seleziona la scala">
+          <option v-for="scala in state.scale" value="{{ scala.value }}">{{ scala.label }}</option>
+        </select>
+        <label for="dpi">dpi</label>
+        <select :field="field.name" class="form-control" @change="onChangeDpi"  v-model="state.dpi" id="dpi" :placeholder="Seleziona i dpi">
+          <option v-for="dpi in state.dpis" >{{ dpi }}</option>
+        </select>
+        <label for="rotation">Rotazione</label>
+        <input min="-360" max="360"  @input="onChangeRotation" v-model="state.rotation" id="rotation" class="form-control" type="number">
+      </div>
+      <div class="box-footer" style="background-color: transparent">
+        <span>
+          <button style="width:100%" class="btn " :class="[button.class, isAnnullaButton(button.type) ? 'pull-right' : '' ]" @click.stop.prevent="exec(button.cbk)" v-disabled="btnEnabled(button)">{{ button.title }}</button>
+        </span>
+      </div>
+    </form>
+    <div id="message" style="text-align:center; padding:3px; color: yellow" class="message" v-show="btnEnabled(button)">
+      <div>
+        <span>Muovendoti all'interno della mappa</span>
+      </div>
+      <div>
+        <span>o cambiando i parametri della stampa</span>
+      </div>
+      <div>
+        <span>il PDF si aggiornerà automaticamente</span>
+      </div>
+    </div>
+  </li>
+</ul>

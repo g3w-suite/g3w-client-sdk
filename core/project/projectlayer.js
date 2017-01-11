@@ -82,6 +82,15 @@ proto.getAttributes = function() {
   return this.state.fields;
 };
 
+proto.changeAttribute = function(attribute, type, options) {
+  _.forEach(this.state.fields, function(field) {
+    if (field.name == attribute) {
+      field.type = type;
+      field.options = options;
+    }
+  })
+};
+
 proto.getAttributeLabel = function(name) {
   var label;
   _.forEach(this.getAttributes(),function(field){
@@ -172,8 +181,8 @@ proto.setQueryUrl = function(queryUrl) {
   this.state.inforurl = queryUrl;
 };
 
-proto.getInfoFormat = function() {
-  if (this.state.infoformat && this.state.infoformat != '') {
+proto.getInfoFormat = function(ogcService) {
+  if (this.state.infoformat && this.state.infoformat != '' && ogcService !='wfs') {
     return this.state.infoformat;
   }
   else {
@@ -183,6 +192,10 @@ proto.getInfoFormat = function() {
 
 proto.setInfoFormat = function(infoFormat) {
   this.state.infoformat = infoFormat;
+};
+
+proto.getWfsCapabilities = function() {
+  return this.state.wfscapabilities;
 };
 
 proto.getWmsUrl = function() {

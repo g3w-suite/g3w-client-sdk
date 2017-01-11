@@ -1,13 +1,8 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
-var QueryWFSProvider = require('./queryWFSProvider');
-var QueryQGISWMSProvider = require('./queryQGISWMSProvider');
-
-var Provider = {
-  'QGIS': QueryQGISWMSProvider,
-  'OGC': QueryWFSProvider
-};
+var GUI = require('gui/gui');
+var QueryProvider = require('./providers/queryprovider');
 
 /*var PickToleranceParams = {};
 PickToleranceParams[ProjectTypes.QDJANGO] = {};
@@ -28,6 +23,10 @@ function QueryService(){
   this.url = "";
   this.filterObject = {};
   this.queryFilterObject = {};
+  //me lo porto da mapqueryservice ma vediamo cosa succede
+  this.setMapService = function(mapService){
+    this._mapService = mapService;
+  };
 
   this.setFilterObject = function(filterObject){
     this.filterObject = filterObject;
@@ -36,15 +35,13 @@ function QueryService(){
   this.getFilterObject = function() {
     return this.filterObject;
   };
+
   //dato l'oggetto filter restituito dal server ricostruisco la struttura del filterObject
   //interpretato da queryWMSProvider
   this.createQueryFilterFromConfig = function(filter) {
-
     var queryFilter = {};
-    var attribute;
     var operator;
     var field;
-    var operatorObject = {};
     var booleanObject = {};
     //funzione che costruisce l'oggetto operatore es. {'=':{'nomecampo':null}}
     function createOperatorObject(obj) {
@@ -81,13 +78,24 @@ function QueryService(){
     });
     return queryFilter;
   };
-
-  this.createQueryFilterObject = function(layer, filterObject){
-    return {
-      type: 'standard',
-      queryLayer: layer,
-      filterObject : filterObject
-    };
+  // funzione che in base ai layer coinvolti nella chaita del filtro,
+  // creerà un'array di oggetti a seconda del tipo di layer
+  this.createQueryFilterObject = function(options) {
+    var options = options || {};
+    var queryLayers = options.queryLayers || [];
+    var ogcService = options.ogcService || 'wms';
+    var filter =  options.filter || {};
+    var queryFilters = [];
+    var infoFromLayers = this.getInfoFromLayers(queryLayers, ogcService);
+    _.forEach(infoFromLayers, function(info) {
+      // vado a creare un oggetto/array di oggetti con informazioni rigurdanti layers in comune
+      queryFilters.push(_.merge(info, {
+        // Servizio ogc: wfs, wms etc..
+        ogcService: ogcService,
+        filter : filter // oggetto che descrive come dovrà essere composto il filtro dal provider
+      }));
+    });
+    return queryFilters
   };
 
   /////PARSERS //////////////////
@@ -95,7 +103,6 @@ function QueryService(){
   // Brutto ma per ora unica soluzione trovata per dividere per layer i risultati di un doc xml wfs.FeatureCollection.
   // OL3 li parserizza tutti insieme non distinguendo le features dei diversi layers
   this._parseLayerFeatureCollection = function(queryLayer, data) {
-    var features = [];
     var layerName = queryLayer.getWMSLayerName();
     var layerData = _.cloneDeep(data);
     layerData.FeatureCollection.featureMember = [];
@@ -104,7 +111,7 @@ function QueryService(){
     featureMembers = _.isArray(featureMembers) ? featureMembers : [featureMembers];
     _.forEach(featureMembers,function(featureMember){
       layerName = layerName.replace(/ /g,''); // QGIS SERVER rimuove gli spazi dal nome del layer per creare l'elemento FeatureMember
-      var isLayerMember = _.get(featureMember,layerName)
+      var isLayerMember = _.get(featureMember,layerName);
 
       if (isLayerMember) {
         layerData.FeatureCollection.featureMember.push(featureMember);
@@ -167,7 +174,6 @@ function QueryService(){
   // dal server così da avere una risposta coerente in termini di formato risultati da presentare
   // nel componente QueryResults
   this.handleQueryResponseFromServer = function(response, infoFormat, queryLayers) {
-
     var jsonresponse;
     var featuresForLayers = [];
     var parser, data;
@@ -201,13 +207,11 @@ function QueryService(){
             break;
         }
     }
-    
     var nfeatures = 0;
     if (parser) {
       _.forEach(queryLayers, function(queryLayer) {
         var features = parser.call(self, queryLayer, data);
         nfeatures += features.length;
-
         featuresForLayers.push({
           layer: queryLayer,
           features: features
@@ -217,55 +221,53 @@ function QueryService(){
 
     return featuresForLayers;
   };
-  // query basato sul filtro
 
-  this.queryByFilter = function(queryFilterObject) {
-
+  /* query basato sul filtro
+     tale funzione prende in considerazione casi come:
+     1- search: Ogni layer ha campie attributi su cui viene fatto il filtro
+     2- bbox: filtro per bbox
+     3- polygon/geometry: filtro per geometria
+     In pratica si specifica il tipo di servizion ogc wfs, wms il tipo di server
+     a cui fare la richiesta (qgis, mapserver etc..)
+     Il parametro filters è un array che contiene layer e attributi
+  */
+  this.queryByFilter = function(filters) {
     var self = this;
     var d = $.Deferred();
-    //parte da rivedere nel filtro
-    var provider = Provider[queryFilterObject.queryLayer.getServerType()];
-    //ritorna una promise poi gestita da che la chiede
-    provider.doSearch(queryFilterObject).
-    then(function(response) {
-      //al momento qui replico struttura per i parser
-      var queryLayer = queryFilterObject.queryLayer;
-      var featuresForLayers = self.handleQueryResponseFromServer(response, queryLayer.getInfoFormat(), [queryLayer]);
-      self.handleResponseFeaturesAndRelations(featuresForLayers);
-      d.resolve({
-        data: featuresForLayers,
-        query: {
-          filter: queryFilterObject
-        }
-      });
-    })
-    .fail(function(e){
-          d.reject(e);
+    // creo l'array di promises chiamate get post per efftuare multiple chimate a seconda
+    // del provider e del ogcservice
+    var doSearches = [];
+    /// cliclo sul query filter objects
+    _.forEach(filters, function(filter) {
+      // si crea il provider
+      var provider = new QueryProvider(filter);
+      //ritorna una promise poi gestita da che la chiede
+      doSearches.push(provider.doSearch(filter))
     });
+    $.when.apply(this, doSearches)
+      .done(function(response) {
+       var allFeaturesFoLayers = [];
+        _.forEach(filters, function(filter) {
+          var featuresForLayers = self.handleQueryResponseFromServer(response, filter.infoFormat, filter.layers);
+          allFeaturesFoLayers = _.union(allFeaturesFoLayers, self.handleResponseFeaturesAndRelations(featuresForLayers));
+        });
+        d.resolve({
+          data: allFeaturesFoLayers
+        });
+      })
+      .fail(function(e){
+            d.reject(e);
+      });
     return d.promise();
   };
-  
-  this.queryByLocation = function(coordinates, layers) {
-    // TODO Rimuovere dipendenza da GUI
-    var GUI = require('gui/gui');
-    var mapservice = GUI.getComponent('map').getService();
-    var self = this;
-    var d = $.Deferred();
-    var urlsForLayers = {};
-    _.forEach(layers, function(layer){
-      var queryUrl = layer.getQueryUrl();
-      var urlHash = queryUrl.hashCode().toString();
-      if (_.keys(urlsForLayers).indexOf(urlHash) == -1) {
-        urlsForLayers[urlHash] = {
-          url: queryUrl,
-          layers: []
-        };
-      }
-      urlsForLayers[urlHash].layers.push(layer);
-    });
 
-    var resolution = mapservice.getResolution();
-    var epsg = mapservice.getEpsg();
+  // queryByLocation
+  this.queryByLocation = function(coordinates, layers) {
+    var d = $.Deferred();
+    var mapService = GUI.getComponent('map').getService();
+    var urlsForLayers = this.getInfoFromLayers(layers);
+    var resolution = mapService.getResolution();
+    var epsg = mapService.getEpsg();
     var queryUrlsForLayers = [];
     _.forEach(urlsForLayers,function(urlForLayers) {
       var sourceParam = urlForLayers.url.split('SOURCE');
@@ -289,7 +291,7 @@ function QueryService(){
         G3W_TOLERANCE: PIXEL_TOLERANCE * resolution
       };
 
-      var getFeatureInfoUrl = mapservice.getGetFeatureInfoUrlForLayer(queryLayers[0],coordinates,resolution,epsg,params);
+      var getFeatureInfoUrl = mapService.getGetFeatureInfoUrlForLayer(queryLayers[0],coordinates,resolution,epsg,params);
       var queryString = getFeatureInfoUrl.split('?')[1];
       var url = urlForLayers.url+'?'+queryString + sourceParam;
       queryUrlsForLayers.push({
@@ -298,6 +300,24 @@ function QueryService(){
         queryLayers: queryLayers
       });
     });
+    this.makeQueryForLayers(queryUrlsForLayers, coordinates, resolution)
+      .then(function(response) {
+        d.resolve(response)
+      })
+      .fail(function(e){
+        d.reject(e);
+      });
+    return d.promise();
+  };
+
+  // da verificare generalizzazione
+  this.makeQueryForLayers = function(queryUrlsForLayers, coordinates, resolution) {
+    var self = this;
+    var d = $.Deferred();
+    var queryInfo = {
+      coordinates: coordinates,
+      resolution: resolution
+    };
     if (queryUrlsForLayers.length > 0) {
       var queryRequests = [];
       var featuresForLayers = [];
@@ -305,7 +325,13 @@ function QueryService(){
         var url = queryUrlForLayers.url;
         var queryLayers = queryUrlForLayers.queryLayers;
         var infoFormat = queryUrlForLayers.infoformat;
-        var request = self.doRequestAndParse(url,infoFormat,queryLayers);
+        var postData = queryUrlForLayers.postData;
+        var request = self.doRequestAndParse({
+          url: url,
+          infoFormat: infoFormat,
+          queryLayers: queryLayers,
+          postData: postData
+        });
         queryRequests.push(request);
       });
       $.when.apply(this, queryRequests).
@@ -319,10 +345,7 @@ function QueryService(){
         featuresForLayers = self.handleResponseFeaturesAndRelations(featuresForLayers);
         d.resolve({
           data: featuresForLayers,
-          query: {
-            coordinates: coordinates,
-            resolution: resolution
-          }
+          query: queryInfo
         });
       })
       .fail(function(e){
@@ -330,34 +353,71 @@ function QueryService(){
       });
     }
     else {
-      d.resolve(coordinates,0,{});
+      d.resolve({
+        data: null,
+        query: queryInfo
+      });
     }
-    return d.promise();
+    return d.promise()
   };
-  
-  this.doRequestAndParse = function(url,infoFormat,queryLayers){
+  // funzione che in base ai layers e alla tipologia di servizio
+  // restituisce gli url per ogni layer o gruppo di layers
+  // che condividono lo stesso indirizzo di servizio
+  this.getInfoFromLayers = function(layers, ogcService) {
+    // wfs specifica se deve essere fatta chiamata wfs o no
+    var urlsForLayers = {};
+    // scooro sui ogni layer e catturo il queryUrl
+    _.forEach(layers, function(layer) {
+      // se wfs prendo l'api fornite dal server
+      if (ogcService == 'wfs') {
+        var queryUrl = layer.getProject().getWmsUrl();
+      } else {
+        var queryUrl = layer.getQueryUrl();
+      }
+      var urlHash = queryUrl.hashCode().toString();
+      if (_.keys(urlsForLayers).indexOf(urlHash) == -1) {
+        urlsForLayers[urlHash] = {
+          url: queryUrl,
+          layers: [],
+          infoFormat: layer.getInfoFormat(ogcService),
+          crs: layer.getCrs(), // dovrebbe essere comune a tutti
+          serverType: layer.getServerType() // aggiungo anche il tipo di server
+        };
+      }
+      urlsForLayers[urlHash].layers.push(layer);
+    });
+    // restituisce un oggetto contente oggetti avente l'url condiviso da più layers
+    return urlsForLayers;
+  };
+
+  this.doRequestAndParse = function(options) {
+    var options = options || {};
+    var url = options.url;
+    var infoFormat = options.infoFormat;
+    var queryLayers = options.queryLayers;
+    var postData = options.postData || null;
     var self = this;
     var d = $.Deferred();
-    $.get(url).
-    done(function(response) {
-      var featuresForLayers = self.handleQueryResponseFromServer(response, infoFormat, queryLayers);;
+    var request;
+    if (postData) {
+      request = $.post(url, postData)
+    } else {
+      request = $.get(url);
+    }
+    request
+    .done(function(response) {
+      var featuresForLayers = self.handleQueryResponseFromServer(response, infoFormat, queryLayers);
       d.resolve(featuresForLayers);
     })
-    .fail(function(){
-      d.reject();
-    });
+      .fail(function(){
+        d.reject();
+      });
     return d;
   };
 
-  //query by BBOX
-  this.queryByBoundingBox = function(bbox) {
-    //codice qui
-  };
-
-
   base(this);
 }
-inherit(QueryService,G3WObject);
+inherit(QueryService, G3WObject);
 
-module.exports =  new QueryService
+module.exports =  new QueryService;
 

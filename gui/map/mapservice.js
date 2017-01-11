@@ -9,11 +9,15 @@ var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 var WMSLayer = require('core/map/layer/wmslayer');
 var ControlsFactory = require('gui/map/control/factory');
 var QueryService = require('core/query/queryservice');
+var ControlsRegistry = require('gui/map/control/registry');
+
 
 function MapService(options) {
   var self = this;
   this.viewer;
   this.target;
+  this.project;
+  this.selectedLayer;
   this._mapControls = [],
   this._mapLayers = [];
   this.mapBaseLayers = {};
@@ -25,8 +29,15 @@ function MapService(options) {
       loading: false,
       hidden: true
   };
-  this._interactionsStack = [];
+
   this._greyListenerKey = null;
+  this._drawShadow = {
+    type: 'coordinate',
+    outer: [],
+    inner: [],
+    scale: null,
+    rotation: null
+  };
   this.config = options.config || ApplicationService.getConfig();
   
   this._howManyAreLoading = 0;
@@ -62,7 +73,7 @@ function MapService(options) {
   }
 
   this.setters = {
-    setMapView: function(bbox,resolution,center){
+    setMapView: function(bbox, resolution, center) {
       this.state.bbox = bbox;
       this.state.resolution = resolution;
       this.state.center = center;
@@ -75,51 +86,39 @@ function MapService(options) {
       if (width == 0 || height == 0) {
         return
       }
-      //$script("http://epsg.io/"+ProjectService.state.project.crs+".js");
       proj4.defs("EPSG:"+self.project.state.crs,this.project.state.proj4);
       if (self.viewer) {
         self.viewer.destroy();
         self.viewer = null;
       }
-      self._setupViewer(width,height);
+      self._setupViewer(width, height);
       self.state.bbox = this.viewer.getBBOX();
       self.state.resolution = this.viewer.getResolution();
-      self.state.center = this.viewer.getCenter()
+      self.state.center = this.viewer.getCenter();
       self.setupControls();
       self.setupLayers();
       self.emit('viewerset');
     }
   };
-  
+
+  // funzione che setta la view basata sulle informazioni del progetto
   this._setupViewer = function(width,height) {
     var self = this;
     var projection = this.getProjection();
+    // ricavo l'estensione iniziale del progetto)
     var initextent = this.project.state.initextent;
+    // ricavo l'estensione del progetto
     var extent = this.project.state.extent;
 
     var maxxRes = ol.extent.getWidth(extent) / width;
     var minyRes = ol.extent.getHeight(extent) / height;
+    // calcolo la massima risoluzione
     var maxResolution = Math.max(maxxRes,minyRes);
 
     var initxRes = ol.extent.getWidth(initextent) / width;
     var inityRes = ol.extent.getHeight(initextent) / height;
     var initResolution = Math.max(initxRes,inityRes);
-    
-    /*var constrain_extent;
-    if (this.config.constraintextent) {
-      var extent = this.config.constraintextent;
-      var dx = extent[2]-extent[0];
-      var dy = extent[3]-extent[1];
-      var dx4 = dx/4;
-      var dy4 = dy/4;
-      var bbox_xmin = extent[0] + dx4;
-      var bbox_xmax = extent[2] - dx4;
-      var bbox_ymin = extent[1] + dy4;
-      var bbox_ymax = extent[3] - dy4;
-      
-      constrain_extent = [bbox_xmin,bbox_ymin,bbox_xmax,bbox_ymax];
-    }*/
-    
+
     this.viewer = ol3helpers.createViewer({
       id: this.target,
       view: {
@@ -172,6 +171,33 @@ function MapService(options) {
   
   this.project.onafter('setBaseLayer',function(){
     self.updateMapLayers(self.mapBaseLayers);
+  });
+  this.on('cataloglayerselected', function() {
+   var self = this;
+   var layer = this.project.getLayers({
+      SELECTED: true
+    });
+   if (layer) {
+     this.selectLayer = layer[0];
+     _.forEach(this._mapControls, function(mapcontrol) {
+       if (_.indexOf(_.keysIn(mapcontrol.control), 'onSelectLayer') > -1 && mapcontrol.control.onSelectLayer()) {
+         if (mapcontrol.control.getGeometryTypes().indexOf(self.selectLayer.getGeometryType()) > -1 ) {
+           mapcontrol.control.setEnable(true);
+         } else {
+           mapcontrol.control.setEnable(false);
+         }
+       }
+     })
+   }
+  });
+
+  this.on('cataloglayerunselected', function() {
+    this.selectLayer = null;
+    _.forEach(this._mapControls, function(mapcontrol) {
+      if (_.indexOf(_.keysIn(mapcontrol.control),'onSelectLayer') > -1 && mapcontrol.control.onSelectLayer()) {
+        mapcontrol.control.setEnable(false);
+      }
+    })
   });
   
   base(this);
@@ -277,7 +303,7 @@ proto.setupControls = function(){
           control = ControlsFactory.create({
             type: controlType
           });
-          control.on('picked',function(e){
+          control.on('picked', function(e){
             var coordinates = e.coordinates;
             var showQueryResults = GUI.showContentFactory('query');
             var layers = self.project.getLayers({
@@ -292,6 +318,89 @@ proto.setupControls = function(){
             });
           });
           self.addControl(controlType,control);
+          break;
+        case 'querybypolygon':
+          var layers = self.project.getLayers({
+            QUERYABLE: true,
+            SELECTEDORALL: true
+          });
+          control = ControlsFactory.create({
+            type: controlType,
+            layers: layers
+          });
+          if (control) {
+            control.on('picked', function (e) {
+              var coordinates = e.coordinates;
+              var showQueryResults = GUI.showContentFactory('query');
+              //faccio query by location su i layers selezionati o tutti
+              var queryResultsPanel = showQueryResults('interrogazione');
+              layers = self.project.getLayers({
+                QUERYABLE: true,
+                SELECTED: true
+              });
+              QueryService.queryByLocation(coordinates, layers)
+                .then(function (results) {
+                  if(results && results.data[0].features.length) {
+                    var geometry = results.data[0].features[0].getGeometry();
+                    var queryLayers = self.project.getLayers({
+                      QUERYABLE: true,
+                      ALLNOTSELECTED: true,
+                      WFS: true
+                    });
+                    self.highlightGeometry(geometry);
+                    var filterObject = QueryService.createQueryFilterObject({
+                      queryLayers: queryLayers,
+                      ogcService: 'wfs',
+                      filter: {
+                        geometry: geometry
+                      }
+                    });
+                    QueryService.queryByFilter(filterObject)
+                      .then(function (results) {
+                        queryResultsPanel.setQueryResponse(results, coordinates, self.state.resolution);
+                      })
+                      .always(function () {
+                        self.clearHighlightGeometry();
+                      });
+                  }
+                });
+            });
+            self.addControl(controlType, control);
+          }
+          break;
+        case 'querybbox':
+          if (!isMobile.any && self.checkWFSLayers()) {
+            var layers = self.project.getLayers({
+              QUERYABLE: true,
+              SELECTEDORALL: true,
+              WFS: true
+            });
+            control = ControlsFactory.create({
+              type: controlType,
+              layers: layers
+            });
+            if (control) {
+              control.on('bboxend', function (e) {
+                var bbox = e.extent;
+                var showQueryResults = GUI.showContentFactory('query');
+                //faccio query by location su i layers selezionati o tutti
+                var queryResultsPanel = showQueryResults('interrogazione');
+                var filterObject = QueryService.createQueryFilterObject({
+                  queryLayers: layers,
+                  ogcService: 'wfs',
+                  filter: {
+                    bbox: bbox
+                  }
+                });
+                QueryService.queryByFilter(filterObject)
+                //QueryService.queryByBBox(bbox, layers)
+                  .then(function (results) {
+                    queryResultsPanel.setQueryResponse(results, bbox, self.state.resolution);
+                  });
+              });
+              self.addControl(controlType, control);
+            }
+          }
           break;
         case 'scaleline':
           control = ControlsFactory.create({
@@ -328,14 +437,37 @@ proto.setupControls = function(){
     });
   }
 };
+// verifica se esistono layer querabili che hanno wfs capabilities
+proto.checkWFSLayers = function() {
+  var iswfs = false;
+  var layers = this.project.getLayers({
+    QUERYABLE: true,
+    SELECTEDORALL: true
+  });
+  _.forEach(layers, function(layer) {
+    if (layer.getWfsCapabilities()) {
+      iswfs = true;
+      return false
+    }
+  });
+  return iswfs
+};
 
-proto.addControl = function(type,control){
+proto.addControl = function(type, control) {
+  // verico che il controllo abbia la funzione on selectLayer
+  if (_.indexOf(_.keysIn(control),'onSelectLayer') > -1 && control.onSelectLayer()) {
+    if (!this.selectLayer) {
+      control.setEnable(false);
+    }
+  }
   this.viewer.map.addControl(control);
   this._mapControls.push({
     type: type,
     control: control,
     visible: true
-  })
+  });
+  // vado a registrare il controllo aggiunto
+  ControlsRegistry.registerControl(type, control);
 };
 
 // mostra uno dei controlli disponibili (ovvero già istanziati in base alla configurazione)
@@ -508,7 +640,7 @@ proto.setupLayers = function(){
 };
 
 proto.getOverviewMapLayers = function(project) {
-  var self = this;
+
   var projectLayers = project.getLayers({
     'VISIBLE': true
   });
@@ -573,9 +705,11 @@ proto.addInteraction = function(interaction) {
 
 proto.removeInteraction = function(interaction){
   this.viewer.map.removeInteraction(interaction);
+
 };
 
-// emetto evento quando viene attivata un interazione di tipo Pointer (utile ad es. per disattivare/riattivare i tool di editing)
+// emetto evento quando viene attivata un interazione di tipo Pointer
+// (utile ad es. per disattivare/riattivare i tool di editing)
 proto._watchInteraction = function(interaction) {
   var self = this;
   interaction.on('change:active',function(e){
@@ -722,10 +856,11 @@ proto.refreshMap = function() {
     wmsLayer.getOLLayer().getSource().updateParams({"time": Date.now()});
   });
 };
+
 // funzione mi server per poter in pratica
 // fare l'updatesize della mappa qundo il div che la contine cambia
-// in questo modo la mappa non si streccia
-proto.layout = function(width,height) {
+// in questo modo la mappa non si streccia (chimata dalla viewport)
+proto.layout = function(width, height) {
   if (!this.viewer) {
     this.setupViewer(width,height);
   }
@@ -747,54 +882,130 @@ proto._setMapView = function() {
   this.setMapView(bbox, resolution, center);
 };
 
-// funzione grigio mappa precompose mapcompose
-proto.startDrawGreyCover = function(bbox) {
-  // after rendering the layer, restore the canvas context
+proto.getMapSize = function() {
   var map = this.viewer.map;
-  //verifico che non ci sia già un greyListener
-  if (this._greyListenerKey) {
-      this.stopDrawGreyCover();
+  return map.getSize();
+};
+
+proto.setInnerGreyCoverScale = function(scale) {
+  this._drawShadow.scale = scale;
+};
+
+proto._resetDrawShadowInner = function() {
+  this._drawShadow = {
+    type: 'coordinate',
+    outer: [],
+    inner: [],
+    scale: null,
+    rotation: null
+  };
+};
+
+proto.setInnerGreyCoverBBox = function(options) {
+  var options = options || {};
+  var map = this.viewer.map;
+  var type = options.type || 'coordinate'; // di solito sollo coordinate
+  var inner = options.inner || null;
+  var rotation = options.rotation;
+  var scale = options.scale;
+  var lowerLeftInner;
+  var upperRightInner;
+  if (inner) {
+    switch (type) {
+      case 'coordinate':
+        lowerLeftInner = map.getPixelFromCoordinate([inner[0], inner[1]]);
+        upperRightInner = map.getPixelFromCoordinate([inner[2], inner[3]]);
+        break;
+      case 'pixel':
+        lowerLeftInner = [inner[0], inner[1]];
+        upperRightInner = [inner[2], inner[3]];
+        break
+    }
+    var y_min = lowerLeftInner[1] * ol.has.DEVICE_PIXEL_RATIO;
+    var x_min = lowerLeftInner[0] * ol.has.DEVICE_PIXEL_RATIO;
+    var y_max = upperRightInner[1] * ol.has.DEVICE_PIXEL_RATIO;
+    var x_max = upperRightInner[0] * ol.has.DEVICE_PIXEL_RATIO;
+    this._drawShadow.inner[0] = x_min;
+    this._drawShadow.inner[1] = y_min;
+    this._drawShadow.inner[2] = x_max;
+    this._drawShadow.inner[3] = y_max;
+  }
+  if (_.isNil(scale)) {
+    this._drawShadow.scale = this._drawShadow.scale || 1;
   } else {
-    this._greyListenerKey = map.on('postcompose', function (evt) {
-      var ctx = evt.context;
-      var size = this.getSize();
-      // Inner polygon,must be counter-clockwise
-      var height = size[1] * ol.has.DEVICE_PIXEL_RATIO;
-      var width = size[0] * ol.has.DEVICE_PIXEL_RATIO;
-      ctx.beginPath();
-      // Outside polygon, must be clockwise
-      ctx.moveTo(0, 0);
-      ctx.lineTo(width, 0);
-      ctx.lineTo(width, height);
-      ctx.lineTo(0, height);
-      ctx.lineTo(0, 0);
-      ctx.closePath();
-      if (bbox) {
-       var minx = bbox[0];
-       var miny = bbox[1];
-       var maxx = bbox[2];
-       var maxy = bbox[3];
-       // Inner polygon,must be counter-clockwise
-       ctx.moveTo(minx, miny);
-       ctx.lineTo(minx, maxy);
-       ctx.lineTo(maxx, maxy);
-       ctx.lineTo(maxx, miny);
-       ctx.lineTo(minx, miny);
-       ctx.closePath();
-       }
-      ctx.fillStyle = 'rgba(0, 5, 25, 0.55)';
-      ctx.fill();
-      ctx.restore();
-    });
+    this._drawShadow.scale = scale;
+  }
+  if (_.isNil(rotation)) {
+    this._drawShadow.rotation = this._drawShadow.rotation || 0;
+  } else {
+    this._drawShadow.rotation = rotation;
+  }
+  if (this._drawShadow.outer) {
     map.render();
   }
 };
 
-proto.stopDrawGreyCover = function() {
+// funzione grigio mappa precompose mapcompose
+proto.startDrawGreyCover = function() {
+  var self = this;
+    // after rendering the layer, restore the canvas context
+  var map = this.viewer.map;
+  var x_min, x_max, y_min, y_max, rotation, scale;
+  //verifico che non ci sia già un greyListener
+  if (this._greyListenerKey) {
+      this.stopDrawGreyCover();
+  }
 
+  function postcompose(evt) {
+    var ctx = evt.context;
+    var size = this.getSize();
+    // Inner polygon,must be counter-clockwise
+    var height = size[1] * ol.has.DEVICE_PIXEL_RATIO;
+    var width = size[0] * ol.has.DEVICE_PIXEL_RATIO;
+    self._drawShadow.outer = [0,0,width, height];
+    ctx.restore();
+    ctx.beginPath();
+    // Outside polygon, must be clockwise
+    ctx.moveTo(0, 0);
+    ctx.lineTo(width, 0);
+    ctx.lineTo(width, height);
+    ctx.lineTo(0, height);
+    ctx.lineTo(0, 0);
+    ctx.closePath();
+    // fine bbox esterno (tutta la mappa-)
+    if (self._drawShadow.inner.length) {
+      ctx.save();
+      x_min = self._drawShadow.inner[0];
+      y_min = self._drawShadow.inner[3];
+      x_max = self._drawShadow.inner[2];
+      y_max = self._drawShadow.inner[1];
+      rotation = self._drawShadow.rotation;
+      scale = self._drawShadow.scale;
+      // Inner polygon,must be counter-clockwise antiorario
+      ctx.translate((x_max+x_min)/2, (y_max+y_min)/2);
+      ctx.rotate(rotation*Math.PI / 180);
+      ctx.moveTo(-((x_max-x_min)/2),((y_max-y_min)/2));
+      ctx.lineTo(((x_max-x_min)/2),((y_max-y_min)/2));
+      ctx.lineTo(((x_max-x_min)/2),-((y_max-y_min)/2));
+      ctx.lineTo(-((x_max-x_min)/2),-((y_max-y_min)/2));
+      ctx.lineTo(-((x_max-x_min)/2),((y_max-y_min)/2));
+      ctx.closePath();
+      // fine bbox interno
+    }
+    ctx.fillStyle = 'rgba(0, 5, 25, 0.55)';
+    ctx.fill();
+    ctx.restore();
+  }
+  this._greyListenerKey = map.on('postcompose', postcompose);
+};
+
+proto.stopDrawGreyCover = function() {
   var map = this.viewer.map;
   map.unByKey(this._greyListenerKey);
   this._greyListenerKey = null;
+  if (this._drawShadow.inner.length) {
+    this._resetDrawShadowInner();
+  }
   map.render();
 };
 
