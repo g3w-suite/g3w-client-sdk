@@ -217,8 +217,12 @@ function QueryResultsComponent(options) {
   };
 
   this._service.onafter('setLayersData',function() {
+    if (!self.internalComponent) {
+      self.setInternalComponent();
+    }
     self.createLayersFeaturesBoxes();
   });
+
   merge(this, options);
 
   this.createLayersFeaturesBoxes = function() {
@@ -228,7 +232,7 @@ function QueryResultsComponent(options) {
       if (layer.attributes.length <= maxSubsetLength && !layer.hasImageField) {
         layer.expandable = false;
       }
-      _.forEach(layer.features, function(feature, index){
+      _.forEach(layer.features, function(feature, index) {
         // se è la prima feature e il layer ha più di maxSubsetLength attributi, allora la espando già in apertura
         //var collapsed = (index == 0 && layer.attributes.length > maxSubsetLength) ? false : true;
         var collapsed = true;

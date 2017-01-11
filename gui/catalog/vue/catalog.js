@@ -88,6 +88,7 @@ Vue.component('tristate-tree', {
     return {
       expanded: this.layerstree.expanded,
       parentChecked: false,
+      controltoggled: false,
       //proprieta che serve per fare confronto per il tristate
       n_childs: this.layerstree.nodes ? this.layerstree.nodes.length : 0
     }
@@ -117,6 +118,10 @@ Vue.component('tristate-tree', {
     selected: function() {
       var isSelected = this.layerstree.selected ? "SI" : "NO";
       return isSelected;
+    },
+    isControlToggled: function() {
+      var project = ProjectsRegistry.getCurrentProject();
+      return this.controltoggled && project.state.crs == this.layerstree.crs && (this.layerstree.wfscapabilities ? true: false);
     }
 
   },
@@ -154,10 +159,15 @@ Vue.component('tristate-tree', {
       } else {
         return 'fa-square-o';
       }
-    },
-    isWfsCapabilities: function() {
-      return (_.isNil(ControlsRegistry.getControl('querybbox'))) && (this.layerstree.wfscapabilities ? true: false);
     }
+  },
+  ready: function() {
+    var self = this;
+    GUI.on('controltoggled', function(active, name) {
+      if (name == 'querybbox') {
+        self.controltoggled = active;
+      }
+    })
   }
 });
 

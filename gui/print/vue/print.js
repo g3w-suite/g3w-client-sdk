@@ -100,7 +100,8 @@ function PrintComponent(options) {
   // nella sidebar
   this._setOpen = function() {
     this._service.showPrintArea(this.state.open);
-  }
+  };
+  merge(this, options);
 
 }
 

@@ -23,7 +23,7 @@ function PrintComponentService() {
   // prendo le informazioni del print
   this.state.print = this._project.state.print;
   // setto lo state visible
-  this.state.visible = this.state.print.length ? true : false;
+  this.state.visible = (this.state.print && this.state.print.length) ? true : false;
   this.state.isShow = false;
   this.state.loading = false;
   this.state.url = null;
@@ -38,9 +38,9 @@ function PrintComponentService() {
     this.state.scala = null;
     this.state.dpis = dpis;
     this.state.dpi = dpis[0];
-    this.state.map = this.state.print[0].maps[0].name;
-    this.state.width = this.state.print[0].maps[0].w;
-    this.state.height = this.state.print[0].maps[0].h;
+    this.state.map = null//;this.state.print[0].maps[0].name;
+    this.state.width = null;//this.state.print[0].maps[0].w;
+    this.state.height = null;//this.state.print[0].maps[0].h;
   }
   this._moveMapKeyEvent = null;
   // istanzio il componete page per la visualizzazione del pdf
@@ -313,12 +313,26 @@ function PrintComponentService() {
     }
   };
 
+  // funzione che ricava sempre map0
+  this._setMapInfo = function() {
+    var self = this;
+    _.forEach(this.state.print[0].maps, function(map) {
+      if (map.name == 'map0') {
+        self.state.map = map.name;
+        self.state.width = map.w;
+        self.state.height = map.h;
+        return false;
+      }
+    })
+  };
+
   // metodo per la visualizzazione dell'area grigia o meno
   // chamata dal metodo _setOpen del componente
   this.showPrintArea = function(bool) {
     this._mapService = GUI.getComponent('map').getService();
     this._map = this._mapService.viewer.map;
     if (bool) {
+      this._setMapInfo();
       // registo il moveend map event
       this._setMoveendMapEvent();
       // setto la scala iniziale derivato dalle proprietà della mappa

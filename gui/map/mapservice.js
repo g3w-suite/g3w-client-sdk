@@ -313,20 +313,20 @@ proto.setupControls = function(){
             //faccio query by location su i layers selezionati o tutti
             var queryResultsPanel = showQueryResults('interrogazione');
             QueryService.queryByLocation(coordinates, layers)
-            .then(function(results){
+            .then(function(results) {
               queryResultsPanel.setQueryResponse(results,coordinates,self.state.resolution);
             });
           });
           self.addControl(controlType,control);
           break;
         case 'querybypolygon':
-          var layers = self.project.getLayers({
+          var controlLayers = self.project.getLayers({
             QUERYABLE: true,
             SELECTEDORALL: true
           });
           control = ControlsFactory.create({
             type: controlType,
-            layers: layers
+            layers: controlLayers
           });
           if (control) {
             control.on('picked', function (e) {
@@ -334,7 +334,7 @@ proto.setupControls = function(){
               var showQueryResults = GUI.showContentFactory('query');
               //faccio query by location su i layers selezionati o tutti
               var queryResultsPanel = showQueryResults('interrogazione');
-              layers = self.project.getLayers({
+              var layers = self.project.getLayers({
                 QUERYABLE: true,
                 SELECTED: true
               });
@@ -370,18 +370,23 @@ proto.setupControls = function(){
           break;
         case 'querybbox':
           if (!isMobile.any && self.checkWFSLayers()) {
-            var layers = self.project.getLayers({
+            var controlLayers = self.project.getLayers({
               QUERYABLE: true,
               SELECTEDORALL: true,
               WFS: true
             });
             control = ControlsFactory.create({
               type: controlType,
-              layers: layers
+              layers: controlLayers
             });
             if (control) {
               control.on('bboxend', function (e) {
                 var bbox = e.extent;
+                var layers = self.project.getLayers({
+                  QUERYABLE: true,
+                  SELECTEDORALL: true,
+                  WFS: true
+                });
                 var showQueryResults = GUI.showContentFactory('query');
                 //faccio query by location su i layers selezionati o tutti
                 var queryResultsPanel = showQueryResults('interrogazione');
@@ -393,7 +398,6 @@ proto.setupControls = function(){
                   }
                 });
                 QueryService.queryByFilter(filterObject)
-                //QueryService.queryByBBox(bbox, layers)
                   .then(function (results) {
                     queryResultsPanel.setQueryResponse(results, bbox, self.state.resolution);
                   });

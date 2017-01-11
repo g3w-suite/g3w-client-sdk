@@ -26,7 +26,7 @@ var proto = InteractionControl.prototype;
 
 proto._clearModalHelp = function(id) {
   var self = this;
-  $('body').delegate('#'+id,'click', function() {
+  $('body').delegate('#'+id,'change', function() {
     self._modalHelp = null;
   });
 };
@@ -35,7 +35,7 @@ proto._clearModalHelp = function(id) {
 proto._showModalHelp = function() {
   if (this._modalHelp) {
     // se già presente un modale lo chiudo
-    GUI.notify.remove();
+    GUI.notify.clear();
     this._modalHelp(this._help);
   }
 };
@@ -44,7 +44,7 @@ proto._showModalHelp = function() {
 proto._createModalHelp = function() {
   var self = this;
   var id = "close_button"+Math.floor(Math.random()*1000000)+""+Date.now();
-  this._help += '<button id="'+id+'" type="button" class="btn btn-default pull-right"> Non mostrare più </button>';
+  this._help += '<label for="'+id+'" style="float:right">Non mostrare più</label><input type="checkbox" id="'+id+'" class="pull-right"/>';
   // verifico se abilitato e se settato proprietà onhover
   if (this._onhover) {
     $(this.element).hover(function() {
@@ -66,6 +66,8 @@ proto.toggle = function(toggle) {
   //stato del toogle;
   this._toggled = toggle;
   var controlButton = $(this.element).find('button').first();
+  // faccio emettere l'evento controltoggled
+  GUI.emit('controltoggled', toggle, this.name);
   if (toggle) {
     this._showModalHelp();
     if (this._interaction) {
