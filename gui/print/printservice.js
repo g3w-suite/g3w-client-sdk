@@ -118,8 +118,7 @@ function PrintComponentService() {
         //self.emit('showpdf', true);
         self.state.size = self._map.getSize()
       }*/
-      self.state.size = self._map.getSize()
-
+      //self.state.size = self._map.getSize()
     })
   };
 
@@ -168,7 +167,6 @@ function PrintComponentService() {
         }
         // setto un padding
         height = height - parseInt(height/10);
-
         width = height * rapportoMappaTemplate ; // numero di pixel raggio altezza
       }
     }
@@ -198,6 +196,7 @@ function PrintComponentService() {
 
   // funzione che fa il change dell'ouput pdf quando
   // ci spostiamo nella mappa o cambiano i parametri del print
+  // al momento non usata
   this._changePrintOutput = function() {
     var self = this;
     // verifico se l'otuput pdf è visibile
@@ -274,8 +273,11 @@ function PrintComponentService() {
     var self = this;
     // prendo la chiave dell'evento moveend
     this._moveMapKeyEvent = this._map.on('moveend', function() {
+      // prendo la risoluzione corrente
       resolution = this.getView().getResolution();
+      /// setto nella select la scala corrispondente
       self._setCurrentScala(resolution);
+      // vado a settare la print area
       self._setPrintArea();
     });
   };
@@ -296,7 +298,6 @@ function PrintComponentService() {
 
   // funzione che setta la massima e iniziale scala del progetto
   this._initPrintConfig = function() {
-    var self = this;
     var resolution;
     if (!this._initialized) {
       // prendo la massima risoluzione della mappa
@@ -332,7 +333,6 @@ function PrintComponentService() {
   // metodo per la visualizzazione dell'area grigia o meno
   // chamata dal metodo _setOpen del componente
   this.showPrintArea = function(bool) {
-    var self = this;
     this._mapService = GUI.getComponent('map').getService();
     this._map = this._mapService.viewer.map;
     if (bool) {
