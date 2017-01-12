@@ -18,7 +18,7 @@ function MapService(options) {
   this.target;
   this.project;
   this.selectedLayer;
-  this._mapControls = [],
+  this._mapControls = [];
   this._mapLayers = [];
   this.mapBaseLayers = {};
   this.layersExtraParams = {};

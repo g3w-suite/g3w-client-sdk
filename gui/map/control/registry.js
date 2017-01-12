@@ -4,10 +4,15 @@ var G3WObject = require('core/g3wobject');
 var GUI = require('gui/gui');
 
 function ControlsRegistry() {
-  base(this);
-  this._controls = {};
 
-  this.registerControl = function(id, control) {
+  this._controls = {};
+  this.setters = {
+    registerControl : function(id, control) {
+      this._registerControl(id, control)
+    }
+  };
+
+  this._registerControl = function(id, control) {
     this._controls[id] = control;
   };
 
@@ -30,7 +35,9 @@ function ControlsRegistry() {
     }
     return false
   }
+  base(this);
 }
-inherit(ControlsRegistry,G3WObject);
+
+inherit(ControlsRegistry, G3WObject);
 
 module.exports = new ControlsRegistry;

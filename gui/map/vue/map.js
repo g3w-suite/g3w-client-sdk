@@ -38,7 +38,7 @@ function MapComponent(options) {
   this.id = "map-component";
   this.title = "Catalogo dati";
   this.target = options.target || 'map';
-  this._service = new MapService(options);
+  this.setService(new MapService(options));
   merge(this, options);
   this.internalComponent = new InternalComponent({
     mapService: this._service // definisco il mapservice

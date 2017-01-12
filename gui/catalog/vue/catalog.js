@@ -1,8 +1,6 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var merge = require('core/utils/utils').merge;
-var t = require('core/i18n/i18n.service').t;
-var resolve = require('core/utils/utils').resolve;
 var Component = require('gui/vue/component');
 var ComponentsRegistry = require('gui/componentsregistry');
 var GUI = require('gui/gui');
@@ -13,7 +11,8 @@ var vueComponentOptions = {
   template: require('./catalog.html'),
   data: function() {
     return {
-      prstate: ProjectsRegistry.state
+      prstate: ProjectsRegistry.state,
+      highlightlayers: false
     }
   },
   computed: {
@@ -60,6 +59,15 @@ var vueComponentOptions = {
         mapservice.emit('cataloglayerunselected');
       }
     });
+    ControlsRegistry.onafter('registerControl', function(id, control) {
+      if (id == 'querybbox') {
+        control.getInteraction().on('propertychange', function(evt) {
+          if (evt.key == 'active') {
+            self.highlightlayers=!evt.oldValue;
+          }
+        })
+      }
+    })
   }
 };
 
@@ -81,7 +89,8 @@ Vue.component('tristate-tree', {
     layerstree: [],
     //eredito il numero di childs dal parent
     n_parentChilds : 0,
-    checked: false
+    checked: false,
+    highlightlayers: false
   },
   data: function () {
     return {
@@ -89,7 +98,7 @@ Vue.component('tristate-tree', {
       parentChecked: false,
       controltoggled: false,
       //proprieta che serve per fare confronto per il tristate
-      n_childs: this.layerstree.nodes ? this.layerstree.nodes.length : 0
+      n_childs: this.layerstree.nodes ? this.layerstree.nodes.length : 0,
     }
   },
   watch: {
@@ -118,9 +127,9 @@ Vue.component('tristate-tree', {
       var isSelected = this.layerstree.selected ? "SI" : "NO";
       return isSelected;
     },
-    isControlToggled: function() {
+    isHighLight: function() {
       var project = ProjectsRegistry.getCurrentProject();
-      return this.controltoggled && project.state.crs == this.layerstree.crs && (this.layerstree.wfscapabilities ? true: false);
+      return this.highlightlayers && project.state.crs == this.layerstree.crs && (this.layerstree.wfscapabilities ? true: false);
     }
 
   },
@@ -159,14 +168,6 @@ Vue.component('tristate-tree', {
         return 'fa-square-o';
       }
     }
-  },
-  ready: function() {
-    var self = this;
-    GUI.on('controltoggled', function(active, name) {
-      if (name == 'querybbox') {
-        self.controltoggled = active;
-      }
-    })
   }
 });
 

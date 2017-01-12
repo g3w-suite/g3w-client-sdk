@@ -47,7 +47,7 @@ proto._createModalHelp = function() {
   this._help += '<label for="'+id+'" style="float:right">Non mostrare più</label><input type="checkbox" id="'+id+'" class="pull-right"/>';
   // verifico se abilitato e se settato proprietà onhover
   if (this._onhover) {
-    $(this.element).hover(function() {
+    $(this.element).on('mouseenter', function() {
       if (!self._enabled) {
         self._showModalHelp();
       }
@@ -60,14 +60,16 @@ proto.getGeometryTypes = function() {
   return this._geometryTypes;
 };
 
+proto.getInteraction = function() {
+  return this._interaction;
+};
+
 // funzione per la gestione premuto non premuto
 proto.toggle = function(toggle) {
   var toggle = toggle !== undefined ? toggle : !this._toggled;
   //stato del toogle;
   this._toggled = toggle;
   var controlButton = $(this.element).find('button').first();
-  // faccio emettere l'evento controltoggled
-  GUI.emit('controltoggled', toggle, this.name);
   if (toggle) {
     this._showModalHelp();
     if (this._interaction) {

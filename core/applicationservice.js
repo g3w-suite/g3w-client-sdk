@@ -8,7 +8,8 @@ var PluginsRegistry = require('core/plugin/pluginsregistry');
 var ClipboardService = require('core/clipboardservice');
 
 //oggetto servizio per la gestione dell'applicazione
-var ApplicationService = function(){
+var ApplicationService = function() {
+  var self = this;
   this.secret = "### G3W Client Application Service ###";
   this.ready = false;
   this.complete = false;
@@ -85,12 +86,15 @@ var ApplicationService = function(){
       });
     }
   };
+
   this.registerService = function(element, service) {
     this._applicationServices[element] = service;
   };
+
   this.unregisterService = function(element) {
     delete this._applicationServices[element];
   };
+
   this.getService = function(element) {
     return this._applicationServices[element];
   }

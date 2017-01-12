@@ -38,7 +38,7 @@ function Project(projectConfig) {
   traverse(projectConfig.layerstree);
 
   this.setters = {
-    setLayersVisible: function(layersIds,visible){
+    setLayersVisible: function(layersIds,visible) {
       _.forEach(layersIds,function(layerId){
         self.getLayerById(layerId).state.visible = visible;
       })
