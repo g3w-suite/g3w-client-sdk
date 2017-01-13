@@ -150,6 +150,10 @@ proto.getCrs = function() {
   return this.getProject().getCrs();
 };
 
+proto.isWMS = function() {
+  return ProjectLayer.WMSServerTypes.indexOf(this.state.servertype) > -1;
+};
+
 proto.isExternalWMS = function() {
   return (this.state.source && this.state.source.url);
 };
@@ -220,7 +224,11 @@ ProjectLayer.ServerTypes = {
   QGIS: "QGIS",
   Mapserver: "Mapserver",
   Geoserver: "Geoserver",
-  ArcGIS: "ArcGIS"
+  ArcGIS: "ArcGIS",
+  OSM: "OSM",
+  Bing: "Bing"
 };
+
+ProjectLayer.WMSServerTypes = [ProjectLayer.ServerTypes.QGIS,ProjectLayer.ServerTypes.Mapserver,ProjectLayer.ServerTypes.Geoserver,ProjectLayer.ServerTypes.OGC];
 
 module.exports = ProjectLayer;
