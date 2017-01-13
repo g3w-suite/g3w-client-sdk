@@ -15,7 +15,7 @@
             <table class="table table-striped">
               <thead>
               <tr>
-                <th v-if="layer.hasgeometry" :style="{ width:headerZoomActionCellWidth + '%' }"></th>
+                <th v-if="layer.hasgeometry"></th>
                 <th v-for="(attribute, index) in attributesSubset(layer.attributes)" :style="{ width:cellWidth(index,layer) + '%' }">{{attribute.label}}</th>
                 <th :style="{ width:headerExpandActionCellWidth + '%' }"></th>
               </tr>
