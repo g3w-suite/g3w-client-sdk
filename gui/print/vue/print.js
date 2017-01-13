@@ -39,6 +39,10 @@ var vueComponentOptions = {
     onChangeScale: function() {
       this.$options.service.changeScale()
     },
+    // metodo per il cambio di DPI
+    onChangeDpi: function() {
+
+    },
     // metodo per il cambio di rotazione
     onChangeRotation: function(evt) {
       if (this.state.rotation >= 0 && !_.isNil(this.state.rotation) && this.state.rotation != '') {
@@ -58,7 +62,7 @@ var vueComponentOptions = {
       this.$options.service.print();
     }
   },
-  ready: function() {
+  mounted: function() {
     var self = this;
     this.$options.service.on('showpdf', function(bool) {
       self.button.disabled = bool;

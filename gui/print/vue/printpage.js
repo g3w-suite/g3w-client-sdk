@@ -9,11 +9,13 @@ var InternalComponent = Vue.extend({
       state: null
     }
   },
-  ready: function() {
+  mounted: function() {
     var self = this;
-    $('#pdf').load(function(){
-      self.state.loading = false;
-    })
+    this.$nextTick(function(){
+      $('#pdf').load(function(){
+        self.state.loading = false;
+      })
+    });
   }
 });
 

@@ -1,5 +1,5 @@
 <div id="search-results" class="queryresults-wrapper">
-  <h3 v-if="state.querytitle">Risultati {{state.querytitle | lowercase}}</h3>
+  <h3 v-if="state.querytitle">Risultati {{state.querytitle.toLowerCase()}}</h3>
   <div v-show="state.loading" class="bar-loader"></div>
   <div class="queryresults-container">
     <ul v-if="hasResults()" class="queryresults" id="queryresults">
@@ -16,7 +16,7 @@
               <thead>
               <tr>
                 <th v-if="layer.hasgeometry" :style="{ width:headerZoomActionCellWidth + '%' }"></th>
-                <th v-for="(index,attribute) in attributesSubset(layer.attributes)" :style="{ width:cellWidth(index,layer) + '%' }">{{attribute.label}}</th>
+                <th v-for="(attribute, index) in attributesSubset(layer.attributes)" :style="{ width:cellWidth(index,layer) + '%' }">{{attribute.label}}</th>
                 <th :style="{ width:headerExpandActionCellWidth + '%' }"></th>
               </tr>
               </thead>
@@ -37,8 +37,8 @@
                   <td :colspan="attributesSubsetLength(layer.attributes)+2">
                     <div class="action-buttons-container">
                       <template v-for="action in state.layersactions[layer.id]">
-                        <div @click="trigger(action.id,layer,feature)"  class="action-button hint--top-right" aria-label="{{ action.hint }}">
-                          <span class="action-button-icon {{ action.class }}"></span>
+                        <div @click="trigger(action.id,layer,feature)"  class="action-button hint--top-right" :aria-label="action.hint">
+                          <span :class="'action-button-icon ' + action.class"></span>
                         </div>
                       </template>
                     </div>
@@ -49,7 +49,7 @@
                         <td class="attr-value">
                           <span v-if="is('simple',layer,attribute.name,feature.attributes[attribute.name])">{{feature.attributes[attribute.name]}}</span>
                           <!--<span v-if="isRoute(layer,feature,attribute)" class="link dashboardlink" @click="goto(layer,feature.attributes[attribute.name])">{{ feature.attributes[attribute.name] }}</span>-->
-                          <!--<img v-if="isPhoto(layer,feature,attribute)" data-url="{{getPhotoUrl(feature.attributes[attribute.name])}}" style="max-width:50px" :src="getPhotoUrl(feature.attributes[attribute.name],thumb)" />-->
+                          <!--<img v-if="isPhoto(layer,feature,attribute)" :data-url="getPhotoUrl(feature.attributes[attribute.name])" style="max-width:50px" :src="getPhotoUrl(feature.attributes[attribute.name],thumb)" />-->
                           <img v-if="is('photo',layer,attribute.name,feature.attributes[attribute.name])"  class="photo-preview img-responsive img-thumbnail" :src="isRelativePath(feature.attributes[attribute.name])">
                           <a v-if="is('link',layer,attribute.name,feature.attributes[attribute.name])" :href="feature.attributes[attribute.name]" target="_blank" class="glyphicon glyphicon-link"></a>
                         </td>
@@ -72,7 +72,7 @@
                                 </div>
                               </div>
                               <div class="box-body">
-                                <template v-for="(index, element) in relation.elements">
+                                <template v-for="(element, index) in relation.elements">
                                   <table class="table table-striped">
                                     <thead>
                                     <tr>
@@ -100,7 +100,7 @@
                                             <td class="attr-value">
                                               <span v-if="isSimple(layer,relattribute.name,relattribute.value)">{{relattribute.value}}</span>
                                               <!--<span v-if="isRoute(layer,feature,attribute)" class="link dashboardlink" @click="goto(layer,feature.attributes[attribute.name])">{{ feature.attributes[attribute.name] }}</span>-->
-                                              <!--<img v-if="isPhoto(layer,feature,attribute)" data-url="{{getPhotoUrl(feature.attributes[attribute.name])}}" style="max-width:50px" :src="getPhotoUrl(feature.attributes[attribute.name],thumb)" />-->
+                                              <!--<img v-if="isPhoto(layer,feature,attribute)" v-bind:data-url="getPhotoUrl(feature.attributes[attribute.name])" style="max-width:50px" :src="getPhotoUrl(feature.attributes[attribute.name],thumb)" />-->
                                               <a v-if="isLink(layer,relattribute.name,relattribute.value)" :href="relattribute.value" target="_blank" class="glyphicon glyphicon-link"></a>
                                             </td>
                                           </tr>

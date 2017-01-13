@@ -18,7 +18,7 @@ Vue.component("geocoder",{
       this.service.search(query);
     }
   },
-  ready: function(){
+  mounted: function(){
     var self = this;
     this.service = GeocodingService[this.type];
     this.service.on("results",function(){

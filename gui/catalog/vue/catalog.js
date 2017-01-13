@@ -7,6 +7,8 @@ var GUI = require('gui/gui');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var ControlsRegistry = require('gui/map/control/registry');
 
+var CatalogEventHub = new Vue();
+
 var vueComponentOptions = {
   template: require('./catalog.html'),
   data: function() {
@@ -37,18 +39,18 @@ var vueComponentOptions = {
       this.project.setBaseLayer(id);
     }
   },
-  ready: function() {
+  mounted: function() {
     var self = this;
-    this.$on('treenodetoogled',function(node){
+    CatalogEventHub.$on('treenodetoogled',function(node){
       self.project.toggleLayer(node.id);
     });
 
-    this.$on('treenodestoogled',function(nodes,parentChecked){
+    CatalogEventHub.$on('treenodestoogled',function(nodes,parentChecked){
       var layersIds = _.map(nodes,'id');
       self.project.toggleLayers(layersIds,parentChecked);
     });
-    
-    this.$on('treenodeselected',function(node) {
+
+    CatalogEventHub.$on('treenodeselected',function(node) {
       var mapservice = GUI.getComponent('map').getService();
       if (!node.selected) {
         self.project.selectLayer(node.id);
@@ -86,7 +88,7 @@ Vue.component('g3w-catalog', vueComponentOptions);
 Vue.component('tristate-tree', {
   template: require('./tristate-tree.html'),
   props: {
-    layerstree: [],
+    layerstree: {},
     //eredito il numero di childs dal parent
     n_parentChilds : 0,
     checked: false,
@@ -148,15 +150,15 @@ Vue.component('tristate-tree', {
         else {
           this.parentChecked = !this.parentChecked;
         }
-        this.$dispatch('treenodestoogled',this.layerstree.nodes,this.parentChecked);
+        CatalogEventHub.$emit('treenodestoogled',this.layerstree.nodes,this.parentChecked);
       }
       else {
-        this.$dispatch('treenodetoogled',this.layerstree);
+        CatalogEventHub.$emit('treenodetoogled',this.layerstree);
       }
     },
     select: function () {
       if (!this.isFolder) {
-        this.$dispatch('treenodeselected',this.layerstree);
+        CatalogEventHub.$emit('treenodeselected',this.layerstree);
       }
     },
     triClass: function () {
@@ -171,7 +173,7 @@ Vue.component('tristate-tree', {
   }
 });
 
-Vue.component('legend',{
+Vue.component('layerslegend',{
     template: require('./legend.html'),
     props: ['layerstree'],
     data: function() {
@@ -205,13 +207,10 @@ Vue.component('legend',{
         },
         deep: true
       }
-    },
-    ready: function() {
-      //codice qui
     }
 });
 
-Vue.component('legend-item',{
+Vue.component('layerslegend-item',{
   template: require('./legend_item.html'),
   props: ['layer'],
   computed: {

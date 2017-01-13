@@ -52,7 +52,6 @@ var vueComponentOptions = {
       headerActionsCellWidth: headerActionsCellWidth
     }
   },
-  replace: false,
   methods: {
     isSimple: function(layer,attributeName,attributeValue) {
       return fieldIs(Fields.SIMPLE,layer,attributeName,attributeValue);

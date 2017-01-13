@@ -20,7 +20,8 @@ proto.mount = function(parent, append) {
   }
   // verifica se è in append o no
   if (append) {
-    this.internalComponent.$mount().$appendTo(parent);
+    var iCinstance = this.internalComponent.$mount();
+    $(parent).append(iCinstance.$el);
   }
   else {
     this.internalComponent.$mount(parent);
@@ -44,7 +45,7 @@ proto.ismount = function() {
 
 proto.layout = function(width,height) {
   if (this.internalComponent) {
-    this.internalComponent.$broadcast('layout');
+    //this.internalComponent.$broadcast('layout');
   }
 };
 module.exports = Component;

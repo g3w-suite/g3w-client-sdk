@@ -306,7 +306,7 @@ var vueComponentOptions = {
       this.setImageStyleInput();
     }
   },
-  ready: function() {
+  mounted: function() {
     var self = this;
     if (this.state.relationOne && this.state.isnew) {
       var relationsOne = this.$options.formService._getRelationsOne();
@@ -316,8 +316,10 @@ var vueComponentOptions = {
         }
       });
     }
-    this.setImageStyleInput();
-    this.$options.formService.postRender();
+    this.$nextTick(function(){
+      self.setImageStyleInput();
+      self.$options.formService.postRender();
+    });
   },
   beforeDestroy: function() {
     // prima di distruggerlo mi assicuro che venga rimosso l'eventuale picklayer interaction

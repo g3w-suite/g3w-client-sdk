@@ -29,20 +29,20 @@
                     <option v-for="value in field.input.options.values"  :value="isSelectOptionsNull(value.key)" >{{ value.value }}</option>
                   </select>
                   <div v-if="isLayerPicker(field)">
-                    <input class="form-control picklayerinput" @click="pickLayer(field)" @change="pickLayerInputChange" :field="field.name" v-validate="field.validate" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(field) }}' o scrivilo direttamente qui" v-disabled="!isEditable(field)" v-model="field.value" :id="field.name" :placeholder="'['+layerPickerPlaceHolder(field)+']'">
+                    <input class="form-control picklayerinput" @click="pickLayer(field)" @change="pickLayerInputChange" :field="field.name" v-validate="field.validate" data-toggle="tooltip" :title="'Ottieni il dato da un elemento del layer \'' + layerPickerPlaceHolder(field) + '\' o scrivilo direttamente qui'" v-disabled="!isEditable(field)" v-model="field.value" :id="field.name" :placeholder="'['+layerPickerPlaceHolder(field)+']'">
                     <i class="glyphicon glyphicon-screenshot form-control-feedback" ></i>
                   </div>
                   <div v-if="isRadio(field)">
-                    <template v-for="(index, value) in field.input.options.values">
-                      <input class="magic-radio" type="radio" value="{{ value.value }}" v-model="field.value" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" :id="field.name + value.value" :placeholder="{{ value.key }}">
-                      <label for="{{ field.name }}{{ value.value }}">{{ value.key }}</label>
+                    <template v-for="(value,index) in field.input.options.values">
+                      <input class="magic-radio" type="radio" :value="value.value" v-model="field.value" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" :id="field.name + value.value" :placeholder="value.key">
+                      <label :for="field.name + value.value">{{ value.key }}</label>
                     </template>
                   </div>
                   <div v-if="isImage(field)">
                     <i v-if="checkFileSrc(field.value)" class="glyphicon glyphicon glyphicon-trash pull-right link trash" @click="removeImage(field)"></i>
                     <img v-if="checkFileSrc(field.value)" class="photo-preview img-responsive img-thumbnail"  :src="field.value" />
                     <div id="foto-spinner"></div>
-                    <input type="file" :name="field.name" data-url="{{ field.uploadurl }}" :field="field.name" title="Foto" accept="image/*;capture=camera" class="filestyle" @change="onFileChange(field, $event)">
+                    <input type="file" :name="field.name" :data-url="field.uploadurl" :field="field.name" title="Foto" accept="image/*;capture=camera" class="filestyle" @change="onFileChange(field, $event)">
                   </div>
                 </div>
               </div>
@@ -50,7 +50,8 @@
           </div>
         </div>
         <div v-for="relation in state.relations" style="margin-top:10px">
-          <div v-if="showRelation(relation)" transition="expand">
+          <transition name="expand">
+          <div v-if="showRelation(relation)">
             <div class="box box-default">
               <div class="box-header with-border">
                 <h3 class="box-title">{{ relation | relationplural }}</h3>
@@ -85,19 +86,19 @@
                                 <option v-for="value in field.input.options.values"  :value="isSelectOptionsNull(value.key)" >{{ value.value }}</option>
                               </select>
                               <div v-if="isRadio(field)">
-                                <template v-for="(index, value) in field.input.options.values">
-                                  <input class="magic-radio" type="radio" value="{{ value.value }}" v-model="field.value" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" :id="field.name + value.value" :placeholder="{{ value.key }}">
-                                  <label for="{{ field.name }}{{ value.value }}">{{ value.key }} </label>
+                                <template v-for="(value, index) in field.input.options.values">
+                                  <input class="magic-radio" type="radio" :value="value.value" v-model="field.value" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" :id="field.name + value.value" :placeholder="{{ value.key }}">
+                                  <label :for="field.name + value.value">{{ value.key }} </label>
                                 </template>
                               </div>
                               <div v-if="isCheckBox(field)">
-                                <template v-for="(index, value) in field.input.options.values">
-                                  <label for="{{ field.name }}{{ value.value }}">{{ value.key }} </label>
-                                  <input type="radio" value="{{ value.value }}" v-model="field.value" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" :id="field.name + value.value" :placeholder="{{ value.key }}">
+                                <template v-for="(value, index) in field.input.options.values">
+                                  <label :for="field.name + value.value">{{ value.key }} </label>
+                                  <input type="radio" :value="value.value" v-model="field.value" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" :id="field.name + value.value" :placeholder="value.key">
                                 </template>
                               </div>
                               <div v-if="isLayerPicker(field)">
-                                <input class="form-control picklayerinput" @click="pickLayer(field, relation)" @input="pickLayerInputFieldChange(field, relation)"  :field="field.name" v-validate="field.validate" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(field) }}' o scrivilo direttamente qui" v-disabled="!isEditable(field)" v-model="field.value" :id="field.name" :placeholder="'['+layerPickerPlaceHolder(field)+']'">
+                                <input class="form-control picklayerinput" @click="pickLayer(field, relation)" @input="pickLayerInputFieldChange(field, relation)"  :field="field.name" v-validate="field.validate" data-toggle="tooltip" :title="'Ottieni il dato da un elemento del layer \'' + layerPickerPlaceHolder(field) + '\' o scrivilo direttamente qui'" v-disabled="!isEditable(field)" v-model="field.value" :id="field.name" :placeholder="'['+layerPickerPlaceHolder(field)+']'">
                                 <i class="glyphicon glyphicon-screenshot form-control-feedback" ></i>
                               </div>
                             </div>
@@ -112,6 +113,7 @@
               </div>
             </div>
           </div>
+          </transition>
         </div>
         <div class="form-group">
           <div class="col-sm-offset-4 col-sm-8">
