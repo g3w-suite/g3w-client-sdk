@@ -577,12 +577,32 @@ proto.setupBaseLayers = function(){
     var layer = new ProjectLayer(layerConfig);
     layer.setProject(this);
 
-    var config = {
-      url: self.project.getWmsUrl(),
-      id: layer.state.id,
-      tiled: layer.state.tiled
-    };
-    var mapLayer = new WMSLayer(config);
+    if (layer.isWMS()) {
+      var config = {
+        url: self.project.getWmsUrl(),
+        id: layer.state.id,
+        tiled: layer.state.tiled
+      };
+      var mapLayer = new WMSLayer(config);
+    }
+
+    else {
+      switch(layer.getServerType()){
+        case 'OSM':
+          var OSMLayer = require('core/map/layer/osmlayer');
+          var mapLayer = new OSMLayer({
+            id: layer.state.id
+          });
+          break;
+        case 'Bing':
+          var BingLayer = require('core/map/layer/binglayer');
+          var mapLayer = new BingLayer({
+            id: layer.state.id
+          });
+          break;
+      }
+    }
+
     self.addMapLayer(mapLayer);
     self.registerListeners(mapLayer);
     mapLayer.addLayer(layer);
