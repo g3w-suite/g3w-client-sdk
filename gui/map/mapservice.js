@@ -340,7 +340,7 @@ proto.setupControls = function(){
               });
               QueryService.queryByLocation(coordinates, layers)
                 .then(function (results) {
-                  if(results && results.data[0].features.length) {
+                  if (results && results.data && results.data[0].features.length) {
                     var geometry = results.data[0].features[0].getGeometry();
                     var queryLayers = self.project.getLayers({
                       QUERYABLE: true,

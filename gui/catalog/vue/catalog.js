@@ -98,7 +98,7 @@ Vue.component('tristate-tree', {
       parentChecked: false,
       controltoggled: false,
       //proprieta che serve per fare confronto per il tristate
-      n_childs: this.layerstree.nodes ? this.layerstree.nodes.length : 0,
+      n_childs: this.layerstree.nodes ? this.layerstree.nodes.length : 0
     }
   },
   watch: {
