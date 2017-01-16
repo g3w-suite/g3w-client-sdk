@@ -297,6 +297,9 @@ var vueComponentOptions = {
     },
     hasRelations: function() {
       return this.state.relations.length;
+    },
+    fields: function() {
+      return this.state.fields;
     }
   },
   //aggiunta per  permettere al copia e incolla
