@@ -129,7 +129,7 @@ Vue.component('tristate-tree', {
     },
     isHighLight: function() {
       var project = ProjectsRegistry.getCurrentProject();
-      return this.highlightlayers && project.state.crs == this.layerstree.crs && (this.layerstree.wfscapabilities ? true: false);
+      return this.highlightlayers && project.state.crs == this.layerstree.crs && ((this.layerstree.capabilities == 1) || (this.layerstree.wfscapabilities == 1));
     }
 
   },

@@ -199,7 +199,7 @@ proto.setInfoFormat = function(infoFormat) {
 };
 
 proto.getWfsCapabilities = function() {
-  return this.state.wfscapabilities;
+  return this.state.wfscapabilities || this.state.capabilities == 1 ;
 };
 
 proto.getWmsUrl = function() {
