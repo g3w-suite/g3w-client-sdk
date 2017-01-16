@@ -12,14 +12,14 @@ function QueryResultsService() {
     'highlightgeometry': QueryResultsService.highlightGeometry,
     'clearHighlightGeometry': QueryResultsService.clearHighlightGeometry
   };
-  this.state = null;
+  this.state = {};
   this.init = function(options) {
     this.clearState();
   };
 
   this.setters = {
     setQueryResponse: function(queryResponse, coordinates, resolution) {
-      this.state.layers = [];
+      this.clearState();
       this.state.query = queryResponse.query;
       //recupero tutti i mlayers dalll'attributo data della risposta
       // costuendo il formato digeribile dal componente query
@@ -42,13 +42,11 @@ function QueryResultsService() {
   };
   // fa il clear dello state
   this.clearState = function() {
-    this.state = {
-      layers: [],
-      query: {},
-      querytitle: "",
-      loading: true,
-      layersactions: {}
-    };
+    this.state.layers = [];
+    this.state.query = {};
+    this.state.querytitle = "";
+    this.state.loading = true;
+    this.state.layersactions = {};
   };
 
   this.getState = function() {

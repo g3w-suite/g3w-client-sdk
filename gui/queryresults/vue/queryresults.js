@@ -258,11 +258,11 @@ function QueryResultsComponent(options) {
     this.internalComponent.layersFeaturesBoxes = layersFeaturesBoxes;
   };
   // sovracrive il metodo pader mount del component
-  this.mount = function(parent, append) {
+  /*this.mount = function(parent, append) {
     var self = this;
     // richiama il mont padre
     return base(this, 'mount', parent, append)
-  };
+  };*/
 
   this.layout = function(width,height) {
     //TODO
