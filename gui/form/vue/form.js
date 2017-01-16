@@ -22,14 +22,14 @@ Vue.filter('relationplural', function (relation) {
 //FINE FILTRI VUE
 
 //VUE VALIDATOR
-
-Vue.validator('email', function (val) {
+// li manteniamo come commenti giusto per riprendere le Regex nel futuro validatore
+/*Vue.validator('email', function (val) {
   return /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(val)
 });
 
 Vue.validator('integer', function (val) {
   return /^(-?[1-9]\d*|0)$/.test(val);
-});
+});*/
 
 //FINE VUE VALIDATOR
 
