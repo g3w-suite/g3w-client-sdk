@@ -19,7 +19,6 @@ proto.mount = function(parent, append) {
   // verifica che sia stato settato il componente interno
   if (!this.internalComponent) {
     this.setInternalComponent();
-    console.log("Creo componente");
   }
   // verifica se è in append o no
   if (append) {
@@ -47,7 +46,6 @@ proto.unmount = function() {
   $(this.internalComponent.$el).remove();
   // lo setta di nuovo a null
   this.internalComponent = null;
-  console.log("Componente distrutto");
   return resolve();
 };
 // funzione che verifica se il componente interno è montato
