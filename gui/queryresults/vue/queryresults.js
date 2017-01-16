@@ -184,8 +184,11 @@ var vueComponentOptions = {
     // potrebbero avere bisogno di modificare il DOM dopo che sono cambiati
     // (per qualsiasi motivo) i dati e quindi Vue rirenderizza il DOM
     'state.layers': function(layers) {
+      var self = this;
       if (layers.length) {
-        this.$options.queryResultsService.postRender(this.$el);
+        this.$nextTick(function() {
+          self.$options.queryResultsService.postRender(self.$el);
+        })
       }
     }
   }
@@ -258,12 +261,7 @@ function QueryResultsComponent(options) {
   this.mount = function(parent, append) {
     var self = this;
     // richiama il mont padre
-    return base(this, 'mount', parent, append).
-    then(function(){
-      if (self._service.state.layers.length) {
-        self._service.postRender(self.getElement());
-      }
-    });
+    return base(this, 'mount', parent, append)
   };
 
   this.layout = function(width,height) {
