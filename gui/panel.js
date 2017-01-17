@@ -63,9 +63,12 @@ proto.unmount = function() {
   var panel = this.internalPanel;
   var deferred = $.Deferred();
   panel.$destroy(true);
+  $(panel.$el).remove();
+  // lo setta di nuovo a null
   if (panel.onClose) {
     panel.onClose();
   }
+  this.internalComponent = null;
   deferred.resolve();
   return deferred.promise();
 };
