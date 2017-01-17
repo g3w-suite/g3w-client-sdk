@@ -48,10 +48,12 @@ proto.mount = function(parent) {
   var panel = this.internalPanel;
   var iCinstance = panel.$mount();
   $(parent).append(iCinstance.$el);
-  $(parent).localize();
-  if (panel.onShow) {
-    panel.onShow();
-  }
+  iCinstance.$nextTick(function(){
+    $(parent).localize();
+    if (panel.onShow) {
+      panel.onShow();
+    }
+  });
   return resolvedValue(true);
 };
 
