@@ -46,7 +46,8 @@ proto.setInternalPanel = function(internalPanel) {
 
 proto.mount = function(parent) {
   var panel = this.internalPanel;
-  panel.$mount().$appendTo(parent);
+  var iCinstance = panel.$mount();
+  $(parent).append(iCinstance.$el);
   $(parent).localize();
   if (panel.onShow) {
     panel.onShow();
