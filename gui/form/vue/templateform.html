@@ -17,7 +17,7 @@
             </div>
           </div>
           <div class="box-body">
-            <template v-for="field in state.fields">
+            <template v-for="field in fields">
               <div v-if="isVisible(field)" class="form-group has-feedback">
                 <label :for="field.name" class="col-sm-4 control-label">{{ field.label }}<span v-if="field.validate && field.validate.required">*</span></label>
                 <div class="col-sm-8">
@@ -75,7 +75,7 @@
                     </tr>
                     <tr v-show="!collapseElementBox(relation,element)" class="queryresults-featurebox">
                       <td :colspan="fieldsSubsetLength(element.fields)+1">
-                        <template v-for="(idxF, field) in element.fields">
+                        <template v-for="field in element.fields">
                           <div v-if="isVisible(field)" class="form-group has-feedback">
                             <label :for="field.name" class="col-sm-4 control-label">{{ field.label }}<span v-if="field.validate && field.validate.required">*</span></label>
                             <div class="col-sm-8">
@@ -90,7 +90,7 @@
                                   <label :for="field.name + value.value">{{ value.key }} </label>
                                 </template>
                               </div>
-                              <div v-if="isCheckBox(field)">
+                              <div v-if="isCheckbox(field)">
                                 <template v-for="(value, index) in field.input.options.values">
                                   <label :for="field.name + value.value">{{ value.key }} </label>
                                   <input type="radio" :value="value.value" v-model="field.value" :field="field.name" v-disabled="!isEditable(field)" :id="field.name + value.value" :placeholder="value.key">
