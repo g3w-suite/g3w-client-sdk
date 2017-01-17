@@ -46,11 +46,14 @@ proto.setInternalPanel = function(internalPanel) {
 
 proto.mount = function(parent) {
   var panel = this.internalPanel;
-  panel.$mount().$appendTo(parent);
-  $(parent).localize();
-  if (panel.onShow) {
-    panel.onShow();
-  }
+  var iCinstance = panel.$mount();
+  $(parent).append(iCinstance.$el);
+  iCinstance.$nextTick(function(){
+    $(parent).localize();
+    if (panel.onShow) {
+      panel.onShow();
+    }
+  });
   return resolvedValue(true);
 };
 
@@ -62,9 +65,12 @@ proto.unmount = function() {
   var panel = this.internalPanel;
   var deferred = $.Deferred();
   panel.$destroy(true);
+  $(panel.$el).remove();
+  // lo setta di nuovo a null
   if (panel.onClose) {
     panel.onClose();
   }
+  this.internalComponent = null;
   deferred.resolve();
   return deferred.promise();
 };

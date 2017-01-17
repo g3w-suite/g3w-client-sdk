@@ -52,7 +52,6 @@ var vueComponentOptions = {
       headerActionsCellWidth: headerActionsCellWidth
     }
   },
-  replace: false,
   methods: {
     isSimple: function(layer,attributeName,attributeValue) {
       return fieldIs(Fields.SIMPLE,layer,attributeName,attributeValue);
@@ -185,8 +184,11 @@ var vueComponentOptions = {
     // potrebbero avere bisogno di modificare il DOM dopo che sono cambiati
     // (per qualsiasi motivo) i dati e quindi Vue rirenderizza il DOM
     'state.layers': function(layers) {
+      var self = this;
       if (layers.length) {
-        this.$options.queryResultsService.postRender(this.$el);
+        this.$nextTick(function() {
+          self.$options.queryResultsService.postRender(self.$el);
+        })
       }
     }
   }
@@ -256,16 +258,11 @@ function QueryResultsComponent(options) {
     this.internalComponent.layersFeaturesBoxes = layersFeaturesBoxes;
   };
   // sovracrive il metodo pader mount del component
-  this.mount = function(parent, append) {
+  /*this.mount = function(parent, append) {
     var self = this;
     // richiama il mont padre
-    return base(this, 'mount', parent, append).
-    then(function(){
-      if (self._service.state.layers.length) {
-        self._service.postRender(self.getElement());
-      }
-    });
-  };
+    return base(this, 'mount', parent, append)
+  };*/
 
   this.layout = function(width,height) {
     //TODO

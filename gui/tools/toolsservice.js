@@ -33,7 +33,7 @@ function ToolsService(){
   this.removeTool = function(toolId) {
   };
   this.updateToolsGroup = function(order, groupConfig) {
-    this.state.toolsGroups.$set(order, groupConfig)
+    Vue.set(this.state.toolsGroups, order, groupConfig);
   };
   this.getState = function() {
     return this.state;

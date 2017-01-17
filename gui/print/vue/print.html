@@ -3,15 +3,15 @@
     <form id="g3w-search-form" class="form-horizonal">
       <div class="box-body">
         <label for="templates">Template</label>
-        <select :field="field.name" class="form-control" @change="onChangeTemplate" v-model="state.template" id="templates" :placeholder="Seleziona il template">
+        <select class="form-control" @change="onChangeTemplate" v-model="state.template" id="templates" placeholder="Seleziona il template">
           <option v-for="print in state.print">{{ print.name }}</option>
         </select>
         <label for="scala">Scala</label>
-        <select :field="field.name" class="form-control" @change="onChangeScale" v-model="state.scala" id="scala" :placeholder="Seleziona la scala">
-          <option v-for="scala in state.scale" value="{{ scala.value }}">{{ scala.label }}</option>
+        <select class="form-control" @change="onChangeScale" v-model="state.scala" id="scala" placeholder="Seleziona la scala">
+          <option v-for="scala in state.scale" :value="scala.value">{{ scala.label }}</option>
         </select>
         <label for="dpi">dpi</label>
-        <select :field="field.name" class="form-control" @change="onChangeDpi"  v-model="state.dpi" id="dpi" :placeholder="Seleziona i dpi">
+        <select class="form-control" @change="onChangeDpi"  v-model="state.dpi" id="dpi" placeholder="Seleziona i dpi">
           <option v-for="dpi in state.dpis" >{{ dpi }}</option>
         </select>
         <label for="rotation">Rotazione</label>

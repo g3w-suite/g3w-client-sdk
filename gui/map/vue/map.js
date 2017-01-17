@@ -17,10 +17,12 @@ var vueComponentOptions = {
       target: 'map' // specidica l'id
     }
   },
-  ready: function(){
+  mounted: function(){
     var self = this;
     var mapService = this.$options.mapService;
-    mapService.setTarget(this.$el.id);
+    this.$nextTick(function(){
+      mapService.setTarget(self.$el.id);
+    })
     // questo serve per quando viene cambiato progetto/vista cartografica,
     // in cui viene ricreato il viewer (e quindi la mappa)
     mapService.onafter('setupViewer',function() {
