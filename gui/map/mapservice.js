@@ -376,23 +376,26 @@ proto.setupControls = function(){
             $script("https://maps.googleapis.com/maps/api/js?key=AIzaSyBCHtKGx3yXWZZ7_gwtJKG8a_6hArEFefs",
               function () {
                 var sv = new google.maps.StreetViewService();
+                var paorama;
                 control = ControlsFactory.create({
                   type: 'query'
                 });
+
                 if(control) {
                   control.on('picked', function (e) {
                     var coordinates = e.coordinates;
                     var lonlat = ol.proj.transform(coordinates, self.getProjection().getCode(), 'EPSG:4326');
                     var position = {lat:lonlat[1], lng: lonlat[0]};
                     panorama = new google.maps.StreetViewPanorama(
-                      document.getElementById('contents'),
-                      {
-                        position: position,
-                        pov: {heading: 165, pitch: 0},
-                        zoom: 1
-                      });
-                    console.log(position);
+                      document.getElementById('contents')
+                    );
+                    panorama.addListener('position_changed', function() {
+                      console.log(this.getPosition());
+                    });
+                    panorama.setPosition(position);
+                    pippo = panorama;
                     sv.getPanorama({location: position}, function(data) {
+
                     });
                   });
                 }
