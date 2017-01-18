@@ -369,41 +369,35 @@ proto.setupControls = function(){
           }
           break;
         case 'querybbox':
+          var panorama;
+
+          var locationStreetView;
           if (!isMobile.any && self.checkWFSLayers()) {
-            var controlLayers = self.project.getLayers({
-              QUERYABLE: true,
-              SELECTEDORALL: true,
-              WFS: true
-            });
-            control = ControlsFactory.create({
-              type: controlType,
-              layers: controlLayers
-            });
-            if (control) {
-              control.on('bboxend', function (e) {
-                var bbox = e.extent;
-                var layers = self.project.getLayers({
-                  QUERYABLE: true,
-                  SELECTEDORALL: true,
-                  WFS: true
+            $script("https://maps.googleapis.com/maps/api/js?key=AIzaSyBCHtKGx3yXWZZ7_gwtJKG8a_6hArEFefs",
+              function () {
+                var sv = new google.maps.StreetViewService();
+                control = ControlsFactory.create({
+                  type: 'query'
                 });
-                var showQueryResults = GUI.showContentFactory('query');
-                //faccio query by location su i layers selezionati o tutti
-                var queryResultsPanel = showQueryResults('interrogazione');
-                var filterObject = QueryService.createQueryFilterObject({
-                  queryLayers: layers,
-                  ogcService: 'wfs',
-                  filter: {
-                    bbox: bbox
-                  }
-                });
-                QueryService.queryByFilter(filterObject)
-                  .then(function (results) {
-                    queryResultsPanel.setQueryResponse(results, bbox, self.state.resolution);
+                if(control) {
+                  control.on('picked', function (e) {
+                    var coordinates = e.coordinates;
+                    var lonlat = ol.proj.transform(coordinates, self.getProjection().getCode(), 'EPSG:4326');
+                    var position = {lat:lonlat[1], lng: lonlat[0]};
+                    panorama = new google.maps.StreetViewPanorama(
+                      document.getElementById('contents'),
+                      {
+                        position: position,
+                        pov: {heading: 165, pitch: 0},
+                        zoom: 1
+                      });
+                    console.log(position);
+                    sv.getPanorama({location: position}, function(data) {
+                    });
                   });
-              });
-              self.addControl(controlType, control);
-            }
+                }
+                self.addControl(controlType, control);
+              })
           }
           break;
         case 'scaleline':
