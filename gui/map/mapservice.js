@@ -278,7 +278,7 @@ proto.setupControls = function(){
           });
           self.addControl(controlType,control);
           break;
-        case 'zoombox': 
+        case 'zoombox':
           if (!isMobile.any) {
             control = ControlsFactory.create({
               type: controlType
@@ -439,6 +439,28 @@ proto.setupControls = function(){
           break;
       }
     });
+    // nel caso in cui esista il geolocation control o siamo sul mobile
+    if (this.config.mapcontrols.indexOf('geolocation') > -1 || !isMobile.any) {
+      var geolocation;
+      var controlType = 'geolocation';
+      // creo il controllo
+      control = ControlsFactory.create({
+        type: controlType
+      });
+      // inizializzo con la mappa in modo da prendere il geolocation
+      control.init(map);
+      // prendo il geolocation
+      geolocation = control.getGeolocation();
+      //mi metto in ascolto del proprety change in particolare quando viene settato allow o block
+      geolocation.on('propertychange', function(evt) {
+        if (evt.key == 'position') {
+          if (this.getPosition()) {
+            // aggiungo il controllo se e solo se è stata settata la posizione dell'utente
+            self.addControl(controlType, control);
+          }
+        }
+      });
+    }
   }
 };
 // verifica se esistono layer querabili che hanno wfs capabilities
