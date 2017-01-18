@@ -369,38 +369,41 @@ proto.setupControls = function(){
           }
           break;
         case 'querybbox':
-          var panorama;
-
-          var locationStreetView;
           if (!isMobile.any && self.checkWFSLayers()) {
-            $script("https://maps.googleapis.com/maps/api/js?key=AIzaSyBCHtKGx3yXWZZ7_gwtJKG8a_6hArEFefs",
-              function () {
-                var sv = new google.maps.StreetViewService();
-                var paorama;
-                control = ControlsFactory.create({
-                  type: 'query'
+            var controlLayers = self.project.getLayers({
+              QUERYABLE: true,
+              SELECTEDORALL: true,
+              WFS: true
+            });
+            control = ControlsFactory.create({
+              type: controlType,
+              layers: controlLayers
+            });
+            if (control) {
+              control.on('bboxend', function (e) {
+                var bbox = e.extent;
+                var layers = self.project.getLayers({
+                  QUERYABLE: true,
+                  SELECTEDORALL: true,
+                  WFS: true
                 });
-
-                if(control) {
-                  control.on('picked', function (e) {
-                    var coordinates = e.coordinates;
-                    var lonlat = ol.proj.transform(coordinates, self.getProjection().getCode(), 'EPSG:4326');
-                    var position = {lat:lonlat[1], lng: lonlat[0]};
-                    panorama = new google.maps.StreetViewPanorama(
-                      document.getElementById('contents')
-                    );
-                    panorama.addListener('position_changed', function() {
-                      console.log(this.getPosition());
-                    });
-                    panorama.setPosition(position);
-                    pippo = panorama;
-                    sv.getPanorama({location: position}, function(data) {
-
-                    });
+                var showQueryResults = GUI.showContentFactory('query');
+                //faccio query by location su i layers selezionati o tutti
+                var queryResultsPanel = showQueryResults('interrogazione');
+                var filterObject = QueryService.createQueryFilterObject({
+                  queryLayers: layers,
+                  ogcService: 'wfs',
+                  filter: {
+                    bbox: bbox
+                  }
+                });
+                QueryService.queryByFilter(filterObject)
+                  .then(function (results) {
+                    queryResultsPanel.setQueryResponse(results, bbox, self.state.resolution);
                   });
-                }
-                self.addControl(controlType, control);
-              })
+              });
+              self.addControl(controlType, control);
+            }
           }
           break;
         case 'scaleline':
@@ -436,6 +439,39 @@ proto.setupControls = function(){
           break;
       }
     });
+  }
+  var panorama;
+  var locationStreetView;
+  if (!isMobile.any) {
+    $script("https://maps.googleapis.com/maps/api/js?key=AIzaSyBCHtKGx3yXWZZ7_gwtJKG8a_6hArEFefs",
+      function () {
+        var sv = new google.maps.StreetViewService();
+        var paorama;
+        control = ControlsFactory.create({
+          type: 'query'
+        });
+
+        if(control) {
+          control.on('picked', function (e) {
+            var coordinates = e.coordinates;
+            var lonlat = ol.proj.transform(coordinates, self.getProjection().getCode(), 'EPSG:4326');
+            var position = {lat: lonlat[1], lng: lonlat[0]};
+            panorama = new google.maps.StreetViewPanorama(
+              document.getElementById('contents')
+            );
+            panorama.addListener('position_changed', function () {
+              console.log(this.getPosition());
+            });
+            panorama.setPosition(position);
+            pippo = panorama;
+            sv.getPanorama({location: position}, function (data) {
+
+            });
+          });
+        }
+        self.addControl('query', control);
+      }
+    )
   }
 };
 // verifica se esistono layer querabili che hanno wfs capabilities
