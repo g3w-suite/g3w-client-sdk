@@ -9,6 +9,7 @@ var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 var WMSLayer = require('core/map/layer/wmslayer');
 var ControlsFactory = require('gui/map/control/factory');
 var QueryService = require('core/query/queryservice');
+var StreetViewService = require('gui/streetview/streetviewservice');
 var ControlsRegistry = require('gui/map/control/registry');
 
 
@@ -440,33 +441,34 @@ proto.setupControls = function(){
       }
     });
   }
-  var panorama;
-  var locationStreetView;
+  // streetview
   if (!isMobile.any) {
     $script("https://maps.googleapis.com/maps/api/js?key=AIzaSyBCHtKGx3yXWZZ7_gwtJKG8a_6hArEFefs",
       function () {
         var sv = new google.maps.StreetViewService();
-        var paorama;
+        var panorama;
+        var streetViewService = new StreetViewService();
+        streetViewService.onafter('postRender', function(position) {
+          panorama = new google.maps.StreetViewPanorama(
+            document.getElementById('streetview')
+          );
+          panorama.addListener('position_changed', function () {});
+          panorama.addListener('pano_changed', function() {
+            console.log(this.getPano());
+            
+          });
+          panorama.setPosition(position);
+          sv.getPanorama({location: position}, function (data) {})
+        });
         control = ControlsFactory.create({
           type: 'query'
         });
-
         if(control) {
           control.on('picked', function (e) {
             var coordinates = e.coordinates;
             var lonlat = ol.proj.transform(coordinates, self.getProjection().getCode(), 'EPSG:4326');
             var position = {lat: lonlat[1], lng: lonlat[0]};
-            panorama = new google.maps.StreetViewPanorama(
-              document.getElementById('contents')
-            );
-            panorama.addListener('position_changed', function () {
-              console.log(this.getPosition());
-            });
-            panorama.setPosition(position);
-            pippo = panorama;
-            sv.getPanorama({location: position}, function (data) {
-
-            });
+            streetViewService.showStreetView(position);
           });
         }
         self.addControl('query', control);
