@@ -4,15 +4,14 @@ var InteractionControl = require('./interactioncontrol');
 var PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
 
 var QueryControl = function(options){
-  var self = this;
   var _options = {
     name: "querylayer",
     tipLabel: "Query layer",
     label: "\uea0f",
     interactionClass: PickCoordinatesInteraction
   };
-  options = utils.merge(options,_options);
-  InteractionControl.call(this,options);
+  options = utils.merge(options, _options);
+  InteractionControl.call(this, options);
 };
 
 ol.inherits(QueryControl, InteractionControl);

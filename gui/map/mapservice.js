@@ -484,7 +484,7 @@ proto.setupControls = function(){
           type: 'streetview'
         });
         if (control) {
-          control.on('picked', function (e) {
+          control.on('picked', function(e) {
             var coordinates = e.coordinates;
             var lonlat = ol.proj.transform(coordinates, self.getProjection().getCode(), 'EPSG:4326');
             position.lat = lonlat[1];

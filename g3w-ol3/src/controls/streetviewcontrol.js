@@ -1,21 +1,34 @@
 var utils = require('../utils');
-var QueryControl = require('./querycontrol');
-
+var InteractionControl = require('./interactioncontrol');
 var PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
 
 var StreetViewControl = function(options){
-  var self = this;
   var _options = {
     name: "streetview",
     tipLabel: "StreetView",
-    label: "\uea0f",
+    label: "\ue905",
     interactionClass: PickCoordinatesInteraction
   };
   options = utils.merge(options,_options);
-  QueryControl.call(this,options);
+  InteractionControl.call(this,options);
 };
 
-ol.inherits(StreetViewControl, QueryControl);
+ol.inherits(StreetViewControl, InteractionControl);
 
+var proto = StreetViewControl.prototype;
 
-module.exports = QueryControl;
+proto.setMap = function(map) {
+  var self = this;
+  InteractionControl.prototype.setMap.call(this,map);
+  this._interaction.on('picked',function(e){
+    self.dispatchEvent({
+      type: 'picked',
+      coordinates: e.coordinate
+    });
+    if (self._autountoggle) {
+      self.toggle();
+    }
+  });
+};
+
+module.exports = StreetViewControl;
