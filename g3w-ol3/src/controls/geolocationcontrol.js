@@ -4,7 +4,7 @@ function GeolocationControl() {
   var options = {
     name: "geolocation",
     tipLabel: "Geolocation",
-    label: "\ue903"
+    label: "\ue904"
   };
   this._geolocation = null;
   this._map = null;
