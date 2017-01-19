@@ -11,7 +11,6 @@ var ControlsFactory = require('gui/map/control/factory');
 var QueryService = require('core/query/queryservice');
 var ControlsRegistry = require('gui/map/control/registry');
 
-
 function MapService(options) {
   var self = this;
   this.viewer;
@@ -453,11 +452,16 @@ proto.setupControls = function(){
       geolocation = control.getGeolocation();
       //mi metto in ascolto del proprety change in particolare quando viene settato allow o block
       geolocation.once('change:position', function(e) {
-        if (this.getPosition()) {
+        if (!this.getPosition()) {
           // aggiungo il controllo se e solo se è stata settata la posizione dell'utente
-          self.addControl(controlType, control);
+          self.removeControl('geolocation');
         }
       });
+      // nel caso di negato accesso
+      geolocation.once('error', function(e) {
+        self.removeControl('geolocation');
+      });
+      this.addControl(controlType, control);
     }
   }
 };
@@ -545,6 +549,17 @@ proto._layoutControls = function() {
   _.forEach(this._mapControls,function(controlObj){
     if (controlObj.visible) {
       self.viewer.map.addControl(controlObj.control);
+    }
+  })
+};
+
+proto.removeControl = function(type) {
+  var self = this;
+  _.forEach(this._mapControls,function(controlObj, ctrlIdx) {
+    if (type == controlObj.type) {
+      self._mapControls.splice(ctrlIdx,1);
+      self.viewer.map.removeControl(controlObj.control);
+      return false;
     }
   })
 };
