@@ -4,6 +4,7 @@ var ZoomBoxControl = require('g3w-ol3/src/controls/zoomboxcontrol');
 var QueryBBoxControl = require('g3w-ol3/src/controls/querybboxcontrol');
 var QueryByPolygonControl = require('g3w-ol3/src/controls/querybypolygoncontrol');
 var GeolocationControl = require('g3w-ol3/src/controls/geolocationcontrol');
+var StreetViewControl = require('g3w-ol3/src/controls/streetviewcontrol');
 var Control = require('g3w-ol3/src/controls/control');
 var OLControl = require('g3w-ol3/src/controls/olcontrol');
 
@@ -53,6 +54,7 @@ ControlsFactory.CONTROLS = {
   'querybbox': QueryBBoxControl,
   'querybypolygon': QueryByPolygonControl,
   'geolocation': GeolocationControl,
+  'streetview': StreetViewControl,
   'zoom': OLControl,
   'scaleline': OLControl,
   'overview': OLControl

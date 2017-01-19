@@ -12,7 +12,6 @@ var QueryService = require('core/query/queryservice');
 var StreetViewService = require('gui/streetview/streetviewservice');
 var ControlsRegistry = require('gui/map/control/registry');
 
-
 function MapService(options) {
   var self = this;
   this.viewer;
@@ -465,33 +464,31 @@ proto.setupControls = function(){
   if (!isMobile.any) {
     $script("https://maps.googleapis.com/maps/api/js?key=AIzaSyBCHtKGx3yXWZZ7_gwtJKG8a_6hArEFefs",
       function() {
+        var position = {lat: null, lng: null};
         var sv = new google.maps.StreetViewService();
         var panorama;
         var streetViewService = new StreetViewService();
         streetViewService.onafter('postRender', function(position) {
-
-          panorama = new google.maps.StreetViewPanorama(
-            document.getElementById('streetview')
-          );
-          pippo = panorama;
-          panorama.addListener('position_changed', function () {});
-          panorama.addListener('pano_changed', function() {
-           //TODO
-          });
-          console.log(position);
-          panorama.setPosition(position);
           sv.getPanorama({location: position}, function (data) {
-            //TODO
+            panorama = new google.maps.StreetViewPanorama(
+              document.getElementById('streetview')
+            );
+            panorama.setPov({
+              pitch: 0,
+              heading: 0
+            });
+            panorama.setPosition(data.location.latLng);
           })
         });
         control = ControlsFactory.create({
-          type: 'query'
+          type: 'streetview'
         });
         if (control) {
           control.on('picked', function (e) {
             var coordinates = e.coordinates;
             var lonlat = ol.proj.transform(coordinates, self.getProjection().getCode(), 'EPSG:4326');
-            var position = {lat: lonlat[1], lng: lonlat[0]};
+            position.lat = lonlat[1];
+            position.lng = lonlat[0];
             streetViewService.showStreetView(position);
           });
         }
