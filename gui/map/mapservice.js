@@ -440,7 +440,7 @@ proto.setupControls = function(){
       }
     });
     // nel caso in cui esista il geolocation control o siamo sul mobile
-    if (this.config.mapcontrols.indexOf('geolocation') > -1 || !isMobile.any) {
+    if (this.config.mapcontrols.indexOf('geolocation') > -1 || isMobile.any) {
       var geolocation;
       var controlType = 'geolocation';
       // creo il controllo
