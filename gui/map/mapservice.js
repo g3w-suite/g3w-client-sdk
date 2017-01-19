@@ -439,6 +439,42 @@ proto.setupControls = function(){
           break;
       }
     });
+    // streetview
+    if (!isMobile.any) {
+      var streetcontrol = ControlsFactory.create({
+        type: 'streetview'
+      });
+      this.addControl('streetview', streetcontrol);
+      $script("https://maps.googleapis.com/maps/api/js?key=AIzaSyBCHtKGx3yXWZZ7_gwtJKG8a_6hArEFefs",
+        function() {
+          var position = {lat: null, lng: null};
+          var sv = new google.maps.StreetViewService();
+          var panorama;
+          var streetViewService = new StreetViewService();
+          streetViewService.onafter('postRender', function(position) {
+            sv.getPanorama({location: position}, function (data) {
+              panorama = new google.maps.StreetViewPanorama(
+                document.getElementById('streetview')
+              );
+              panorama.setPov({
+                pitch: 0,
+                heading: 0
+              });
+              panorama.setPosition(data.location.latLng);
+            })
+          });
+          if (streetcontrol) {
+            streetcontrol.on('picked', function(e) {
+              var coordinates = e.coordinates;
+              var lonlat = ol.proj.transform(coordinates, self.getProjection().getCode(), 'EPSG:4326');
+              position.lat = lonlat[1];
+              position.lng = lonlat[0];
+              streetViewService.showStreetView(position);
+            });
+          }
+        }
+      )
+    }
     // nel caso in cui esista il geolocation control o siamo sul mobile
     if (this.config.mapcontrols.indexOf('geolocation') > -1 || isMobile.any) {
       var geolocation;
@@ -453,48 +489,17 @@ proto.setupControls = function(){
       geolocation = control.getGeolocation();
       //mi metto in ascolto del proprety change in particolare quando viene settato allow o block
       geolocation.once('change:position', function(e) {
-        if (this.getPosition()) {
+        if (!this.getPosition()) {
           // aggiungo il controllo se e solo se è stata settata la posizione dell'utente
-          self.addControl(controlType, control);
+          self.removeControl('geolocation');
         }
       });
+      // nel caso di negato accesso
+      geolocation.once('error', function(e) {
+        self.removeControl('geolocation');
+      });
+      this.addControl(controlType, control);
     }
-  }
-  // streetview
-  if (!isMobile.any) {
-    $script("https://maps.googleapis.com/maps/api/js?key=AIzaSyBCHtKGx3yXWZZ7_gwtJKG8a_6hArEFefs",
-      function() {
-        var position = {lat: null, lng: null};
-        var sv = new google.maps.StreetViewService();
-        var panorama;
-        var streetViewService = new StreetViewService();
-        streetViewService.onafter('postRender', function(position) {
-          sv.getPanorama({location: position}, function (data) {
-            panorama = new google.maps.StreetViewPanorama(
-              document.getElementById('streetview')
-            );
-            panorama.setPov({
-              pitch: 0,
-              heading: 0
-            });
-            panorama.setPosition(data.location.latLng);
-          })
-        });
-        control = ControlsFactory.create({
-          type: 'streetview'
-        });
-        if (control) {
-          control.on('picked', function(e) {
-            var coordinates = e.coordinates;
-            var lonlat = ol.proj.transform(coordinates, self.getProjection().getCode(), 'EPSG:4326');
-            position.lat = lonlat[1];
-            position.lng = lonlat[0];
-            streetViewService.showStreetView(position);
-          });
-        }
-        self.addControl('query', control);
-      }
-    )
   }
 };
 // verifica se esistono layer querabili che hanno wfs capabilities
@@ -520,6 +525,7 @@ proto.addControl = function(type, control) {
       control.setEnable(false);
     }
   }
+  console.log(type);
   this.viewer.map.addControl(control);
   this._mapControls.push({
     type: type,
@@ -581,6 +587,17 @@ proto._layoutControls = function() {
   _.forEach(this._mapControls,function(controlObj){
     if (controlObj.visible) {
       self.viewer.map.addControl(controlObj.control);
+    }
+  })
+};
+
+proto.removeControl = function(type) {
+  var self = this;
+  _.forEach(this._mapControls,function(controlObj, ctrlIdx) {
+    if (type == controlObj.type) {
+      self._mapControls.splice(ctrlIdx,1);
+      self.viewer.map.removeControl(controlObj.control);
+      return false;
     }
   })
 };
