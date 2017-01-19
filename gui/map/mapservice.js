@@ -464,26 +464,30 @@ proto.setupControls = function(){
   // streetview
   if (!isMobile.any) {
     $script("https://maps.googleapis.com/maps/api/js?key=AIzaSyBCHtKGx3yXWZZ7_gwtJKG8a_6hArEFefs",
-      function () {
+      function() {
         var sv = new google.maps.StreetViewService();
         var panorama;
         var streetViewService = new StreetViewService();
         streetViewService.onafter('postRender', function(position) {
+
           panorama = new google.maps.StreetViewPanorama(
             document.getElementById('streetview')
           );
+          pippo = panorama;
           panorama.addListener('position_changed', function () {});
           panorama.addListener('pano_changed', function() {
-            console.log(this.getPano());
-            
+           //TODO
           });
+          console.log(position);
           panorama.setPosition(position);
-          sv.getPanorama({location: position}, function (data) {})
+          sv.getPanorama({location: position}, function (data) {
+            //TODO
+          })
         });
         control = ControlsFactory.create({
           type: 'query'
         });
-        if(control) {
+        if (control) {
           control.on('picked', function (e) {
             var coordinates = e.coordinates;
             var lonlat = ol.proj.transform(coordinates, self.getProjection().getCode(), 'EPSG:4326');
