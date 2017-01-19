@@ -452,12 +452,10 @@ proto.setupControls = function(){
       // prendo il geolocation
       geolocation = control.getGeolocation();
       //mi metto in ascolto del proprety change in particolare quando viene settato allow o block
-      geolocation.on('propertychange', function(evt) {
-        if (evt.key == 'position') {
-          if (this.getPosition()) {
-            // aggiungo il controllo se e solo se è stata settata la posizione dell'utente
-            self.addControl(controlType, control);
-          }
+      geolocation.once('change:position', function(e) {
+        if (this.getPosition()) {
+          // aggiungo il controllo se e solo se è stata settata la posizione dell'utente
+          self.addControl(controlType, control);
         }
       });
     }

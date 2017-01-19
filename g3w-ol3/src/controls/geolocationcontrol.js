@@ -8,16 +8,6 @@ function GeolocationControl() {
   };
   this._geolocation = null;
   this._map = null;
-
-  $(this.element).on('click', function() {
-    var map = self.getMap();
-    var view = map.getView();
-    coordinate = self._geolocation.getPosition();
-    console.log(coordinate);
-    view.setCenter(coordinate);
-    view.setZoom(6);
-  });
-
   this.init = function(map) {
     this._map = map;
     this._geolocation = new ol.Geolocation({
@@ -25,7 +15,6 @@ function GeolocationControl() {
       tracking: true
     });
   };
-
   Control.call(this, options);
 }
 
@@ -38,6 +27,18 @@ proto.setMap = function(map) {
     this.init(map);
   }
   Control.prototype.setMap.call(this,map);
+};
+
+proto.layout = function(map) {
+  var self = this;
+  Control.prototype.layout.call(this,map);
+  $(this.element).on('click', function() {
+    var map = self.getMap();
+    var view = map.getView();
+    coordinate = self._geolocation.getPosition();
+    view.setCenter(coordinate);
+    view.setZoom(6);
+  });
 };
 
 proto.getGeolocation = function() {
