@@ -71,6 +71,7 @@ function MapService(options) {
       self.setupLayers();
     });
   }
+  this._marker = null;
 
   this.setters = {
     setMapView: function(bbox, resolution, center) {
@@ -158,6 +159,16 @@ function MapService(options) {
     this.viewer.map.on('moveend',function(e) {
       self._setMapView();
     });
+
+    this._marker = new ol.Overlay({
+      position: undefined,
+      positioning: 'center-center',
+      element: document.getElementById('marker'),
+      stopEvent: false
+    });
+
+    this.viewer.map.addOverlay(this._marker);
+
     this.emit('ready');
   };
   
@@ -255,6 +266,15 @@ proto.getGetFeatureInfoUrlForLayer = function(layer,coordinates,resolution,epsg,
   return mapLayer.getGetFeatureInfoUrl(coordinates,resolution,epsg,params);
 };
 
+proto.showMarker = function(coordinates, duration) {
+  duration = duration || 1000;
+  var self = this;
+  this._marker.setPosition(coordinates);
+  setTimeout(function(){
+    self._marker.setPosition();
+  }, duration)
+
+};
 proto.setupControls = function(){
   var self = this;
   var map = self.viewer.map;
@@ -305,6 +325,7 @@ proto.setupControls = function(){
           });
           control.on('picked', function(e){
             var coordinates = e.coordinates;
+            self.showMarker(coordinates);
             var showQueryResults = GUI.showContentFactory('query');
             var layers = self.project.getLayers({
               QUERYABLE: true,
@@ -406,6 +427,45 @@ proto.setupControls = function(){
             }
           }
           break;
+        case 'streetview':
+          // streetview
+          if (!isMobile.any) {
+            control = ControlsFactory.create({
+              type: controlType
+            });
+            control.setProjection(self.getProjection());
+            self.addControl(controlType, control);
+            self.on('viewerset', function() {
+              self.viewer.map.addLayer(control.getLayer());
+            });
+            $script("https://maps.googleapis.com/maps/api/js?key=AIzaSyBCHtKGx3yXWZZ7_gwtJKG8a_6hArEFefs",
+              function() {
+                var position = {
+                  lat: null,
+                  lng: null
+                };
+                var streetViewService = new StreetViewService();
+                streetViewService.onafter('postRender', function(position) {
+                  control.setPosition(position);
+                });
+                if (control) {
+                  control.on('picked', function(e) {
+                    var coordinates = e.coordinates;
+                    var lonlat = ol.proj.transform(coordinates, self.getProjection().getCode(), 'EPSG:4326');
+                    position.lat = lonlat[1];
+                    position.lng = lonlat[0];
+                    streetViewService.showStreetView(position);
+                  });
+                  control.on('disabled', function() {
+                    if (panorama) {
+                      panorama = null;
+                    }
+                  })
+                }
+              }
+            )
+          }
+          break;
         case 'scaleline':
           control = ControlsFactory.create({
             type: controlType,
@@ -439,42 +499,7 @@ proto.setupControls = function(){
           break;
       }
     });
-    // streetview
-    if (!isMobile.any) {
-      var streetcontrol = ControlsFactory.create({
-        type: 'streetview'
-      });
-      this.addControl('streetview', streetcontrol);
-      $script("https://maps.googleapis.com/maps/api/js?key=AIzaSyBCHtKGx3yXWZZ7_gwtJKG8a_6hArEFefs",
-        function() {
-          var position = {lat: null, lng: null};
-          var sv = new google.maps.StreetViewService();
-          var panorama;
-          var streetViewService = new StreetViewService();
-          streetViewService.onafter('postRender', function(position) {
-            sv.getPanorama({location: position}, function (data) {
-              panorama = new google.maps.StreetViewPanorama(
-                document.getElementById('streetview')
-              );
-              panorama.setPov({
-                pitch: 0,
-                heading: 0
-              });
-              panorama.setPosition(data.location.latLng);
-            })
-          });
-          if (streetcontrol) {
-            streetcontrol.on('picked', function(e) {
-              var coordinates = e.coordinates;
-              var lonlat = ol.proj.transform(coordinates, self.getProjection().getCode(), 'EPSG:4326');
-              position.lat = lonlat[1];
-              position.lng = lonlat[0];
-              streetViewService.showStreetView(position);
-            });
-          }
-        }
-      )
-    }
+
     // nel caso in cui esista il geolocation control o siamo sul mobile
     if (this.config.mapcontrols.indexOf('geolocation') > -1 || isMobile.any) {
       var geolocation;
@@ -485,6 +510,9 @@ proto.setupControls = function(){
       });
       // inizializzo con la mappa in modo da prendere il geolocation
       control.init(map);
+      control.on('click', function(evt) {
+        self.showMarker(evt.coordinates);
+      });
       // prendo il geolocation
       geolocation = control.getGeolocation();
       //mi metto in ascolto del proprety change in particolare quando viene settato allow o block
@@ -525,7 +553,6 @@ proto.addControl = function(type, control) {
       control.setEnable(false);
     }
   }
-  console.log(type);
   this.viewer.map.addControl(control);
   this._mapControls.push({
     type: type,

@@ -4,7 +4,6 @@ var Control = function(options) {
   this.id = this.name+'_'+(Math.floor(Math.random() * 1000000));
   this.positionCode = options.position || 'tl';
   this.priority = options.priority || 0;
-
   if (!options.element) {
     var className = "ol-"+this.name.split(' ').join('-').toLowerCase();
     var tipLabel = options.tipLabel || this.name;

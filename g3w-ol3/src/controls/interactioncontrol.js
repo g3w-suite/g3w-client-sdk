@@ -64,6 +64,10 @@ proto.getInteraction = function() {
   return this._interaction;
 };
 
+proto.isToggled = function() {
+  return this._toggled;
+};
+
 // funzione per la gestione premuto non premuto
 proto.toggle = function(toggle) {
   var toggle = toggle !== undefined ? toggle : !this._toggled;

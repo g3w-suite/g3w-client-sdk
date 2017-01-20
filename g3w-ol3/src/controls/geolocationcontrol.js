@@ -34,9 +34,13 @@ proto.layout = function(map) {
   $(this.element).on('click', function() {
     var map = self.getMap();
     var view = map.getView();
-    coordinate = self._geolocation.getPosition();
-    view.setCenter(coordinate);
+    coordinates = self._geolocation.getPosition();
+    view.setCenter(coordinates);
     view.setZoom(6);
+    self.dispatchEvent({
+      type: 'click',
+      coordinates: coordinates
+    })
   });
   Control.prototype.layout.call(this,map);
 };
