@@ -70,6 +70,7 @@ function MapService(options) {
       self.setupLayers();
     });
   }
+  this._marker = null;
 
   this.setters = {
     setMapView: function(bbox, resolution, center) {
@@ -157,6 +158,16 @@ function MapService(options) {
     this.viewer.map.on('moveend',function(e) {
       self._setMapView();
     });
+
+    this._marker = new ol.Overlay({
+      position: undefined,
+      positioning: 'center-center',
+      element: document.getElementById('marker'),
+      stopEvent: false
+    });
+
+    this.viewer.map.addOverlay(this._marker);
+
     this.emit('ready');
   };
   
@@ -254,6 +265,15 @@ proto.getGetFeatureInfoUrlForLayer = function(layer,coordinates,resolution,epsg,
   return mapLayer.getGetFeatureInfoUrl(coordinates,resolution,epsg,params);
 };
 
+proto.showMarker = function(coordinates, duration) {
+  duration = duration || 1000;
+  var self = this;
+  this._marker.setPosition(coordinates);
+  setTimeout(function(){
+    self._marker.setPosition();
+  }, duration)
+
+};
 proto.setupControls = function(){
   var self = this;
   var map = self.viewer.map;
@@ -304,6 +324,7 @@ proto.setupControls = function(){
           });
           control.on('picked', function(e){
             var coordinates = e.coordinates;
+            self.showMarker(coordinates);
             var showQueryResults = GUI.showContentFactory('query');
             var layers = self.project.getLayers({
               QUERYABLE: true,
@@ -438,6 +459,7 @@ proto.setupControls = function(){
           break;
       }
     });
+
     // nel caso in cui esista il geolocation control o siamo sul mobile
     if (this.config.mapcontrols.indexOf('geolocation') > -1 || isMobile.any) {
       var geolocation;
@@ -446,20 +468,8 @@ proto.setupControls = function(){
       control = ControlsFactory.create({
         type: controlType
       });
-      // inizializzo con la mappa in modo da prendere il geolocation
-      control.init(map);
-      // prendo il geolocation
-      geolocation = control.getGeolocation();
-      //mi metto in ascolto del proprety change in particolare quando viene settato allow o block
-      geolocation.once('change:position', function(e) {
-        if (!this.getPosition()) {
-          // aggiungo il controllo se e solo se è stata settata la posizione dell'utente
-          self.removeControl('geolocation');
-        }
-      });
-      // nel caso di negato accesso
-      geolocation.once('error', function(e) {
-        self.removeControl('geolocation');
+      control.on('click', function(evt) {
+        self.showMarker(evt.coordinates);
       });
       this.addControl(controlType, control);
     }
