@@ -508,23 +508,8 @@ proto.setupControls = function(){
       control = ControlsFactory.create({
         type: controlType
       });
-      // inizializzo con la mappa in modo da prendere il geolocation
-      control.init(map);
       control.on('click', function(evt) {
         self.showMarker(evt.coordinates);
-      });
-      // prendo il geolocation
-      geolocation = control.getGeolocation();
-      //mi metto in ascolto del proprety change in particolare quando viene settato allow o block
-      geolocation.once('change:position', function(e) {
-        if (!this.getPosition()) {
-          // aggiungo il controllo se e solo se è stata settata la posizione dell'utente
-          self.removeControl('geolocation');
-        }
-      });
-      // nel caso di negato accesso
-      geolocation.once('error', function(e) {
-        self.removeControl('geolocation');
       });
       this.addControl(controlType, control);
     }

@@ -1,19 +1,9 @@
 var Control = require('./control');
 function GeolocationControl() {
-  var self = this;
   var options = {
     name: "geolocation",
     tipLabel: "Geolocation",
     label: "\ue904"
-  };
-  this._geolocation = null;
-  this._map = null;
-  this.init = function(map) {
-    this._map = map;
-    this._geolocation = new ol.Geolocation({
-      projection: map.getView().getProjection(),
-      tracking: true
-    });
   };
   Control.call(this, options);
 }
@@ -23,32 +13,41 @@ ol.inherits(GeolocationControl, Control);
 var proto = GeolocationControl.prototype;
 
 proto.setMap = function(map) {
-  if (!this._map) {
-    this.init(map);
-  }
+  var self = this;
   Control.prototype.setMap.call(this,map);
+  // faccio la gestione tutta interna alla rimozione del controllo
+  var geolocation = new ol.Geolocation({
+    projection: map.getView().getProjection(),
+    tracking: true
+  });
+  //mi metto in ascolto del proprety change in particolare quando viene settato allow o block
+  geolocation.once('change:position', function(e) {
+    if (this.getPosition()) {
+      $(self.element).removeClass('g3w-ol-disabled');
+      $(self.element).on('click', function() {
+        var map = self.getMap();
+        var view = map.getView();
+        coordinates = geolocation.getPosition();
+        view.setCenter(coordinates);
+        view.setZoom(6);
+        self.dispatchEvent({
+          type: 'click',
+          coordinates: coordinates
+        })
+      });
+    } else {
+      $(self.element).hide();
+    }
+  });
+  geolocation.once('error', function(e) {
+    $(self.element).hide();
+  });
 };
 
 proto.layout = function(map) {
-  var self = this;
-  $(this.element).on('click', function() {
-    var map = self.getMap();
-    var view = map.getView();
-    coordinates = self._geolocation.getPosition();
-    view.setCenter(coordinates);
-    view.setZoom(6);
-    self.dispatchEvent({
-      type: 'click',
-      coordinates: coordinates
-    })
-  });
-  Control.prototype.layout.call(this,map);
+  Control.prototype.layout.call(this, map);
+  $(this.element).addClass('g3w-ol-disabled');
 };
-
-proto.getGeolocation = function() {
-  return this._geolocation;
-};
-
 
 
 module.exports = GeolocationControl;

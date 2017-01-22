@@ -70,8 +70,10 @@ proto.layout = function(map) {
 };
 
 proto.setMap = function(map) {
-  this.layout(map);
-  ol.control.Control.prototype.setMap.call(this,map);
+  if (map) {
+    this.layout(map);
+    ol.control.Control.prototype.setMap.call(this, map);
+  }
 };
 
 proto._postRender = function() {};
