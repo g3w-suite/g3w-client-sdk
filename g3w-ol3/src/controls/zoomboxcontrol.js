@@ -38,5 +38,6 @@ proto.setMap = function(map) {
     if (self._autountoggle) {
       self.toggle();
     }
-  })
+  });
 };
+

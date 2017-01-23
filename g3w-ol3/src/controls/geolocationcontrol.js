@@ -36,11 +36,11 @@ proto.setMap = function(map) {
         })
       });
     } else {
-      $(self.element).hide();
+      self.hideControl();
     }
   });
   geolocation.once('error', function(e) {
-    $(self.element).hide();
+    self.hideControl();
   });
 };
 

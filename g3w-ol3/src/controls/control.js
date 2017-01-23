@@ -52,12 +52,16 @@ proto._handleClick = function(event) {
   }
 };
 
+proto.shiftPosition = function(position) {
+  $(this.element).css(hWhere,hOffset+'px');
+};
+
 // funzione che gestisce il layout
 proto.layout = function(map) {
   if (map) {
     var position =  this.getPosition();
     var viewPort = map.getViewport();
-    var previusControls = $(viewPort).find('.ol-control-'+this.positionCode);
+    var previusControls = $(viewPort).find('.ol-control-'+this.positionCode+':visible');
     if (previusControls.length) {
       previusControl = previusControls.last();
       var previousOffset = position.left ? previusControl.position().left : previusControl.position().right;
@@ -74,6 +78,20 @@ proto.setMap = function(map) {
     this.layout(map);
     ol.control.Control.prototype.setMap.call(this, map);
   }
+};
+
+proto.hideControl = function() {
+  var position = $(this.element).position().left;
+  var newPosition = position;
+  var controls = $(this.element).siblings('.ol-control-tl');
+  controls.each(function() {
+    if ($(this).position().left > position) {
+      newPosition = $(this).position().left;
+      $(this).css('left', position+'px');
+      position = newPosition;
+    }
+  });
+  $(this.element).hide();
 };
 
 proto._postRender = function() {};
