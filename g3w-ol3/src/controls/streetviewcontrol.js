@@ -74,7 +74,8 @@ proto.setPosition = function(position) {
     });
     if (data && data.location) {
       self._panorama.setPov({
-        pitch: 0
+        pitch: 0,
+        heading: 0
       });
       self._panorama.setPosition(data.location.latLng);
     }

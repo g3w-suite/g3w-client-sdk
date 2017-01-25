@@ -56,7 +56,6 @@ function FormService() {
     },
     // setter del singolo field
     setField: function(field) {
-      console.log(field);
     },
     // settere dello state
     setState: function(state) {

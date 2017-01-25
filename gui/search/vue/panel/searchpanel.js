@@ -120,7 +120,6 @@ function SearchPanel() {
         _.forEach(input, function(v, k, obj) {
           //vado a leggere l'oggetto attributo
           if (_.isArray(v)) {
-            console.log(input);
             //richiama la funzione ricorsivamente .. andrà bene ?
             fillFilterInputsWithValues(input, formInputValues, idx);
           } else {

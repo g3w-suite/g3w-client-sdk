@@ -49,7 +49,6 @@ proto.layout = function(map) {
       var previousWidth = previusControl[0].offsetWidth;
       var hOffset = $(this.element).position()[hWhere] + previousOffset + previousWidth + 2;
       $(this.element).css(hWhere,hOffset+'px');
-      consoe.log('layout');
     }
   }
 };
