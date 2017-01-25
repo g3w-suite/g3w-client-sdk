@@ -2,6 +2,7 @@ var utils = require('../utils');
 var InteractionControl = require('./interactioncontrol');
 var PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
 
+
 var StreetViewControl = function(options) {
   var _options = {
     name: "streetview",
@@ -51,6 +52,7 @@ proto.setProjection = function(projection) {
 proto.setPosition = function(position) {
   var self = this;
   var lnglat;
+  var pixel;
   if (!this._sv) {
     this._sv = new google.maps.StreetViewService();
   }
@@ -64,13 +66,15 @@ proto.setPosition = function(position) {
         self._layer.getSource().getFeatures()[0].setGeometry(
           new ol.geom.Point(lnglat)
         );
-        self._map.getView().setCenter(lnglat);
+        pixel = self._map.getPixelFromCoordinate(lnglat);
+        if ((pixel[0] + 15) > self._map.getSize()[0] || (pixel[1] + 15) > self._map.getSize()[1] || pixel[0] < 15 || pixel [1] < 15 ) {
+          self._map.getView().setCenter(lnglat);
+        }
       }
     });
     if (data && data.location) {
       self._panorama.setPov({
-        pitch: 0,
-        heading: 0
+        pitch: 0
       });
       self._panorama.setPosition(data.location.latLng);
     }

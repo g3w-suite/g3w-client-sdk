@@ -29,7 +29,6 @@ proto.setMap = function(map) {
         var view = map.getView();
         coordinates = geolocation.getPosition();
         view.setCenter(coordinates);
-        view.setZoom(6);
         self.dispatchEvent({
           type: 'click',
           coordinates: coordinates
