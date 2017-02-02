@@ -806,7 +806,6 @@ proto.setTarget = function(elId){
 };
 
 proto.addInteraction = function(interaction) {
-
   this._unToggleControls();
   this.viewer.map.addInteraction(interaction);
   interaction.setActive(true);

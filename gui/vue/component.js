@@ -41,6 +41,7 @@ proto.unmount = function() {
   // il problema che distruggere
   if (_.isNil(this.internalComponent)) {
     var a = 1;
+    return resolve();
   }
   this.internalComponent.$destroy(true);
   $(this.internalComponent.$el).remove();

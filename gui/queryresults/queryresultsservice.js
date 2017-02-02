@@ -18,14 +18,14 @@ function QueryResultsService() {
   };
 
   this.setters = {
-    setQueryResponse: function(queryResponse, coordinates, resolution) {
+    setQueryResponse: function(queryResponse, coordinates, resolution ) {
       this.clearState();
       this.state.query = queryResponse.query;
       //recupero tutti i mlayers dalll'attributo data della risposta
       // costuendo il formato digeribile dal componente query
       var layers = this._digestFeaturesForLayers(queryResponse.data);
       //setto i layers data
-      this.setLayersData(layers, this);
+      this.setLayersData(layers);
     },
     setLayersData: function(layers) {
       // un opportunità per aggiungere / modificare i risultati dell'interrogazione
