@@ -58,9 +58,9 @@ function GUI() {
   };
 
   /* spinner */
-  GUI.showSpinner = function(options){};
+  this.showSpinner = function(options){};
 
-  GUI.hideSpinner = function(id){};
+  this.hideSpinner = function(id){};
 
   
   this.notify = noop;
