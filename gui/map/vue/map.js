@@ -3,7 +3,7 @@ var base = require('core/utils/utils').base;
 var merge = require('core/utils/utils').merge;
 var t = require('core/i18n/i18n.service').t;
 var resolve = require('core/utils/utils').resolve;
-var GUI = require('gui/gui');   
+var GUI = require('gui/gui');
 var Component = require('gui/vue/component');
 var RouterService = require('core/router');
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
@@ -22,7 +22,7 @@ var vueComponentOptions = {
     var mapService = this.$options.mapService;
     this.$nextTick(function(){
       mapService.setTarget(self.$el.id);
-    })
+    });
     // questo serve per quando viene cambiato progetto/vista cartografica,
     // in cui viene ricreato il viewer (e quindi la mappa)
     mapService.onafter('setupViewer',function() {

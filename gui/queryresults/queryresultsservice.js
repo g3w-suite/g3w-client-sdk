@@ -3,7 +3,7 @@ var base = require('core/utils/utils').base;
 var GUI = require('gui/gui');
 var G3WObject = require('core/g3wobject');
 var ComponentsRegistry = require('gui/componentsregistry');
-var ProjectsRegistry = require('core/project/projectsregistry');
+var PhotoComponent = require('gui/photo/vue/photo');
 
 function QueryResultsService() {
   var self = this;
@@ -199,6 +199,16 @@ function QueryResultsService() {
         GUI.goto(url);
       }
     }
+  };
+
+  this.showFullPhoto = function(url) {
+    GUI.pushContent({
+      content: new PhotoComponent({
+        url: url
+      }),
+      backonclose: true,
+      closable: false
+    });
   };
 
 
