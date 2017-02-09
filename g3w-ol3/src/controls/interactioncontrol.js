@@ -1,5 +1,4 @@
 var Control = require('./control');
-var GUI = require('gui/gui');
 
 var InteractionControl = function(options) {
   this._toggled = this._toggled || false;
@@ -11,7 +10,7 @@ var InteractionControl = function(options) {
   this._enabled = (options.enabled === false) ? false : true;
   this._onhover = options.onhover || false;
   this._help = options.help  || null;
-  this._modalHelp = this._help ? (options.modalHelp || GUI.notify.info) : null;
+  this._modalHelp = this._help ? (options.modalHelp || toastr) : null;
   options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
   Control.call(this, options);
   // vado a creare il modal help se esiste un messaggio
@@ -33,10 +32,19 @@ proto._clearModalHelp = function(id) {
 
 //funzione che si occupa di  visualizzazre la modeal dell'help
 proto._showModalHelp = function() {
+  var previousToastPositionClass = toastr.options.positionClass;
+  // qui c'è una dipendenza con l'app template
+  var contentDiv = $('#g3w-view-content');
   if (this._modalHelp) {
+    toastr.options.positionClass = 'toast-top-right';
     // se già presente un modale lo chiudo
-    GUI.notify.clear();
-    this._modalHelp(this._help);
+    this._modalHelp.clear();
+    var helpElement = this._modalHelp.info(this._help);
+    if (contentDiv) {
+      var right = contentDiv.css('width');
+      $(helpElement).css('right', right);
+    }
+    toastr.options.positionClass = previousToastPositionClass;
   }
 };
 

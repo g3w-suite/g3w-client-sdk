@@ -4,6 +4,7 @@ var merge = require('core/utils/utils').merge;
 var Component = require('gui/vue/component');
 var QueryResultsService = require('gui/queryresults/queryresultsservice');
 var ProjectsRegistry = require('core/project/projectsregistry');
+var PhotoService = require('gui/photo/photoservice');
 
 Fields = {};
 Fields.SIMPLE = 'simple';
@@ -177,6 +178,10 @@ var vueComponentOptions = {
     showLaw: function(value, options) {
 
       this.$options.queryResultsService.showLaw(value, options);
+    },
+    showFullPhoto: function(url) {
+      var photoService = new PhotoService(url);
+      photoService.showFullPhoto();
     }
   },
   watch: {
