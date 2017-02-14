@@ -11,6 +11,7 @@ var InternalComponent = Vue.extend({
   },
   mounted: function() {
     var self = this;
+    this.state.loading = true;
     this.$nextTick(function(){
       $('#pdf').load(function(){
         self.state.loading = false;

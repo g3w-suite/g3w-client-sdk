@@ -29,11 +29,10 @@ function PrinterQGISProvider() {
       DPI: options.dpi,
       FORMAT: 'pdf',
       CRS:'EPSG:'+project.state.crs,
-      HEIGHT: options.height,
-      WIDTH: options.width,
       LAYERS: layers.join()
     };
-    params[templateMap+':SCALE'] = options.scale;
+    // AL comento commento
+    //params[templateMap+':SCALE'] = options.scale;
     params[templateMap+':EXTENT'] = options.extent;
     params[templateMap+':ROTATION'] = options.rotation;
     url = url + '?' + $.param(params);

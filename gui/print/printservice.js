@@ -69,8 +69,10 @@ function PrintComponentService() {
 
   // metodo per il cambio di scala attraverso la select
   this.changeScale = function() {
-    var resolution = this._scalesResolutions[this.state.scala];
-    this._map.getView().setResolution(resolution);
+    //var resolution = this._scalesResolutions[this.state.scala];
+    //this._map.getView().setResolution(resolution);
+    // vado a cambiare la print area
+    this._setPrintArea();
   };
 
   // metodo per il cambio di rotazione
@@ -84,14 +86,12 @@ function PrintComponentService() {
   // funzione che restituisce le options del print
   this._getOptionsPrint = function() {
     var options = {
-      scale: this.state.scala,
-      extent: this.state.inner.join(),
-      rotation: this.state.rotation,
-      dpi: this.state.dpi,
-      template: this.state.template,
-      map: this.state.map,
-      width: this.state.width,
-      height: this.state.height
+      scale: this.state.scala, // scala scelta
+      extent: this.state.inner.join(), // estensione
+      rotation: this.state.rotation, // rotazione
+      dpi: this.state.dpi,// dpi
+      template: this.state.template, // nome template
+      map: this.state.map // tipo mappa (sempre map0)
     };
     return options;
   };
@@ -99,7 +99,6 @@ function PrintComponentService() {
   // funzione print
   this.print = function() {
     var self = this;
-    this._setPrintArea();
     this._page = new PrintPage({
       service: this
     });
@@ -109,26 +108,13 @@ function PrintComponentService() {
       self.state.url = url;
       GUI.setContent({
         content: self._page,
-        title: 'Stampa'
+        title: 'Stampa',
+        perc:100
       });
-      /*if (!self.state.isShow) {
-        self.state.isShow = true;
-        // emetto l'evento showpdf per disabilitare il bottone
-        //crea pdf
-        //self.emit('showpdf', true);
-        self.state.size = self._map.getSize()
-      }*/
-      //self.state.size = self._map.getSize()
     })
   };
 
-  // funzione che setta il BBOX della printArea
-  this._setPrintArea = function() {
-    // size della mappa
-    this.state.size = this._map.getSize();
-    // centro della mappa
-    this.state.center = this._map.getView().getCenter();
-    var resolution = this._map.getView().getResolution();
+  this._calculateInternalPrintExtent = function(resolution) {
     // rapporto tra largheza e altezza della mappa nel template
     var rapportoMappaTemplate = this.state.width/this.state.height;
     // rapporto larghezza e altezza della mappa nel client (viewport)
@@ -176,14 +162,23 @@ function PrintComponentService() {
     // vado a caloclare la y_min e y_max
     y_min = this.state.center[1] - (height*resolution);
     y_max = this.state.center[1] + (height*resolution);
-
     this.state.inner =  [x_min, y_min, x_max, y_max];
+  };
+
+  // funzione che setta il BBOX della printArea
+  this._setPrintArea = function() {
+    // size della mappa
+    this.state.size = this._map.getSize();
+    this.state.currentScala = resToScale(this._map.getView().getResolution());
+    // centro della mappa
+    this.state.center = this._map.getView().getCenter();
+    // vado a prendere la risoluzione dell'area
+    var resolution = scaleToRes(this.state.scala);
+    this._calculateInternalPrintExtent(resolution);
     this._mapService.setInnerGreyCoverBBox({
       inner: this.state.inner,
       rotation: this.state.rotation
     });
-    // vado a cambiare il pdf se è visualizzato
-    this._changePrintOutput();
   };
 
   // metodo chiusura print panel
@@ -225,9 +220,9 @@ function PrintComponentService() {
     _.forEach(orderScales, function(scala) {
       if (mapScala > scala.value) {
         scale.push(scala);
+        resolution = scaleToRes(scala.value);
         self._scalesResolutions[scala.value] = resolution;
         resolution = resolution / 2;
-        mapScala = resToScale(resolution);
       }
     });
     // riordino in modo crescente
@@ -245,7 +240,8 @@ function PrintComponentService() {
     _.forEach(this.state.scale, function(scala, index) {
       // qui vado a settare la scala in base alla risoluzione inziale della mappa
       if (initialScala < scala.value && !self.state.scala) {
-        self.state.scala = self.state.scale[index-1].value;
+        var idx = index ? index -1 : index;
+        self.state.scala = self.state.scale[idx].value;
         $('#scala').val(self.state.scala);
         found = true;
         return false
@@ -269,17 +265,13 @@ function PrintComponentService() {
 
   // funzione che ha lo scopo di settare il moveend della mappa
   this._setMoveendMapEvent = function() {
-    var resolution;
     var self = this;
     // prendo la chiave dell'evento moveend
     this._moveMapKeyEvent = this._map.on('moveend', function() {
-      // prendo la risoluzione corrente
-      resolution = this.getView().getResolution();
       /// setto nella select la scala corrispondente
-      self._setCurrentScala(resolution);
       // vado a settare la print area
       self._setPrintArea();
-    });
+    })
   };
 
   //funzione che setta l'area iniziale

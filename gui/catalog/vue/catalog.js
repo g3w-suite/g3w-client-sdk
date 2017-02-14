@@ -90,7 +90,6 @@ Vue.component('tristate-tree', {
   props: {
     layerstree: {},
     //eredito il numero di childs dal parent
-    n_parentChilds : 0,
     checked: false,
     highlightlayers: false
   },
@@ -113,7 +112,7 @@ Vue.component('tristate-tree', {
       var isFolder = this.n_childs ? true : false;
       if (isFolder) {
         var _visibleChilds = 0;
-        _.forEach(this.layerstree.nodes,function(layer){
+        _.forEach(this.layerstree.nodes, function(layer){
           if (layer.visible){
             _visibleChilds += 1;
           }
