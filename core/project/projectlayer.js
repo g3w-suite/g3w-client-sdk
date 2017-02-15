@@ -137,6 +137,17 @@ proto.getQueryLayerName = function() {
   return queryLayerName;
 };
 
+proto.getQueryLayerOrigName = function() {
+  var queryLayerName;
+  if (this.state.infolayer && this.state.infolayer != '') {
+    queryLayerName = this.state.infolayer;
+  }
+  else {
+    queryLayerName = this.state.origname;
+  }
+  return queryLayerName;
+};
+
 proto.getServerType = function() {
   if (this.state.servertype && this.state.servertype != '') {
     return this.state.servertype;
@@ -161,6 +172,15 @@ proto.isExternalWMS = function() {
 proto.getWMSLayerName = function() {
   // prendo come inizio 'attributo name come nome del layer wms
   var layerName = this.state.name;
+  if (this.state.source && this.state.source.layers) {
+    layerName = this.state.source.layers;
+  }
+  return layerName;
+};
+
+proto.getWFSLayerName = function() {
+  // prendo come inizio 'attributo name come nome del layer wms
+  var layerName = this.state.origname;
   if (this.state.source && this.state.source.layers) {
     layerName = this.state.source.layers;
   }

@@ -9,6 +9,7 @@ function QueryQGISWFSProvider() {
   this._post = function(url, params) {
     url = url + '/';
     return request = $.post(url, params)
+
   };
 
   // get request
@@ -26,8 +27,9 @@ function QueryQGISWFSProvider() {
     var infoFormat = options.infoFormat;
     var layers = options.layers;
     var layers = _.map(layers,function(layer){
-      return layer.getQueryLayerName()
+      return layer.getQueryLayerName().replace(/ /g,'_');
     });
+
     var params = {
       SERVICE: 'WFS',
       VERSION: '1.3.0',

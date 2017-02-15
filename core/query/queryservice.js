@@ -102,17 +102,14 @@ function QueryService(){
 
   // Brutto ma per ora unica soluzione trovata per dividere per layer i risultati di un doc xml wfs.FeatureCollection.
   // OL3 li parserizza tutti insieme non distinguendo le features dei diversi layers
-  this._parseLayerFeatureCollection = function(queryLayer, data) {
-    var layerName = queryLayer.getWMSLayerName();
+  this._parseLayerFeatureCollection = function(queryLayer, data, ogcService) {
+    var layerName = (ogcService == 'wfs') ? queryLayer.getWMSLayerName().replace(/ /g,'_'): queryLayer.getWMSLayerName().replace(/ /g,''); // QGIS SERVER rimuove gli spazi dal nome del layer per creare l'elemento FeatureMember
     var layerData = _.cloneDeep(data);
     layerData.FeatureCollection.featureMember = [];
-    
     var featureMembers = data.FeatureCollection.featureMember;
     featureMembers = _.isArray(featureMembers) ? featureMembers : [featureMembers];
     _.forEach(featureMembers,function(featureMember){
-      layerName = layerName.replace(/ /g,''); // QGIS SERVER rimuove gli spazi dal nome del layer per creare l'elemento FeatureMember
       var isLayerMember = _.get(featureMember,layerName);
-
       if (isLayerMember) {
         layerData.FeatureCollection.featureMember.push(featureMember);
       }
@@ -125,9 +122,10 @@ function QueryService(){
   };
 
   // mentre con i risultati in msGLMOutput (da Mapserver) il parser può essere istruito per parserizzare in base ad un layer di filtro
-  this._parseLayermsGMLOutput = function(queryLayer, data){
+  this._parseLayermsGMLOutput = function(queryLayer, data, ogcService) {
+    var layers = ogcService == 'wfs' ? [queryLayer.getQueryLayerOrigName()] : [queryLayer.getQueryLayerName()];
     var parser = new ol.format.WMSGetFeatureInfo({
-      layers: [queryLayer.getQueryLayerName()]
+      layers: layers
     });
     return parser.readFeatures(data);
   };
@@ -173,7 +171,7 @@ function QueryService(){
   // Messo qui generale la funzione che si prende cura della trasformazione dell'xml di risposta
   // dal server così da avere una risposta coerente in termini di formato risultati da presentare
   // nel componente QueryResults
-  this.handleQueryResponseFromServer = function(response, infoFormat, queryLayers) {
+  this.handleQueryResponseFromServer = function(response, infoFormat, queryLayers, ogcService) {
     var jsonresponse;
     var featuresForLayers = [];
     var parser, data;
@@ -210,7 +208,7 @@ function QueryService(){
     var nfeatures = 0;
     if (parser) {
       _.forEach(queryLayers, function(queryLayer) {
-        var features = parser.call(self, queryLayer, data);
+        var features = parser.call(self, queryLayer, data, ogcService);
         nfeatures += features.length;
         featuresForLayers.push({
           layer: queryLayer,
@@ -248,7 +246,7 @@ function QueryService(){
       .done(function(response) {
        var allFeaturesFoLayers = [];
         _.forEach(filters, function(filter) {
-          var featuresForLayers = self.handleQueryResponseFromServer(response, filter.infoFormat, filter.layers);
+          var featuresForLayers = self.handleQueryResponseFromServer(response, filter.infoFormat, filter.layers, filter.ogcService);
           allFeaturesFoLayers = _.union(allFeaturesFoLayers, self.handleResponseFeaturesAndRelations(featuresForLayers));
         });
         d.resolve({
