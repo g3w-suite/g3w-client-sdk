@@ -1,0 +1,31 @@
+<div class="query-relation">
+  <div class="back-btn" @click="back">
+    <span class="back-link">
+      <span class="glyphicon glyphicon-chevron-left"></span>
+      Ritorna alle Relazioni
+    </span>
+  </div>
+  <div class="header">
+    <div>
+      Dati relativi alla relazione <b>{{ relation.name }}</b>
+    </div>
+  </div>
+  <div class="nano" v-if="table.rows.length">
+    <div class="nano-content">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th v-for="column in table.columns">{{ column }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="row in table.rows">
+            <td v-for="value in row">{{ value }}</td>
+          </tr>
+        </tbody>
+        </table>
+    </div>
+  </div>
+  <div v-else> Non ci sono relazioni </div>
+
+</div>

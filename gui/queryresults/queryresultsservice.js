@@ -1,16 +1,22 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
+var ProjectsRegistry = require('core/project/projectsregistry');
 var GUI = require('gui/gui');
 var G3WObject = require('core/g3wobject');
 var ComponentsRegistry = require('gui/componentsregistry');
-var PhotoComponent = require('gui/photo/vue/photo');
+var PhotoComponent = require('./components/photo/vue/photo');
+var RelationsPage = require('./components/relations/vue/relationspage');
+
 
 function QueryResultsService() {
   var self = this;
+  // prendo le relazioni dal progettoi se ci sono
+  this._relations = ProjectsRegistry.getCurrentProject().state.relations ? _.groupBy(ProjectsRegistry.getCurrentProject().state.relations,'referencedLayer'): null;
   this._actions = {
     'zoomto': QueryResultsService.zoomToElement,
     'highlightgeometry': QueryResultsService.highlightGeometry,
-    'clearHighlightGeometry': QueryResultsService.clearHighlightGeometry
+    'clearHighlightGeometry': QueryResultsService.clearHighlightGeometry,
+    'showQueryRelations': QueryResultsService.showQueryRelations
   };
   this.state = {};
   this.init = function(options) {
@@ -146,7 +152,8 @@ function QueryResultsService() {
   };
 
   this.setActionsForLayers = function(layers) {
-    // scorro sui layers
+    var self = this;
+    // scorro su ogni layer che ho nella risposta
     _.forEach(layers,function(layer){
       if (!self.state.layersactions[layer.id]) {
         self.state.layersactions[layer.id] = [];
@@ -159,11 +166,25 @@ function QueryResultsService() {
           cbk: QueryResultsService.goToGeometry
         })
       }
+      // vado a costruire l'action delle relazioni
+      if (self._relations) {
+        _.forEach(self._relations, function(relations, id) {
+          if (layer.id == id) {
+            self.state.layersactions[layer.id].push({
+              id: 'show-query-relations',
+              class: 'fa fa-sitemap',
+              hint: 'Visualizza Relazioni',
+              cbk: _.bind(QueryResultsService.showQueryRelations, self),
+              relations: relations
+            })
+          }
+        })
+      }
     });
     this.addActionsForLayers(self.state.layersactions);
   };
   
-  this.trigger = function(actionId,layer,feature) {
+  this.trigger = function(actionId, layer, feature) {
     var actionMethod = this._actions[actionId];
     if (actionMethod) {
       actionMethod(layer,feature);
@@ -187,7 +208,7 @@ function QueryResultsService() {
 
   this.triggerLayerAction = function(action,layer,feature) {
     if (action.cbk) {
-      action.cbk(layer,feature)
+      action.cbk(layer,feature, action)
     }
     if (action.route) {
       var url;
@@ -211,7 +232,6 @@ function QueryResultsService() {
     });
   };
 
-
   base(this);
 }
 QueryResultsService.zoomToElement = function(layer,feature) {
@@ -232,9 +252,21 @@ QueryResultsService.highlightGeometry = function(layer,feature) {
   }
 };
 
-QueryResultsService.clearHighlightGeometry = function(layer,feature) {
+QueryResultsService.clearHighlightGeometry = function(layer, feature) {
   var mapService = ComponentsRegistry.getComponent('map').getService();
   mapService.clearHighlightGeometry();
+};
+
+QueryResultsService.showQueryRelations = function(layer, feature, action) {
+
+  GUI.pushContent({
+    content: new RelationsPage({
+      relations: action.relations,
+      feature: feature
+    }),
+    backonclose: true,
+    closable: false
+  });
 };
 
 // Make the public service en Event Emitter

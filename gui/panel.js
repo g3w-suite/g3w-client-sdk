@@ -29,8 +29,6 @@ proto.setInternalPanel = function(internalPanel) {
   this.internalPanel = internalPanel;
 };
 
-
-
 /* HOOKS */
 
 /*

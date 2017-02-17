@@ -89,7 +89,7 @@ proto.getGid = function() {
 };
 
 proto.getOverviewProjectGid = function() {
-  return this.state.overviewprojectgid.gid;
+  return this.state.overviewprojectgid ? this.state.overviewprojectgid.gid : null;
 };
 
 proto.getLayersDict = function(options) {

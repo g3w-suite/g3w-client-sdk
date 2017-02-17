@@ -1,7 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var Component = require('gui/vue/component');
-var Service = require('gui/photo/photoservice');
+var Service = require('../photoservice');
 
 var InternalComponent = Vue.extend({
   template: require('./photo.html'),

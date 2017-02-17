@@ -1,0 +1,18 @@
+<div class="query-relations">
+  <div class="header">
+    <div>Elenco Relazioni della feature <span v-for="info in featureInfo()"><b>{{ info.key }}</b>: {{ info.value }} </span></div>
+  </div>
+  <div class="nano">
+    <div class="nano-content">
+      <table class="table table-bordered table-hover">
+        <thead>
+        </thead>
+        <tbody>
+          <tr @click="showRelation(relation)" v-for="relation in relations" style="cursor:pointer">
+            <td>{{ relation.name }}<span class="glyphicon glyphicon-chevron-right pull-right" aria-hidden="true"></span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
