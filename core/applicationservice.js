@@ -47,7 +47,6 @@ var ApplicationService = function() {
 
     if (!this.complete) {
       RouterService.init();
-      // temporaneo
       var currentProject = ProjectsRegistry.getCurrentProject();
       if (currentProject.state.law && currentProject.state.law.length) {
         self._config.plugins['law'] =  currentProject.state.law;

@@ -10,13 +10,12 @@ var RelationsPage = require('./components/relations/vue/relationspage');
 
 function QueryResultsService() {
   var self = this;
-  // prendo le relazioni dal progettoi se ci sono
+  // prendo le relazioni dal progettoi se ci sono e le raggruppo per referencedLayer
   this._relations = ProjectsRegistry.getCurrentProject().state.relations ? _.groupBy(ProjectsRegistry.getCurrentProject().state.relations,'referencedLayer'): null;
   this._actions = {
     'zoomto': QueryResultsService.zoomToElement,
     'highlightgeometry': QueryResultsService.highlightGeometry,
-    'clearHighlightGeometry': QueryResultsService.clearHighlightGeometry,
-    'showQueryRelations': QueryResultsService.showQueryRelations
+    'clearHighlightGeometry': QueryResultsService.clearHighlightGeometry
   };
   this.state = {};
   this.init = function(options) {
@@ -166,18 +165,20 @@ function QueryResultsService() {
           cbk: QueryResultsService.goToGeometry
         })
       }
-      // vado a costruire l'action delle relazioni
+      // vado a costruire l'action delle query-relazioni
       if (self._relations) {
+        // scorro sulle relazioni e vado a verificare se ci sono relazioni che riguardano quel determintato layer
         _.forEach(self._relations, function(relations, id) {
           if (layer.id == id) {
             self.state.layersactions[layer.id].push({
               id: 'show-query-relations',
               class: 'fa fa-sitemap',
               hint: 'Visualizza Relazioni',
-              cbk: _.bind(QueryResultsService.showQueryRelations, self),
+              cbk: QueryResultsService.showQueryRelations,
               relations: relations
             })
           }
+          return false;
         })
       }
     });
@@ -189,12 +190,11 @@ function QueryResultsService() {
     if (actionMethod) {
       actionMethod(layer,feature);
     }
-
     if (layer) {
       var layerActions = self.state.layersactions[layer.id];
       if (layerActions) {
         var action;
-        _.forEach(layerActions,function(layerAction){
+        _.forEach(layerActions, function(layerAction){
           if (layerAction.id == actionId) {
             action = layerAction;
           }
@@ -222,6 +222,7 @@ function QueryResultsService() {
     }
   };
 
+  //funzione che permette di vedere la foto a schermo intero
   this.showFullPhoto = function(url) {
     GUI.pushContent({
       content: new PhotoComponent({
@@ -258,7 +259,6 @@ QueryResultsService.clearHighlightGeometry = function(layer, feature) {
 };
 
 QueryResultsService.showQueryRelations = function(layer, feature, action) {
-
   GUI.pushContent({
     content: new RelationsPage({
       relations: action.relations,
