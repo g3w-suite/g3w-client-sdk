@@ -9,7 +9,7 @@ function MapLayer(config){
   base(this);
 }
 
-inherit(MapLayer,G3WObject);
+inherit(MapLayer, G3WObject);
 
 var proto = MapLayer.prototype;
 

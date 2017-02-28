@@ -184,7 +184,7 @@ function PrintComponentService() {
   // metodo chiusura print panel
   this._clearPrint = function() {
     // rimovo l'evento movend della mappa
-    this._map.unByKey(this._moveMapKeyEvent);
+    ol.Observable.unByKey(this._moveMapKeyEvent);
     // lo setto a null
     this._moveMapKeyEvent = null;
   };

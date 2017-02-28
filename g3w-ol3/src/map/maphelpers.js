@@ -51,7 +51,7 @@ _Viewer.prototype.destroy = function(){
 
 _Viewer.prototype.getView = function() {
   return this.map.getView();
-}
+};
 
 _Viewer.prototype.updateMap = function(mapObject){};
 
@@ -72,15 +72,15 @@ _Viewer.prototype.goTo = function(coordinates, options){
   var view = this.map.getView();
   
   if (animate) {
-    var panAnimation = ol.animation.pan({
+    var panAnimation = view.animate({
       duration: 500,
-      source: view.getCenter()
+      center: view.getCenter()
     });
-    var zoomAnimation = ol.animation.zoom({
+    var zoomAnimation = view.animate({
       duration: 500,
       resolution: view.getResolution()
     });
-    this.map.beforeRender(panAnimation,zoomAnimation);
+    //this.map.getView().animate(panAnimation,zoomAnimation);
   }
   
   view.setCenter(coordinates);
@@ -95,15 +95,15 @@ _Viewer.prototype.goToRes = function(coordinates, resolution){
   var view = this.map.getView();
   
   if (animate) {
-    var panAnimation = ol.animation.pan({
+    var panAnimation = view.animate({
       duration: 300,
-      source: view.getCenter()
+      center: view.getCenter()
     });
-    var zoomAnimation = ol.animation.zoom({
+    var zoomAnimation = view.animate({
       duration: 300,
       resolution: view.getResolution()
     });
-    this.map.beforeRender(panAnimation,zoomAnimation);
+    //this.map.beforeRender(panAnimation,zoomAnimation);
   }
 
   view.setCenter(coordinates);
@@ -117,15 +117,15 @@ _Viewer.prototype.fit = function(geometry, options){
   var animate = options.animate || true;
   
   if (animate) {
-    var panAnimation = ol.animation.pan({
+    var panAnimation = view.animate({
       duration: 300,
-      source: view.getCenter()
+      center: view.getCenter()
     });
-    var zoomAnimation = ol.animation.zoom({
+    var zoomAnimation = view.animate({
       duration: 300,
       resolution: view.getResolution()
     });
-    this.map.beforeRender(panAnimation,zoomAnimation);
+    //this.map.getView().animate(panAnimation,zoomAnimation);
   }
   
   if (options.animate) {

@@ -39,13 +39,14 @@ var SearchPanelComponet = Vue.extend({
 });
 
 //costruttore del pannello e del suo componente vue
-function SearchPanel() {
+function SearchPanel(options) {
   self = this;
+  var options = options || {};
   this.config = {};
   this.filter = {};
   this.id = null;
   this.querylayerid = null;
-  this.internalPanel = new SearchPanelComponet();
+  this.internalPanel = options.internalPanel || new SearchPanelComponet();
   //funzione inizializzazione
   this.init = function(config) {
     this.config = config || {};

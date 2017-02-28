@@ -144,6 +144,10 @@ proto.setFeatureData = function(oldfid,fid,geometry,attributes) {
   return feature;
 };
 
+proto.addFeature = function(feature) {
+  this.getSource().addFeature(feature);
+};
+
 proto.addFeatures = function(features) {
   this.getSource().addFeatures(features);
 };
@@ -230,6 +234,7 @@ proto.getFieldsWithValues = function(obj) {
   else if (obj){
     feature = this.getFeatureById(obj);
   }
+  // se c'è una feature ne prendo le proprietà
   if (feature){
     attributes = feature.getProperties();
   }
@@ -241,8 +246,8 @@ proto.getFieldsWithValues = function(obj) {
         } else {
           field.value = feature.getId();
         }
-      }
-      else{
+      } else {
+        
         field.value = attributes[field.name];
       }
     }

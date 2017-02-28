@@ -648,6 +648,10 @@ proto.getMapLayerForLayer = function(layer){
   return mapLayer;
 };
 
+proto.getProjectLayer = function(layerId) {
+  return this.project.getLayerById(layerId);
+};
+
 proto.setupBaseLayers = function(){
   var self = this;
   if (!this.project.state.baselayers){
@@ -855,7 +859,6 @@ proto.highlightGeometry = function(geometryObj,options) {
   var zoom = (typeof options.zoom == 'boolean') ? options.zoom : true;
   var highlight = (typeof options.highlight == 'boolean') ? options.highlight : true;
   var duration = options.duration;
-  
   var view = this.viewer.map.getView();
   
   var geometry;
@@ -1109,7 +1112,7 @@ proto.startDrawGreyCover = function() {
 
 proto.stopDrawGreyCover = function() {
   var map = this.viewer.map;
-  map.unByKey(this._greyListenerKey);
+  ol.Observable.unByKey(this._greyListenerKey);
   this._greyListenerKey = null;
   if (this._drawShadow.inner.length) {
     this._resetDrawShadowInner();

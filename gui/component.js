@@ -42,6 +42,14 @@ proto.setId = function(id) {
   this.id = id;
 };
 
+proto.getOpen = function() {
+  return this.state.open;
+};
+
+proto.getVisible = function() {
+  return this.state.visible;
+};
+
 // restituice il titolo del componente
 proto.getTitle = function() {
   return this.state.title;
