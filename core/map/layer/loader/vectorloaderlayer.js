@@ -105,6 +105,29 @@ proto.getVectorLayersCodes = function() {
   return this._vectorLayersCodes;
 };
 
+proto.getLayers = function() {
+  return this._layers;
+};
+
+// funzione che fa il reload che rihiede di nuovo il dati del vetor layer
+// caso in cui si lavora con un layer vettoriale e non si usa un wms per fare la query
+proto.reloadVectorData = function(layerCode) {
+  var self = this;
+  var deferred = $.Deferred();
+  var bbox = this._mapService.state.bbox;
+  self._createVectorLayerFromConfig(layerCode)
+    .then(function(vectorLayer) {
+      self._getVectorLayerData(vectorLayer, bbox)
+        .then(function(vectorDataResponse) {
+          self.setVectorLayerData(vectorLayer.name, vectorDataResponse);
+          vectorLayer.setData(vectorDataResponse.vector.data);
+          deferred.resolve(vectorLayer);
+        });
+    });
+  return deferred.promise();
+};
+
+
 //funzione che permette di ottenere tutti i dati relativi ai layer vettoriali caricati
 //prima si è ottenuta la coinfigurazione, ora si ottengono i dati veri e propri
 proto.loadAllVectorsData = function(layerCodes) {
@@ -149,53 +172,68 @@ proto._setCustomUrlParameters = function(customUrlParameters) {
   this._customUrlParameters = customUrlParameters;
 };
 
+proto._createVectorLayerFromConfig = function(layerCode) {
+  var self = this;
+  // recupero la configurazione del layer settata da plugin service
+  var layerConfig = this._layers[layerCode];
+  var deferred = $.Deferred();
+  // eseguo le richieste delle configurazioni
+  this._getVectorLayerConfig(layerConfig.name)
+    .then(function(vectorConfigResponse) {
+      var vectorConfig = vectorConfigResponse.vector;
+      // una volta ottenuta dal server la configurazione vettoriale,
+      // provvedo alla creazione del layer vettoriale
+      var crsLayer = layerConfig.crs || self._mapService.getProjection().getCode();
+      var vectorLayer = self._createVectorLayer({
+        geometrytype: vectorConfig.geometrytype,
+        format: vectorConfig.format,
+        crs: self._mapService.getProjection().getCode(),
+        crsLayer : crsLayer,
+        id: layerConfig.id,
+        name: layerConfig.name,
+        pk: vectorConfig.pk,
+        editing: self._editingMode
+      });
+      // setto i campi del layer
+      vectorLayer.setFields(vectorConfig.fields);
+      vectorLayer.setCrs(crsLayer);
+      // questo è la proprietà della configurazione del config layer
+      // che specifica se esistono relazioni con altri layer
+      // sono array di oggetti che specificano una serie di
+      // informazioni su come i layer sono relazionati (nome della relazione == nome layer)
+      // foreign key etc ..
+      var relations = vectorConfig.relations;
+      // nel caso il layer abbia relazioni (array non vuoto)
+      if (relations){
+        // per dire a vectorLayer che i dati
+        // delle relazioni verranno caricati solo quando
+        // richiesti (es. aperture form di editing)
+        vectorLayer.lazyRelations = true;
+        //vado a settare le relazioni del vector layer
+        vectorLayer.setRelations(relations);
+      }
+      // setto lo stile del layer OL
+      if (layerConfig.style) {
+        vectorLayer.setStyle(layerConfig.style);
+      }
+      // risolve con il nome del vectorLayer
+      deferred.resolve(vectorLayer);
+    })
+    .fail(function(){
+      deferred.reject();
+    });
+  return deferred.promise();
+};
+
 // funzione che dato la configurazione del layer fornito dal plugin (style, editor, vctor etc..)
 // esegue richieste al server al fine di ottenere configurazione vettoriale del layer
 proto._setupVectorLayer = function(layerCode) {
-
     var self = this;
-    // recupero la configurazione del layer settata da plugin service
-    var layerConfig = this._layers[layerCode];
     var deferred = $.Deferred();
     // eseguo le richieste delle configurazioni
-    this._getVectorLayerConfig(layerConfig.name)
-        .then(function(vectorConfigResponse) {
-            var vectorConfig = vectorConfigResponse.vector;
-            // una volta ottenuta dal server la configurazione vettoriale,
-            // provvedo alla creazione del layer vettoriale
-            var crsLayer = layerConfig.crs || self._mapService.getProjection().getCode();
-            var vectorLayer = self._createVectorLayer({
-                geometrytype: vectorConfig.geometrytype,
-                format: vectorConfig.format,
-                crs: self._mapService.getProjection().getCode(),
-                crsLayer : crsLayer,
-                id: layerConfig.id,
-                name: layerConfig.name,
-                pk: vectorConfig.pk,
-                editing: self._editingMode
-            });
-            // setto i campi del layer
-            vectorLayer.setFields(vectorConfig.fields);
-            vectorLayer.setCrs(crsLayer);
-            // questo è la proprietà della configurazione del config layer
-            // che specifica se esistono relazioni con altri layer
-            // sono array di oggetti che specificano una serie di
-            // informazioni su come i layer sono relazionati (nome della relazione == nome layer)
-            // foreign key etc ..
-            var relations = vectorConfig.relations;
-            // nel caso il layer abbia relazioni (array non vuoto)
-            if (relations){
-                // per dire a vectorLayer che i dati
-                // delle relazioni verranno caricati solo quando
-                // richiesti (es. aperture form di editing)
-                vectorLayer.lazyRelations = true;
-                //vado a settare le relazioni del vector layer
-                vectorLayer.setRelations(relations);
-            }
-            // setto lo stile del layer OL
-            if (layerConfig.style) {
-                vectorLayer.setStyle(layerConfig.style);
-            }
+    this._createVectorLayerFromConfig(layerCode)
+        .then(function(vectorLayer) {
+            var layerConfig = self._layers[layerCode];
             // assegno il vetorLayer appena creato all'attributo vector del layer
             layerConfig.vector = vectorLayer;
             // risolve con il nome del layerCode
@@ -267,7 +305,6 @@ proto.lockFeatures = function(layerName) {
 // ottiene la configurazione del vettoriale
 // (qui richiesto solo per la definizione degli input)
 proto._getVectorLayerConfig = function(layerName) {
-
     var d = $.Deferred();
     // attravercso il layer name e il base url
     // chiedo la server di inviarmi la configurazione editing del laye

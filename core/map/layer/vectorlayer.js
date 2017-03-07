@@ -5,7 +5,6 @@ var reject = require('core/utils/utils').reject;
 var G3WObject = require('core/g3wobject');
 
 function VectorLayer(config) {
-
   var config = config || {};
   this.geometrytype = config.geometrytype || null;
   this.format = config.format || null;
@@ -47,9 +46,10 @@ function VectorLayer(config) {
   this._loadedIds = [];
   this._featureLocks = null;
   this._crs = null;
-
 }
+
 inherit(VectorLayer,G3WObject);
+
 module.exports = VectorLayer;
 
 var proto = VectorLayer.prototype;
@@ -59,7 +59,6 @@ proto.getPk = function() {
 };
 
 proto.setData = function(featuresData) {
-
   var self = this;
   var Ids = [];
   var features;
@@ -94,10 +93,10 @@ proto.setData = function(featuresData) {
           return self._featuresFilter(feature);
         });
       }
-
       var featuresToLoad = _.filter(features,function(feature) {
         return !_.includes(self._loadedIds,feature.getId());
       });
+
       this._olSource.addFeatures(featuresToLoad);
       // verifico, prendendo la prima feature, se la PK è presente o meno tra gli attributi
       var attributes = this.getSource().getFeatures()[0].getProperties();
@@ -125,23 +124,55 @@ proto.addLockId = function(lockId) {
   this._featureLocks.push(lockId);
 };
 
+// funzione che serve ad aggiornare o settare gli attibuti ad una feature
+// viene sfruttatat al momento del salvataggio in editing di una feature
 proto.setFeatureData = function(oldfid,fid,geometry,attributes) {
-
-  var feature = this.getFeatureById(oldfid);
+  var self = this;
+  // vado a prende il vecchio fid (id temporaneo _new_...) oppure prendo una feature già esistente
+  var feature = this.getFeatureById(oldfid) || this.getFeatureById(fid);
+  // se la feature esiste vuol dire che simao nel caso di una nuoav feature
   if (feature) {
-    if(fid) {
+    if (oldfid && oldfid != fid) {
       feature.setId(fid);
     }
     if(geometry) {
       feature.setGeometry(geometry);
     }
-    if(attributes) {
+    if (attributes) {
       var oldAttributes = feature.getProperties();
       var newAttributes = _.assign(oldAttributes, attributes);
       feature.setProperties(newAttributes);
     }
   }
+  // vado a cambiare modificarele relazioni esistenti
+  // in base alle relationi nuove Cambio id etc..)
+  this.addRelationElements(attributes.relations);
+
   return feature;
+};
+
+// funzione che va ada modificare la relaione/relazioni aggiunte della feature esistetnte
+// si ha nel caso di un inserimento di una nuova relazione)
+proto.addRelationElements = function(relations) {
+  var self = this;
+  var fid = relations.featureid;
+  var feature = this.getFeatureById(fid);
+  // scorro sulle relazioni ritornate dal server dopo un commit (new)
+  // sono oggetto con chiave nome della relazione e valore gli elementi aggiunti
+  _.forEach(relations, function(elements, relationName) {
+    // scorro sulle relazioni di quella feature che sono state aggiunte
+    _.forEach(self._relationsDataLoaded[fid], function(relationLoaded) {
+      if (relationLoaded.name == relationName) {
+        _.forEach(elements, function(element) {
+          _.forEach(relationLoaded.elements, function(ele) {
+            if (ele.id == element.clientid ) {
+              ele.id = element.id;
+            }
+          })
+        })
+      }
+    })
+  })
 };
 
 proto.addFeature = function(feature) {
@@ -195,7 +226,7 @@ proto.setPkField = function(){
   }
 };
 
-proto.getFeatures = function(){
+proto.getFeatures = function() {
   return this.getSource().getFeatures();
 };
 
@@ -258,6 +289,7 @@ proto.getFieldsWithValues = function(obj) {
 
   return fields;
 };
+
 // funzione che setta e relazione del layer vettoriale
 proto.setRelations = function(relations) {
   // assegno al valore _relations l'array relazioni
@@ -282,6 +314,14 @@ proto.getRelations = function() {
   return this._relations;
 };
 
+// retituisce un oggetto contenente nome relazione e fileds(attributi) associati
+proto.getRelationsAttributes = function() {
+  var fields = {};
+  _.forEach(this._relations, function(relation) {
+    fields[relation.name] = relation.fields;
+  });
+  return fields;
+};
 proto.getRelation = function(relationName) {
   var relation;
   _.forEach(this._relations,function(_relation){
@@ -292,7 +332,7 @@ proto.getRelation = function(relationName) {
   return relation;
 };
 
-proto.hasRelations = function(){
+proto.hasRelations = function() {
   return !_.isNull(this._relations);
 };
 
@@ -339,7 +379,8 @@ proto.getRelationsWithValues = function(fid) {
   }
   // altrimenti creo un clone dell'attributo relations
   var relations = _.cloneDeep(this._relations);
-  // -- DA CAPIRE MEGLIO --
+  // se non è stato settao l'id della feature e quindi la feature non esiste
+  // vado a creare la strutture lelations element (array)
   if (!fid && !this.getFeatureById(fid)) {
     _.forEach(relations, function(relation) {
       relation.elements = [];
@@ -347,7 +388,8 @@ proto.getRelationsWithValues = function(fid) {
     return resolve(relations);
   }
   else {
-    if (this.lazyRelations){
+    if (this.lazyRelations) {
+      //verifico se sono già state caricate le relazioni di quella feature
       if (!self._relationsDataLoaded[fid]) {
         var deferred = $.Deferred();
         var attributes = this.getFeatureById(fid).getProperties();
@@ -355,7 +397,13 @@ proto.getRelationsWithValues = function(fid) {
         _.forEach(relations, function(relation) {
           var keyVals = [];
           _.forEach(relation.fk, function(fkKey) {
-            fks[fkKey] = attributes[fkKey];
+            // verifico che la foreingkey sia la primary key del layer e a questo punto
+            // prendo il fid altrimenti prendo il valore dell'attributo della feature
+            if (fkKey == self.pk)  {
+              fks[fkKey] = fid;
+            } else {
+              fks[fkKey] = attributes[fkKey];
+            }
           });
         });
         this.getRelationsWithValuesFromFks(fks)
@@ -379,7 +427,7 @@ proto.getRelationsWithValues = function(fid) {
 };
 
 // ottengo le relazioni valorizzate a partire da un oggetto con le chiavi FK come keys e i loro valori come values
-proto.getRelationsWithValuesFromFks = function(fks, newRelation){
+proto.getRelationsWithValuesFromFks = function(fks, newRelation) {
   var self = this;
   var relations = _.cloneDeep(this._relations);
   var relationsRequests = [];
@@ -403,7 +451,7 @@ proto.getRelationsWithValuesFromFks = function(fks, newRelation){
             _.forEach(element.fields,function(field){ // assegno i valori ai campi
               field.value = relationElement[field.name];
               if (field.name == relation.pk) {
-                element.id = field.value // aggiungo element.id dandogli il valore della chiave primaria della relazione
+                element.id = field.value; // aggiungo element.id dandogli il valore della chiave primaria della relazione
                 var state = newRelation ? 'NEW' : 'OLD';
                 element.state = state; // flag usato per identificare elemento: 'NEW', 'OLD', 'DELETED'
               }
@@ -446,6 +494,7 @@ proto.getRelationsFksWithValuesForFeature = function(feature){
   return fks;
 };
 
+//vado a settare le nuove relaioni dopo che ho fatto save del form
 proto.setRelationsData = function (fid, relationsData) {
   this._relationsDataLoaded[fid] = relationsData;
 };

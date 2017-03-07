@@ -334,7 +334,7 @@ proto.setupControls = function(){
             //faccio query by location su i layers selezionati o tutti
             var queryResultsPanel = showQueryResults('interrogazione');
             QueryService.queryByLocation(coordinates, layers)
-            .then(function(results) {
+            .then(function(results) {;
               queryResultsPanel.setQueryResponse(results,coordinates,self.state.resolution);
             });
           });

@@ -9,6 +9,7 @@ Fields = {};
 Fields.SIMPLE = 'simple';
 Fields.LINK = 'link';
 Fields.PHOTO = 'photo';
+Fields.IMAGE = 'image';
 Fields.POINTLINK = 'pointlink';
 Fields.ROUTE = 'route';
 
@@ -61,6 +62,16 @@ var vueComponentOptions = {
     },
     is: function(type,layer,attributeName,attributeValue) {
       return fieldIs(type,layer,attributeName,attributeValue);
+    },
+    checkField: function(type, fieldname, attributes) {
+      var isType = false;
+      _.forEach(attributes, function(attribute) {
+        if (attribute.name == fieldname) {
+          isType = attribute.type == type;
+        }
+      });
+
+      return isType;
     },
     isRelativePath: function(url) {
       if (!_.startsWith(url,'/')) {

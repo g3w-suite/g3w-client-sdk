@@ -101,6 +101,32 @@ proto.getAttributeLabel = function(name) {
   return label;
 };
 
+// restituisce tutte le relazioni legati a quel layer
+proto.getRelations = function() {
+  return this.state.relations
+};
+
+//restituisce gli attributi fields di una deterninata relazione
+proto.getRelationAttributes = function(relationName) {
+  var fields = [];
+  _.forEach(this.state.relations, function(relation) {
+    if (relation.name == relationName) {
+      fields = relation.fields;
+      return false
+    }
+  });
+  return fields;
+};
+
+// retituisce un oggetto contenente nome relazione e fileds(attributi) associati
+proto.getRelationsAttributes = function() {
+  var fields = {};
+  _.forEach(this.state.relations, function(relation) {
+    fields[relation.name] = relation.fields;
+  });
+  return fields;
+};
+
 proto.isSelected = function() {
   return this.state.selected;
 };

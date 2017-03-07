@@ -205,9 +205,11 @@ var vueComponentOptions = {
       })
     },
     fieldsSubset: function(fields) {
-      //var fields = this.visibleElementFields(fields);
-      var end = Math.min(3,fields.length);
-      return fields.slice(0,end);
+      var attributes = _.filter(fields, function(attribute) {
+        return attribute.type != 'image';
+      });
+      var end = Math.min(3, attributes.length);
+      return attributes.slice(0, end);
     },
     fieldsSubsetLength: function(fields) {
       return this.fieldsSubset(fields).length;
@@ -238,15 +240,21 @@ var vueComponentOptions = {
     onSelectChange: function(field, evt) {
       field.value = evt.target.value;
     },
-    onFileChange: function(field, e) {
+    onFileChange: function(field, relationIndex, e) {
       // verifico se esiste il tocken di django
-      formData = {};
+      var formData = {};
+      var spinnerContainer;
       var csrftoken = this.$cookie.get('csrftoken');
       if (csrftoken) {
         formData.csrfmiddlewaretoken = csrftoken;
       }
+      if (relationIndex) {
+        spinnerContainer = $('#foto-spinner'+relationIndex);
+      } else {
+        spinnerContainer = $('#foto-spinner');
+      }
       GUI.showSpinner({
-        container: $('#foto-spinner'),
+        container: spinnerContainer,
         id: 'fotoloadspinner',
         style: 'white',
         center: true
@@ -284,11 +292,7 @@ var vueComponentOptions = {
       return value
     },
     setImageStyleInput: function() {
-      $('input:file').filestyle({
-        buttonText: " Foto",
-        buttonName: "btn-primary",
-        iconName: "glyphicon glyphicon-camera"
-      });
+      this.$options.formService._setImageStyleInput();
     }
   },
   computed: {

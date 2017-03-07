@@ -278,7 +278,7 @@ proto.start = function() {
   if (this._vectorLayer) {
     //prima di tutto stoppo editor
     this.stop();
-    //chiamo la funzione che mi crea il vettoriale di edting dove vendono apportate
+    //chiamo la funzione che mi crea il vettoriale di editing dove vendono apportate
     // tutte le modifice del layer
     this.addEditingLayerToMap(this._vectorLayer.geometrytype);
     // istanzio l'EditBuffer
@@ -464,8 +464,9 @@ proto.collectRelations = function() {
   relationsEdits = this._editBuffer.collectRelations();
   return relationsEdits;
 };
+
 // viene chamato quando si preme ad esempio Salva sul Form degli
-// attributi di una
+// attributi di una feature
 proto.setFieldsWithValues = function(feature, fields, relations) {
   var attributes = {};
   _.forEach(fields, function(field) {
@@ -665,7 +666,6 @@ proto._transformCoordinateFeatureFromLayerToMap = function(feature) {
   feature.getGeometry().setCoordinates(coord);
   return feature;
 };
-
 
 // metodo add Feature che non fa alto che aggiungere la feature al buffer
 proto.addFeature = function(feature) {

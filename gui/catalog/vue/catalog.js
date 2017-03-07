@@ -41,13 +41,13 @@ var vueComponentOptions = {
   },
   mounted: function() {
     var self = this;
-    CatalogEventHub.$on('treenodetoogled',function(node){
+    CatalogEventHub.$on('treenodetoogled',function(node) {
       self.project.toggleLayer(node.id);
     });
 
-    CatalogEventHub.$on('treenodestoogled',function(nodes,parentChecked){
+    CatalogEventHub.$on('treenodestoogled',function(nodes,parentChecked) {
       var layersIds = _.map(nodes,'id');
-      self.project.toggleLayers(layersIds,parentChecked);
+      self.project.toggleLayers(layersIds, parentChecked);
     });
 
     CatalogEventHub.$on('treenodeselected',function(node) {
@@ -91,21 +91,22 @@ Vue.component('tristate-tree', {
     layerstree: {},
     //eredito il numero di childs dal parent
     checked: false,
-    highlightlayers: false
+    highlightlayers: false,
+    parentFolder: false
   },
   data: function () {
     return {
       expanded: this.layerstree.expanded,
-      parentChecked: false,
+      parentChecked: !this.checked,
       controltoggled: false,
       //proprieta che serve per fare confronto per il tristate
       n_childs: this.layerstree.nodes ? this.layerstree.nodes.length : 0
     }
   },
   watch: {
-      'checked': function (val){
-        this.layerstree.visible = val;
-      }
+    'checked': function(val) {
+      this.layerstree.visible = val;
+    }
   },
   computed: {
     isFolder: function () {
@@ -140,7 +141,7 @@ Vue.component('tristate-tree', {
       if (this.isFolder && !checkAll) {
         this.layerstree.expanded = !this.layerstree.expanded;
       }
-      else if (checkAll){
+      else if (checkAll) {
         if (this.parentChecked && !this.n_parentChilds){
           this.parentChecked = false;
         } else if (this.parentChecked && this.n_parentChilds) {
@@ -149,7 +150,7 @@ Vue.component('tristate-tree', {
         else {
           this.parentChecked = !this.parentChecked;
         }
-        CatalogEventHub.$emit('treenodestoogled',this.layerstree.nodes,this.parentChecked);
+        CatalogEventHub.$emit('treenodestoogled',this.layerstree.nodes, this.parentChecked);
       }
       else {
         CatalogEventHub.$emit('treenodetoogled',this.layerstree);

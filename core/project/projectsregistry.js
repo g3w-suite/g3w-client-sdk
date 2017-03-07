@@ -57,8 +57,10 @@ proto.init = function(config) {
     this.config = config;
     //setta lo state
     this.setupState();
+    // vado a prendere la configurazione del progetto corrente
     return this.getProject(config.initproject)
     .then(function(project) {
+      // vado a settare il progetto corrente
       self.setCurrentProject(project);
     });
   }
@@ -162,7 +164,8 @@ proto.getProject = function(projectGid) {
   return d.promise();
 };
   
-//ritorna una promises
+//ritorna una promises che verrà risolta con la
+// configuarzione del progetto corrente
 proto._getProjectFullConfig = function(projectBaseConfig) {
   var self = this;
   var deferred = $.Deferred();

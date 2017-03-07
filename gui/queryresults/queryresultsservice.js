@@ -90,7 +90,8 @@ function QueryResultsService() {
           hasgeometry: false,
           show: true,
           expandable: true,
-          hasImageField: false // regola che mi permette di vedere se esiste un campo image
+          hasImageField: false, // regola che mi permette di vedere se esiste un campo image
+          relationsattributes: layer.getRelationsAttributes()
         };
         // faccio una ricerca sugli attributi del layer se esiste un campo image
         // se si lo setto a true
@@ -128,7 +129,7 @@ function QueryResultsService() {
     var featureAttributesNames = _.keys(featureAttributes);
 
     featureAttributesNames = _.filter(featureAttributesNames,function(featureAttributesName){
-      return ['boundedBy','geom','the_geom','geometry','bbox'].indexOf(featureAttributesName) == -1;
+      return ['boundedBy','geom','the_geom','geometry','bbox', 'GEOMETRY'].indexOf(featureAttributesName) == -1;
     });
 
     if (layerAttributes && layerAttributes.length) {

@@ -44,6 +44,7 @@ proto.run = function() {
     })
   });
   var style = this.editor._editingVectorStyle ? this.editor._editingVectorStyle.edit : null;
+  // vado a settare i layers su cui faccio l'interacion agisce
   var layers = [this.editor.getVectorLayer().getMapLayer(),this.editor.getEditVectorLayer().getMapLayer()];
   this.pickFeatureInteraction = new PickFeatureInteraction({
     layers: layers

@@ -39,16 +39,16 @@
                   </div>
                   <div v-if="isImage(field)">
                     <i v-if="checkFileSrc(field.value)" class="glyphicon glyphicon glyphicon-trash pull-right link trash" @click="removeImage(field)"></i>
-                    <img v-if="checkFileSrc(field.value)" class="photo-preview img-responsive img-thumbnail"  :src="field.value" />
+                    <img v-if="checkFileSrc(field.value)" class="photo-preview img-responsive img-thumbnail rounded"  :src="field.value" />
                     <div id="foto-spinner"></div>
-                    <input type="file" :name="field.name" :data-url="field.uploadurl" :field="field.name" title="Foto" accept="image/*;capture=camera" class="filestyle" @change="onFileChange(field, $event)">
+                    <input type="file" :name="field.name" :data-url="field.uploadurl" :field="field.name" title="Foto" accept="image/*;capture=camera" class="filestyle" @change="onFileChange(field, null, $event)">
                   </div>
                 </div>
               </div>
             </template>
           </div>
         </div>
-        <div v-for="relation in state.relations" style="margin-top:10px">
+        <div v-for="relation, relationIndex in state.relations" style="margin-top:10px">
           <transition name="expand">
           <div v-if="showRelation(relation)">
             <div class="box box-default">
@@ -68,7 +68,7 @@
                       <td v-for="relfield in fieldsSubset(element.fields)">
                         <span>{{relfield.value}}</span>
                       </td>
-                      <td>
+                      <td class="pull-right">
                         <i v-if="isRelationElementDeletable(relation,element)" class="glyphicon glyphicon glyphicon-trash link trash" @click.stop.prevent="removeRelationElement(relation,element)"></i>
                         <i class="glyphicon glyphicon-option-horizontal link morelink"></i>
                       </td>
@@ -99,6 +99,18 @@
                               <div v-if="isLayerPicker(field)">
                                 <input class="form-control picklayerinput" @click="pickLayer(field, relation)" @input="pickLayerInputFieldChange(field, relation)"  :field="field.name" data-toggle="tooltip" :title="'Ottieni il dato da un elemento del layer \'' + layerPickerPlaceHolder(field) + '\' o scrivilo direttamente qui'" v-disabled="!isEditable(field)" v-model="field.value" :id="field.name" :placeholder="'['+layerPickerPlaceHolder(field)+']'">
                                 <i class="glyphicon glyphicon-screenshot form-control-feedback" ></i>
+                              </div>
+                              <div v-if="isRadio(field)">
+                                <template v-for="(value,index) in field.input.options.values">
+                                  <input class="magic-radio" type="radio" :value="value.value" v-model="field.value" :field="field.name" v-disabled="!isEditable(field)" :id="field.name + value.value" :placeholder="value.key">
+                                  <label :for="field.name + value.value">{{ value.key }}</label>
+                                </template>
+                              </div>
+                              <div v-if="isImage(field)" style="position:relative;">
+                                <i v-if="checkFileSrc(field.value)" class="glyphicon glyphicon glyphicon-trash pull-right link trash" @click="removeImage(field)"></i>
+                                <img v-if="checkFileSrc(field.value)" class="photo-preview img-responsive img-thumbnail rounded" :src="field.value" />
+                                <div :id="'foto-spinner'+relationIndex"></div>
+                                <input type="file" :name="field.name" :data-url="field.uploadurl" :field="field.name" title="Foto" accept="image/*;capture=camera" class="filestyle" @change="onFileChange(field, relationIndex, $event)">
                               </div>
                             </div>
                           </div>

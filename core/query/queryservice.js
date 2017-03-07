@@ -123,7 +123,7 @@ function QueryService(){
 
   // mentre con i risultati in msGLMOutput (da Mapserver) il parser può essere istruito per parserizzare in base ad un layer di filtro
   this._parseLayermsGMLOutput = function(queryLayer, data, ogcService) {
-    var layers = ogcService == 'wfs' ? [queryLayer.getQueryLayerOrigName()] : [queryLayer.getQueryLayerName()];
+    var layers = queryLayer.getQueryLayerOrigName();
     var parser = new ol.format.WMSGetFeatureInfo({
       layers: layers
     });
@@ -216,7 +216,6 @@ function QueryService(){
         })
       });
     }
-
     return featuresForLayers;
   };
 
@@ -407,9 +406,9 @@ function QueryService(){
       var featuresForLayers = self.handleQueryResponseFromServer(response, infoFormat, queryLayers);
       d.resolve(featuresForLayers);
     })
-      .fail(function(){
-        d.reject();
-      });
+    .fail(function(){
+      d.reject();
+    });
     return d;
   };
 

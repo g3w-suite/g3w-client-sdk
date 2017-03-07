@@ -1,11 +1,10 @@
 var inherit = require('core/utils/utils').inherit;
 var GUI = require('gui/gui');
 var Component = require('gui/vue/component');
-var PanelService = require('gui/editorpanel/panelservice');
+var PanelService = require('gui/editing/editingservice');
 var base = require('core/utils/utils').base;
 var merge = require('core/utils/utils').merge;
-var PanelTemplate = require('./panel.html');
-var resolve = require('core/utils/utils').resolve;
+var PanelTemplate = require('./editing.html');
 
 var vueComponentOptions = {
   template: null,
@@ -85,8 +84,9 @@ function PanelComponent(options) {
   this._saveBtnLabel = options.saveBtnLabel || "Salva";
   // resource urls
   this._resourcesUrl = options.resourcesUrl || GUI.getResourcesUrl();
-  // settor il service del component
-  this._service = options.service || new PanelService;
+  // settor il service del component settando le relative opzioni
+  var serviceOptions = options.serviceOptions || {};
+  this._service = options.service || new PanelService(serviceOptions);
   // setto il componente interno
   this.setInternalComponent = function () {
     var InternalComponent = Vue.extend(this.vueComponent);
@@ -106,10 +106,12 @@ function PanelComponent(options) {
     this.internalComponent.state = this._service.state;
     return this.internalComponent;
   };
+
   // sovrascrivo richiamando il padre in append
   this.mount = function(parent) {
     return base(this, 'mount', parent, true)
   };
+
   this.unmount = function() {
     // faccio in modo che venga disattivato l'eventuale tool attivo al momento del
     // click sulla x

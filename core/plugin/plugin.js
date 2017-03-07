@@ -6,9 +6,10 @@ var PluginsRegistry = require('./pluginsregistry');
 
 var Plugin = function() {
 
+  base(this);
   this.name = '(no name)';
   this.config = null;
-  base(this);
+  this.service = null;
 
 };
 
@@ -17,13 +18,13 @@ inherit(Plugin,G3WObject);
 var proto = Plugin.prototype;
 
 //recuperare il servizio associato al plugin
-proto.getPluginService = function() {
+proto.getService = function() {
   return this.service
 };
 
 //settare un servizio
-proto.setPluginService = function(Service) {
-  this.service = Service;
+proto.setService = function(service) {
+  this.service = service;
 };
 
 //recupero il nome
@@ -37,8 +38,13 @@ proto.setName = function(name) {
 };
 
 //recupero la configurazione del plugin dal registro dei plugins
-proto.getPluginConfig = function() {
-  return PluginsRegistry.getPluginConfig(this.name);
+proto.getConfig = function(name) {
+  name = name || this.name;
+  return PluginsRegistry.getPluginConfig(name);
+};
+
+proto.setConfig = function(config) {
+  this.config = config;
 };
 
 //verifica la compatibilià con il progetto corrente

@@ -109,13 +109,18 @@ function FormService() {
     this._setFormTools(this.tools);
     this.editor.setFormService(this);
   };
+
+  //vado a ripulire lo state del form dopo che è stato effettuaro un commit sul server
   this.cleanStateAfterCommit = function(newRelationIds) {
     // verifico che ci sia stato un aggiunta di relazioni
-    var addedRelations = (newRelationIds && newRelationIds.length > 0) ? newRelationIds[0].relations :  {};
+    var addedRelations = (newRelationIds && newRelationIds.length > 0) ? newRelationIds[0].relations :  {}
+    var relationsToDelete = [];
     // cliclo sulle relazioni e faccio "pulizia"
     _.forEach(this.state.relations, function (relation) {
       var addedRelation = addedRelations[relation.name];
-      _.forEach(relation.elements, function (element, index) {
+      // uso forEachRight invece di forEach in quando lo splice shifta gli element e
+      // quindi si avrebbe un elemento finale undefined
+      _.forEachRight(relation.elements, function (element, index) {
         // verifico gli elementi che sono stati cancellati e cancello
         if(element.state.indexOf('DELETE') > -1) {
           relation.elements.splice(index, 1);
@@ -134,6 +139,7 @@ function FormService() {
       });
     });
   };
+
   this.createPickInteraction = function() {
     this._pickInteraction = new PickCoordinatesInteraction;
     return this._pickInteraction;
@@ -534,13 +540,29 @@ function FormService() {
     return field;
   };
 
+  this._setImageStyleInput = function() {
+    $('input:file').filestyle({
+      buttonText: " Foto",
+      buttonName: "btn-primary",
+      iconName: "glyphicon glyphicon-camera"
+    })
+  };
+
   this._addRelationElement = function(relation) {
+    var self = this;
     // chama la funzione editor che crea una relazione
     var element = this.provider.createRelationElement(relation);
     var elementBoxId = this.getUniqueRelationElementId(relation, element);
     Vue.set(this.state.elementsBoxes, elementBoxId,{collapsed:false});
     this._setupRelationElementFields(element);
     relation.elements.push(element);
+    _.forEach(element.fields, function(field) {
+      if (self._isImage(field)) {
+        Vue.nextTick(function() {
+          self._setImageStyleInput();
+        })
+      }
+    })
   };
 
   this._removeRelationElement = function(relation, element){

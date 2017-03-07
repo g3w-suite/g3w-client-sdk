@@ -40,7 +40,7 @@ g3w.gui = {
     ToolsComponent: require('gui/tools/vue/tools'),
     QueryResultsComponent : require('gui/queryresults/vue/queryresults'),
     FormComponent: require('gui/form/vue/form'),
-    PanelComponent: require('gui/editorpanel/vue/panel')
+    EditingComponent: require('gui/editing/vue/editing')
   }
 };
 

@@ -24,7 +24,7 @@ function ListPanel(options){
   
   this.state = {
     list: options.list || []
-  }
+  };
   
   this._listPanelComponent = options.listPanelComponent || ListPanelComponent;
 }
@@ -60,4 +60,4 @@ proto._mountPanel = function(panel,container){
 module.exports = {
   ListPanelComponent: ListPanelComponent,
   ListPanel: ListPanel
-}
+};
