@@ -19,7 +19,7 @@
       </div>
       <div class="box-footer" style="background-color: transparent">
         <span>
-          <button style="width:100%" class="btn " :class="[button.class, isAnnullaButton(button.type) ? 'pull-right' : '' ]" @click.stop.prevent="exec(button.cbk)" v-disabled="btnEnabled(button)">{{ button.title }}</button>
+          <button style="width:100%; background-color: #3c8dbc" class="btn " @click.stop.prevent="exec(button.cbk)" v-disabled="btnEnabled(button)">{{ button.title }}</button>
         </span>
       </div>
     </form>

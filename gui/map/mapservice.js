@@ -363,6 +363,10 @@ proto.setupControls = function(){
                 .then(function (results) {
                   if (results && results.data && results.data[0].features.length) {
                     var geometry = results.data[0].features[0].getGeometry();
+                    coordinates = geometry.getCoordinates();
+                    if (coordinates[0].length > 6000) {
+                      coordinates = geometry.getExtent();
+                    }
                     var queryLayers = self.project.getLayers({
                       QUERYABLE: true,
                       ALLNOTSELECTED: true,
@@ -1103,7 +1107,7 @@ proto.startDrawGreyCover = function() {
       ctx.closePath();
       // fine bbox interno
     }
-    ctx.fillStyle = 'rgba(0, 5, 25, 0.55)';
+    ctx.fillStyle = 'rgba(0, 5, 25, 0.40)';
     ctx.fill();
     ctx.restore();
   }

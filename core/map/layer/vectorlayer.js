@@ -146,7 +146,10 @@ proto.setFeatureData = function(oldfid,fid,geometry,attributes) {
   }
   // vado a cambiare modificarele relazioni esistenti
   // in base alle relationi nuove Cambio id etc..)
-  this.addRelationElements(attributes.relations);
+  // NON È DETTO CHE SIA LEGATO AD UN CAMBIO DI FEATURE
+  if (attributes && attributes.relations) {
+    this.addRelationElements(attributes.relations);
+  }
 
   return feature;
 };

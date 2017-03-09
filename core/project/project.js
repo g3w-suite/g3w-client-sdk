@@ -112,19 +112,17 @@ proto.getLayersDict = function(options) {
   var layers = this._layers;
   
   if (filterActive) {
-
     layers = _.filter(layers,function(layer){
       return filterActive && !layer.isDisabled();
     });
   }
   
   if (filterQueryable) {
-
     layers = _.filter(layers,function(layer){
       return filterQueryable && layer.isQueryable();
     });
   }
-  
+
   if (filterVisible) {
     layers = _.filter(layers,function(layer){
       return filterVisible && layer.isVisible();
