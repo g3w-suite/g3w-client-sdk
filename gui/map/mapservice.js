@@ -213,7 +213,7 @@ function MapService(options) {
   
   base(this);
 }
-inherit(MapService,G3WObject);
+inherit(MapService, G3WObject);
 
 var proto = MapService.prototype;
 
@@ -334,7 +334,7 @@ proto.setupControls = function(){
             //faccio query by location su i layers selezionati o tutti
             var queryResultsPanel = showQueryResults('interrogazione');
             QueryService.queryByLocation(coordinates, layers)
-            .then(function(results) {;
+            .then(function(results) {
               queryResultsPanel.setQueryResponse(results,coordinates,self.state.resolution);
             });
           });
@@ -823,7 +823,7 @@ proto.removeInteraction = function(interaction){
 // (utile ad es. per disattivare/riattivare i tool di editing)
 proto._watchInteraction = function(interaction) {
   var self = this;
-  interaction.on('change:active',function(e){
+  interaction.on('change:active',function(e) {
     if ((e.target instanceof ol.interaction.Pointer) && e.target.getActive()) {
       self.emit('pointerInteractionSet',e.target);
     }

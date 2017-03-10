@@ -250,11 +250,11 @@ function QueryResultsService() {
     this.onbefore('setQueryResponse', function (queryResponse, coordinates, resolution) {
       var mapService = ComponentsRegistry.getComponent('map').getService();
       _.forEach(self._vectorLayers, function(vectorLayer) {
-        // vado a verificare se ci sono dati nella risposta (query info) e se non è stata fatta da chiamata ad hoc setResponse
-        // sul layer vettoriale così da evitare un possibile loop su chiamate fatte da qualsisai parte
-        // in qualche modo sul setResponse diverse dai controlli. Inoltre controllo se il layer vettoiale
-        // sia visibile
-        if (queryResponse.data.length && queryResponse.data[0].layer == vectorLayer || !vectorLayer.isVisible()) { return }
+        // la prima condizione mi server se viene fatto un setQueryResponse sul singolo layer vettoriale
+        // ad esempio con un pickfeature per evitare che venga scatenato un'altra query
+        // nel caso di attivazione di uno dei query control (la momento bbox, info e polygon)
+        // la setQueryresponse ha priorità sugli altri di fatto cancellando la setResqponseqeusry dello specifico vectorLayer
+        if ((queryResponse.data.length && queryResponse.data[0].layer == vectorLayer) || !coordinates || !vectorLayer.isVisible()) { return }
         var features = [];
         // caso in cui è stato fatto una precedente richiesta identify e quindi devo attaccare il risultato
         // non mi piace perchè devo usare altro metodo
