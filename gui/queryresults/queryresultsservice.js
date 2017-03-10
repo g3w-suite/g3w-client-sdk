@@ -241,6 +241,10 @@ function QueryResultsService() {
   // funzione che mi serve per registrare i vector layer al fine di fare le query
   this.registerVectorLayer = function(vectorLayer) {
     if (this._vectorLayers.indexOf(vectorLayer) == -1) {
+      //vado ad aggiungere informazioni utili alla visualizzazioni nel query
+      vectorLayer.state = {};
+      vectorLayer.state.title = vectorLayer.name;
+      vectorLayer.state.id = vectorLayer.id;
       this._vectorLayers.push(vectorLayer);
     }
   };
