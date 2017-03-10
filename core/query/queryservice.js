@@ -142,27 +142,34 @@ function QueryService(){
 
   //INIZO SEZIONE QUERIES ///
 
+  // funzione per convertire le g3w_relations in relations
+
+  this.convertG3wRelations = function(feature) {
+    var g3w_relations = feature.getProperties().g3w_relations;
+    var relations = null;
+    if (g3w_relations) {
+      relations = [];
+      _.forEach(g3w_relations, function(elements, relationName) {
+        relation = {};
+        if (elements.length) {
+          relation.name = relationName;
+          relation.elements = elements;
+          relations.push(relation);
+        }
+      });
+      if(relations.length) {
+        feature.set('relations', relations);
+      }
+    }
+  };
+
   // funzione per il recupero delle relazioni della features se ci sono
   // nell'attributo g3w_relations
   this.handleResponseFeaturesAndRelations = function(layersResponse) {
-    var relations = null;
+    var self = this;
     _.forEach(layersResponse, function(layer) {
       _.forEach(layer.features, function(feature) {
-        g3w_relations = feature.getProperties().g3w_relations;
-        if (g3w_relations) {
-          relations = [];
-          _.forEach(g3w_relations, function(elements, relationName) {
-            relation = {};
-            if (elements.length) {
-              relation.name = relationName;
-              relation.elements = elements;
-              relations.push(relation);
-            }
-          });
-          if(relations.length) {
-            feature.set('relations', relations);
-          }
-        }
+        self.convertG3wRelations(feature);
       });
     });
     return layersResponse

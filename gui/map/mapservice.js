@@ -363,10 +363,6 @@ proto.setupControls = function(){
                 .then(function (results) {
                   if (results && results.data && results.data[0].features.length) {
                     var geometry = results.data[0].features[0].getGeometry();
-                    coordinates = geometry.getCoordinates();
-                    if (coordinates[0].length > 6000) {
-                      coordinates = geometry.getExtent();
-                    }
                     var queryLayers = self.project.getLayers({
                       QUERYABLE: true,
                       ALLNOTSELECTED: true,
@@ -382,7 +378,7 @@ proto.setupControls = function(){
                     });
                     QueryService.queryByFilter(filterObject)
                       .then(function (results) {
-                        queryResultsPanel.setQueryResponse(results, coordinates, self.state.resolution);
+                        queryResultsPanel.setQueryResponse(results, geometry, self.state.resolution);
                       })
                       .always(function () {
                         self.clearHighlightGeometry();
@@ -664,7 +660,6 @@ proto.setupBaseLayers = function(){
 
   this.mapBaseLayers = {};
   var baseLayersArray = this.project.state.baselayers;
-
   var baseLayers = this.project.state.baselayers;
   _.forEach(baseLayers,function(layerConfig){
     var layer = new ProjectLayer(layerConfig);
@@ -862,7 +857,7 @@ proto.highlightGeometry = function(geometryObj,options) {
   var options = options || {};
   var zoom = (typeof options.zoom == 'boolean') ? options.zoom : true;
   var highlight = (typeof options.highlight == 'boolean') ? options.highlight : true;
-  var duration = options.duration;
+  var duration = options.duration || 2000;
   var view = this.viewer.map.getView();
   
   var geometry;
@@ -900,7 +895,6 @@ proto.highlightGeometry = function(geometryObj,options) {
     var feature = new ol.Feature({
       geometry: geometry
     });
-
 
     if (!highlightLayer) {
       highlightLayer = new ol.layer.Vector({
@@ -943,7 +937,6 @@ proto.highlightGeometry = function(geometryObj,options) {
           return styles;
         }
       });
-
       highlightLayer.setMap(this.viewer.map);
     }
 

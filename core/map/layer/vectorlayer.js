@@ -240,6 +240,18 @@ proto.getFeatureIds = function(){
   return featureIds
 };
 
+// funzione che recurepa le feature del vector layer in base alla geometria passata
+proto.getIntersectedFeatures = function(geometry) {
+  var features = [];
+  _.forEach(this.getFeatures(), function(feature) {
+    if (geometry.intersectsCoordinate(feature.getGeometry().getCoordinates())) {
+      features.push(feature);
+    }
+  });
+  return features
+};
+
+
 proto.getFields = function(){
   return _.cloneDeep(this._fields);
 };

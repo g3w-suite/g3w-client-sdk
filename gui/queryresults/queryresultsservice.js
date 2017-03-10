@@ -4,6 +4,7 @@ var ProjectsRegistry = require('core/project/projectsregistry');
 var GUI = require('gui/gui');
 var G3WObject = require('core/g3wobject');
 var ComponentsRegistry = require('gui/componentsregistry');
+var QueryService = require('core/query/queryservice');
 var PhotoComponent = require('./components/photo/vue/photo');
 var RelationsPage = require('./components/relations/vue/relationspage');
 
@@ -21,6 +22,9 @@ function QueryResultsService() {
   this.init = function(options) {
     this.clearState();
   };
+
+  // array dei layers vettoriali
+  this._vectorLayers = [];
 
   this.setters = {
     setQueryResponse: function(queryResponse, coordinates, resolution ) {
@@ -234,7 +238,64 @@ function QueryResultsService() {
     });
   };
 
+  // funzione che mi serve per registrare i vector layer al fine di fare le query
+  this.registerVectorLayer = function(vectorLayer) {
+    if (this._vectorLayers.indexOf(vectorLayer) == -1) {
+      this._vectorLayers.push(vectorLayer);
+    }
+  };
+
+  // funzione che permette ai laye fvettoriali di aggancirsi alla query info
+  this._addVectorLayersDataToQueryResponse = function() {
+    this.onbefore('setQueryResponse', function (queryResponse, coordinates, resolution) {
+      var mapService = ComponentsRegistry.getComponent('map').getService();
+      _.forEach(self._vectorLayers, function(vectorLayer) {
+        // vado a verificare se ci sono dati nella risposta (query info) e se non è stata fatta da chiamata ad hoc setResponse
+        // sul layer vettoriale così da evitare un possibile loop su chiamate fatte da qualsisai parte
+        // in qualche modo sul setResponse diverse dai controlli. Inoltre controllo se il layer vettoiale
+        // sia visibile
+        if (queryResponse.data.length && queryResponse.data[0].layer == vectorLayer || !vectorLayer.isVisible()) { return }
+        var features = [];
+        // caso in cui è stato fatto una precedente richiesta identify e quindi devo attaccare il risultato
+        // non mi piace perchè devo usare altro metodo
+        var layerFilter = function(mapLayer) {
+          return mapLayer === vectorLayer;
+        };
+        // caso query info
+        if (_.isArray(coordinates)) {
+          if (coordinates.length == 2) {
+            var pixel = mapService.viewer.map.getPixelFromCoordinate(coordinates);
+            var feature = mapService.viewer.map.forEachFeatureAtPixel(pixel, function (feature, vectorLayer) {
+              return feature;
+            }, this, layerFilter);
+            if(feature) {
+              QueryService.convertG3wRelations(feature);
+              features.push(feature);
+            }
+          } else if (coordinates.length == 4) {
+            features = vectorLayer.getIntersectedFeatures(ol.geom.Polygon.fromExtent(coordinates));
+          }
+        } else if (coordinates instanceof ol.geom.Polygon || coordinates instanceof ol.geom.MultiPolygon) {
+          features = vectorLayer.getIntersectedFeatures(coordinates);
+        }
+        _.forEach(features, function(feature) {
+          QueryService.convertG3wRelations(feature);
+        });
+        // vado a pushare le features
+        queryResponse.data.push({
+          features: features,
+          layer: vectorLayer
+        });
+      })
+    });
+  };
+
   base(this);
+
+  // lancio subito la registrazione
+  this._addVectorLayersDataToQueryResponse();
+
+
 }
 QueryResultsService.zoomToElement = function(layer,feature) {
 
