@@ -572,7 +572,7 @@ function EditingService(options) {
           layer.setFeatureData(oldfid,fid,null,updatedFeatureAttributes);
           editor.commit(updatedFeatureAttributes)
         });
-        _.forEach(response.new_lockids, function(newlockId){
+        _.forEach(response.new_lockids, function(newlockId) {
           editor.getVectorLayer().addLockId(newlockId);
         });
       } else {

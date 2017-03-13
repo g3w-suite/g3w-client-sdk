@@ -54,8 +54,11 @@ var vueComponentOptions = {
     }
   },
   methods: {
+    isArray: function (value) {
+      return _.isArray(value);
+    },
     isSimple: function(layer,attributeName,attributeValue) {
-      return fieldIs(Fields.SIMPLE,layer,attributeName,attributeValue);
+      return !this.isArray(attributeValue) && fieldIs(Fields.SIMPLE,layer,attributeName,attributeValue);
     },
     isLink: function(layer,attributeName,attributeValue) {
       return fieldIs(Fields.LINK,layer,attributeName,attributeValue);
@@ -111,7 +114,9 @@ var vueComponentOptions = {
     },
     relationsAttributesSubset: function(relationAttributes) {
       var attributes = [];
+
       _.forEach(relationAttributes, function (value, attribute) {
+        if (_.isArray(value)) return;
         attributes.push({label: attribute, value: value})
       });
       var end = Math.min(maxSubsetLength, attributes.length);
