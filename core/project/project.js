@@ -70,6 +70,11 @@ proto.buildProjectLayer = function(layerConfig) {
 
   return layer;
 };
+
+proto.getState = function() {
+  return this.state;
+};
+
 // funzione che ritorna id
 proto.getId = function() {
   return this.state.id;

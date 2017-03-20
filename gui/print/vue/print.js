@@ -61,12 +61,6 @@ var vueComponentOptions = {
     print: function() {
       this.$options.service.print();
     }
-  },
-  mounted: function() {
-    var self = this;
-    this.$options.service.on('showpdf', function(bool) {
-      self.button.disabled = bool;
-    })
   }
 };
 
@@ -85,6 +79,7 @@ function PrintComponent(options) {
   // setto il service del component (istanzio il nuovo servizio)
   var service = options.service || new PrintService;
   this.setService(service);
+  this._service.init();
   // setto il componente interno
   this.setInternalComponent = function () {
     var InternalComponent = Vue.extend(this.vueComponent);
@@ -98,6 +93,13 @@ function PrintComponent(options) {
     this.internalComponent.state = service.state;
     // ritorno l'internal component
     return this.internalComponent;
+  };
+
+  //sovrascrivo il metodo reload
+  this._reload = function() {
+    var service = this.getService();
+    service.reload();
+    this.state.visible = service.state.visible;
   };
 
   // funzione che viene chaimata quando viene visualizzato il contentuto del componente Stampa

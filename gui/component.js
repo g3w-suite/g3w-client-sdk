@@ -23,6 +23,9 @@ var Component = function(options) {
     setVisible: function(bool) {
       this.state.visible = bool;
       this._setVisible();
+    },
+    reload: function() {
+      this._reload();
     }
   };
   base(this);
@@ -213,6 +216,12 @@ proto._setOpen = function() {
 
 // se si vuole usare il componete lo deve ridefinire
 proto._setVisible = function() {};
+
+
+//funzione che dovrà essere sovrascritta dai singoli componenti
+proto._reload = function() {
+
+};
 
 /*
  * Metodo (opzionale) che offre l'opportunità di ricalcolare proprietà dipendenti dalle dimensioni del padre

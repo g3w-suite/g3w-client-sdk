@@ -30,17 +30,16 @@
                     <span>{{feature.attributes[attribute.name]}}</span>
                   </td>
                   <td class="action-cell">
-                    <span v-if="layer.expandable" class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? 'fa-plus' : 'fa-minus']"></span>
+                    <span class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? 'fa-plus' : 'fa-minus']"></span>
                   </td>
                 </tr>
-                <tr v-show="!collapsedFeatureBox(layer,feature) && layer.expandable" class="featurebox-body">
+                <tr v-show="!collapsedFeatureBox(layer,feature)" class="featurebox-body">
                   <td :colspan="attributesSubsetLength(layer.attributes)+2">
                     <div class="action-buttons-container">
                       <template v-for="action in state.layersactions[layer.id]">
                         <div @click="trigger(action.id,layer,feature)"  class="action-button hint--top-right" :aria-label="action.hint">
                           <span :class="'action-button-icon ' + action.class"></span>
                         </div>
-
                       </template>
                     </div>
                     <table>

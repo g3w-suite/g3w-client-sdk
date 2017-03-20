@@ -29,6 +29,11 @@ function SearchesService(){
     deferred.resolve();
     return deferred.promise();
   };
+
+  this.reload = function() {
+    var searches = ProjectsRegistry.getCurrentProject().state.search;
+    Vue.set(this.state, 'searches', searches);
+  }
 }
 
 // Make the public service en Event Emitter

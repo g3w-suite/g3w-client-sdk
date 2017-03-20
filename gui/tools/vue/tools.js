@@ -27,9 +27,15 @@ function ToolsComponent(options) {
   this.id = "tools-component";
   this.title = "tools";
   this.state.visible = false;
-  this._service.onafter('addToolGroup', function() {
+
+  // vado a settare l'onafter nel caso di un add tools che di un remove tool
+  this._service.onafter('addTools', function() {
     self.state.visible = self._service.state.toolsGroups.length > 0;
   });
+  this._service.onafter('removeTools', function() {
+    self.state.visible = self._service.state.toolsGroups.length > 0;
+  });
+  /* ----------------------*/
   merge(this, options);
   this.internalComponent = new InternalComponent({
     toolsService: this._service

@@ -10,12 +10,18 @@ function ToolsService(){
     toolsGroups: []
   };
   this.setters = {
-    //inserita possibilità di dare ordine al plugin di visualizzazione
+
+    addTools: function(order, groupName, tools) {
+      self._addTools(order, groupName, tools);
+    },
     addToolGroup: function(order, group) {
       self.state.toolsGroups.splice(order, 0, group);
+    },
+    removeTools:function() {
+      self._removeTools();
     }
   };
-  this.addTools = function(order, groupName, tools) {
+  this._addTools = function(order, groupName, tools) {
     var self = this;
     var group = this._getToolsGroup(groupName);
     if (!group) {
@@ -30,18 +36,31 @@ function ToolsService(){
       self._addAction(tool);
     });
   };
-  this.removeTool = function(toolId) {
+
+  this._removeTool = function(toolIdx) {
+    this.state.toolsGroups = this.state.toolsGroups.splice(toolIdx, 1);
   };
+
+  this._removeTools = function() {
+    var self = this;
+    _.forEach(this.state.toolsGroups, function(toolGroup, toolIdx) {
+      self.state.toolsGroups.splice(0,1);
+    })
+  };
+
   this.updateToolsGroup = function(order, groupConfig) {
     Vue.set(this.state.toolsGroups, order, groupConfig);
   };
+
   this.getState = function() {
     return this.state;
   };
+
   this.fireAction = function(actionId){
     var action = this._actions[actionId];
     action();
   };
+
   this._getToolsGroup = function(groupName) {
     var group = null;
     _.forEach(this.state.toolsGroups,function(_group){
@@ -51,11 +70,13 @@ function ToolsService(){
     });
     return group;
   };
+
   this._addAction = function(tool) {
     var actionId = Math.floor(Math.random() * 1000000)+1;
     tool.actionId = actionId;
     this._actions[actionId] = tool.action;
   };
+
   base(this);
 }
 

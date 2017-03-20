@@ -16,45 +16,49 @@ function PrintComponentService() {
   base(this);
   // mi dice se è stato inizilizzato o meno
   this._initialized = false;
-  // recupero il project
-  this._project = ProjectsRegistry.getCurrentProject();
   // inizializzo lo state
   this.state = {};
-  // prendo le informazioni del print
-  this.state.print = this._project.state.print;
-  // setto lo state visible
-  this.state.visible = (this.state.print && this.state.print.length) ? true : false;
-  this.state.isShow = false;
-  this.state.loading = false;
-  this.state.url = null;
-  if (this.state.visible) {
-    // Imposto le configurazioni inziali da rivedere
-    this.state.template = this.state.print[0].name;
-    this.state.rotation = 0;
-    this.state.inner = null;
-    this.state.center = null;
-    this.state.size = null;
-    this.state.scale = scale;
-    this.state.scala = null;
-    this.state.dpis = dpis;
-    this.state.dpi = dpis[0];
-    this.state.map = null;//;this.state.print[0].maps[0].name;
-    this.state.width = null;//this.state.print[0].maps[0].w;
-    this.state.height = null;//this.state.print[0].maps[0].h;
-  }
   this._moveMapKeyEvent = null;
   // istanzio il componete page per la visualizzazione del pdf
   this._page = null;
   this._mapService = null;
   this._map = null;
+  this._isOpen = false;
   // oggetto che va a mappare scale e risoluzione
   // si aggiornerà via via che verranno fatti zoom in e zoom out
   // tramite l'evento moveend
   this._scalesResolutions = {};
-  //var mapService = GUI.getComponent('map').getSevice();
+  // inizializzazione
+  this.init = function() {
+    // recupero il project
+    this._project = ProjectsRegistry.getCurrentProject();
+    // prendo le informazioni del print
+    this.state.print = this._project.state.print;
+    // setto lo state visible
+    this.state.visible = (this.state.print && this.state.print.length) ? true : false;
+    this.state.isShow = false;
+    this.state.loading = false;
+    this.state.url = null;
+    if (this.state.visible) {
+      // Imposto le configurazioni inziali da rivedere
+      this.state.template = this.state.print[0].name;
+      this.state.rotation = 0;
+      this.state.inner = null;
+      this.state.center = null;
+      this.state.size = null;
+      this.state.scale = scale;
+      this.state.scala = null;
+      this.state.dpis = dpis;
+      this.state.dpi = dpis[0];
+      this.state.map = null;//;this.state.print[0].maps[0].name;
+      this.state.width = null;//this.state.print[0].maps[0].w;
+      this.state.height = null;//this.state.print[0].maps[0].h;
+    }
+  };
   // metodo per il cambio di template
   this.changeTemplate = function() {
     var self = this;
+    if (!this.state.template) return;
     var template = this.state.template;
     _.forEach(this.state.print, function(print) {
       if (print.name == template) {
@@ -69,8 +73,7 @@ function PrintComponentService() {
 
   // metodo per il cambio di scala attraverso la select
   this.changeScale = function() {
-    //var resolution = this._scalesResolutions[this.state.scala];
-    //this._map.getView().setResolution(resolution);
+    if (!this.state.scala) return;
     // vado a cambiare la print area
     this._setPrintArea();
   };
@@ -100,7 +103,7 @@ function PrintComponentService() {
   this.print = function() {
     var self = this;
     this._page = new PrintPage({
-      service: this
+      service: self
     });
     var options = this._getOptionsPrint();
     PrintService.print(options)
@@ -135,7 +138,6 @@ function PrintComponentService() {
         height = this.state.size[1] / 2; // numero di pixel raggio larghezza
         // setto un padding
         height = height - parseInt(height/10);
-
         width = height * rapportoMappaTemplate ; // numero di pixel raggio altezza
       }
     } else { // mappa verticale
@@ -187,6 +189,8 @@ function PrintComponentService() {
     ol.Observable.unByKey(this._moveMapKeyEvent);
     // lo setto a null
     this._moveMapKeyEvent = null;
+    // dico al mapservice di fermare il disegno del print area
+    this._mapService.stopDrawGreyCover();
   };
 
   // funzione che fa il change dell'ouput pdf quando
@@ -282,11 +286,6 @@ function PrintComponentService() {
     this._mapService.startDrawGreyCover();
   };
 
-  // funzione che abilitita e disabilita il bottone crea pdf
-  this._enableDisablePrintButton = function(bool) {
-    this.state.isShow = bool;
-    this.emit('showpdf', bool);
-  };
 
   // funzione che setta la massima e iniziale scala del progetto
   this._initPrintConfig = function() {
@@ -337,12 +336,40 @@ function PrintComponentService() {
       // setto la area di print
       this._showPrintArea();
     } else {
-      // dico al mapservice di fermare il disegno del print area
-      this._mapService.stopDrawGreyCover();
       // vado a ripulire tutti le cose legate al print
       this._clearPrint();
     }
   };
+
+  this.reload = function() {
+    var self = this;
+    this._project = ProjectsRegistry.getCurrentProject();
+    this._mapService = GUI.getComponent('map').getService();
+    this._map = this._mapService.viewer.map;
+    // prendo le informazioni del print
+    this.state.print = this._project.state.print;
+    // setto lo state visible
+    this.state.visible = (this.state.print && this.state.print.length) ? true : false;
+    //verifico se è visibile nel senso se ci sono informazioni
+    //sul print per quel progetto
+    if (this.state.visible) {
+      this.state.template = this.state.print[0].name;
+      // setto la area di print
+      if (!this._initialized) {
+        this.init();
+      }
+      this._initPrintConfig();
+      this._mapService.on('changeviewaftercurrentproject', function() {
+        var maxResolution = self._map.getView().getMaxResolution();
+        // ricavo le scale adatte alle mie risoluzioni
+        self.state.scale = scale;
+        self._setAllScalesBasedOnMaxResolution(maxResolution);
+      });
+    } else {
+      // vado a ripulire tutti le cose legate al print
+      this._clearPrint();
+    }
+  }
 }
 
 inherit(PrintComponentService, G3WObject);

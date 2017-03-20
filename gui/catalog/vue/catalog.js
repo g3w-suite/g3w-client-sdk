@@ -24,7 +24,7 @@ var vueComponentOptions = {
     title: function() {
       return this.project.state.title;
     },
-    layerstree: function(){
+    layerstree: function() {
       return this.project.state.layerstree;
     },
     baselayers: function(){
@@ -69,7 +69,7 @@ var vueComponentOptions = {
           }
         })
       }
-    })
+    });
   }
 };
 
@@ -99,8 +99,7 @@ Vue.component('tristate-tree', {
       expanded: this.layerstree.expanded,
       parentChecked: !this.checked,
       controltoggled: false,
-      //proprieta che serve per fare confronto per il tristate
-      n_childs: this.layerstree.nodes ? this.layerstree.nodes.length : 0
+      n_childs: null
     }
   },
   watch: {
@@ -110,6 +109,8 @@ Vue.component('tristate-tree', {
   },
   computed: {
     isFolder: function () {
+      // lo metto qui n_childs perchè nel caso del reload ltiene quello precedente;
+      this.n_childs = this.layerstree.nodes ? this.layerstree.nodes.length : 0;
       var isFolder = this.n_childs ? true : false;
       if (isFolder) {
         var _visibleChilds = 0;
@@ -207,6 +208,11 @@ Vue.component('layerslegend',{
         },
         deep: true
       }
+    },
+    mounted: function() {
+      Vue.nextTick(function() {
+        $('.legend-item').perfectScrollbar();
+      });
     }
 });
 
@@ -228,6 +234,9 @@ Vue.component('layerslegend-item',{
     openform: function(){
       //GUI.notify.success("Apro un form");
       //GUI.showForm();
+    },
+    updateLegendScroll: function(evt) {
+      $(evt.target).perfectScrollbar('update');
     }
   }
 });

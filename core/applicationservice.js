@@ -19,6 +19,8 @@ var ApplicationService = function() {
   // utili per il plugin
   this._applicationServices = {};
   this.config = {};
+  this._initConfigUrl = null;
+  this._initConfig = {};
   // chiama il costruttore di G3WObject (che in questo momento non fa niente)
   base(this);
   // funzione inizializzazione che prende la configurazione dal server
@@ -42,20 +44,79 @@ var ApplicationService = function() {
   this.getClipboardService = function() {
     return ClipboardService;
   };
+
+  // funzione che ottiene la configurazione dal server
+  this.obtainInitConfig = function(initConfigUrl) {
+    var self = this;
+    if (!this._initConfigUrl) {
+      this._initConfigUrl = initConfigUrl;
+    }
+    var d = $.Deferred();
+    //se esiste un oggetto globale initiConfig
+    //risolvo con quell'oggetto
+    if (window.initConfig) {
+      this._initConfig = window.initConfig;
+      return d.resolve(window.initConfig);
+    }
+    // altrimenti devo prenderlo dal server usando il percorso indicato in ?project=<percorso>
+    else {
+      var projectPath;
+      var queryTuples;
+      if (location.search) {
+        queryTuples = location.search.substring(1).split('&');
+        _.forEach(queryTuples, function (queryTuple) {
+          //se esiste la parola project nel url
+          if(queryTuple.indexOf("project") > -1) {
+            //prendo il valore del path progetto (nomeprogetto/tipoprogetto/idprogetto)
+            //esempio comune-di-capannori/qdjango/22/
+            projectPath = queryTuple.split("=")[1];
+          }
+        });
+      } else {
+        // prevista per il reload in fase di admin
+        projectPath = location.pathname.split('/').splice(-4,3).join('/');
+      }
+      if (projectPath) {
+        var initUrl = this._initConfigUrl;
+        if (projectPath) {
+          initUrl = initUrl + '/' + projectPath;
+        }
+        //recupro dal server la configurazione di quel progetto
+        $.get(initUrl, function(initConfig) {
+          //initConfig è l'oggetto contenete:
+          //group, mediaurl, staticurl, user
+          initConfig.staticurl = "../dist/"; // in locale forziamo il path degli asset
+          initConfig.clienturl = "../dist/"; // in locale forziamo il path degli asset
+          self._initConfig = initConfig;
+          d.resolve(initConfig);
+        })
+      }
+    }
+    return d.promise();
+  };
+
+  this.getInitConfig = function() {
+    return this._initConfig;
+  };
+
+  this.getInitConfigUrl = function() {
+    return this._initConfigUrl;
+  };
+
+  this.setInitConfigUrl = function(initConfigUrl) {
+    this._initConfigUrl = initConfigUrl;
+  };
+
   // funzione post boostratp
   this.postBootstrap = function() {
-
     if (!this.complete) {
       RouterService.init();
-      var currentProject = ProjectsRegistry.getCurrentProject();
-      if (currentProject.state.law && currentProject.state.law.length) {
-        self._config.plugins['law'] =  currentProject.state.law;
-      }
       // una volta inizializzati i progetti e l'api service
       // registra i plugins passando gli static urls e l'oggetto plugins
       PluginsRegistry.init({
         pluginsBaseUrl: self._config.urls.staticurl,
-        pluginsConfigs: self._config.plugins
+        pluginsConfigs: self._config.plugins,
+        otherPluginsConfigs: ProjectsRegistry.getCurrentProject().getState()
       });
       this.complete = true;
     }

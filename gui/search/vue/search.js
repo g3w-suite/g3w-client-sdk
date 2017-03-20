@@ -9,7 +9,7 @@ var vueComponentOptions = {
    template: require('./search.html'),
    data: function() {
     	return {
-    	  project: ProjectsRegistry.getCurrentProject().state
+    	  state: null
     	};
    },
    methods: {
@@ -35,12 +35,18 @@ function SearchComponent(options){
   this.internalComponent = new InternalComponent({
     searchesService: this._service
   });
+  this.internalComponent.state = this._service.state;
   this.state.visible = ProjectsRegistry.getCurrentProject().state.search.length > 0;
   merge(this, options);
   this.initService = function() {
     //inizializzo il servizio
     this._service.init();
   };
+
+  this._reload = function() {
+    this.state.visible = ProjectsRegistry.getCurrentProject().state.search.length > 0;
+    this._service.reload();
+  }
 }
 
 inherit(SearchComponent, Component);

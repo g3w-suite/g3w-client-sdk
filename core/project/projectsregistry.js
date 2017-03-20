@@ -1,6 +1,5 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
-var resolve = require('core/utils/utils').resolve;
 var reject = require('core/utils/utils').reject;
 var G3WObject = require('core/g3wobject');
 var Project = require('core/project/project');
@@ -14,7 +13,6 @@ Funzione costruttore contentente tre proprieta':
 
 // Public interface
 function ProjectsRegistry() {
-
   var self = this;
   this.config = null;
   this.initialized = false;
@@ -43,6 +41,7 @@ function ProjectsRegistry() {
   
   base(this);
 }
+
 inherit(ProjectsRegistry, G3WObject);
 
 var proto = ProjectsRegistry.prototype;
@@ -160,7 +159,6 @@ proto.getProject = function(projectGid) {
       return d.resolve(project);
     });
   }
-  
   return d.promise();
 };
   
@@ -197,8 +195,7 @@ proto._buildProjectTree = function(project) {
   }
   traverse(layersTree);
   project.layerstree = layersTree;
-
-
+  
   _.forEach(project.baselayers,function(layerConfig){
     var visible = false;
     if (project.initbaselayer) {

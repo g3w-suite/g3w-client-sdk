@@ -29,11 +29,6 @@ var PrintPage = function(options) {
   var internalComponent = new InternalComponent();
   this.setInternalComponent(internalComponent);
   this.internalComponent.state = service.state;
-  this.unmount = function() {
-    var baseUnMount = base(this, 'unmount');
-    service._enableDisablePrintButton(false);
-    return baseUnMount;
-  }
 };
 
 inherit(PrintPage, Component);

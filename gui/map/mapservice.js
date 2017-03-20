@@ -69,7 +69,8 @@ function MapService(options) {
     ProjectsRegistry.onafter('setCurrentProject',function(project){
       self.project = project;
       self.setupLayers();
-    });
+      self._resetView();
+    })
   }
   this._marker = null;
 
@@ -100,6 +101,23 @@ function MapService(options) {
       self.setupLayers();
       self.emit('viewerset');
     }
+  };
+
+  this._resetView = function() {
+    var width = this.viewer.map.getSize()[0];
+    var height = this.viewer.map.getSize()[1];
+    var extent = this.project.state.extent;
+    var maxxRes = ol.extent.getWidth(extent) / width;
+    var minyRes = ol.extent.getHeight(extent) / height;
+    var maxResolution = Math.max(maxxRes,minyRes) > this.viewer.map.getView().getMaxResolution() ? Math.max(maxxRes,minyRes): this.viewer.map.getView().getMaxResolution();
+    var view = new ol.View({
+      extent: extent,
+      projection: this.viewer.map.getView().getProjection(),
+      center: this.viewer.map.getView().getCenter(),
+      resolution: this.viewer.map.getView().getResolution(),
+      maxResolution: maxResolution
+    });
+    this.viewer.map.setView(view);
   };
 
   // funzione che setta la view basata sulle informazioni del progetto
@@ -136,6 +154,8 @@ function MapService(options) {
         maxResolution: maxResolution
       }
     });
+
+    pippo = this.viewer;
     
     if (this.config.background_color) {
       $('#' + this.target).css('background-color', this.config.background_color);
@@ -156,6 +176,7 @@ function MapService(options) {
     });
 
     this.viewer.map.getView().setResolution(initResolution);
+
     this.viewer.map.on('moveend',function(e) {
       self._setMapView();
     });
@@ -183,6 +204,8 @@ function MapService(options) {
   this.project.onafter('setBaseLayer',function(){
     self.updateMapLayers(self.mapBaseLayers);
   });
+
+
   this.on('cataloglayerselected', function() {
    var self = this;
    var layer = this.project.getLayers({
@@ -213,6 +236,8 @@ function MapService(options) {
   
   base(this);
 }
+
+
 inherit(MapService, G3WObject);
 
 var proto = MapService.prototype;
