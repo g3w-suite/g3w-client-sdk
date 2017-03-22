@@ -32,7 +32,7 @@ function PrinterQGISProvider() {
       LAYERS: layers.join()
     };
     // AL comento commento
-    //params[templateMap+':SCALE'] = options.scale;
+    params[templateMap+':SCALE'] = options.scale;
     params[templateMap+':EXTENT'] = options.extent;
     params[templateMap+':ROTATION'] = options.rotation;
     url = url + '?' + $.param(params);

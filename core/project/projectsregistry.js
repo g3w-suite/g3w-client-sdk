@@ -18,7 +18,6 @@ function ProjectsRegistry() {
   this.initialized = false;
   //tipo di progetto
   this.projectType = null;
-  
   this.setters = {
     setCurrentProject: function(project) {
       self.state.currentProject = project;
@@ -54,6 +53,8 @@ proto.init = function(config) {
     this.initialized = true;
     //salva la configurazione
     this.config = config;
+    // salvo l'overviewproject
+    this.overviewproject = config.overviewproject;
     //setta lo state
     this.setupState();
     // vado a prendere la configurazione del progetto corrente
@@ -72,6 +73,7 @@ proto.setProjectType = function(projectType) {
 proto.getConfig = function() {
   return this.config;
 };
+
 
 proto.getState = function() {
   return this.state;
@@ -114,11 +116,12 @@ proto.getProjects = function() {
 };
 
 proto.getListableProjects = function() {
-  return _.filter(this.getProjects(),function(project){
+  return _.filter(this.getProjects(), function(project) {
     if (!_.isNil(project.listable)) {
       return project.listable;
     }
-    return project;
+    //resituisce solo quelli diversi da overviewprojetc
+    return project.gid != project.overviewprojectgid.gid;
   })
 };
 

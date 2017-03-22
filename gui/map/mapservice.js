@@ -154,8 +154,6 @@ function MapService(options) {
         maxResolution: maxResolution
       }
     });
-
-    pippo = this.viewer;
     
     if (this.config.background_color) {
       $('#' + this.target).css('background-color', this.config.background_color);
@@ -348,7 +346,7 @@ proto.setupControls = function(){
           control = ControlsFactory.create({
             type: controlType
           });
-          control.on('picked', function(e){
+          control.on('picked', function(e) {
             var coordinates = e.coordinates;
             self.showMarker(coordinates);
             var showQueryResults = GUI.showContentFactory('query');

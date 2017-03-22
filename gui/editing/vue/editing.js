@@ -1,10 +1,10 @@
 var inherit = require('core/utils/utils').inherit;
 var GUI = require('gui/gui');
 var Component = require('gui/vue/component');
-var PanelService = require('gui/editing/editingservice');
+var EditingService = require('gui/editing/editingservice');
 var base = require('core/utils/utils').base;
 var merge = require('core/utils/utils').merge;
-var PanelTemplate = require('./editing.html');
+var EditingTemplate = require('./editing.html');
 
 var vueComponentOptions = {
   template: null,
@@ -77,7 +77,7 @@ function PanelComponent(options) {
   // dichiaro l'internal Component
   this.internalComponent = null;
   //template from component
-  this._template = options.template || PanelTemplate;
+  this._template = options.template || EditingTemplate;
   // edittoolbar
   this._editorsToolbars = options.editorsToolBars || [];
   // save buttons
@@ -86,7 +86,7 @@ function PanelComponent(options) {
   this._resourcesUrl = options.resourcesUrl || GUI.getResourcesUrl();
   // settor il service del component settando le relative opzioni
   var serviceOptions = options.serviceOptions || {};
-  this._service = options.service || new PanelService(serviceOptions);
+  this._service = options.service || new EditingService(serviceOptions);
   // setto il componente interno
   this.setInternalComponent = function () {
     var InternalComponent = Vue.extend(this.vueComponent);
@@ -115,7 +115,7 @@ function PanelComponent(options) {
   this.unmount = function() {
     // faccio in modo che venga disattivato l'eventuale tool attivo al momento del
     // click sulla x
-    this._service._stopEditingTool();
+    this._service.stop();
     GUI.closeForm();
     return base(this, 'unmount');
   }
