@@ -12,7 +12,6 @@ function PickFeatureTool(editor){
   this._running = false;
   this._busy = false;
   this._originalFeatureStyle = null;
-  
   // qui si definiscono i metodi che vogliamo poter intercettare, ed eventualmente bloccare (vedi API G3WObject)
   this.setters = {
     pickFeature: {

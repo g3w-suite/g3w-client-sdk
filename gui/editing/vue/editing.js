@@ -116,7 +116,6 @@ function PanelComponent(options) {
     // faccio in modo che venga disattivato l'eventuale tool attivo al momento del
     // click sulla x
     this._service.stop();
-    GUI.closeForm();
     return base(this, 'unmount');
   }
 }

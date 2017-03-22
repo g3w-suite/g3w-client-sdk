@@ -37,6 +37,7 @@ proto.removeInteraction = function(interaction) {
       _interactions.splice(idx,1);
     }
   });
+  //vado a rimuove l'interaction e quindi tutte le feture che sono appese
   mapService.removeInteraction(interaction);
 };
 

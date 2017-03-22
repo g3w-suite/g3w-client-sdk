@@ -153,6 +153,9 @@ function EditingService(options) {
       .fail(function(){
         deferred.reject();
       })
+      .always(function() {
+        GUI.closeForm();
+      })
     } else {
       deferred.resolve();
     }

@@ -169,7 +169,7 @@ proto._deleteFeatureDialog = function(next) {
   });
 };
 
-// apre form attributi per i  nserimento
+// apre form attributi per inserimento
 proto._setupAddFeatureAttributesEditingListeners = function() {
   var self = this;
   this.onbeforeasync('addFeature', function(feature, next) {
@@ -327,7 +327,7 @@ proto.setTool = function(toolType, options) {
   var toolClass = this._tools[toolType];
   // se esiste il tool richiesto
   if (toolClass) {
-    //creo l'istanza della classe Tool
+    //creo l'istanza della classe Tool tutte le volte che vado a settare il tool
     var toolInstance = new toolClass(this, options);
     // setto le proprità type dell'oggetto acriveTool
     // instance e type
@@ -355,7 +355,7 @@ proto.stopTool = function() {
   // chiude in ogni caso il setModal(grigio sopra la mappa)
   GUI.setModal(false);
   // se non è verificata la condizione sopra (dovuta ad esempio alla non istanziazione di nessus tool)
-  // si chiama il metodo clea
+  // si chiama il metodo clear
   // dell'active Tool che setta il type e l'instace a null (al momento si verifica sempre)
   this._activeTool.clear();
   return true;
@@ -568,19 +568,22 @@ proto.isDirty = function() {
 };
 // METODI CHE SOVRASCRIVONO ONAFTER, ONBEFORE, ONBEFOREASYNC DELL'OGGETTO G3WOBJECT
 // la loro funzione è quella di settare la propriteà dell'editor
-// _setterslisteners in modo corretto da poter poi essere sfruttata dal metodd
+// _setterslisteners in modo corretto da poter poi essere sfruttata dal metodo
 // _setToolSettersListeners  --- !!!! DA COMPLETARE LA SPIEGAZIONE !!!----
 
 proto.onafter = function(setter, listener, priority) {
   this._onaftertoolaction(setter, listener, priority);
 };
 
-// permette di inserire un setter listener sincrono prima che venga effettuata una operazione da un tool (es. addfeature)
+// permette di inserire un setter listener sincrono
+// prima che venga effettuata una operazione da un tool (es. addfeature)
 proto.onbefore = function(setter, listener, priority) {
   this._onbeforetoolaction(setter, listener, false, priority);
 };
 
 // come onbefore() ma per listener asincroni
+//setter: nome del metodo
+//listener: next
 proto.onbeforeasync = function(setter, listener, priority) {
   this._onbeforetoolaction(setter, listener, true, priority);
 };
@@ -598,9 +601,12 @@ proto._onaftertoolaction = function(setter, listener, priority) {
 
 proto._onbeforetoolaction = function(setter, listener, async, priority) {
   priority = priority || 0;
-  if (!_.get(this._setterslisteners.before, setter)){
+  //vado a verificare prima se ho come chiaave il setter
+  if (!_.get(this._setterslisteners.before, setter)) {
+    // se non ce l'ho aggiungo al before
     this._setterslisteners.before[setter] = [];
   }
+  //vado ad aggiungere alla catena delle azioni da fare prima di quel setter
   this._setterslisteners.before[setter].push({
     fnc: listener,
     how: async ? 'async' : 'sync',
@@ -612,7 +618,10 @@ proto._onbeforetoolaction = function(setter, listener, async, priority) {
 
 // una volta istanziato il tool aggiungo a questo tutti i listener definiti a livello di editor
 proto._setToolSettersListeners = function(tool) {
-  //scorro su i stterListerns impostati dagli editor custom (GeonotesEditor ad esempio)
+  // tutte le volte sarà una nuova istanza del tool (anche se attivo/clicco ripetutatemnte sul bottone del tool)
+  // quindi la registarzione  dell'onbefore etc .. sarà sempre pulita
+
+  //scorro su i setterListerns impostati dagli editor custom (GeonotesEditor ad esempio)
   // in modo da poter richiamare e settare gli onbefore o onbeefore async o on after
   // nativi dell'oggetto g3wobject sui tool
   //verifico gli on before
@@ -646,7 +655,6 @@ proto._setToolSettersListeners = function(tool) {
 };
 
 proto._transformCoordinateFeatureFromMapToLayer = function(feature) {
-
   // controlla prima l proiezione
   var mapProjection = this._mapService.getProjection().getCode();
   var layerProjection = this._vectorLayer.getCrs();
@@ -751,6 +759,8 @@ proto._onSaveEditorForm = function(feature, fields, relations, next) {
   return function(fields, relations) {
     self.setFieldsWithValues(feature, fields, relations);
     if (next) {
+      // setto a true l'argomento di next per fare in modo che vengono eseguiti
+      // se presenti i listerners do onbefore
       next(true);
     }
     GUI.setModal(false);
@@ -811,6 +821,8 @@ proto._openEditorForm = function(isNew, feature, next) {
             class: "btn-primary",
             cbk: function() {
               if (next) {
+                //dico di uscire e non proseguire
+                //vado a chiamare la fallback del tool
                 next(false);
               }
               GUI.setModal(false);
