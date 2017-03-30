@@ -88,6 +88,8 @@ var ApplicationService = function() {
           initConfig.staticurl = "../dist/"; // in locale forziamo il path degli asset
           initConfig.clienturl = "../dist/"; // in locale forziamo il path degli asset
           self._initConfig = initConfig;
+          // setto la variabile initConfig
+          window.initConfig = initConfig;
           d.resolve(initConfig);
         })
       }

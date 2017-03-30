@@ -65,49 +65,56 @@ _Viewer.prototype.setTarget = function(id){
   this.map.setTarget(id);
 };
 
-_Viewer.prototype.goTo = function(coordinates, options){
+_Viewer.prototype.goTo = function(coordinates, options) {
   var options = options || {};
   var animate = options.animate || true;
   var zoom = options.zoom || false;
   var view = this.map.getView();
-  
   if (animate) {
-    var panAnimation = view.animate({
+    var panAnimation = {
       duration: 500,
-      center: view.getCenter()
-    });
-    var zoomAnimation = view.animate({
-      duration: 500,
-      resolution: view.getResolution()
-    });
-    //this.map.getView().animate(panAnimation,zoomAnimation);
-  }
-  
-  view.setCenter(coordinates);
-  if (zoom) {
-    view.setZoom(zoom);
+      center: coordinates
+    };
+    if (zoom) {
+      var zoomAnimation = {
+        duration: 500,
+        zoom: zoom
+      };
+    } else {
+      var zoomAnimation = {
+        duration: 500,
+        resolution: view.getResolution()
+      };
+    }
+    view.animate(panAnimation,zoomAnimation);
+  } else {
+    view.setCenter(coordinates);
+    if (zoom) {
+      view.setZoom(zoom);
+    }
   }
 };
 
-_Viewer.prototype.goToRes = function(coordinates, resolution){
+_Viewer.prototype.goToRes = function(coordinates, options){
   var options = options || {};
   var animate = options.animate || true;
   var view = this.map.getView();
+  var resolution = options.resolution || view.getResolution();
   
   if (animate) {
-    var panAnimation = view.animate({
+    var panAnimation = {
       duration: 300,
       center: view.getCenter()
-    });
-    var zoomAnimation = view.animate({
+    };
+    var zoomAnimation = {
       duration: 300,
-      resolution: view.getResolution()
-    });
-    //this.map.beforeRender(panAnimation,zoomAnimation);
+      resolution: resolution
+    };
+    this.map.animate(panAnimation,zoomAnimation);
+  } else {
+    view.setCenter(coordinates);
+    view.setResolution(resolution);
   }
-
-  view.setCenter(coordinates);
-  view.setResolution(resolution);
 };
 
 _Viewer.prototype.fit = function(geometry, options){

@@ -25,14 +25,18 @@ function PluginsRegistry() {
     this.pluginsBaseUrl = options.pluginsBaseUrl;
     this.pluginsConfigs = options.pluginsConfigs;
     this.otherPluginsConfig = options.otherPluginsConfig;
+    this.setOtherPlugins();
+        //ciclo sull'oggetto plugins per fare il setup dei vari plugin legati al progetto
+    _.forEach(this.pluginsConfigs, function(pluginConfig, name) {
+      self._setup(name, pluginConfig);
+    })
+  };
+
+  this.setOtherPlugins = function() {
     //da vedere poi come cutomizzare il law plugin
     if (this.otherPluginsConfig && this.otherPluginsConfig.law && this.otherPluginsConfig.law.length) {
       this.pluginsConfigs['law'] =  this.otherPluginsConfig.law;
     }
-    //ciclo sull'oggetto plugins per fare il setup dei vari plugin legati al progetto
-    _.forEach(this.pluginsConfigs, function(pluginConfig, name) {
-      self._setup(name, pluginConfig);
-    })
   };
 
   // funzione che serve per fare il reload dei plugins
@@ -49,6 +53,8 @@ function PluginsRegistry() {
         GUI.getComponent('tools').getService().removeTools();
         // setto il pluginsConfig
         self.setPluginsConfig(initConfig.group.plugins);
+        // devo ricaricare quelli con custom
+        self.setOtherPlugins();
         // cliclo sugli scripte vado a togliere gli script che contengono plugin
         _.forEach($('script'), function(scr) {
           _.forEach(self._loadedPluginUrls, function(pluginUrl) {

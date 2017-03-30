@@ -18,7 +18,7 @@ function EditingService(options) {
   this._layers = options.layers || {};
   //definisco il loader del plugin
   this._loader = options.loader || new VectorLoaderLayer;
-  var editingConstraints = {
+  var editingConstraints = options.editingConstraints || {
     resolution: 1 // vincolo di risoluzione massima
   };
   this._formClass = options.formClass || FormClass;
@@ -76,7 +76,7 @@ function EditingService(options) {
       }
     });
     //  abilito o meno l'editing in base alla risoluzione della mappa
-    this._mapService.onafter('setMapView',function(bbox, resolution){
+    this._mapService.onafter('setMapView',function(bbox, resolution) {
       self.state.editing.enabled = (resolution < editingConstraints.resolution) ? true : false;
     });
     // attributo dello stato del srevizio che mi permette di accendere o spengere l'editing

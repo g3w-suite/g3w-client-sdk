@@ -1,6 +1,5 @@
 var utils = require('../utils');
 var InteractionControl = require('./interactioncontrol');
-
 var PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
 
 var QueryControl = function(options){

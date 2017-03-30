@@ -302,9 +302,10 @@ proto.setupControls = function(){
   var self = this;
   var map = self.viewer.map;
   if (this.config && this.config.mapcontrols) {
-    _.forEach(this.config.mapcontrols,function(controlType){
+    _.forEach(this.config.mapcontrols,function(controlType) {
       var control;
       switch (controlType) {
+
         case 'reset':
           if (!isMobile.any) {
             control = ControlsFactory.create({
@@ -520,22 +521,37 @@ proto.setupControls = function(){
             }
           }
           break;
+        case 'nominatim':
+          control = ControlsFactory.create({
+            type: controlType
+          });
+          control.on('addresschosen', function (evt) {
+            var coordinate = evt.coordinate;
+            var geometry =  new ol.geom.Point(coordinate);
+            self.highlightGeometry(geometry);
+          });
+          self.addControl(controlType,control);
+          $('#search_nominatim').click(function() {
+            control.nominatim.query($('input.gcd-txt-input').val());
+          });
+          $('.gcd-txt-result').perfectScrollbar();
+          break;
+        case 'geolocation':
+          // nel caso in cui esista il geolocation control o siamo sul mobile
+          if (!isMobile.any) {
+            // creo il controllo
+            control = ControlsFactory.create({
+              type: controlType
+            });
+            control.on('click', function(evt) {
+              self.showMarker(evt.coordinates);
+            });
+            self.addControl(controlType, control);
+          }
       }
     });
 
-    // nel caso in cui esista il geolocation control o siamo sul mobile
-    if (this.config.mapcontrols.indexOf('geolocation') > -1 || isMobile.any) {
-      var geolocation;
-      var controlType = 'geolocation';
-      // creo il controllo
-      control = ControlsFactory.create({
-        type: controlType
-      });
-      control.on('click', function(evt) {
-        self.showMarker(evt.coordinates);
-      });
-      this.addControl(controlType, control);
-    }
+
   }
 };
 // verifica se esistono layer querabili che hanno wfs capabilities
@@ -853,10 +869,20 @@ proto._watchInteraction = function(interaction) {
   })
 };
 
-proto.goTo = function(coordinates,zoom){
-  var zoom = zoom || 6;
-  this.viewer.goTo(coordinates,zoom);
+proto.goTo = function(coordinates,zoom) {
+  var options = {
+    zoom: zoom || 6
+  };
+  this.viewer.goTo(coordinates,options);
 };
+
+proto.goToRes = function(coordinates,resolution){
+  var options = {
+    resolution: resolution
+  };
+  this.viewer.goToRes(coordinates,options);
+};
+
 
 proto.goToWGS84 = function(coordinates,zoom){
   var coordinates = ol.proj.transform(coordinates,'EPSG:4326','EPSG:'+this.project.state.crs);
@@ -876,6 +902,7 @@ var highlightLayer = null;
 var animatingHighlight = false;
 
 proto.highlightGeometry = function(geometryObj,options) {
+  var self = this;
   this.clearHighlightGeometry();
   var options = options || {};
   var zoom = (typeof options.zoom == 'boolean') ? options.zoom : true;
@@ -903,16 +930,17 @@ proto.highlightGeometry = function(geometryObj,options) {
       if (this.project.state.crs != 4326 && this.project.state.crs != 3857) {
         // zoom ad una risoluzione in cui la mappa copra 100m
         var res = this.getResolutionForMeters(100);
-        this.viewer.goToRes(coordinates,res);
+        self.goToRes(coordinates,res);
       }
       else {
-        this.viewer.goTo(coordinates,6);
+        zoom = self.viewer.map.getView().getZoom() > 6 ? self.viewer.map.getView().getZoom() : 6;
+        self.goTo(coordinates, zoom);
       }
     }
     else {
       this.viewer.fit(geometry,options);
     }
-  }
+  };
 
   if (highlight) {
     var feature = new ol.Feature({

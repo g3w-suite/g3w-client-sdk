@@ -7,6 +7,7 @@ var GeolocationControl = require('g3w-ol3/src/controls/geolocationcontrol');
 var StreetViewControl = require('g3w-ol3/src/controls/streetviewcontrol');
 var Control = require('g3w-ol3/src/controls/control');
 var OLControl = require('g3w-ol3/src/controls/olcontrol');
+var NominatimControl = require('g3w-ol3/src/controls/nominatimcontrol');
 
 var ControlsFactory = {
   create: function(options) {
@@ -57,7 +58,8 @@ ControlsFactory.CONTROLS = {
   'streetview': StreetViewControl,
   'zoom': OLControl,
   'scaleline': OLControl,
-  'overview': OLControl
+  'overview': OLControl,
+  'nominatim': NominatimControl
 };
 
 module.exports = ControlsFactory;

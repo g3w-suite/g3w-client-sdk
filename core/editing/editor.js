@@ -62,6 +62,7 @@ function Editor(options) {
     'Point',
     'MultiPoint',
     'LineString',
+    'Line',
     'MultiLineString',
     'Polygon',
     'MultiPolygon'
@@ -79,6 +80,14 @@ function Editor(options) {
       movefeature: MoveFeatureTool,
       deletefeature: DeleteFeatureTool,
       editattributes: PickFeatureTool
+    },
+    'Line': {
+      addfeature: AddFeatureTool,
+      modifyvertex: ModifyFeatureTool,
+      movefeature: MoveFeatureTool,
+      deletefeature: DeleteFeatureTool,
+      editattributes: PickFeatureTool,
+      cutline: CutLineTool
     },
     'LineString': {
       addfeature: AddFeatureTool,
@@ -239,7 +248,7 @@ proto.setVectorLayer = function(vectorLayer) {
   //verifica il tipo di geometria del layer vettoriale
   var geometrytype = vectorLayer.geometrytype;
   //verifica se è nella tipologia di geometria compatibile con l'editor
-  if (!geometrytype || ! this._isCompatibleType(geometrytype)) {
+  if (!geometrytype || !this._isCompatibleType(geometrytype)) {
     throw Error("Vector geometry type "+geometrytype+" is not valid for editing");
   }
   //nel caso in cui la geometria riscontrata corrisponde ad una geometria valida dell'editor
