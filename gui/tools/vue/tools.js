@@ -13,8 +13,8 @@ var InternalComponent = Vue.extend({
     }
   },
   methods: {
-    fireAction: function(actionid) {
-      this.$options.toolsService.fireAction(actionid);
+    fireAction: function(actionId) {
+      this.$options.toolsService.fireAction(actionId);
     }
   }
 });
@@ -41,7 +41,7 @@ function ToolsComponent(options) {
     toolsService: this._service
   });
   //sostituisco lo state del servizio allo state del componente vue interno
-  this.internalComponent.state = this._service.state
+  this.internalComponent.state = this._service.state;
 }
 
 inherit(ToolsComponent, Component);

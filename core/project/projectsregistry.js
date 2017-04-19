@@ -46,8 +46,8 @@ inherit(ProjectsRegistry, G3WObject);
 var proto = ProjectsRegistry.prototype;
 
 proto.init = function(config) {
-
   var self = this;
+  var deferred = $.Deferred();
   //verifico se è già stato inizilizzato
   if (!this.initialized) {
     this.initialized = true;
@@ -58,12 +58,17 @@ proto.init = function(config) {
     //setta lo state
     this.setupState();
     // vado a prendere la configurazione del progetto corrente
-    return this.getProject(config.initproject)
+    this.getProject(config.initproject)
     .then(function(project) {
       // vado a settare il progetto corrente
       self.setCurrentProject(project);
-    });
+      deferred.resolve(project);
+    })
+    .fail(function() {
+      deferred.reject();
+    })
   }
+  return deferred.promise();
 };
 
 proto.setProjectType = function(projectType) {
@@ -162,7 +167,10 @@ proto.getProject = function(projectGid) {
       var project = new Project(projectConfig);
       self._projects[projectConfig.gid] = project;
       return d.resolve(project);
-    });
+    })
+    .fail(function() {
+      return d.reject();
+    })
   }
   return d.promise();
 };
@@ -170,12 +178,15 @@ proto.getProject = function(projectGid) {
 //ritorna una promises che verrà risolta con la
 // configuarzione del progetto corrente
 proto._getProjectFullConfig = function(projectBaseConfig) {
-  var self = this;
   var deferred = $.Deferred();
   var url = this.config.getProjectConfigUrl(projectBaseConfig);
-  $.get(url).done(function(projectFullConfig) {
+  $.get(url)
+    .done(function(projectFullConfig) {
       deferred.resolve(projectFullConfig);
-  });
+    })
+    .fail(function() {
+      deferred.reject();
+    });
   return deferred.promise();
 };
 

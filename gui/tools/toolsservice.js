@@ -10,7 +10,6 @@ function ToolsService(){
     toolsGroups: []
   };
   this.setters = {
-
     addTools: function(order, groupName, tools) {
       self._addTools(order, groupName, tools);
     },
@@ -21,6 +20,7 @@ function ToolsService(){
       self._removeTools();
     }
   };
+  
   this._addTools = function(order, groupName, tools) {
     var self = this;
     var group = this._getToolsGroup(groupName);

@@ -30,7 +30,7 @@ var ApplicationService = function() {
       this._acquirePostBoostrap = true;
     }
     // lancio il bootstrap dell'applicazione
-    this._bootstrap();
+    return this._bootstrap();
   };
   // restituisce la configurazione
   this.getConfig = function() {
@@ -82,16 +82,20 @@ var ApplicationService = function() {
           initUrl = initUrl + '/' + projectPath;
         }
         //recupro dal server la configurazione di quel progetto
-        $.get(initUrl, function(initConfig) {
-          //initConfig è l'oggetto contenete:
-          //group, mediaurl, staticurl, user
-          initConfig.staticurl = "../dist/"; // in locale forziamo il path degli asset
-          initConfig.clienturl = "../dist/"; // in locale forziamo il path degli asset
-          self._initConfig = initConfig;
-          // setto la variabile initConfig
-          window.initConfig = initConfig;
-          d.resolve(initConfig);
-        })
+        $.get(initUrl)
+          .then(function(initConfig) {
+            //initConfig è l'oggetto contenete:
+            //group, mediaurl, staticurl, user
+            initConfig.staticurl = "../dist/"; // in locale forziamo il path degli asset
+            initConfig.clienturl = "../dist/"; // in locale forziamo il path degli asset
+            self._initConfig = initConfig;
+            // setto la variabile initConfig
+            window.initConfig = initConfig;
+            d.resolve(initConfig);
+          })
+          .fail(function(error) {
+            d.reject(error);
+          })
       }
     }
     return d.promise();
@@ -123,9 +127,11 @@ var ApplicationService = function() {
       this.complete = true;
     }
   };
+
   // funzione bootstrap (quando viene chiamato l'init)
-  this._bootstrap = function(){
+  this._bootstrap = function() {
     var self = this;
+    var d = $.Deferred();
     //nel caso in cui (prima volta) l'application service non è pronta
     //faccio una serie di cose
     if (!this.ready) {
@@ -134,10 +140,10 @@ var ApplicationService = function() {
       // una volta finita la configurazione emetto l'evento ready.
       // A questo punto potrò avviare l'istanza Vue globale
       $.when(
-        // inizializza api service
-        ApiService.init(this._config),
         // registra i progetti
-        ProjectsRegistry.init(this._config)
+        ProjectsRegistry.init(this._config),
+        // inizializza api service
+        ApiService.init(this._config)
       ).then(function() {
         // emetto l'evento ready
         self.emit('ready');
@@ -145,8 +151,12 @@ var ApplicationService = function() {
           self.postBootstrap();
         }
         this.initialized = true;
-      });
+        d.resolve();
+      }).fail(function(error) {
+        d.reject(error);
+      })
     }
+    return d.promise();
   };
 
   this.registerService = function(element, service) {
@@ -159,10 +169,15 @@ var ApplicationService = function() {
 
   this.getService = function(element) {
     return this._applicationServices[element];
+  };
+
+  this.errorHandler = function(error) {
+    console.log(error);
   }
 
 };
 
 inherit(ApplicationService,G3WObject);
+
 
 module.exports = new ApplicationService;

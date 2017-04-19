@@ -52,6 +52,9 @@ proto.setMode = function(mode) {
     case 'r':
       this._editingMode = false;
       break;
+    default:
+      mode = 'w';
+      this._editingMode = true;
   }
   this._mode = mode;
   this.emit('setmode', mode);

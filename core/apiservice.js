@@ -7,10 +7,13 @@ function ApiService(){
   this._config = null;
   this._baseUrl = null;
   this.init = function(config) {
+    var deferred = $.Deferred();
     this._config = config;
     // prende l'url base delle api dal config dell'applicazione
     this._baseUrl = config.urls.api;
     this._apiEndpoints = config.urls.apiEndpoints;
+    deferred.resolve();
+    return deferred.promise();
   };
   //incrementi
   var howManyAreLoading = 0;

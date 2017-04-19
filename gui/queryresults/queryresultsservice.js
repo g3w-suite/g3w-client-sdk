@@ -308,7 +308,7 @@ QueryResultsService.zoomToElement = function(layer,feature) {
 QueryResultsService.goToGeometry = function(layer,feature) {
   if (feature.geometry) {
     var mapService = ComponentsRegistry.getComponent('map').getService();
-    mapService.highlightGeometry(feature.geometry,{duration: 4000});
+    mapService.highlightGeometry(feature.geometry, {duration: 4000});
   }
 };
 

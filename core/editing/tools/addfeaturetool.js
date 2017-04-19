@@ -78,6 +78,7 @@ proto.run = function() {
     this.addInteraction(this._snapInteraction);
   }
 };
+
 //metodo pausa
 proto.pause = function(pause) {
   // se non definito o true disattiva (setActive false) le iteractions
@@ -86,8 +87,7 @@ proto.pause = function(pause) {
       this._snapInteraction.setActive(false);
     }
     this.drawInteraction.setActive(false);
-  }
-  else {
+  } else {
     if (this._snapInteraction) {
       this._snapInteraction.setActive(true);
     }

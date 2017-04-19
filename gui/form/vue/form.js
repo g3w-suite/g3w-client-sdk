@@ -241,9 +241,9 @@ var vueComponentOptions = {
       field.value = evt.target.value;
     },
     onFileChange: function(field, relationIndex, e) {
-      // verifico se esiste il tocken di django
       var formData = {};
       var spinnerContainer;
+      // verifico se esiste il token di django
       var csrftoken = this.$cookie.get('csrftoken');
       if (csrftoken) {
         formData.csrfmiddlewaretoken = csrftoken;
@@ -266,6 +266,10 @@ var vueComponentOptions = {
           $.each(data.result, function (key, value) {
             field.value = value.filename
           });
+        },
+        fail: function() {
+         $(this).siblings('.bootstrap-filestyle').find('input').val(field.value);
+         GUI.notify.error('Si è verificato un errore nel caricamento')
         },
         always: function() {
           GUI.hideSpinner('fotoloadspinner');

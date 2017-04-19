@@ -43,7 +43,7 @@ var vueComponentOptions = {
       return this.state.editing.on ? "Termina editing" : "Avvia editing";
     },
     editingbtnEnabled: function() {
-      return (this.state.editing.enabled || this.state.editing.on) ? "" : "disabled";
+      return (!this.state.editing.error && (this.state.editing.enabled || this.state.editing.on)) ? "" : "disabled";
     },
     message: function() {
       var message = "";
@@ -64,7 +64,6 @@ var vueComponentOptions = {
 
 
 function PanelComponent(options) {
-
   var self = this;
   // proprietà necessarie. In futuro le mettermo in una classe Panel
   // da cui deriveranno tutti i pannelli che vogliono essere mostrati nella sidebar

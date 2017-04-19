@@ -36,7 +36,7 @@ function PrinterQGISProvider() {
     params[templateMap+':EXTENT'] = options.extent;
     params[templateMap+':ROTATION'] = options.rotation;
     url = url + '?' + $.param(params);
-    return resolve(url);
+    return url;
   };
 
   this.print = function(options) {
@@ -47,10 +47,7 @@ function PrinterQGISProvider() {
      come ad esempio filter etc ..
      */
     var options = options || {};
-    var url = this._getPrintUrl(options);
-    return url;
-    //return $.get(url_params.url, url_params.params)
-
+    return this._getPrintUrl(options);
   };
 }
 

@@ -360,7 +360,11 @@ proto.setupControls = function(){
             QueryService.queryByLocation(coordinates, layers)
             .then(function(results) {
               queryResultsPanel.setQueryResponse(results,coordinates,self.state.resolution);
-            });
+            })
+            .fail(function() {
+              GUI.notify.error('Si è verificato un errore nella richiesta al server');
+              GUI.closeContent();
+            })
           });
           self.addControl(controlType,control);
           break;
@@ -404,11 +408,19 @@ proto.setupControls = function(){
                       .then(function (results) {
                         queryResultsPanel.setQueryResponse(results, geometry, self.state.resolution);
                       })
+                      .fail(function() {
+                        GUI.notify.error('Si è verificato un errore nella richiesta al server');
+                        GUI.closeContent();
+                      })
                       .always(function () {
                         self.clearHighlightGeometry();
                       });
                   }
-                });
+                })
+                .fail(function() {
+                  GUI.notify.error('Si è verificato un errore nella richiesta al server');
+                  GUI.closeContent();
+                })
             });
             self.addControl(controlType, control);
           }
@@ -445,7 +457,11 @@ proto.setupControls = function(){
                 QueryService.queryByFilter(filterObject)
                   .then(function (results) {
                     queryResultsPanel.setQueryResponse(results, bbox, self.state.resolution);
-                  });
+                  })
+                  .fail(function() {
+                    GUI.notify.error('Si è verificato un errore nella richiesta al server');
+                    GUI.closeContent();
+                  })
               });
               self.addControl(controlType, control);
             }
@@ -940,7 +956,7 @@ proto.highlightGeometry = function(geometryObj,options) {
     else {
       this.viewer.fit(geometry,options);
     }
-  };
+  }
 
   if (highlight) {
     var feature = new ol.Feature({

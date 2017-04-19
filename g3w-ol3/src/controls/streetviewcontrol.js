@@ -50,6 +50,7 @@ proto.setProjection = function(projection) {
 };
 
 proto.setPosition = function(position) {
+  console.log(position);
   var self = this;
   var lnglat;
   var pixel;

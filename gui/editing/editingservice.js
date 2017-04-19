@@ -37,7 +37,8 @@ function EditingService(options) {
         n: null,
         total: null,
         message: null
-      }
+      },
+      error: false
     },
     retrievingData: false,
     hasEdits: false
@@ -62,6 +63,11 @@ function EditingService(options) {
     });
     this._loader.on('loadingvectorlayersend', function() {
       self.state.retrievingData = false;
+    });
+    //in caso di errore
+    this._loader.on('errorloadingvectorlayersend', function() {
+      self.state.retrievingData = false;
+      self.state.editing.error = true;
     });
     // disabilito l'eventuale tool attivo se viene attivata
     // un'interazione di tipo pointerInteractionSet sulla mappa
@@ -296,7 +302,9 @@ function EditingService(options) {
         });
       }
     })
-    .fail(function(){
+    .fail(function() {
+      // errore nel server
+      self.state.editing.error = true;
       GUI.notify.error(t('could_not_load_vector_layers'));
     })
   };

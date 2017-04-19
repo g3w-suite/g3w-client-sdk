@@ -106,14 +106,20 @@ function PrintComponentService() {
       service: self
     });
     var options = this._getOptionsPrint();
+    // apro il content
+    GUI.setContent({
+      content: self._page,
+      title: 'Stampa',
+      perc:100
+    });
     PrintService.print(options)
-    .then(function(url) {
-      self.state.url = url;
-      GUI.setContent({
-        content: self._page,
-        title: 'Stampa',
-        perc:100
-      });
+    .then(function(data, status, xhr) {
+      // setto l'url
+      self.state.url = this.url;
+    })
+    .fail(function() {
+      GUI.notify.error('Si è verificato un errore nella richiesta al server');
+      GUI.closeContent();
     })
   };
 

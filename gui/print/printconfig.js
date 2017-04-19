@@ -48,7 +48,7 @@ var scale = [
     label:'1:1.000.000'
   }
 ];
-var dpis = [300, 700];
+var dpis = [150, 300];
 
 module.exports = {
   scale: scale,

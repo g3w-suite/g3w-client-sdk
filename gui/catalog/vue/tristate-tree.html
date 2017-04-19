@@ -4,7 +4,7 @@
   <span v-else @click.stop="toggle" :class="[layerstree.visible  ? 'fa-check-square-o': 'fa-square-o',layerstree.disabled  ? 'disabled': '',  parentFolder ? 'child' : 'root' ]" class="fa checkbox-layer"></span>
   <span class="tree-node-title" :class="{bold: isFolder, disabled: layerstree.disabled, highlightlayer: isHighLight }">{{ layerstree.title }}</span>
   <ul v-show="layerstree.expanded" v-if="isFolder">
-    <tristate-tree :parentFolder="isFolder" :n_parent-childs="n_parentChilds" :layerstree="layerstree" v-for="layerstree in layerstree.nodes">
+    <tristate-tree :parentFolder="isFolder" :n_parent-childs="n_parentChilds" :layerstree="layerstree" v-for="layerstree in layerstree.nodes" :key="layerstree.id">
     </tristate-tree>
   </ul>
 </li>

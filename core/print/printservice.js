@@ -17,7 +17,8 @@ function PrintService() {
     var options = options || {};
     var type = options.type || 'QGIS';
     var provider = new PrinterProvider(type);
-    return provider.print(options);
+    var url = provider.print(options);
+    return $.get(url)
   };
 }
 

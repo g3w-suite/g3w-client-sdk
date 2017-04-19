@@ -104,13 +104,13 @@ _Viewer.prototype.goToRes = function(coordinates, options){
   if (animate) {
     var panAnimation = {
       duration: 300,
-      center: view.getCenter()
+      center: coordinates
     };
     var zoomAnimation = {
       duration: 300,
       resolution: resolution
     };
-    this.map.animate(panAnimation,zoomAnimation);
+    view.animate(panAnimation,zoomAnimation);
   } else {
     view.setCenter(coordinates);
     view.setResolution(resolution);

@@ -15,7 +15,8 @@ var SearchPanelComponet = Vue.extend({
       title: "",
       forminputs: [],
       filterObject: {},
-      formInputValues : []
+      formInputValues : [],
+      queryurl: null
     }
   },
   methods: {
@@ -25,6 +26,10 @@ var SearchPanelComponet = Vue.extend({
       //al momento molto farragginoso ma da rivedere
       //per associazione valore input
       this.filterObject = this.fillFilterInputsWithValues(this.filterObject, this.formInputValues);
+      // forzo il cambiamento dell'url se esiste il query url
+      if (this.queryurl) {
+        this.filterObject.url = this.queryurl;
+      }
       var showQueryResults = GUI.showContentFactory('query');
       var queryResultsPanel = showQueryResults(self.title);
       QueryService.queryByFilter([this.filterObject])
@@ -32,7 +37,8 @@ var SearchPanelComponet = Vue.extend({
          queryResultsPanel.setQueryResponse(results);
       })
       .fail(function() {
-         queryResultsPanel.setQueryResponse({});
+        GUI.notify.error('Si è verificato un errore nella richiesta al server');
+        GUI.closeContent();
       })
     }
   }
@@ -54,6 +60,7 @@ function SearchPanel(options) {
     this.id = this.config.id || this.id;
     // rpendo il filtro restituito dal server
     this.filter = this.config.options.filter || this.filter;
+    this.internalPanel.queryurl = this.config.options.queryurl || null;
     var queryLayerId = this.config.options.querylayerid || this.querylayerid;
     // recupero il query layer dall'id della configurazione
     this.queryLayer = ProjectsRegistry.getCurrentProject().getLayerById(queryLayerId);
