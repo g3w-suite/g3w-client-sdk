@@ -39,7 +39,6 @@ function MapService(options) {
     rotation: null
   };
   this.config = options.config || ApplicationService.getConfig();
-  
   this._howManyAreLoading = 0;
   this._incrementLoaders = function(){
     if (this._howManyAreLoading == 0){
@@ -63,8 +62,7 @@ function MapService(options) {
 
   if(!_.isNil(options.project)) {
     this.project = options.project;
-  }
-  else {
+  } else {
     this.project = ProjectsRegistry.getCurrentProject();
     ProjectsRegistry.onafter('setCurrentProject',function(project){
       self.project = project;
@@ -300,12 +298,10 @@ proto.showMarker = function(coordinates, duration) {
 };
 proto.setupControls = function(){
   var self = this;
-  var map = self.viewer.map;
   if (this.config && this.config.mapcontrols) {
-    _.forEach(this.config.mapcontrols,function(controlType) {
+    _.forEach(this.config.mapcontrols, function(controlType) {
       var control;
       switch (controlType) {
-
         case 'reset':
           if (!isMobile.any) {
             control = ControlsFactory.create({
@@ -566,8 +562,6 @@ proto.setupControls = function(){
           }
       }
     });
-
-
   }
 };
 // verifica se esistono layer querabili che hanno wfs capabilities

@@ -496,6 +496,7 @@ proto.setFieldsWithValues = function(feature, fields, relations) {
     this._vectorLayer.setRelationsData(feature.getId(), relations);
   }
 };
+
 //funzione che in base alla feature passata recupera le relazioni associata ad essa
 proto.getRelationsWithValues = function(feature) {
   var fid = feature.getId();

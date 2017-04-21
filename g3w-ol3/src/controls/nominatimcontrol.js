@@ -819,7 +819,10 @@ function NominatimControl() {
   this.container = $html.els.container;
   this.nominatim = new Nominatim(this, $html.els);
   this.layer = this.nominatim.layer;
-  Control.call(this, {element: this.container});
+  Control.call(this, {
+    element: this.container,
+    name: "nominatim"
+  });
 }
 
 ol.inherits(NominatimControl, Control);

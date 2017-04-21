@@ -27,7 +27,7 @@ function QueryQGISWMSProvider() {
     var layername = options.layername || null;
     var filter = options.filter || null;
     var bbox = options.bbox || ProjectsRegistry.getCurrentProject().state.extent.join(',');
-    var simpleWmsSearchMaxResults = null;
+    var simpleWmsSearchMaxResults = options.simpleWmsSearchMaxResults || null;
     var crs = options.crs || '4326;';
     return $.get( url, {
         'SERVICE': 'WMS',
@@ -35,7 +35,7 @@ function QueryQGISWMSProvider() {
         'REQUEST': 'GetFeatureInfo',
         'LAYERS': layername,
         'QUERY_LAYERS': layername,
-        'FEATURE_COUNT': simpleWmsSearchMaxResults ||  50,
+        'FEATURE_COUNT': simpleWmsSearchMaxResults ||  200,
         'INFO_FORMAT': 'application/vnd.ogc.gml',
         'CRS': 'EPSG:'+ crs,
         'FILTER': filter

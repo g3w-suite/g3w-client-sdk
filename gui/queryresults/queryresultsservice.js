@@ -11,7 +11,7 @@ var RelationsPage = require('./components/relations/vue/relationspage');
 
 function QueryResultsService() {
   var self = this;
-  // prendo le relazioni dal progettoi se ci sono e le raggruppo per referencedLayer
+  // prendo le relazioni dal progetto e se ci sono e le raggruppo per referencedLayer
   this._relations = ProjectsRegistry.getCurrentProject().state.relations ? _.groupBy(ProjectsRegistry.getCurrentProject().state.relations,'referencedLayer'): null;
   this._actions = {
     'zoomto': QueryResultsService.zoomToElement,
@@ -108,6 +108,7 @@ function QueryResultsService() {
         _.forEach(featuresForLayer.features, function(feature){
           var fid = feature.getId() ? feature.getId() : id;
           var geometry = feature.getGeometry();
+          // verifico se il layer ha la geometria
           if (geometry) {
             // setto che ha geometria mi servirà per le action
             layerObj.hasgeometry = true
@@ -131,11 +132,9 @@ function QueryResultsService() {
   
   this._parseAttributes = function(layerAttributes, featureAttributes) {
     var featureAttributesNames = _.keys(featureAttributes);
-
     featureAttributesNames = _.filter(featureAttributesNames,function(featureAttributesName){
       return ['boundedBy','geom','the_geom','geometry','bbox', 'GEOMETRY'].indexOf(featureAttributesName) == -1;
     });
-
     if (layerAttributes && layerAttributes.length) {
       var featureAttributesNames = _.keys(featureAttributes);
       return _.filter(layerAttributes,function(attribute){
@@ -155,14 +154,20 @@ function QueryResultsService() {
     }
   };
 
+  // metodo per settare le azioni che si possono fare sulle feature del layer
   this.setActionsForLayers = function(layers) {
     var self = this;
     // scorro su ogni layer che ho nella risposta
-    _.forEach(layers,function(layer){
+    _.forEach(layers, function(layer) {
+      // se non esistono azioni su uno specifico layer creo
+      // array di azioni con chiave id del layer (in quanto valore univoco)
       if (!self.state.layersactions[layer.id]) {
         self.state.layersactions[layer.id] = [];
       }
+      // verifico se il layer ha gemetria
       if (layer.hasgeometry) {
+        // se prsente aggiungo oggetto azione che mi server per fare
+        // il goTo geometry
         self.state.layersactions[layer.id].push({
           id: 'gotogeometry',
           class: 'glyphicon glyphicon-map-marker',
@@ -174,6 +179,7 @@ function QueryResultsService() {
       if (self._relations) {
         // scorro sulle relazioni e vado a verificare se ci sono relazioni che riguardano quel determintato layer
         _.forEach(self._relations, function(relations, id) {
+          // verifico se l'id del layer è uguale all'id della relazione
           if (layer.id == id) {
             self.state.layersactions[layer.id].push({
               id: 'show-query-relations',
@@ -193,7 +199,7 @@ function QueryResultsService() {
   this.trigger = function(actionId, layer, feature) {
     var actionMethod = this._actions[actionId];
     if (actionMethod) {
-      actionMethod(layer,feature);
+      actionMethod(layer, feature);
     }
     if (layer) {
       var layerActions = self.state.layersactions[layer.id];

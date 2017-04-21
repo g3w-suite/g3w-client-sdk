@@ -10,13 +10,12 @@ var Control = function(options) {
     var label = options.label || "?";
     options.element = $('<div class="'+className+' ol-unselectable ol-control"><button type="button" title="'+tipLabel+'">'+label+'</button></div>')[0];
   }
-  
   $(options.element).addClass("ol-control-"+this.positionCode);
   var buttonClickHandler = options.buttonClickHandler || Control.prototype._handleClick.bind(this);
   $(options.element).on('click',buttonClickHandler);
   ol.control.Control.call(this,options);
-  
   this._postRender();
+
 };
 
 // sotto classse della classe Control di OL3
@@ -52,8 +51,9 @@ proto._handleClick = function(event) {
   }
 };
 
+//funzione che fa lo shift della posizione
 proto.shiftPosition = function(position) {
-  $(this.element).css(hWhere,hOffset+'px');
+  $(this.element).css(hWhere, position+'px');
 };
 
 // funzione che gestisce il layout
@@ -61,11 +61,12 @@ proto.layout = function(map) {
   if (map) {
     var position =  this.getPosition();
     var viewPort = map.getViewport();
+    // vado a verificare se trovo elementi con lo stessa classe .ol-control-t o .ol-control-tl(che sono i default di ol3)
     var previusControls = $(viewPort).find('.ol-control-'+this.positionCode+':visible');
     if (previusControls.length) {
       previusControl = previusControls.last();
-      var previousOffset = position.left ? previusControl.position().left : previusControl.position().right;
-      var hWhere = position.left ? 'left' : 'right';
+      var previousOffset = position.left ? previusControl.position().left : previusControl.position().top;
+      var hWhere = position.left ? 'left' : 'top';
       var previousWidth = previusControl[0].offsetWidth;
       var hOffset = $(this.element).position()[hWhere] + previousOffset + previousWidth;
       $(this.element).css(hWhere,hOffset+'px');
@@ -73,6 +74,8 @@ proto.layout = function(map) {
   }
 };
 
+// funzione che viene chiamata al momento che il controllo viene
+// aggiunto alla mappa
 proto.setMap = function(map) {
   if (map) {
     this.layout(map);
@@ -80,6 +83,8 @@ proto.setMap = function(map) {
   }
 };
 
+// funzione che nasconde il controllo e sposta tutti i controlli a destra
+// senza lasciare il buco
 proto.hideControl = function() {
   var position = $(this.element).position().left;
   var newPosition = position;
