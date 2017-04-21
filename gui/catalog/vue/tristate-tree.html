@@ -1,8 +1,8 @@
-<li class="tree-item"  @click="select" :class="{selected: layerstree.selected, itemmarginbottom: !isFolder }">
+<li class="tree-item"  @click="select(layerstree)" :class="{selected: layerstree.selected, itemmarginbottom: !isFolder }">
   <span :class="{bold: isFolder, 'fa-chevron-down': layerstree.expanded, 'fa-chevron-right': !layerstree.expanded}" @click="toggle" v-if="isFolder" class="root fa"></span>
   <span v-if="isFolder" @click.stop="toggle('true')" :class="[triClass()]" class="fa"></span>
   <span v-else @click.stop="toggle" :class="[layerstree.visible  ? 'fa-check-square-o': 'fa-square-o',layerstree.disabled  ? 'disabled': '',  parentFolder ? 'child' : 'root' ]" class="fa checkbox-layer"></span>
-  <span class="tree-node-title" :class="{bold: isFolder, disabled: layerstree.disabled, highlightlayer: isHighLight }">{{ layerstree.title }}</span>
+  <span class="tree-node-title" :class="{bold: isFolder, disabled: layerstree.disabled, highlightlayer: isHighLight }">{{ layerstree.title }}</span><i v-if="layerstree.custom" class="glyphicon glyphicon glyphicon-trash link trash pull-right" @click="deleteLayer(layerstree.name)"></i>
   <ul v-show="layerstree.expanded" v-if="isFolder">
     <tristate-tree :parentFolder="isFolder" :n_parent-childs="n_parentChilds" :layerstree="layerstree" v-for="layerstree in layerstree.nodes" :key="layerstree.id">
     </tristate-tree>

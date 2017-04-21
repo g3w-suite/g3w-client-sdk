@@ -6,6 +6,7 @@ var ComponentsRegistry = require('gui/componentsregistry');
 var GUI = require('gui/gui');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var ControlsRegistry = require('gui/map/control/registry');
+var Service = require('../catalogservice');
 
 var CatalogEventHub = new Vue();
 
@@ -13,13 +14,12 @@ var vueComponentOptions = {
   template: require('./catalog.html'),
   data: function() {
     return {
-      prstate: ProjectsRegistry.state,
-      highlightlayers: false
+      state: null
     }
   },
   computed: {
     project: function() {
-      return this.prstate.currentProject
+      return this.state.prstate.currentProject
     },
     title: function() {
       return this.project.state.title;
@@ -37,12 +37,41 @@ var vueComponentOptions = {
   methods: {
     setBaseLayer: function(id) {
       this.project.setBaseLayer(id);
+    },
+    onAddFile: function(evt) {
+      var self = this;
+      console.log(evt);
+      var reader = new FileReader();
+      var fileObj = {
+        name: evt.target.files[0].name,
+        visible: true,
+        title: evt.target.files[0].name,
+        custom: true,
+        id: 'customLayer-' +  evt.target.files[0].name,
+        visible: true
+      };
+      reader.onload = function(evt) {
+        console.log('qui');
+        self.$options.service.addCustomLayer(evt, fileObj);
+      };
+      reader.readAsText(evt.target.files[0]);
     }
   },
   mounted: function() {
     var self = this;
     CatalogEventHub.$on('treenodetoogled',function(node) {
-      self.project.toggleLayer(node.id);
+      if (node.custom) {
+        var mapService = GUI.getComponent('map').getService();
+        mapService.getMap().getLayers().forEach(function(layer) {
+
+         if (layer.get('name') == node.name) {
+           layer.setVisible(!layer.getVisible());
+           node.visible = !node.visible;
+         }
+        })
+      } else {
+        self.project.toggleLayer(node.id);
+      }
     });
 
     CatalogEventHub.$on('treenodestoogled',function(nodes,parentChecked) {
@@ -65,11 +94,17 @@ var vueComponentOptions = {
       if (id == 'querybbox') {
         control.getInteraction().on('propertychange', function(evt) {
           if (evt.key == 'active') {
-            self.highlightlayers=!evt.oldValue;
+            self.state.highlightlayers=!evt.oldValue;
           }
         })
       }
     });
+    $('input:file').filestyle({
+      buttonText: "",
+      input: false,
+      buttonName: "btn-primary",
+      iconName: "glyphicon glyphicon-plus"
+    })
   }
 };
 
@@ -92,7 +127,8 @@ Vue.component('tristate-tree', {
     //eredito il numero di childs dal parent
     checked: false,
     highlightlayers: false,
-    parentFolder: false
+    parentFolder: false,
+    customlayers: null
   },
   data: function () {
     return {
@@ -157,8 +193,8 @@ Vue.component('tristate-tree', {
         CatalogEventHub.$emit('treenodetoogled',this.layerstree);
       }
     },
-    select: function () {
-      if (!this.isFolder) {
+    select: function (layerstree) {
+      if (!this.isFolder && !layerstree.custom) {
         CatalogEventHub.$emit('treenodeselected',this.layerstree);
       }
     },
@@ -170,9 +206,24 @@ Vue.component('tristate-tree', {
       } else {
         return 'fa-square-o';
       }
+    },
+    deleteLayer: function(name) {
+      var self = this;
+      var mapService = GUI.getComponent('map').getService();
+      var map = mapService.getMap();
+      map.getLayers().forEach(function(layer) {
+        if(layer.get('name') == name) {
+          map.removeLayer(layer);
+        }
+      });
+      _.forEach(this.customlayers, function(layer, index){
+         if (layer.name == name) {
+           self.customlayers.splice(index, 1);
+         }
+      })
     }
   }
-});
+})
 
 Vue.component('layerslegend',{
     template: require('./legend.html'),
@@ -250,7 +301,12 @@ function CatalogComponent(options) {
   this.id = "catalog-component";
   this.title = "catalog";
   this.mapComponentId = options.mapcomponentid;
-  this.internalComponent = new InternalComponent;
+  var service = options.service || new Service;
+  this.setService(service);
+  this.setInternalComponent(new InternalComponent({
+    service: service
+  }));
+  this.internalComponent.state = this.getService().state;
   function listenToMapVisibility(map) {
     var mapService = map.getService();
     self.state.visible = !mapService.state.hidden;
@@ -259,7 +315,6 @@ function CatalogComponent(options) {
       self.state.expanded = true;
     })
   }
-
   if (this.mapComponentId) {
     var map = GUI.getComponent(this.mapComponentId);
     if (!map) {

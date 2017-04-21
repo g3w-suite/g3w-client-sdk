@@ -10,7 +10,12 @@
     <div  class="tab-content">
       <div role="tabpanel" class="tab-pane active tree" id="tree">
         <ul class="tree-root">
-          <tristate-tree :highlightlayers="highlightlayers" :layerstree="layerstree" class="item" v-for="layerstree in layerstree" :key="layerstree.id">
+          <tristate-tree :highlightlayers="state.highlightlayers" :layerstree="layerstree" class="item" v-for="layerstree in layerstree" :key="layerstree.id">
+          </tristate-tree>
+          <div>
+            <input type="file" class="filestyle" data-icon="false" @change="onAddFile($event)">
+          </div>
+          <tristate-tree :customlayers="state.customlayers" :layerstree="layerstree" class="item" v-for="layerstree in state.customlayers" :key="layerstree.id">
           </tristate-tree>
         </ul>
       </div>
