@@ -5,6 +5,7 @@ var QueryBBoxControl = require('g3w-ol3/src/controls/querybboxcontrol');
 var QueryByPolygonControl = require('g3w-ol3/src/controls/querybypolygoncontrol');
 var GeolocationControl = require('g3w-ol3/src/controls/geolocationcontrol');
 var StreetViewControl = require('g3w-ol3/src/controls/streetviewcontrol');
+var AddLayersControl = require('g3w-ol3/src/controls/addlayers');
 var Control = require('g3w-ol3/src/controls/control');
 var OLControl = require('g3w-ol3/src/controls/olcontrol');
 var NominatimControl = require('g3w-ol3/src/controls/nominatimcontrol');
@@ -59,7 +60,8 @@ ControlsFactory.CONTROLS = {
   'zoom': OLControl,
   'scaleline': OLControl,
   'overview': OLControl,
-  'nominatim': NominatimControl
+  'nominatim': NominatimControl,
+  'addlayers': AddLayersControl
 };
 
 module.exports = ControlsFactory;

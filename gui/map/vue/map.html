@@ -2,5 +2,15 @@
   <div style="display: none;">
     <div id="marker"></div>
   </div>
+  <div id="modal-addlayer" class="modal" style="position:relative">
+    <div class="modal-content">
+      <form id="addcustomlayer">
+        <input type="file" @change="onAddLayer($event)">
+        <p>Drag your files here or click in this area.</p>
+        <p>geojson, kml</p>
+      </form>
+    </div>
+  </div>
 </div>
+
 

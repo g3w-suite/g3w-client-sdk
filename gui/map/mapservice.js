@@ -559,102 +559,19 @@ proto.setupControls = function(){
               self.showMarker(evt.coordinates);
             });
             self.addControl(controlType, control);
-            break;
           }
-        case 'draganddrop':
-          // nel caso in cui esista il geolocation control o siamo sul mobile
-          var map = self.viewer.map;
+          break;
+        case 'addlayers':
           if (!isMobile.any) {
-            // creo il controllo
-            var dragAndDropInteraction = new ol.interaction.DragAndDrop({
-              formatConstructors: [
-                ol.format.GPX,
-                ol.format.GeoJSON,
-                ol.format.IGC,
-                ol.format.KML,
-                ol.format.TopoJSON
-              ]
+            control = ControlsFactory.create({
+              type: controlType
             });
-            var defaultStyle = {
-              'Point': new ol.style.Style({
-                image: new ol.style.Circle({
-                  fill: new ol.style.Fill({
-                    color: 'rgba(255,255,0,0.5)'
-                  }),
-                  radius: 5,
-                  stroke: new ol.style.Stroke({
-                    color: '#ff0',
-                    width: 1
-                  })
-                })
-              }),
-              'LineString': new ol.style.Style({
-                stroke: new ol.style.Stroke({
-                  color: '#f00',
-                  width: 3
-                })
-              }),
-              'Polygon': new ol.style.Style({
-                fill: new ol.style.Fill({
-                  color: 'rgba(0,255,255,0.5)'
-                }),
-                stroke: new ol.style.Stroke({
-                  color: '#0ff',
-                  width: 1
-                })
-              }),
-              'MultiPoint': new ol.style.Style({
-                image: new ol.style.Circle({
-                  fill: new ol.style.Fill({
-                    color: 'rgba(255,0,255,0.5)'
-                  }),
-                  radius: 5,
-                  stroke: new ol.style.Stroke({
-                    color: '#f0f',
-                    width: 1
-                  })
-                })
-              }),
-              'MultiLineString': new ol.style.Style({
-                stroke: new ol.style.Stroke({
-                  color: '#0f0',
-                  width: 3
-                })
-              }),
-              'MultiPolygon': new ol.style.Style({
-                fill: new ol.style.Fill({
-                  color: 'rgba(0,0,255,0.5)'
-                }),
-                stroke: new ol.style.Stroke({
-                  color: '#00f',
-                  width: 1
-                })
-              })
-            };
-
-            var styleFunction = function(feature, resolution) {
-              var featureStyleFunction = feature.getStyleFunction();
-              if (featureStyleFunction) {
-                return featureStyleFunction.call(feature, resolution);
-              } else {
-                return defaultStyle[feature.getGeometry().getType()];
-              }
-            };
-
-            map.addInteraction(dragAndDropInteraction);
-            dragAndDropInteraction.on('addfeatures', function(event) {
-              var vectorSource = new ol.source.Vector({
-                features: event.features
-              });
-              map.addLayer(new ol.layer.Vector({
-                source: vectorSource,
-                style: styleFunction
-              }));
-              map.getView().fit(vectorSource.getExtent());
+            control.on('addlayer', function() {
+              $('#modal-addlayer').modal('show');
             });
-
-            break;
+            self.addControl(controlType, control);
           }
+          break;
       }
     });
   }
@@ -1271,6 +1188,102 @@ proto.stopDrawGreyCover = function() {
     this._resetDrawShadowInner();
   }
   map.render();
+};
+
+proto.addExternalLayer = function(evt, fileObj) {
+  var map = this.viewer.map;
+  var loaded = false;
+  map.getLayers().forEach(function(layer) {
+    if (layer.get('name') == fileObj.name) {
+      GUI.notify.info('Layer già aggiunto');
+      loaded = true;
+      return false
+    }
+  });
+
+  var catalogService = GUI.getComponent('catalog').getService();
+  var self = this;
+  var defaultStyle = {
+    'Point': new ol.style.Style({
+      image: new ol.style.Circle({
+        fill: new ol.style.Fill({
+          color: 'rgba(255,255,0,0.5)'
+        }),
+        radius: 5,
+        stroke: new ol.style.Stroke({
+          color: '#ff0',
+          width: 1
+        })
+      })
+    }),
+    'LineString': new ol.style.Style({
+      stroke: new ol.style.Stroke({
+        color: '#f00',
+        width: 3
+      })
+    }),
+    'Polygon': new ol.style.Style({
+      fill: new ol.style.Fill({
+        color: 'rgba(0,255,255,0.5)'
+      }),
+      stroke: new ol.style.Stroke({
+        color: '#0ff',
+        width: 1
+      })
+    }),
+    'MultiPoint': new ol.style.Style({
+      image: new ol.style.Circle({
+        fill: new ol.style.Fill({
+          color: 'rgba(255,0,255,0.5)'
+        }),
+        radius: 5,
+        stroke: new ol.style.Stroke({
+          color: '#f0f',
+          width: 1
+        })
+      })
+    }),
+    'MultiLineString': new ol.style.Style({
+      stroke: new ol.style.Stroke({
+        color: '#0f0',
+        width: 3
+      })
+    }),
+    'MultiPolygon': new ol.style.Style({
+      fill: new ol.style.Fill({
+        color: 'rgba(0,0,255,0.5)'
+      }),
+      stroke: new ol.style.Stroke({
+        color: '#00f',
+        width: 1
+      })
+    })
+  };
+
+  var styleFunction = function(feature, resolution) {
+    var featureStyleFunction = feature.getStyleFunction();
+    if (featureStyleFunction) {
+      return featureStyleFunction.call(feature, resolution);
+    } else {
+      return defaultStyle[feature.getGeometry().getType()];
+    }
+  };
+
+  // aggiungo solo nel caso di layer non presente
+  if (!loaded) {
+    var features = new ol.format.GeoJSON().readFeatures(evt.target.result);
+    var vectorSource = new ol.source.Vector({
+      features: features
+    });
+
+    map.addLayer(new ol.layer.Vector({
+      source: vectorSource,
+      style: styleFunction,
+      name:fileObj.name
+    }));
+    map.getView().fit(vectorSource.getExtent());
+    catalogService.state.customlayers.push(fileObj);
+  }
 };
 
 module.exports = MapService;

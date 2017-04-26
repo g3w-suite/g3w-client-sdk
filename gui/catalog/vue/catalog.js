@@ -40,7 +40,6 @@ var vueComponentOptions = {
     },
     onAddFile: function(evt) {
       var self = this;
-      console.log(evt);
       var reader = new FileReader();
       var fileObj = {
         name: evt.target.files[0].name,
@@ -51,7 +50,6 @@ var vueComponentOptions = {
         visible: true
       };
       reader.onload = function(evt) {
-        console.log('qui');
         self.$options.service.addCustomLayer(evt, fileObj);
       };
       reader.readAsText(evt.target.files[0]);
@@ -63,7 +61,6 @@ var vueComponentOptions = {
       if (node.custom) {
         var mapService = GUI.getComponent('map').getService();
         mapService.getMap().getLayers().forEach(function(layer) {
-
          if (layer.get('name') == node.name) {
            layer.setVisible(!layer.getVisible());
            node.visible = !node.visible;

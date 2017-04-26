@@ -34,7 +34,7 @@ function ControlsRegistry() {
       return true
     }
     return false
-  }
+  };
   base(this);
 }
 

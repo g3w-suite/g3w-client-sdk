@@ -20,7 +20,7 @@ var vueComponentOptions = {
   mounted: function(){
     var self = this;
     var mapService = this.$options.mapService;
-    this.$nextTick(function(){
+    this.$nextTick(function() {
       mapService.setTarget(self.$el.id);
     });
     // questo serve per quando viene cambiato progetto/vista cartografica,
@@ -28,6 +28,39 @@ var vueComponentOptions = {
     mapService.onafter('setupViewer',function() {
       mapService.setTarget(self.$el.id);
     });
+    $('#modal-addlayer').on('shown.bs.modal', function (e) {
+      alert('show');
+      $('input:file').filestyle({
+        buttonText: "Scegli layer",
+        input: true,
+        buttonName: "btn-primary",
+        iconName: "glyphicon glyphicon-plus"
+      });
+    });
+    
+
+  },
+  methods: {
+    onAddLayer: function(evt) {
+      var mapService = this.$options.mapService;
+      var reader = new FileReader();
+      var fileObj = {
+        name: evt.target.files[0].name,
+        visible: true,
+        title: evt.target.files[0].name,
+        custom: true,
+        id: 'customLayer-' +  evt.target.files[0].name,
+        visible: true
+      };
+      reader.onload = function(evt) {
+        mapService.addExternalLayer(evt, fileObj);
+        $('#modal-addlayer').modal('hide');
+        // vado a rimuovere il valore del layer ultimo aggiunto per
+        // fare in mdo che l'evento change possa scattare
+        $('input:file').val(null);
+      };
+      reader.readAsText(evt.target.files[0]);
+    }
   }
 };
 // registro internamente
