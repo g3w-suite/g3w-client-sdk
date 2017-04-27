@@ -1203,9 +1203,8 @@ proto.addExternalLayer = function(evt, fileObj) {
       return false
     }
   });
-
   var catalogService = GUI.getComponent('catalog').getService();
-  var self = this;
+  // stile
   var defaultStyle = {
     'Point': new ol.style.Style({
       image: new ol.style.Circle({
@@ -1278,12 +1277,13 @@ proto.addExternalLayer = function(evt, fileObj) {
     var vectorSource = new ol.source.Vector({
       features: features
     });
-
-    map.addLayer(new ol.layer.Vector({
+    var vectorLayer = new ol.layer.Vector({
       source: vectorSource,
       style: styleFunction,
       name:fileObj.name
-    }));
+    });
+    
+    map.addLayer(vectorLayer);
     map.getView().fit(vectorSource.getExtent());
     catalogService.state.customlayers.push(fileObj);
   }
