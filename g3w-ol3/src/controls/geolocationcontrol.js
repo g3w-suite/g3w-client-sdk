@@ -40,6 +40,9 @@ proto.setMap = function(map) {
   });
   geolocation.once('error', function(e) {
     self.hideControl();
+    if (e.code != 1) {
+      self.dispatchEvent('error');
+    }
   });
 };
 

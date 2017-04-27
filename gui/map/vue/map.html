@@ -2,13 +2,30 @@
   <div style="display: none;">
     <div id="marker"></div>
   </div>
-  <div id="modal-addlayer" class="modal" style="position:relative">
-    <div class="modal-content">
-      <form id="addcustomlayer">
-        <input type="file" @change="onAddLayer($event)">
-        <p>Drag your files here or click in this area.</p>
-        <p>geojson, kml</p>
-      </form>
+  <!-- Modal -->
+  <div class="modal fade" id="modal-addlayer" role="dialog">
+    <div class="modal-dialog">
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Aggiungi Layer</h4>
+        </div>
+        <div class="modal-body">
+          <form id="addcustomlayer">
+            <input type="file" title=" " @change="onAddLayer($event)">
+            <h4>Drag your layer here or click in this area.</h4>
+            <div>
+              <i class="fa fa-cloud-upload fa-5x" aria-hidden="true"></i>
+            </div>
+            <p>(geojson, kml)</p>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Chiudi</button>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>

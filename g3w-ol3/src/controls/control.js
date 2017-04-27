@@ -86,14 +86,19 @@ proto.setMap = function(map) {
 // funzione che nasconde il controllo e sposta tutti i controlli a destra
 // senza lasciare il buco
 proto.hideControl = function() {
-  var position = $(this.element).position().left;
+  var position = $(this.element).position().left
+  var controlWidth = $(this.element).outerWidth();
   var newPosition = position;
   var controls = $(this.element).siblings('.ol-control-tl');
   controls.each(function() {
     if ($(this).position().left > position) {
       newPosition = $(this).position().left;
+      if (controlWidth > $(this).outerWidth()) {
+        position = position + (controlWidth - $(this).outerWidth())
+      } 
       $(this).css('left', position+'px');
       position = newPosition;
+      controlWidth = $(this).outerWidth();
     }
   });
   $(this.element).hide();

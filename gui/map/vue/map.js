@@ -1,13 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var merge = require('core/utils/utils').merge;
-var t = require('core/i18n/i18n.service').t;
-var resolve = require('core/utils/utils').resolve;
-var GUI = require('gui/gui');
 var Component = require('gui/vue/component');
-var RouterService = require('core/router');
-var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
-var MapsRegistry = require('core/map/mapsregistry');
 var MapService = require('../mapservice');
 // componente vue della mappa
 var vueComponentOptions = {
@@ -28,17 +22,6 @@ var vueComponentOptions = {
     mapService.onafter('setupViewer',function() {
       mapService.setTarget(self.$el.id);
     });
-    $('#modal-addlayer').on('shown.bs.modal', function (e) {
-      alert('show');
-      $('input:file').filestyle({
-        buttonText: "Scegli layer",
-        input: true,
-        buttonName: "btn-primary",
-        iconName: "glyphicon glyphicon-plus"
-      });
-    });
-    
-
   },
   methods: {
     onAddLayer: function(evt) {

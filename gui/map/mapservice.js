@@ -558,6 +558,9 @@ proto.setupControls = function(){
             control.on('click', function(evt) {
               self.showMarker(evt.coordinates);
             });
+            control.on('error', function(e) {
+              GUI.notify.error('Non è possibile calcolare la tua posizione. Si è verificato un errore di connessione al server')
+            });
             self.addControl(controlType, control);
           }
           break;
