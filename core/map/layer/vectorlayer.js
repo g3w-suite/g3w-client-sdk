@@ -244,7 +244,7 @@ proto.getFeatureIds = function(){
 proto.getIntersectedFeatures = function(geometry) {
   var features = [];
   _.forEach(this.getFeatures(), function(feature) {
-    if (geometry.intersectsCoordinate(feature.getGeometry().getCoordinates())) {
+    if (geometry.intersectsExtent(feature.getGeometry().getExtent())) {
       features.push(feature);
     }
   });

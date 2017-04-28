@@ -12,7 +12,7 @@
         <ul class="tree-root">
           <tristate-tree :highlightlayers="state.highlightlayers" :layerstree="layerstree" class="item" v-for="layerstree in layerstree" :key="layerstree.id">
           </tristate-tree>
-          <tristate-tree :customlayers="state.customlayers" :layerstree="layerstree" class="item" v-for="layerstree in state.customlayers" :key="layerstree.id">
+          <tristate-tree :externallayers="state.externallayers" :layerstree="layerstree" class="item" v-for="layerstree in state.externallayers" :key="layerstree.id">
           </tristate-tree>
         </ul>
       </div>

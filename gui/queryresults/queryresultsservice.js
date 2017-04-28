@@ -1,8 +1,10 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var ProjectsRegistry = require('core/project/projectsregistry');
+var ProjectLayer = require('core/project/projectlayer');
 var GUI = require('gui/gui');
 var G3WObject = require('core/g3wobject');
+var VectorLayer = require('core/map/layer/vectorlayer');
 var ComponentsRegistry = require('gui/componentsregistry');
 var QueryService = require('core/query/queryservice');
 var PhotoComponent = require('./components/photo/vue/photo');
@@ -79,23 +81,42 @@ function QueryResultsService() {
     var id = 0;
     // variabile che tiene traccia dei layer sotto query
     var layers = [];
+    var layerAttributes,
+      layerRelationsAttributes,
+      layerTitle,
+      layerId;
     _.forEach(featuresForLayers, function(featuresForLayer) {
       // prendo il layer
       var layer = featuresForLayer.layer;
+      // verifico che tipo ti vector layer ci sono
+      switch (layer.constructor) {
+        case ProjectLayer:
+          layerAttributes = layer.getAttributes();
+          layerRelationsAttributes =  layer.getRelationsAttributes();
+          layerTitle = layer.state.title;
+          layerId = layer.state.id;
+          break;
+        case ol.layer.Vector:
+          layerAttributes = layer.getProperties();
+          layerRelationsAttributes =  [];
+          layerTitle = layer.get('name');
+          layerId = layer.get('id');
+          break;
+      }
       // verifico che ci siano feature legate a quel layer che sono il risultato della query
       if (featuresForLayer.features.length) {
         // se si vado a csotrure un layer object
         var layerObj = {
-          title: layer.state.title,
-          id: layer.state.id,
+          title: layerTitle,
+          id: layerId,
           // prendo solo gli attributi effettivamente ritornati dal WMS (usando la prima feature disponibile)
-          attributes: self._parseAttributes(layer.getAttributes(), featuresForLayer.features[0].getProperties()),
+          attributes: self._parseAttributes(layerAttributes, featuresForLayer.features[0].getProperties()),
           features: [],
           hasgeometry: false,
           show: true,
           expandable: true,
           hasImageField: false, // regola che mi permette di vedere se esiste un campo image
-          relationsattributes: layer.getRelationsAttributes()
+          relationsattributes: layerRelationsAttributes
         };
         // faccio una ricerca sugli attributi del layer se esiste un campo image
         // se si lo setto a true
@@ -244,7 +265,7 @@ function QueryResultsService() {
     });
   };
 
-  // funzione che mi serve per registrare i vector layer al fine di fare le query
+  // funzione che mi serve per registrare il vector layer al fine di fare le query
   this.registerVectorLayer = function(vectorLayer) {
     if (this._vectorLayers.indexOf(vectorLayer) == -1) {
       //vado ad aggiungere informazioni utili alla visualizzazioni nel query
@@ -255,38 +276,83 @@ function QueryResultsService() {
     }
   };
 
-  // funzione che permette ai laye fvettoriali di aggancirsi alla query info
+  // funzione che mi serve per unregistrare il vector layer dalla query
+  this.unregisterVectorLayer = function(vectorLayer) {
+    var index = this._vectorLayers.indexOf(vectorLayer);
+    if ( index != -1) {
+      this._vectorLayers.splice(index, 1);
+    }
+  };
+
+  // funzione che permette ai layer vettoriali di aggancirsi alla query info
   this._addVectorLayersDataToQueryResponse = function() {
+    var self = this;
     this.onbefore('setQueryResponse', function (queryResponse, coordinates, resolution) {
       var mapService = ComponentsRegistry.getComponent('map').getService();
+      var isVisible = false;
       _.forEach(self._vectorLayers, function(vectorLayer) {
+        var features = [];
+        var feature,
+          intersectGeom;
         // la prima condizione mi server se viene fatto un setQueryResponse sul singolo layer vettoriale
         // ad esempio con un pickfeature per evitare che venga scatenato un'altra query
         // nel caso di attivazione di uno dei query control (la momento bbox, info e polygon)
         // la setQueryresponse ha priorità sugli altri di fatto cancellando la setResqponseqeusry dello specifico vectorLayer
-        if ((queryResponse.data.length && queryResponse.data[0].layer == vectorLayer) || !coordinates || !vectorLayer.isVisible()) { return }
-        var features = [];
+        switch (vectorLayer.constructor) {
+          case VectorLayer:
+            isVisible = !vectorLayer.isVisible();
+            break;
+          case ol.layer.Vector:
+            isVisible = !vectorLayer.getVisible();
+            break;
+        }
+        if ((queryResponse.data.length && queryResponse.data[0].layer == vectorLayer) || !coordinates || isVisible ) { return }
         // caso in cui è stato fatto una precedente richiesta identify e quindi devo attaccare il risultato
         // non mi piace perchè devo usare altro metodo
-        var layerFilter = function(mapLayer) {
-          return mapLayer === vectorLayer;
-        };
         // caso query info
         if (_.isArray(coordinates)) {
           if (coordinates.length == 2) {
             var pixel = mapService.viewer.map.getPixelFromCoordinate(coordinates);
-            var feature = mapService.viewer.map.forEachFeatureAtPixel(pixel, function (feature, vectorLayer) {
+            feature = mapService.viewer.map.forEachFeatureAtPixel(pixel, function (feature, layer) {
               return feature;
-            }, this, layerFilter);
-            if(feature) {
+            },  {
+              layerFilter: function(layer) {
+                return layer === vectorLayer;
+              }
+            });
+            if (feature) {
               QueryService.convertG3wRelations(feature);
               features.push(feature);
             }
           } else if (coordinates.length == 4) {
-            features = vectorLayer.getIntersectedFeatures(ol.geom.Polygon.fromExtent(coordinates));
+            intersectGeom = ol.geom.Polygon.fromExtent(coordinates);
+            switch (vectorLayer.constructor) {
+              case VectorLayer:
+                features = vectorLayer.getIntersectedFeatures(intersectGeom);
+                break;
+              case ol.layer.Vector:
+                _.forEach(vectorLayer.getSource().getFeatures(), function(feature) {
+                  if (intersectGeom.intersectsExtent(feature.getGeometry().getExtent())) {
+                    features.push(feature);
+                  }
+                });
+                break;
+            }
           }
         } else if (coordinates instanceof ol.geom.Polygon || coordinates instanceof ol.geom.MultiPolygon) {
-          features = vectorLayer.getIntersectedFeatures(coordinates);
+          intersectGeom = coordinates;
+          switch (vectorLayer.constructor) {
+            case VectorLayer:
+              features = vectorLayer.getIntersectedFeatures(intersectGeom);
+              break;
+            case ol.layer.Vector:
+              _.forEach(vectorLayer.getSource().getFeatures(), function(feature) {
+                if (intersectGeom.intersectsExtent(feature.getGeometry().getExtent())) {
+                  features.push(feature);
+                }
+              });
+              break;
+          }
         }
         _.forEach(features, function(feature) {
           QueryService.convertG3wRelations(feature);
@@ -301,14 +367,12 @@ function QueryResultsService() {
   };
 
   base(this);
-
   // lancio subito la registrazione
   this._addVectorLayersDataToQueryResponse();
-
-
 }
-QueryResultsService.zoomToElement = function(layer,feature) {
 
+QueryResultsService.zoomToElement = function(layer,feature) {
+  //TODO
 };
 
 QueryResultsService.goToGeometry = function(layer,feature) {

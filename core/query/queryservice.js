@@ -155,10 +155,14 @@ function QueryService(){
           relation.name = relationName;
           relation.elements = elements;
           relations.push(relation);
+        } else {
+          delete g3w_relations[relationName];
         }
       });
-      if(relations.length) {
+      if (relations.length) {
         feature.set('relations', relations);
+      } else {
+        feature.unset('g3w_relations');
       }
     }
   };

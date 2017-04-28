@@ -46,7 +46,7 @@ var vueComponentOptions = {
         visible: true,
         title: evt.target.files[0].name,
         custom: true,
-        id: 'customLayer-' +  evt.target.files[0].name,
+        id: evt.target.files[0].name,
         visible: true
       };
       reader.onload = function(evt) {
@@ -125,7 +125,7 @@ Vue.component('tristate-tree', {
     checked: false,
     highlightlayers: false,
     parentFolder: false,
-    customlayers: null
+    externallayers: null
   },
   data: function () {
     return {
@@ -207,20 +207,19 @@ Vue.component('tristate-tree', {
     deleteLayer: function(name) {
       var self = this;
       var mapService = GUI.getComponent('map').getService();
-      var map = mapService.getMap();
-      map.getLayers().forEach(function(layer) {
-        if(layer.get('name') == name) {
-          map.removeLayer(layer);
-        }
-      });
-      _.forEach(this.customlayers, function(layer, index){
+      var layer = mapService.getLayerByName(name);
+      mapService.removeExternalLayer(layer);
+      _.forEach(this.externallayers, function(layer, index){
          if (layer.name == name) {
-           self.customlayers.splice(index, 1);
+           self.externallayers.splice(index, 1);
          }
       })
+    },
+    showContextMenu: function(layerstree, evt) {
+      //TODO
     }
   }
-})
+});
 
 Vue.component('layerslegend',{
     template: require('./legend.html'),

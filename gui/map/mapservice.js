@@ -7,6 +7,7 @@ var ProjectsRegistry = require('core/project/projectsregistry');
 var ProjectLayer = require('core/project/projectlayer');
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 var WMSLayer = require('core/map/layer/wmslayer');
+var VectorLayer = require('core/map/layer/vectorlayer');
 var ControlsFactory = require('gui/map/control/factory');
 var QueryService = require('core/query/queryservice');
 var StreetViewService = require('gui/streetview/streetviewservice');
@@ -257,6 +258,15 @@ proto.getMap = function() {
   return this.viewer.map;
 };
 
+// funzione che server per definire una proiezione non standard
+proto.defineProjection = function(crs) {
+  switch(crs) {
+    case '3003':
+      proj4.defs("EPSG:" + crs, "+proj=tmerc +lat_0=0 +lon_0=9 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +units=m +no_defs");
+      break;
+  }
+};
+
 proto.getProjection = function() {
   var extent = this.project.state.extent;
   var projection = new ol.proj.Projection({
@@ -264,6 +274,10 @@ proto.getProjection = function() {
     extent: extent
   });
   return projection;
+};
+
+proto.getCrs = function() {
+  return this.project.state.crs;
 };
 
 proto.getViewerElement = function(){
@@ -294,8 +308,35 @@ proto.showMarker = function(coordinates, duration) {
   setTimeout(function(){
     self._marker.setPosition();
   }, duration)
-
 };
+
+// ritorna il layer nella mappa in base al name
+proto.getLayerByName = function(name) {
+  var map = this.viewer.map;
+  var layer = null;
+  map.getLayers().forEach(function(lyr) {
+    if (lyr.get('name') == name) {
+      layer = lyr;
+      return false
+    }
+  });
+  return layer;
+};
+
+// ritorna il layer della mappa in base all'id
+proto.getLayerById = function(id) {
+  var map = this.viewer.map;
+  var layer = null;
+  map.getLayers().forEach(function(lyr) {
+    if (lyr.get('id') == id) {
+      layer = lyr;
+      return false
+    }
+  });
+  return layer;
+};
+
+
 proto.setupControls = function(){
   var self = this;
   if (this.config && this.config.mapcontrols) {
@@ -1193,75 +1234,80 @@ proto.stopDrawGreyCover = function() {
   map.render();
 };
 
-proto.addExternalLayer = function(evt, fileObj) {
+
+proto.removeExternalLayer = function (layer) {
+  var QueryResultService = GUI.getComponent('queryresults').getService();
+  QueryResultService.unregisterVectorLayer(layer);
+  this.viewer.map.removeLayer(layer);
+};
+
+proto.addExternalLayer = function(evt, fileObj, crs, color, type) {
+  var self = this;
   var map = this.viewer.map;
-  var loaded = false;
-  map.getLayers().forEach(function(layer) {
-    if (layer.get('name') == fileObj.name) {
-      GUI.notify.info('Layer già aggiunto');
-      loaded = true;
-      return false
-    }
-  });
+  var layer = this.getLayerByName(fileObj.name);
+  var format,
+    features,
+    vectorSource,
+    vectorLayer;
   var catalogService = GUI.getComponent('catalog').getService();
+  var QueryResultService = GUI.getComponent('queryresults').getService();
   // stile
   var defaultStyle = {
     'Point': new ol.style.Style({
       image: new ol.style.Circle({
         fill: new ol.style.Fill({
-          color: 'rgba(255,255,0,0.5)'
+          color: color
         }),
         radius: 5,
         stroke: new ol.style.Stroke({
-          color: '#ff0',
+          color: color,
           width: 1
         })
       })
     }),
     'LineString': new ol.style.Style({
       stroke: new ol.style.Stroke({
-        color: '#f00',
+        color: color,
         width: 3
       })
     }),
     'Polygon': new ol.style.Style({
       fill: new ol.style.Fill({
-        color: 'rgba(0,255,255,0.5)'
+        color: 'rgba(255,255,255,0.5)'
       }),
       stroke: new ol.style.Stroke({
-        color: '#0ff',
-        width: 1
+        color: color,
+        width: 3
       })
     }),
     'MultiPoint': new ol.style.Style({
       image: new ol.style.Circle({
         fill: new ol.style.Fill({
-          color: 'rgba(255,0,255,0.5)'
+          color: color
         }),
         radius: 5,
         stroke: new ol.style.Stroke({
-          color: '#f0f',
+          color: color,
           width: 1
         })
       })
     }),
     'MultiLineString': new ol.style.Style({
       stroke: new ol.style.Stroke({
-        color: '#0f0',
+        color: color,
         width: 3
       })
     }),
     'MultiPolygon': new ol.style.Style({
       fill: new ol.style.Fill({
-        color: 'rgba(0,0,255,0.5)'
+        color: 'rgba(255,255,255,0.5)'
       }),
       stroke: new ol.style.Stroke({
-        color: '#00f',
-        width: 1
+        color: color,
+        width: 3
       })
     })
   };
-
   var styleFunction = function(feature, resolution) {
     var featureStyleFunction = feature.getStyleFunction();
     if (featureStyleFunction) {
@@ -1270,22 +1316,39 @@ proto.addExternalLayer = function(evt, fileObj) {
       return defaultStyle[feature.getGeometry().getType()];
     }
   };
-
   // aggiungo solo nel caso di layer non presente
-  if (!loaded) {
-    var features = new ol.format.GeoJSON().readFeatures(evt.target.result);
-    var vectorSource = new ol.source.Vector({
+  if (!layer) {
+    if (crs != self.getCrs()) {
+      self.defineProjection(crs);
+    }
+    switch (type) {
+      case 'geojson':
+        format = new ol.format.GeoJSON();
+        break;
+      case 'kml':
+        format = new ol.format.KML({
+          extractStyles: false
+        });
+        break;
+    }
+    features = format.readFeatures(evt.target.result, {
+      dataProjection: 'EPSG:'+ crs,
+      featureProjection: self.getEpsg()
+    });
+    vectorSource = new ol.source.Vector({
       features: features
     });
-    var vectorLayer = new ol.layer.Vector({
+    vectorLayer = new ol.layer.Vector({
       source: vectorSource,
       style: styleFunction,
       name:fileObj.name
     });
-    
     map.addLayer(vectorLayer);
+    QueryResultService.registerVectorLayer(vectorLayer);
+    catalogService.state.externallayers.push(fileObj);
     map.getView().fit(vectorSource.getExtent());
-    catalogService.state.customlayers.push(fileObj);
+  } else {
+    GUI.notify.info('Layer già aggiunto');
   }
 };
 
