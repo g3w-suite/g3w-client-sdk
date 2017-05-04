@@ -762,7 +762,6 @@ proto.setupBaseLayers = function(){
   if (!this.project.state.baselayers){
     return;
   }
-
   this.mapBaseLayers = {};
   var baseLayersArray = this.project.state.baselayers;
   var baseLayers = this.project.state.baselayers;
@@ -1279,16 +1278,20 @@ proto.addExternalLayer = function(externalLayer) {
       //style: styleFunction,
       name: name
     });
-    vectorLayer.setStyle(self.changeExternalLayerColor(color));
-    map.addLayer(vectorLayer);
+    //vado a settare il colore al vector layer
+    vectorLayer.setStyle(self.setExternalLayerColor(color));
     extent = vectorLayer.getSource().getExtent();
+    //setto il bbox perchè mi servirà nel catalog
     externalLayer.bbox = {
       minx: extent[0],
       miny: extent[1],
       maxx: extent[2],
       maxy: extent[3]
     };
+    map.addLayer(vectorLayer);
+    //vado a registrae il layer vettoriale per la query
     QueryResultService.registerVectorLayer(vectorLayer);
+    //vado ad aggiungere il layer esterno
     catalogService.addExternalLayer(externalLayer);
     map.getView().fit(vectorSource.getExtent());
   }
@@ -1312,14 +1315,18 @@ proto.addExternalLayer = function(externalLayer) {
       case 'zip':
         // qui non specifico l'epsg in quanto lo legge da solo
         // dal file prj
+        var geoJSONFile;
         loadshp({
           url: data,
           encoding: 'big5'
         }, function(geojson) {
-          crs = '4326';
-          data = JSON.stringify(geojson);
-          format = new ol.format.GeoJSON();
-          loadExternalLayer(format, data);
+          if (!geoJSONFile) {
+            geoJSONFile = geojson;
+            crs = '4326';
+            data = JSON.stringify(geojson);
+            format = new ol.format.GeoJSON();
+            loadExternalLayer(format, data);
+          }
         });
         break;
     }
@@ -1328,7 +1335,8 @@ proto.addExternalLayer = function(externalLayer) {
   }
 };
 
-proto.changeExternalLayerColor = function(color) {
+// setta il colore al layer caricati esternamente
+proto.setExternalLayerColor = function(color) {
   // stile
   var color = color.rgba;
   color = 'rgba(' + color.r + ',' + color.g + ',' + color.b + ','  + color.a + ')';

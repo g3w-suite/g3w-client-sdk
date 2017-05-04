@@ -33,7 +33,7 @@
   <ul id="layer-menu" v-click-outside-layer-menu="closeLayerMenu"  tabindex="-1" v-if="layerMenu.show"  :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }">
     <li @click.prevent.stop="zoomToLayer"> Zoom to Layer</li>
     <li @click.prevent.stop="" v-if="layerMenu.layer.external" style="padding:5px">
-      <chrome-picker  v-model="layerMenu.color" @change-color="onChangeColor" style="width: 100%"></chrome-picker>
+      <chrome-picker  v-model="layerMenu.layer.color" @change-color="onChangeColor" style="width: 100%"></chrome-picker>
     </li>
   </ul>
 </div>

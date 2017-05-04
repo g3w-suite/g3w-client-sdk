@@ -84,9 +84,9 @@ var vueComponentOptions = {
     },
     onChangeColor: function(val) {
       var mapService = GUI.getComponent('map').getService();
-      this.layerMenu.color = val;
+      this.layerMenu.layer.color = val;
       var layer = mapService.getLayerByName(this.layerMenu.name);
-      layer.setStyle(mapService.changeExternalLayerColor(val));
+      layer.setStyle(mapService.setExternalLayerColor(val));
     }
   },
   mounted: function() {
@@ -121,11 +121,24 @@ var vueComponentOptions = {
     });
 
     CatalogEventHub.$on('showmenulayer', function(layerstree, evt) {
+
       self.layerMenu.top = evt.y;
       self.layerMenu.left = evt.x;
       self.layerMenu.name = layerstree.name;
       self.layerMenu.layer = layerstree;
       self.layerMenu.show = true;
+      self.layerMenu.color = layerstree.color;
+      self.$nextTick(function() {
+        //vado a rimuovere elementi che non mi servono
+        $('.vue-color__chrome__toggle-btn').remove();
+        $('.vue-color__editable-input__label').remove();
+        $('.vue-color__chrome__active-color').css('margin-top', 0);
+        $('.vue-color__chrome__saturation-wrap').css('padding-bottom','100px');
+        $('.vue-color__chrome').css({
+          'box-shadow': '0 0 0 0',
+          'border': '1px solid #97A1A8'
+        });
+      });
     });
 
     ControlsRegistry.onafter('registerControl', function(id, control) {
@@ -142,16 +155,6 @@ var vueComponentOptions = {
       input: false,
       buttonName: "btn-primary",
       iconName: "glyphicon glyphicon-plus"
-    });
-
-    this.$nextTick(function() {
-      //vado a rimuovere elementi che non mi servono
-      $('.vue-color__chrome__active-color').css('margin-top', 0);
-      $('.vue-color__chrome__saturation-wrap').css('padding-bottom','100px');
-      $('.vue-color__chrome').css({
-        'box-shadow': '0 0 0 0',
-        'border': '1px solid #97A1A8'
-      });
     });
   }
 };

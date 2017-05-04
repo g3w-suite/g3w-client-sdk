@@ -18,8 +18,9 @@ function CatalogService() {
     _.forEach(this.state.externallayers, function(layer, index) {
       if (layer.name == name) {
         self.state.externallayers.splice(index, 1);
+        return false
       }
-    })
+    });
   };
   base(this);
 }
