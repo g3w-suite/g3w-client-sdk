@@ -15,7 +15,7 @@ var AddLayerComponent = {
         type: null,
         crs: null,
         color: {
-          hex: '#2C318F',
+          hex: '#194d33',
           rgba: {
             r: 25,
             g: 77,
@@ -94,7 +94,7 @@ var AddLayerComponent = {
       this.layer.type = null;
       this.layer.crs = this.service.getCrs();
       this.layer.color = {
-        hex: '#2C318F',
+        hex: '#194d33',
           rgba: {
           r: 25,
             g: 77,
