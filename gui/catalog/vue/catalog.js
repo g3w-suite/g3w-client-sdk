@@ -132,7 +132,6 @@ var vueComponentOptions = {
         //vado a rimuovere elementi che non mi servono
         $('.vue-color__chrome__toggle-btn').remove();
         $('.vue-color__editable-input__label').remove();
-        $('.vue-color__chrome__active-color').css('margin-top', 0);
         $('.vue-color__chrome__saturation-wrap').css('padding-bottom','100px');
         $('.vue-color__chrome').css({
           'box-shadow': '0 0 0 0',
