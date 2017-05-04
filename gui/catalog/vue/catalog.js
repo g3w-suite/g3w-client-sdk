@@ -11,6 +11,22 @@ var ChromeComponent = VueColor.Chrome;
 
 var CatalogEventHub = new Vue();
 
+//creo la direttiva per il cliock fuori dal contextmenu
+Vue.directive('click-outside-layer-menu', {
+  bind: function (el, binding, vnode) {
+    this.event = function (event) {
+      if (!(el == event.target || el.contains(event.target))) {
+        vnode.context[binding.expression](event);
+      }
+    };
+    //aggiungo event listener click
+    document.body.addEventListener('click', this.event)
+  },
+  unbind: function (el) {
+    document.body.removeEventListener('click', this.event)
+  }
+});
+
 var vueComponentOptions = {
   template: require('./catalog.html'),
   data: function() {
@@ -64,14 +80,13 @@ var vueComponentOptions = {
       this.layerMenu.show = false;
     },
     closeLayerMenu: function() {
-      console.log('close');
       this.layerMenu.show = false;
     },
     onChangeColor: function(val) {
       var mapService = GUI.getComponent('map').getService();
       this.layerMenu.color = val;
       var layer = mapService.getLayerByName(this.layerMenu.name);
-      layer.setStyle(mapService.changeExternalLayerStyle(val));
+      layer.setStyle(mapService.changeExternalLayerColor(val));
     }
   },
   mounted: function() {
@@ -246,7 +261,9 @@ Vue.component('tristate-tree', {
       mapService.removeExternalLayer(name);
     },
     showLayerMenu: function(layerstree, evt) {
-      CatalogEventHub.$emit('showmenulayer',layerstree, evt);
+      if (!this.isFolder) {
+        CatalogEventHub.$emit('showmenulayer',layerstree, evt);
+      }
     }
   }
 });

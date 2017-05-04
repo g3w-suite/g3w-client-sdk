@@ -1,5 +1,5 @@
 <!-- item template -->
-<div id="catalog" @click.prevent="closeLayerMenu" @contextmenu.prevent="closeLayerMenu" class="tabbable-panel catalog">
+<div id="catalog" class="tabbable-panel catalog">
   <!--<div class="title">{{ title }}</div>-->
   <div class="tabbable-line">
     <ul class="nav nav-tabs" role="tablist">
@@ -30,7 +30,7 @@
       <layerslegend :layerstree="layerstree"></layerslegend>
     </div>
   </div>
-  <ul id="layer-menu" tabindex="-1" v-if="layerMenu.show"  :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }">
+  <ul id="layer-menu" v-click-outside-layer-menu="closeLayerMenu"  tabindex="-1" v-if="layerMenu.show"  :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }">
     <li @click.prevent.stop="zoomToLayer"> Zoom to Layer</li>
     <li @click.prevent.stop="" v-if="layerMenu.layer.external" style="padding:5px">
       <chrome-picker  v-model="layerMenu.color" @change-color="onChangeColor" style="width: 100%"></chrome-picker>

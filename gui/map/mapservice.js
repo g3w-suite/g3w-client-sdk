@@ -1279,7 +1279,7 @@ proto.addExternalLayer = function(externalLayer) {
       //style: styleFunction,
       name: name
     });
-    vectorLayer.setStyle(self.changeExternalLayerStyle(color));
+    vectorLayer.setStyle(self.changeExternalLayerColor(color));
     map.addLayer(vectorLayer);
     extent = vectorLayer.getSource().getExtent();
     externalLayer.bbox = {
@@ -1328,7 +1328,7 @@ proto.addExternalLayer = function(externalLayer) {
   }
 };
 
-proto.changeExternalLayerStyle = function(color) {
+proto.changeExternalLayerColor = function(color) {
   // stile
   var color = color.rgba;
   color = 'rgba(' + color.r + ',' + color.g + ',' + color.b + ','  + color.a + ')';
