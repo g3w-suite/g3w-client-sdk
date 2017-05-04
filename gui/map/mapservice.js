@@ -611,7 +611,7 @@ proto.setupControls = function(){
               type: controlType
             });
             control.on('addlayer', function() {
-              $('#modal-addlayer').modal('show');
+              self.emit('addexternallayer');
             });
             self.addControl(controlType, control);
           }
@@ -949,6 +949,10 @@ proto.goToRes = function(coordinates,resolution){
   this.viewer.goToRes(coordinates,options);
 };
 
+proto.goToBBox = function(bbox) {
+  this.viewer.fit(bbox);
+};
+
 
 proto.goToWGS84 = function(coordinates,zoom){
   var coordinates = ol.proj.transform(coordinates,'EPSG:4326','EPSG:'+this.project.state.crs);
@@ -1019,7 +1023,7 @@ proto.highlightGeometry = function(geometryObj,options) {
         style: function(feature){
           var styles = [];
           var geometryType = feature.getGeometry().getType();
-          if (geometryType == 'LineString') {
+          if (geometryType == 'LineString' || geometryType == 'MultiLineString') {
             var style = new ol.style.Style({
               stroke: new ol.style.Stroke({
                 color: 'rgb(255,255,0)',
@@ -1234,24 +1238,100 @@ proto.stopDrawGreyCover = function() {
   map.render();
 };
 
-
-proto.removeExternalLayer = function (layer) {
+// funzione che rimuove layer aggiunti esterni
+proto.removeExternalLayer = function(name) {
+  var layer = this.getLayerByName(name);
+  var catalogService = GUI.getComponent('catalog').getService();
   var QueryResultService = GUI.getComponent('queryresults').getService();
   QueryResultService.unregisterVectorLayer(layer);
   this.viewer.map.removeLayer(layer);
+  catalogService.removeExternalLayer(name);
 };
 
-proto.addExternalLayer = function(evt, fileObj, crs, color, type) {
+// funzione che aggiunge layer esterni
+proto.addExternalLayer = function(externalLayer) {
   var self = this;
   var map = this.viewer.map;
-  var layer = this.getLayerByName(fileObj.name);
+  var name = externalLayer.name;
+  var color = externalLayer.color;
+  var type = externalLayer.type;
+  var crs = externalLayer.crs;
+  var data = externalLayer.data;
+  var layer = this.getLayerByName(name);
   var format,
     features,
     vectorSource,
-    vectorLayer;
+    vectorLayer,
+    extent;
   var catalogService = GUI.getComponent('catalog').getService();
   var QueryResultService = GUI.getComponent('queryresults').getService();
+  //funzione che mippermette di fare il loadind del layer sulla mappa
+  function loadExternalLayer(format, data) {
+    features = format.readFeatures(data, {
+      dataProjection: 'EPSG:'+ crs,
+      featureProjection: self.getEpsg()
+    });
+    vectorSource = new ol.source.Vector({
+      features: features
+    });
+    vectorLayer = new ol.layer.Vector({
+      source: vectorSource,
+      //style: styleFunction,
+      name: name
+    });
+    vectorLayer.setStyle(self.changeExternalLayerStyle(color));
+    map.addLayer(vectorLayer);
+    extent = vectorLayer.getSource().getExtent();
+    externalLayer.bbox = {
+      minx: extent[0],
+      miny: extent[1],
+      maxx: extent[2],
+      maxy: extent[3]
+    };
+    QueryResultService.registerVectorLayer(vectorLayer);
+    catalogService.addExternalLayer(externalLayer);
+    map.getView().fit(vectorSource.getExtent());
+  }
+
+  // aggiungo solo nel caso di layer non presente
+  if (!layer) {
+    if (crs != self.getCrs()) {
+      self.defineProjection(crs);
+    }
+    switch (type) {
+      case 'geojson':
+        format = new ol.format.GeoJSON();
+        loadExternalLayer(format, data);
+        break;
+      case 'kml':
+        format = new ol.format.KML({
+          extractStyles: false
+        });
+        loadExternalLayer(format, data);
+        break;
+      case 'zip':
+        // qui non specifico l'epsg in quanto lo legge da solo
+        // dal file prj
+        loadshp({
+          url: data,
+          encoding: 'big5'
+        }, function(geojson) {
+          crs = '4326';
+          data = JSON.stringify(geojson);
+          format = new ol.format.GeoJSON();
+          loadExternalLayer(format, data);
+        });
+        break;
+    }
+  } else {
+    GUI.notify.info('Layer già aggiunto');
+  }
+};
+
+proto.changeExternalLayerStyle = function(color) {
   // stile
+  var color = color.rgba;
+  color = 'rgba(' + color.r + ',' + color.g + ',' + color.b + ','  + color.a + ')';
   var defaultStyle = {
     'Point': new ol.style.Style({
       image: new ol.style.Circle({
@@ -1316,40 +1396,8 @@ proto.addExternalLayer = function(evt, fileObj, crs, color, type) {
       return defaultStyle[feature.getGeometry().getType()];
     }
   };
-  // aggiungo solo nel caso di layer non presente
-  if (!layer) {
-    if (crs != self.getCrs()) {
-      self.defineProjection(crs);
-    }
-    switch (type) {
-      case 'geojson':
-        format = new ol.format.GeoJSON();
-        break;
-      case 'kml':
-        format = new ol.format.KML({
-          extractStyles: false
-        });
-        break;
-    }
-    features = format.readFeatures(evt.target.result, {
-      dataProjection: 'EPSG:'+ crs,
-      featureProjection: self.getEpsg()
-    });
-    vectorSource = new ol.source.Vector({
-      features: features
-    });
-    vectorLayer = new ol.layer.Vector({
-      source: vectorSource,
-      style: styleFunction,
-      name:fileObj.name
-    });
-    map.addLayer(vectorLayer);
-    QueryResultService.registerVectorLayer(vectorLayer);
-    catalogService.state.externallayers.push(fileObj);
-    map.getView().fit(vectorSource.getExtent());
-  } else {
-    GUI.notify.info('Layer già aggiunto');
-  }
+
+  return styleFunction
 };
 
 module.exports = MapService;

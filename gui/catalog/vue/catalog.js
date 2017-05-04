@@ -7,6 +7,7 @@ var GUI = require('gui/gui');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var ControlsRegistry = require('gui/map/control/registry');
 var Service = require('../catalogservice');
+var ChromeComponent = VueColor.Chrome;
 
 var CatalogEventHub = new Vue();
 
@@ -14,8 +15,23 @@ var vueComponentOptions = {
   template: require('./catalog.html'),
   data: function() {
     return {
-      state: null
+      state: null,
+      //oggetto per la visualizzazione del contextmenu
+      // tasto destro
+      layerMenu: {
+        show: false,
+        top:0,
+        left:0,
+        name: '',
+        layer: null,
+        color: {
+          hex: '#2C318F'
+        }
+      }
     }
+  },
+  components: {
+    'chrome-picker': ChromeComponent
   },
   computed: {
     project: function() {
@@ -38,34 +54,35 @@ var vueComponentOptions = {
     setBaseLayer: function(id) {
       this.project.setBaseLayer(id);
     },
-    onAddFile: function(evt) {
-      var self = this;
-      var reader = new FileReader();
-      var fileObj = {
-        name: evt.target.files[0].name,
-        visible: true,
-        title: evt.target.files[0].name,
-        custom: true,
-        id: evt.target.files[0].name,
-        visible: true
-      };
-      reader.onload = function(evt) {
-        self.$options.service.addCustomLayer(evt, fileObj);
-      };
-      reader.readAsText(evt.target.files[0]);
+    zoomToLayer: function() {
+      var bbox;
+      if (this.layerMenu.layer.bbox) {
+        bbox = [this.layerMenu.layer.bbox.minx, this.layerMenu.layer.bbox.miny, this.layerMenu.layer.bbox.maxx, this.layerMenu.layer.bbox.maxy] ;
+      }
+      var mapService = GUI.getComponent('map').getService();
+      mapService.goToBBox(bbox);
+      this.layerMenu.show = false;
+    },
+    closeLayerMenu: function() {
+      console.log('close');
+      this.layerMenu.show = false;
+    },
+    onChangeColor: function(val) {
+      var mapService = GUI.getComponent('map').getService();
+      this.layerMenu.color = val;
+      var layer = mapService.getLayerByName(this.layerMenu.name);
+      layer.setStyle(mapService.changeExternalLayerStyle(val));
     }
   },
   mounted: function() {
     var self = this;
     CatalogEventHub.$on('treenodetoogled',function(node) {
-      if (node.custom) {
+      if (node.external) {
         var mapService = GUI.getComponent('map').getService();
-        mapService.getMap().getLayers().forEach(function(layer) {
-         if (layer.get('name') == node.name) {
-           layer.setVisible(!layer.getVisible());
-           node.visible = !node.visible;
-         }
-        })
+        var layer;
+        layer = mapService.getLayerByName(node.name);
+        layer.setVisible(!layer.getVisible());
+        node.visible = !node.visible;
       } else {
         self.project.toggleLayer(node.id);
       }
@@ -87,6 +104,15 @@ var vueComponentOptions = {
         mapservice.emit('cataloglayerunselected');
       }
     });
+
+    CatalogEventHub.$on('showmenulayer', function(layerstree, evt) {
+      self.layerMenu.top = evt.y;
+      self.layerMenu.left = evt.x;
+      self.layerMenu.name = layerstree.name;
+      self.layerMenu.layer = layerstree;
+      self.layerMenu.show = true;
+    });
+
     ControlsRegistry.onafter('registerControl', function(id, control) {
       if (id == 'querybbox') {
         control.getInteraction().on('propertychange', function(evt) {
@@ -101,7 +127,17 @@ var vueComponentOptions = {
       input: false,
       buttonName: "btn-primary",
       iconName: "glyphicon glyphicon-plus"
-    })
+    });
+
+    this.$nextTick(function() {
+      //vado a rimuovere elementi che non mi servono
+      $('.vue-color__chrome__active-color').css('margin-top', 0);
+      $('.vue-color__chrome__saturation-wrap').css('padding-bottom','100px');
+      $('.vue-color__chrome').css({
+        'box-shadow': '0 0 0 0',
+        'border': '1px solid #97A1A8'
+      });
+    });
   }
 };
 
@@ -191,7 +227,7 @@ Vue.component('tristate-tree', {
       }
     },
     select: function (layerstree) {
-      if (!this.isFolder && !layerstree.custom) {
+      if (!this.isFolder && !layerstree.external) {
         CatalogEventHub.$emit('treenodeselected',this.layerstree);
       }
     },
@@ -204,19 +240,13 @@ Vue.component('tristate-tree', {
         return 'fa-square-o';
       }
     },
-    deleteLayer: function(name) {
-      var self = this;
+    removeExternalLayer: function(name) {
       var mapService = GUI.getComponent('map').getService();
       var layer = mapService.getLayerByName(name);
-      mapService.removeExternalLayer(layer);
-      _.forEach(this.externallayers, function(layer, index){
-         if (layer.name == name) {
-           self.externallayers.splice(index, 1);
-         }
-      })
+      mapService.removeExternalLayer(name);
     },
-    showContextMenu: function(layerstree, evt) {
-      //TODO
+    showLayerMenu: function(layerstree, evt) {
+      CatalogEventHub.$emit('showmenulayer',layerstree, evt);
     }
   }
 });
@@ -277,11 +307,6 @@ Vue.component('layerslegend-item',{
     }
   },
   methods: {
-    // esempio utilizzo del servizio GUI
-    openform: function(){
-      //GUI.notify.success("Apro un form");
-      //GUI.showForm();
-    },
     updateLegendScroll: function(evt) {
       $(evt.target).perfectScrollbar('update');
     }

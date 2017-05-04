@@ -1,5 +1,5 @@
 <!-- item template -->
-<div id="catalog" class="tabbable-panel catalog">
+<div id="catalog" @click.prevent="closeLayerMenu" @contextmenu.prevent="closeLayerMenu" class="tabbable-panel catalog">
   <!--<div class="title">{{ title }}</div>-->
   <div class="tabbable-line">
     <ul class="nav nav-tabs" role="tablist">
@@ -10,9 +10,9 @@
     <div  class="tab-content">
       <div role="tabpanel" class="tab-pane active tree" id="tree">
         <ul class="tree-root">
-          <tristate-tree :highlightlayers="state.highlightlayers" :layerstree="layerstree" class="item" v-for="layerstree in layerstree" :key="layerstree.id">
+          <tristate-tree  :highlightlayers="state.highlightlayers" :layerstree="layerstree" class="item" v-for="layerstree in layerstree" :key="layerstree.id">
           </tristate-tree>
-          <tristate-tree :externallayers="state.externallayers" :layerstree="layerstree" class="item" v-for="layerstree in state.externallayers" :key="layerstree.id">
+          <tristate-tree  :externallayers="state.externallayers" :layerstree="layerstree" class="item" v-for="layerstree in state.externallayers" :key="layerstree.id">
           </tristate-tree>
         </ul>
       </div>
@@ -30,4 +30,10 @@
       <layerslegend :layerstree="layerstree"></layerslegend>
     </div>
   </div>
+  <ul id="layer-menu" tabindex="-1" v-if="layerMenu.show"  :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }">
+    <li @click.prevent.stop="zoomToLayer"> Zoom to Layer</li>
+    <li @click.prevent.stop="" v-if="layerMenu.layer.external" style="padding:5px">
+      <chrome-picker  v-model="layerMenu.color" @change-color="onChangeColor" style="width: 100%"></chrome-picker>
+    </li>
+  </ul>
 </div>
