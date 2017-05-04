@@ -8,24 +8,7 @@ var ProjectsRegistry = require('core/project/projectsregistry');
 var ControlsRegistry = require('gui/map/control/registry');
 var Service = require('../catalogservice');
 var ChromeComponent = VueColor.Chrome;
-
 var CatalogEventHub = new Vue();
-
-//creo la direttiva per il cliock fuori dal contextmenu
-Vue.directive('click-outside-layer-menu', {
-  bind: function (el, binding, vnode) {
-    this.event = function (event) {
-      if (!(el == event.target || el.contains(event.target))) {
-        vnode.context[binding.expression](event);
-      }
-    };
-    //aggiungo event listener click
-    document.body.addEventListener('click', this.event)
-  },
-  unbind: function (el) {
-    document.body.removeEventListener('click', this.event)
-  }
-});
 
 var vueComponentOptions = {
   template: require('./catalog.html'),
@@ -43,6 +26,23 @@ var vueComponentOptions = {
         color: {
           hex: '#2C318F'
         }
+      }
+    }
+  },
+  directives: {
+    //creo la direttiva per il click fuori dal contextmenu
+    'click-outside-layer-menu': {
+      bind: function (el, binding, vnode) {
+        this.event = function (event) {
+          if(!(el == event.target || el.contains(event.target))) {
+            vnode.context[binding.expression](event);
+          }
+        };
+        //aggiungo event listener click
+        document.body.addEventListener('click', this.event)
+      },
+      unbind: function (el) {
+        document.body.removeEventListener('click', this.event)
       }
     }
   },
