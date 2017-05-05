@@ -132,16 +132,6 @@ var vueComponentOptions = {
       self.layerMenu.layer = layerstree;
       self.layerMenu.show = true;
       self.layerMenu.color = layerstree.color;
-      self.$nextTick(function() {
-        //vado a rimuovere elementi che non mi servono
-        $('.vue-color__chrome__toggle-btn').remove();
-        $('.vue-color__editable-input__label').remove();
-        $('.vue-color__chrome__saturation-wrap').css('padding-bottom','100px');
-        $('.vue-color__chrome').css({
-          'box-shadow': '0 0 0 0',
-          'border': '1px solid #97A1A8'
-        });
-      });
     });
 
     ControlsRegistry.onafter('registerControl', function(id, control) {

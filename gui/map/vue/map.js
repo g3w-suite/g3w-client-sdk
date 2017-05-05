@@ -5,6 +5,20 @@ var Component = require('gui/vue/component');
 var MapService = require('../mapservice');
 //componente vue.color
 var ChromeComponent = VueColor.Chrome;
+// setto la funzione mounted così tutti i componenti erediteranno da questo
+ChromeComponent.mounted =  function() {
+  this.$nextTick(function() {
+    //vado a rimuovere elementi che non mi servono
+    $('.vue-color__chrome__toggle-btn').remove();
+    $('.vue-color__editable-input__label').remove();
+    $('.vue-color__chrome__saturation-wrap').css('padding-bottom','100px');
+    $('.vue-color__chrome').css({
+      'box-shadow': '0 0 0 0',
+      'border': '1px solid #97A1A8'
+    });
+  });
+};
+
 var AddLayerComponent = {
   template: require('./addlayer.html'),
   props: ['service'],
@@ -37,16 +51,6 @@ var AddLayerComponent = {
   },
   mounted: function(){
     this.layer.crs = this.service.getCrs();
-    this.$nextTick(function() {
-      //vado a rimuovere elementi che non mi servono
-      $('.vue-color__chrome__toggle-btn').remove();
-      $('.vue-color__editable-input__label').remove();
-      $('.vue-color__chrome__saturation-wrap').css('padding-bottom','100px');
-      $('.vue-color__chrome').css({
-        'box-shadow': '0 0 0 0',
-        'border': '1px solid #97A1A8'
-      });
-    });
     this.service.on('addexternallayer', function() {
       $('#modal-addlayer').modal('show');
     });
