@@ -23,11 +23,15 @@ var vueComponentOptions = {
         left:0,
         name: '',
         layer: null,
-        color: {
-          hex: '#2C318F'
+        //oggetto colorMenu
+        colorMenu: {
+          show: false,
+          top:0,
+          left: 0,
+          color: null
         }
-      },
-      colorMenu : false
+      }
+
     }
   },
   directives: {
@@ -86,12 +90,17 @@ var vueComponentOptions = {
     },
     onChangeColor: function(val) {
       var mapService = GUI.getComponent('map').getService();
-      this.layerMenu.layer.color = val;
+      this.layerMenu.colorMenu.color = val;
       var layer = mapService.getLayerByName(this.layerMenu.name);
       layer.setStyle(mapService.setExternalLayerColor(val));
     },
-    showColorMenu: function(bool) {
-      this.colorMenu = bool;
+    showColorMenu: function(bool, evt) {
+      if(bool) {
+        var elem = $(evt.target);
+        this.layerMenu.colorMenu.top = elem.offset().top;
+        this.layerMenu.colorMenu.left = elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) /2);
+      }
+      this.layerMenu.colorMenu.show = bool;
     }
   },
   mounted: function() {
@@ -131,7 +140,7 @@ var vueComponentOptions = {
       self.layerMenu.name = layerstree.name;
       self.layerMenu.layer = layerstree;
       self.layerMenu.show = true;
-      self.layerMenu.color = layerstree.color;
+      self.layerMenu.colorMenu.color = layerstree.color;
     });
 
     ControlsRegistry.onafter('registerControl', function(id, control) {
