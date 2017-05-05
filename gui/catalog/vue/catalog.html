@@ -32,8 +32,12 @@
   </div>
   <ul id="layer-menu" v-click-outside-layer-menu="closeLayerMenu"  tabindex="-1" v-if="layerMenu.show"  :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }">
     <li @click.prevent.stop="zoomToLayer"> Zoom to Layer</li>
-    <li @click.prevent.stop="" v-if="layerMenu.layer.external" style="padding:5px">
-      <chrome-picker  v-model="layerMenu.layer.color" @change-color="onChangeColor" style="width: 100%"></chrome-picker>
+    <li @click.prevent.stop="" v-if="layerMenu.layer.external" @mouseleave="showColorMenu(false)" @mouseover="showColorMenu(true)"> Setta/Cambia Colore <i class="fa fa-chevron-right" style="padding-left:10px;" aria-hidden="true"></i>
+      <ul v-if="colorMenu" style="position:fixed" :style="{ top: layerMenu.top + 31 + 'px', left: layerMenu.left + 162 + 'px' }">
+        <li style="padding:0;">
+          <chrome-picker @click.prevent.stop="" v-model="layerMenu.layer.color" @change-color="onChangeColor" style="width: 100%"></chrome-picker>
+        </li>
+      </ul>
     </li>
   </ul>
 </div>

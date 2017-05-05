@@ -1249,21 +1249,7 @@ proto.removeExternalLayer = function(name) {
 
 // funzione che aggiunge layer esterni
 proto.addExternalLayer = function(externalLayer) {
-  var self = this;
-  var map = this.viewer.map;
-  var name = externalLayer.name;
-  var color = externalLayer.color;
-  var type = externalLayer.type;
-  var crs = externalLayer.crs;
-  var data = externalLayer.data;
-  var layer = this.getLayerByName(name);
-  var format,
-    features,
-    vectorSource,
-    vectorLayer,
-    extent;
-  var catalogService = GUI.getComponent('catalog').getService();
-  var QueryResultService = GUI.getComponent('queryresults').getService();
+
   //funzione che mippermette di fare il loadind del layer sulla mappa
   function loadExternalLayer(format, data) {
     features = format.readFeatures(data, {
@@ -1296,11 +1282,30 @@ proto.addExternalLayer = function(externalLayer) {
     map.getView().fit(vectorSource.getExtent());
   }
 
+  var self = this;
+  var format,
+    features,
+    vectorSource,
+    vectorLayer,
+    extent;
+  var map = this.viewer.map;
+  var name = externalLayer.name;
+  var color = externalLayer.color;
+  var type = externalLayer.type;
+  var crs = externalLayer.crs;
+  var data = externalLayer.data;
+  var catalogService = GUI.getComponent('catalog').getService();
+  var QueryResultService = GUI.getComponent('queryresults').getService();
+  // cerco di verificare se esiste già un layer nella mappa
+  var layer = this.getLayerByName(name);
   // aggiungo solo nel caso di layer non presente
   if (!layer) {
+    // nel caso in cui i sistemi di riferimento del layer e della mappa sono diversi
+    // vado a definirne il sistema (caso a sistemi di proiezione non standard in OL3 diversi da 3857 e 4326)
     if (crs != self.getCrs()) {
       self.defineProjection(crs);
     }
+    //verifico il tipo di file uplodato
     switch (type) {
       case 'geojson':
         format = new ol.format.GeoJSON();
@@ -1318,7 +1323,8 @@ proto.addExternalLayer = function(externalLayer) {
         var geoJSONFile;
         loadshp({
           url: data,
-          encoding: 'big5'
+          encoding: 'big5',
+          EPSG: crs
         }, function(geojson) {
           if (!geoJSONFile) {
             geoJSONFile = geojson;

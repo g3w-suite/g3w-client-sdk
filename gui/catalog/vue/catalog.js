@@ -26,7 +26,8 @@ var vueComponentOptions = {
         color: {
           hex: '#2C318F'
         }
-      }
+      },
+      colorMenu : false
     }
   },
   directives: {
@@ -81,12 +82,16 @@ var vueComponentOptions = {
     },
     closeLayerMenu: function() {
       this.layerMenu.show = false;
+      this.showColorMenu(false);
     },
     onChangeColor: function(val) {
       var mapService = GUI.getComponent('map').getService();
       this.layerMenu.layer.color = val;
       var layer = mapService.getLayerByName(this.layerMenu.name);
       layer.setStyle(mapService.setExternalLayerColor(val));
+    },
+    showColorMenu: function(bool) {
+      this.colorMenu = bool;
     }
   },
   mounted: function() {
@@ -121,7 +126,6 @@ var vueComponentOptions = {
     });
 
     CatalogEventHub.$on('showmenulayer', function(layerstree, evt) {
-
       self.layerMenu.top = evt.y;
       self.layerMenu.left = evt.x;
       self.layerMenu.name = layerstree.name;
