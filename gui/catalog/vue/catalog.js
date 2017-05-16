@@ -118,7 +118,17 @@ var vueComponentOptions = {
     });
 
     CatalogEventHub.$on('treenodestoogled',function(nodes,parentChecked) {
-      var layersIds = _.map(nodes,'id');
+      var layersIds = [];
+      function checkNodes(obj) {
+        if (obj.nodes) {
+          _.forEach(obj.nodes, function(node) {
+            checkNodes(node);
+          });
+        } else {
+          layersIds.push(obj.id);
+        }
+      }
+      _.map(nodes,checkNodes);
       self.project.toggleLayers(layersIds, parentChecked);
     });
 
@@ -198,16 +208,23 @@ Vue.component('tristate-tree', {
   },
   computed: {
     isFolder: function () {
-      // lo metto qui n_childs perchè nel caso del reload ltiene quello precedente;
-      this.n_childs = this.layerstree.nodes ? this.layerstree.nodes.length : 0;
-      var isFolder = this.n_childs ? true : false;
-      if (isFolder) {
-        var _visibleChilds = 0;
-        _.forEach(this.layerstree.nodes, function(layer){
-          if (layer.visible){
+      var _visibleChilds = 0;
+      var _childsLength = 0;
+      (function countLayersVisible(layerstree) {
+        _.forEach(layerstree.nodes, function(layer) {
+          if (!layer.nodes) _childsLength+=1;
+          if (layer.visible) {
             _visibleChilds += 1;
+          } else if (layer.nodes) {
+            countLayersVisible(layer);
           }
         });
+      })(this.layerstree);
+      // lo metto qui n_childs perchè nel caso del reload ltiene quello precedente
+      this.n_childs = _childsLength;//this.layerstree.nodes ? this.layerstree.nodes.length : 0;
+      var isFolder = this.n_childs ? true : false;
+      if (isFolder) {
+
         this.n_parentChilds = this.n_childs - _visibleChilds;
       }
       return isFolder
