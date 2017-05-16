@@ -32,6 +32,9 @@ function VectorLoaderLayer() {
     // i codice dei layers per poter recuperare le informazioni
     // dei layers passati dal plugin
     this._layerCodes = _.keys(this._layers);
+    // questo mi permette di gestire e generalizzare il valore del campo del layer
+    // a cui passare all'apiEditing
+    this._editingApiField = options.editingApiField;
   };
 }
 
@@ -131,7 +134,7 @@ proto.reloadVectorData = function(layerCode) {
     .then(function(vectorLayer) {
       self._getVectorLayerData(vectorLayer, bbox)
         .then(function(vectorDataResponse) {
-          self.setVectorLayerData(vectorLayer.name, vectorDataResponse);
+          self.setVectorLayerData(vectorLayer[self._editingApiField], vectorDataResponse);
           vectorLayer.setData(vectorDataResponse.vector.data);
           deferred.resolve(vectorLayer);
         });
@@ -189,7 +192,7 @@ proto._createVectorLayerFromConfig = function(layerCode) {
   var layerConfig = this._layers[layerCode];
   var deferred = $.Deferred();
   // eseguo le richieste delle configurazioni
-  this._getVectorLayerConfig(layerConfig.name)
+  this._getVectorLayerConfig(layerConfig[this._editingApiField])
     .then(function(vectorConfigResponse) {
       var vectorConfig = vectorConfigResponse.vector;
       // una volta ottenuta dal server la configurazione vettoriale,
@@ -263,7 +266,7 @@ proto._loadVectorData = function(vectorLayer, bbox) {
     // vettoriale, del layer richiesto
     return self._getVectorLayerData(vectorLayer, bbox)
         .then(function(vectorDataResponse) {
-            self.setVectorLayerData(vectorLayer.name, vectorDataResponse);
+            self.setVectorLayerData(vectorLayer[self._editingApiField], vectorDataResponse);
             // setto i dati vettoriali del layer vettoriale
             // e verifico se siamo in editingMode write e se ci sono featurelocks
             if (self._editingMode && vectorDataResponse.featurelocks) {
@@ -320,11 +323,11 @@ proto.lockFeatures = function(layerName) {
 
 // ottiene la configurazione del vettoriale
 // (qui richiesto solo per la definizione degli input)
-proto._getVectorLayerConfig = function(layerName) {
+proto._getVectorLayerConfig = function(layerApiField) {
     var d = $.Deferred();
     // attravercso il layer name e il base url
     // chiedo la server di inviarmi la configurazione editing del laye
-    $.get(this._baseUrl+layerName+"/?config"+ this._customUrlParameters)
+    $.get(this._baseUrl+layerApiField+"/?config"+ this._customUrlParameters)
         .done(function(data) {
             d.resolve(data);
         })
@@ -340,9 +343,9 @@ proto._getVectorLayerData = function(vectorLayer, bbox) {
     var lock = this.getMode() == 'w' ? true : false;
     var apiUrl;
     if (lock) {
-      apiUrl = this._baseUrl+vectorLayer.name+"/?editing";
+      apiUrl = this._baseUrl+vectorLayer[this._editingApiField]+"/?editing";
     } else {
-      apiUrl = this._baseUrl+vectorLayer.name+"/?"
+      apiUrl = this._baseUrl+vectorLayer[this._editingApiField]+"/?"
     }
     $.get(apiUrl + this._customUrlParameters+"&in_bbox=" + bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
         .done(function(data) {

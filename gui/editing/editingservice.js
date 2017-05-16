@@ -21,6 +21,7 @@ function EditingService(options) {
   var editingConstraints = options.editingConstraints || {
     resolution: 1 // vincolo di risoluzione massima
   };
+  this._editingApiField = options.editingApiField || 'name';
   this._formClass = options.formClass || FormClass;
   //messaggi per gli steps del tool
   this._toolStepsMessages = options.toolStepsMessages || {};
@@ -53,7 +54,8 @@ function EditingService(options) {
     var options_loader = {
       'layers': this._layers,
       'baseurl': this.config.baseurl,
-      'mapService': this._mapService
+      'mapService': this._mapService,
+      'editingApiField': this._editingApiField
     };
     //inizializzo il loader
     this._loader.init(options_loader);
@@ -539,10 +541,11 @@ function EditingService(options) {
 
   // funzione che prende come ingresso gli editor sporchi
   this._sendEdits = function(dirtyEditors) {
+    var self = this;
     var deferred = $.Deferred();
     var editsToPush = _.map(dirtyEditors, function(editor) {
       return {
-        layername: editor.getVectorLayer().name,
+        layername: editor.getVectorLayer()[self._editingApiField],
         edits: editor.getEditedFeatures()
       }
     });
@@ -720,7 +723,7 @@ function EditingService(options) {
   };
 
   this._unlockLayer = function(layerConfig){
-    $.get(this.config.baseurl+layerConfig.name+"/?unlock");
+    $.get(this.config.baseurl+layerConfig[this._editingApiField]+"/?unlock");
   };
 }
 
