@@ -9,7 +9,10 @@
         </thead>
         <tbody>
           <tr @click="showRelation(relation)" v-for="relation in relations" style="cursor:pointer">
-            <td>{{ relation.name }}<span class="glyphicon glyphicon-chevron-right pull-right" aria-hidden="true"></span></td>
+            <td>
+              <span >{{ relation.name }}</span>
+              <span class="glyphicon glyphicon-chevron-right pull-right" aria-hidden="true"></span>
+            </td>
           </tr>
         </tbody>
       </table>

@@ -37,7 +37,7 @@
                   <td :colspan="attributesSubsetLength(layer.attributes)+2">
                     <div class="action-buttons-container">
                       <template v-for="action in state.layersactions[layer.id]">
-                        <div @click="trigger(action.id,layer,feature)"  class="action-button hint--top-right" :aria-label="action.hint">
+                        <div @click="trigger(action.id,layer,feature)"  class="action-button hint--top-right" data-placement="auto bottom" data-toggle="tooltip" :title="action.hint">
                           <span :class="'action-button-icon ' + action.class"></span>
                         </div>
                       </template>

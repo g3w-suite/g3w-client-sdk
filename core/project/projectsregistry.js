@@ -121,14 +121,16 @@ proto.getProjects = function() {
 };
 
 proto.getListableProjects = function() {
+  var currentProjectId = this.getCurrentProject().getId();
   return _.filter(this.getProjects(), function(project) {
     if (!_.isNil(project.listable)) {
       return project.listable;
     }
     //resituisce solo quelli diversi da overviewprojetc
     // nel caso si stato settato
-    if (!project.overviewprojectgid) return project;
-    return project.gid != project.overviewprojectgid.gid;
+    if (project.overviewprojectgid && project.gid != project.overviewprojectgid.gid && project.id != currentProjectId) {
+      return project;
+    }
   })
 };
 

@@ -206,6 +206,12 @@ var vueComponentOptions = {
         })
       }
     }
+  },
+  mounted: function() {
+    Vue.nextTick(function() {
+      // vado a settare i tooltip
+      $('[data-toggle="tooltip"]').tooltip();
+    })
   }
 };
 

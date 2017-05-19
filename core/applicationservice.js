@@ -122,7 +122,7 @@ var ApplicationService = function() {
       PluginsRegistry.init({
         pluginsBaseUrl: self._config.urls.staticurl,
         pluginsConfigs: self._config.plugins,
-        otherPluginsConfigs: ProjectsRegistry.getCurrentProject().getState()
+        otherPluginsConfig: ProjectsRegistry.getCurrentProject().getState()
       });
       this.complete = true;
     }
