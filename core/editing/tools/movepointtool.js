@@ -8,9 +8,6 @@ function MoveFeatureTool(editor){
   this.editor = editor;
   this.isPausable = true;
   this.drawInteraction = null;
-  this.layer = null;
-  this.editingLayer = null;
-  
   this._origGeometry = null;
 
   this.setters = {
@@ -29,13 +26,10 @@ var proto = MoveFeatureTool.prototype;
 
 proto.run = function(){
   var self = this;
-
-  this.layer = this.editor.getVectorLayer().getMapLayer();
-  this.editingLayer = this.editor.getEditVectorLayer().getMapLayer();
-
+  var layers = [this.editor.getVectorLayer().getMapLayer(),this.editor.getEditVectorLayer().getMapLayer()];
   var style = this.editor._editingVectorStyle ? this.editor._editingVectorStyle.move : null;
   this._selectInteraction = new ol.interaction.Select({
-    layers: [this.layer, this.editingLayer],
+    layers: layers,
     condition: ol.events.condition.click,
     style: style,
     hitTolerance: (isMobile && isMobile.any) ? 10 : 0
@@ -91,7 +85,7 @@ proto.stop = function(){
   return true;
 };
 
-proto._moveFeature = function(feature){
+proto._moveFeature = function(feature) {
   this.editor.emit('moveend',feature);
   this.editor.moveFeature(feature);
   this._selectInteraction.getFeatures().clear();

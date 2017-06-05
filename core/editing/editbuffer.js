@@ -43,8 +43,7 @@ proto.commit = function() {
     });
     vectorLayer.addFeatures(newFeatures);
   }
-  var editGeometryBuffer = this._geometriesBuffer;
-  _.forEach(editGeometryBuffer, function(geometry, featureId) {
+  _.forEach(this._geometriesBuffer, function(geometry, featureId) {
     if (!self._isNewFeature(featureId)) {
       var feature = vectorLayer.getFeatureById(featureId);
       //caso di update .. nel caso di delete la feature è nulla
@@ -87,8 +86,10 @@ proto.addFeature = function(feature) {
   // aggiungo la feature al buffer (nel cso di nuova feature
   this._addEditToGeometryBuffer(feature, 'add');
 };
+
 // funzione chiamata in fase di update della Feature
 proto.updateFeature = function(feature) {
+  console.log(feature);
   this._addEditToGeometryBuffer(feature, 'update');
 };
 
@@ -143,7 +144,6 @@ proto.getRelationsEdits = function(fid){
 // funzione che colleziona tutti gli (unici) delle featues modificate
 // dei buffer geometry e attribute
 proto.collectFeatureIds = function() {
-
   var geometriesBuffers = this._geometriesBuffer;
   var attributesBuffers = this._attributesBuffer;
   var modifiedFids = [];
@@ -193,6 +193,7 @@ proto.createFeature = function(fid, geometry, attributes) {
   feature.setProperties(attributes);
   return feature;
 };
+
 // funzione richiamata dall'edior che mmi servono poi per inviarle via post al server
 // Tale funzione riporta tutte le informazioni relative alle relazioni
 proto.collectRelations = function() {
@@ -262,13 +263,40 @@ proto.collectRelations = function() {
   return relationsEdits;
 };
 
+// funzione che mette in relazione feature e relazioni
+// e aggiorna i campi della feature nell'editbuffer
+proto._addEditToValuesBuffers = function(feature, relations) {
+  // prende id della feature
+  var id = feature.getId();
+  // prende gli attributi della feature
+  var attributes = feature.getProperties();
+  console.log(attributes);
+  // prendo il buffer degli attributi
+  var attributesBuffer = this._attributesBuffer;
+  //verifica se l'oggetto attributebuffer ha l'id del layer
+  if (!_.has(attributesBuffer, id)) {
+    //nel caso non ci sia crea la chiave e assegna un array vuoto
+    attributesBuffer[id] = [];
+  }
+  // a quel punto inserisco una nuova modifica nell'array delle modifiche
+  // che rigurada quella particolare feature identificata dalla chiave id
+  // dentro negli attributi c'è anche la geometria
+  attributesBuffer[id].push(attributes);
+  // se snono state passate relazioni
+  this._addDeleteRelationsBuffers(relations, id);
+  // setto l'edito a dirty
+  this._setDirty(true);
+};
+
 proto._addEditToGeometryBuffer = function(feature, operation) {
   // al momento non prende in considerazione, update , add valori di operation
   // in quanto verifica se è una nuova feature o no
   // recupero il buffer delle geometrie
   var geometriesBuffer = this._geometriesBuffer;
-  // recupero l'ide della feature
+  // prendo il buffer degli attributi
+  // recupero l'id della feature
   var id = feature.getId();
+  var attributes = feature.getProperties();
   // recupero la geometria
   var geometry = feature.getGeometry();
   // caso operazione delete
@@ -315,29 +343,6 @@ proto._addDeleteRelationsBuffers = function(relations, fid) {
       relationBuffer.updateRelation(relation);
     });
   }
-};
-// funzione che mette in relazione feature e relazioni
-// e aggiorna i campi della feature nell'editbuffer
-proto._addEditToValuesBuffers = function(feature, relations) {
-  // prende id della feature
-  var fid = feature.getId();
-  // prende gli attributi della feature
-  var attributes = feature.getProperties();
-  // prendo il buffer degli attributi
-  var attributesBuffer = this._attributesBuffer;
-  //verifica se l'oggetto attributebuffer ha l'id del layer
-  if (!_.has(attributesBuffer, fid)) {
-    //nel caso non ci sia crea la chiave e assegna un array vuoto
-    attributesBuffer[fid] = [];
-  }
-  // a quel punto inserisco una nuova modifica nell'array delle modifiche
-  // che rigurada quella particolare feature identificata dalla chiave id
-  // dentro negli attributi c'è anche la geometria
-  attributesBuffer[fid].push(attributes);
-  // se snono state passate relazioni
-  this._addDeleteRelationsBuffers(relations, fid);
-  // setto l'edito a dirty
-  this._setDirty(true);
 };
 
 // guardo se è una feature già  presente nel buffer delle nuove geometrie

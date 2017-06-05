@@ -203,7 +203,7 @@ proto.setFeaturesFilter = function(featuresFilter){
   this._featuresFilter = featuresFilter;
 };
 
-proto.setFields = function(fields){
+proto.setFields = function(fields) {
   this._fields = fields;
 };
 
@@ -224,7 +224,7 @@ proto.setPkField = function(){
     }
   });
   
-  if (!pkfieldSet){
+  if (!pkfieldSet) {
     this._fields;
   }
 };
@@ -281,7 +281,7 @@ proto.getFieldsWithValues = function(obj) {
     feature = this.getFeatureById(obj);
   }
   // se c'è una feature ne prendo le proprietà
-  if (feature){
+  if (feature) {
     attributes = feature.getProperties();
   }
   _.forEach(fields, function(field){

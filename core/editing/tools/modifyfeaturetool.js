@@ -11,8 +11,6 @@ function ModifyFeatureTool(editor,options){
   this.editor = editor;
   this.isPausable = true;
   this.drawInteraction = null;
-  this.layer = null;
-  this.editingLayer = null;
   this._deleteCondition = options.deleteCondition || undefined;
   this._snap = options.snap || null;
   this._snapInteraction = null; 
@@ -30,13 +28,10 @@ var proto = ModifyFeatureTool.prototype;
 
 proto.run = function() {
   var self = this;
-  this.layer = this.editor.getVectorLayer().getMapLayer();
-  this.editingLayer = this.editor.getEditVectorLayer().getMapLayer();
-
   this.pickedFeatures = new ol.Collection;
-
+  var layers = [this.editor.getVectorLayer().getMapLayer(),this.editor.getEditVectorLayer().getMapLayer()];
   this._pickInteraction = new PickFeatureInteraction({
-    layers: [this.layer, this.editingLayer]
+    layers: layers
   });
 
   this.addInteraction(this._pickInteraction);
@@ -50,11 +45,11 @@ proto.run = function() {
     features: this.pickedFeatures,
     deleteCondition: this._deleteCondition
   });
-  this.addInteraction(this._modifyInteraction);
   
+  this.addInteraction(this._modifyInteraction);
   var origGeometry = null;
   
-  this._modifyInteraction.on('modifystart',function(e){
+  this._modifyInteraction.on('modifystart',function(e) {
     var feature = e.features.getArray()[0];
     origGeometry = feature.getGeometry().clone();
   });
@@ -63,10 +58,10 @@ proto.run = function() {
     var feature = e.features.getArray()[0];
     var isNew = self._isNew(feature);
     //try {
-      if (!self._busy){
+      if (!self._busy) {
         self._busy = true;
         self.pause(true);
-        self.modifyFeature(feature,isNew)
+        self.modifyFeature(feature, isNew)
         .fail(function(){
           feature.setGeometry(origGeometry);
         })
@@ -115,9 +110,9 @@ proto.stop = function(){
   return true;
 };
 
-proto._modifyFeature = function(feature,isNew){
+proto._modifyFeature = function(feature, isNew){
   // aggionro la geometria nel buffer di editing
-  this.editor.updateFeature(feature,isNew);
+  this.editor.updateFeature(feature, isNew);
   this._busy = false;
   this.pause(false);
   return true;

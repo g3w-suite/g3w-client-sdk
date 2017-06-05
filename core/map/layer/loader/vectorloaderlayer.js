@@ -34,7 +34,7 @@ function VectorLoaderLayer() {
     this._layerCodes = _.keys(this._layers);
     // questo mi permette di gestire e generalizzare il valore del campo del layer
     // a cui passare all'apiEditing
-    this._editingApiField = options.editingApiField;
+    this._editingApiField = options.editingApiField || 'name';
   };
 }
 
@@ -186,6 +186,19 @@ proto._setCustomUrlParameters = function(customUrlParameters) {
   this._customUrlParameters = customUrlParameters;
 };
 
+proto._checkVectorGeometryTypeFromConfig = function(vectorConfig) {
+  switch (vectorConfig.geometrytype) {
+    case 'Line':
+      vectorConfig.geometrytype = 'LineString';
+      break;
+    case 'MultiLine':
+      vectorConfig.geometrytype = 'MultiLineString';
+      break;
+  }
+  return vectorConfig;
+};
+
+
 proto._createVectorLayerFromConfig = function(layerCode) {
   var self = this;
   // recupero la configurazione del layer settata da plugin service
@@ -195,6 +208,8 @@ proto._createVectorLayerFromConfig = function(layerCode) {
   this._getVectorLayerConfig(layerConfig[this._editingApiField])
     .then(function(vectorConfigResponse) {
       var vectorConfig = vectorConfigResponse.vector;
+      // vado a verificare la correttezza del geometryType (caso di editing generico)
+      vectorConfig = self._checkVectorGeometryTypeFromConfig(vectorConfig);
       // una volta ottenuta dal server la configurazione vettoriale,
       // provvedo alla creazione del layer vettoriale
       var crsLayer = layerConfig.crs || self._mapService.getProjection().getCode();
@@ -218,7 +233,7 @@ proto._createVectorLayerFromConfig = function(layerCode) {
       // foreign key etc ..
       var relations = vectorConfig.relations;
       // nel caso il layer abbia relazioni (array non vuoto)
-      if (relations){
+      if (relations) {
         // per dire a vectorLayer che i dati
         // delle relazioni verranno caricati solo quando
         // richiesti (es. aperture form di editing)

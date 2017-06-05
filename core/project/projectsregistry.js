@@ -128,7 +128,7 @@ proto.getListableProjects = function() {
     }
     //resituisce solo quelli diversi da overviewprojetc
     // nel caso si stato settato
-    if (project.overviewprojectgid && project.gid != project.overviewprojectgid.gid && project.id != currentProjectId) {
+    if ((project.overviewprojectgid && project.gid != project.overviewprojectgid.gid && project.id != currentProjectId) || (project.id != currentProjectId)) {
       return project;
     }
   })

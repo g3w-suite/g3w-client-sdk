@@ -703,7 +703,7 @@ function EditingService(options) {
 
   this._postBatchData = function(multiEditsToPush){
     var edits = {};
-    _.forEach(multiEditsToPush,function(editsToPush){
+    _.forEach(multiEditsToPush, function(editsToPush) {
       edits[editsToPush.layername] = editsToPush.edits;
     });
     var jsonData = JSON.stringify(edits);

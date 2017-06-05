@@ -306,7 +306,7 @@ function QueryResultsService() {
             isVisible = !vectorLayer.getVisible();
             break;
         }
-        if ((queryResponse.data.length && queryResponse.data[0].layer == vectorLayer) || !coordinates || isVisible ) { return }
+        if ((queryResponse.data && queryResponse.data.length && queryResponse.data[0].layer == vectorLayer) || !coordinates || isVisible ) { return true}
         // caso in cui è stato fatto una precedente richiesta identify e quindi devo attaccare il risultato
         // non mi piace perchè devo usare altro metodo
         // caso query info
@@ -357,7 +357,8 @@ function QueryResultsService() {
         _.forEach(features, function(feature) {
           QueryService.convertG3wRelations(feature);
         });
-        // vado a pushare le features
+        // vado a pushare le features verificando prima se c'è stato un risultato
+        queryResponse.data = queryResponse.data ? queryResponse.data : [];
         queryResponse.data.push({
           features: features,
           layer: vectorLayer
