@@ -49,6 +49,7 @@ proto._handleClick = function(event) {
   if (!self._toggled && resetControl) {
     resetControl.toggle(true);
   }
+  this.dispatchEvent('controlclick');
 };
 
 //funzione che fa lo shift della posizione

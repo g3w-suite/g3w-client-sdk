@@ -99,6 +99,9 @@ function MapService(options) {
       self.setupControls();
       self.setupLayers();
       self.emit('viewerset');
+    },
+    controlClick: function() {
+
     }
   };
 
@@ -637,6 +640,7 @@ proto.checkWFSLayers = function() {
 };
 
 proto.addControl = function(type, control) {
+  var self = this;
   // verico che il controllo abbia la funzione on selectLayer
   if (_.indexOf(_.keysIn(control),'onSelectLayer') > -1 && control.onSelectLayer()) {
     if (!this.selectLayer) {
@@ -648,6 +652,9 @@ proto.addControl = function(type, control) {
     type: type,
     control: control,
     visible: true
+  });
+  control.on('controlclick', function() {
+    self.controlClick();
   });
   // vado a registrare il controllo aggiunto
   ControlsRegistry.registerControl(type, control);
