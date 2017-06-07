@@ -89,7 +89,6 @@ proto.addFeature = function(feature) {
 
 // funzione chiamata in fase di update della Feature
 proto.updateFeature = function(feature) {
-  console.log(feature);
   this._addEditToGeometryBuffer(feature, 'update');
 };
 
@@ -270,7 +269,6 @@ proto._addEditToValuesBuffers = function(feature, relations) {
   var id = feature.getId();
   // prende gli attributi della feature
   var attributes = feature.getProperties();
-  console.log(attributes);
   // prendo il buffer degli attributi
   var attributesBuffer = this._attributesBuffer;
   //verifica se l'oggetto attributebuffer ha l'id del layer
