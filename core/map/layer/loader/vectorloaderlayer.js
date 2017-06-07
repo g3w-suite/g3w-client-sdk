@@ -372,9 +372,9 @@ proto._getVectorLayerData = function(vectorLayer, bbox) {
     return d.promise();
 };
 // funzione per creare il layer vettoriale
-proto._createVectorLayer = function(options){
-    var vector = new VectorLayer(options);
-    return vector;
+proto._createVectorLayer = function(options) {
+  var vector = new VectorLayer(options);
+  return vector;
 };
 //funzione chiamata dal plugin quando si vuole fare un cleanUp dei layers
 // !!! -- DA RIVEDERE -- !!!

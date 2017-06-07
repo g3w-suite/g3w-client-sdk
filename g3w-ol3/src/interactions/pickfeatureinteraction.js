@@ -53,10 +53,11 @@ PickFeatureInteraction.handleMoveEvent_ = function(event) {
 
 PickFeatureInteraction.prototype.featuresAtPixel_ = function(pixel, map) {
   var featureFound = null;
+  var self = this;
   var intersectingFeature = map.forEachFeatureAtPixel(pixel,
       function(feature) {
-        if (this.features_) {
-          if (this.features_.indexOf(feature) > -1){
+        if (self.features_) {
+          if (self.features_.indexOf(feature) > -1){
             return feature
           }
           else{
@@ -64,8 +65,8 @@ PickFeatureInteraction.prototype.featuresAtPixel_ = function(pixel, map) {
           }
         }
         return feature;
-      },this, {
-        layerFilter: this.layerFilter_,
+      }, {
+        layerFilter: self.layerFilter_,
         hitTolerance: (isMobile && isMobile.any) ? 10 : 0
       });
   if (intersectingFeature) {
