@@ -5,7 +5,6 @@ var VectorLayer = require('core/map/layer/vectorlayer');
 var LoaderLayer = require('./loaderlayer');
 
 function VectorLoaderLayer() {
-
   this._layer = {};
   this._type = 'vector';
   this._layerCodes = [];
@@ -17,9 +16,7 @@ function VectorLoaderLayer() {
   //mi tengo i vectorLayersCodes dei layer caricati
   this._vectorLayersCodes = [];
   this._vectorLayersData = {};
-
   base(this);
-
   //setto le proprià che mi interessano
   this.init = function(options) {
     //i layers provenienti dal plugin

@@ -144,5 +144,9 @@ proto._handleClick = function(e) {
   }
 };
 
+proto.getIteraction = function() {
+  return this._interaction;
+};
+
 
 module.exports = InteractionControl;

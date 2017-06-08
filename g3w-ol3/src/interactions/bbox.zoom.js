@@ -36,7 +36,7 @@ _gis3wlib._interaction.prototype.drawBBox = function(callback){
   selectBBox.key = selectBBox.on('boxend', function(e){
     var polygon = selectBBox.getGeometry().getExtent();
     callback(polygon);
-  })
+  });
   
   return selectBBox;
 };

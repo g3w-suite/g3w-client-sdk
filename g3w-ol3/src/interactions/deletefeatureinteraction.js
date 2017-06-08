@@ -1,5 +1,4 @@
 var DeleteInteractionEvent = function(type, features, coordinate) {
-
   this.type = type;
   this.features = features;
   this.coordinate = coordinate;

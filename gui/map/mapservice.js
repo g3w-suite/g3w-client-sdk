@@ -619,6 +619,14 @@ proto.setupControls = function(){
             self.addControl(controlType, control);
           }
           break;
+        case 'lenght':
+          if (!isMobile.any) {
+            control = ControlsFactory.create({
+              type: controlType
+            });
+            self.addControl(controlType, control);
+          }
+          break;
       }
     });
   }
