@@ -29,6 +29,8 @@ var MeasureIteraction = function(options) {
   var geometryType = options.geometryType || 'LineString';
   this._formatMeasure = null;
   this._helpMsg = null;
+  // funzione che serve per gestire il keydow della cancellazione ultimo vertice disegnato
+  this._keyDownEventHandler = null;
   switch (geometryType) {
     case 'LineString':
      this._formatMeasure = function(feature) {
@@ -123,25 +125,18 @@ proto._clearMessagesAndListeners = function() {
     this._helpTooltipElement.classList.add('hidden');
     ol.Observable.unByKey(this._featureGeometryChangelistener);
     ol.Observable.unByKey(this._poinOnMapMoveListener);
-    $(document).off('keydown');
+    console.log(this);
+    $(document).off('keydown', this._keyDownEventHandler);
   }
 };
 
 proto._removeLastPoint = function(event) {
   var geom = this._feature.getGeometry();
-
   if (event.keyCode === 46) {
     if( geom instanceof ol.geom.Polygon && geom.getCoordinates()[0].length > 2) {
       this.removeLastPoint();
-      if (geom.getCoordinates()[0].length == 2) {
-       //TODO
-      }
-    } else if(geom instanceof ol.geom.LineString) {
+    } else if(geom instanceof ol.geom.LineString && geom.getCoordinates().length > 1) {
       this.removeLastPoint();
-      console.log(geom.getCoordinates());
-      if (geom.getCoordinates().length == 1) {
-        //TODO
-      }
     }
   }
 };
@@ -153,7 +148,8 @@ proto._drawStart = function(evt) {
   this._createMeasureTooltip();
   this._createHelpTooltip();
   this._feature = evt.feature;
-  $(document).on('keydown', _.bind(this._removeLastPoint, this));
+  this._keyDownEventHandler = _.bind(this._removeLastPoint, this);
+  $(document).on('keydown', this._keyDownEventHandler);
   // vado a ripulire tutte le features
   this._layer.getSource().clear();
   this._poinOnMapMoveListener = this._map.on('pointermove', function(evt) {
