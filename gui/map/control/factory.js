@@ -7,6 +7,7 @@ var GeolocationControl = require('g3w-ol3/src/controls/geolocationcontrol');
 var StreetViewControl = require('g3w-ol3/src/controls/streetviewcontrol');
 var AddLayersControl = require('g3w-ol3/src/controls/addlayers');
 var LenghtControl = require('g3w-ol3/src/controls/lengthcontrol');
+var AreaControl = require('g3w-ol3/src/controls/areacontrol');
 var Control = require('g3w-ol3/src/controls/control');
 var OLControl = require('g3w-ol3/src/controls/olcontrol');
 var NominatimControl = require('g3w-ol3/src/controls/nominatimcontrol');
@@ -63,7 +64,8 @@ ControlsFactory.CONTROLS = {
   'overview': OLControl,
   'nominatim': NominatimControl,
   'addlayers': AddLayersControl,
-  'lenght': LenghtControl
+  'lenght': LenghtControl,
+  'area': AreaControl
 };
 
 module.exports = ControlsFactory;

@@ -7,7 +7,7 @@ var ZoomBoxControl = function(options){
   var _options = {
       name: "zoombox",
       tipLabel: "Zoom to box",
-      label: "\ue900",
+      label: "\ue901",
       interactionClass: ol.interaction.DragBox
     };
   options = utils.merge(options,_options);

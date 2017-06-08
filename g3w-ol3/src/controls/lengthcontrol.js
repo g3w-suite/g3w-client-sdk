@@ -1,6 +1,6 @@
 var utils = require('../utils');
-var InteractionControl = require('./interactioncontrol');
-var LenghtIteraction = require('../interactions/lenghtiteraction');
+var LenghtIteraction = require('../interactions/lengthinteraction');
+var MeasureControl = require('./measurecontrol');
 
 var LenghtControl = function(options) {
   var _options = {
@@ -9,24 +9,11 @@ var LenghtControl = function(options) {
     interactionClass: LenghtIteraction
   };
 
-  this._map = null;
-  this._projection = null;
   options = utils.merge(options,_options);
-  InteractionControl.call(this, options);
+  MeasureControl.call(this, options);
 };
 
-ol.inherits(LenghtControl, InteractionControl);
+ol.inherits(LenghtControl, MeasureControl);
 
-var proto = LenghtControl.prototype;
 
-proto.setMap = function(map) {
-  InteractionControl.prototype.setMap.call(this, map);
-};
-
-proto.toggle = function(toggle) {
-  InteractionControl.prototype.toggle.call(this, toggle);
-  if (!this.isToggled()) {
-    this.getIteraction().clear();
-  }
-};
 module.exports = LenghtControl;
