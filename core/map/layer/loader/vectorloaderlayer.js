@@ -310,7 +310,11 @@ proto.setVectorLayerData = function(layerCode, vectorLayerData) {
 
 //funzione che setta le features lock del layer vettoriale
 proto.setVectorFeaturesLock = function(vectorLayer, featureslock) {
-  vectorLayer.setFeatureLocks(featureslock);
+  //vado a pescare le fifferenze tra le featureidlock già caricati id
+  var newFeaturesLockIds = _.differenceBy(featureslock, vectorLayer.getFeatureLocks(), 'featureid');
+  _.forEach(newFeaturesLockIds, function(newLockId) {
+    vectorLayer.addLockId(newLockId)
+  });
 };
 
 proto.cleanVectorFeaturesLock = function(vectorLayer) {

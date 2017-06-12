@@ -44,7 +44,7 @@ function VectorLayer(config) {
   this._relations = null;
   this._editingMode = config.editing || false;
   this._loadedIds = [];
-  this._featureLocks = null;
+  this._featureLocks = [];
   this._crs = null;
 }
 
@@ -109,7 +109,7 @@ proto.setData = function(featuresData) {
   }
 };
 proto.cleanFeatureLocks = function() {
-  this._featureLocks = null;
+  this._featureLocks = [];
 };
 
 proto.setFeatureLocks = function(featurelocks) {
