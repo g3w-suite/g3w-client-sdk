@@ -619,7 +619,7 @@ proto.setupControls = function(){
             self.addControl(controlType, control);
           }
           break;
-        case 'lenght':
+        case 'length':
           if (!isMobile.any) {
             control = ControlsFactory.create({
               type: controlType

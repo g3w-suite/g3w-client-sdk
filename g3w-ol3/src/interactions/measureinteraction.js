@@ -125,7 +125,6 @@ proto._clearMessagesAndListeners = function() {
     this._helpTooltipElement.classList.add('hidden');
     ol.Observable.unByKey(this._featureGeometryChangelistener);
     ol.Observable.unByKey(this._poinOnMapMoveListener);
-    console.log(this);
     $(document).off('keydown', this._keyDownEventHandler);
   }
 };

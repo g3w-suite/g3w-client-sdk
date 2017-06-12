@@ -294,7 +294,6 @@ proto._addEditToGeometryBuffer = function(feature, operation) {
   // prendo il buffer degli attributi
   // recupero l'id della feature
   var id = feature.getId();
-  var attributes = feature.getProperties();
   // recupero la geometria
   var geometry = feature.getGeometry();
   // caso operazione delete

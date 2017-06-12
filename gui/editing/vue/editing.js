@@ -102,7 +102,6 @@ function PanelComponent(options) {
         }
       }
     });
-    this.internalComponent.state = this._service.state;
     return this.internalComponent;
   };
 

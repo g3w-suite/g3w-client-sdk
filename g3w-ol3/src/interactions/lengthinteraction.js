@@ -1,13 +1,13 @@
 var MeasureInteraction = require('./measureinteraction');
 
 // LenghtInteracion
-var LenghtIteraction = function() {
+var LengthIteraction = function() {
   var options = {};
   options.geometryType = "LineString";
   MeasureInteraction.call(this, options)
 };
 
-ol.inherits(LenghtIteraction, MeasureInteraction);
+ol.inherits(LengthIteraction, MeasureInteraction);
 
 
-module.exports = LenghtIteraction;
+module.exports = LengthIteraction;

@@ -2,7 +2,7 @@ var utils = require('../utils');
 var LenghtIteraction = require('../interactions/lengthinteraction');
 var MeasureControl = require('./measurecontrol');
 
-var LenghtControl = function(options) {
+var LengthControl = function(options) {
   var _options = {
     name: "Lunghezza",
     label: "\ue908",
@@ -13,7 +13,7 @@ var LenghtControl = function(options) {
   MeasureControl.call(this, options);
 };
 
-ol.inherits(LenghtControl, MeasureControl);
+ol.inherits(LengthControl, MeasureControl);
 
 
-module.exports = LenghtControl;
+module.exports = LengthControl;
