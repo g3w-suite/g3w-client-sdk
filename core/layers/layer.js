@@ -1,4 +1,3 @@
-var QueryProvider = require('./providers/queryprovider');
 var GeometryTypes = require('core/geometry/geometry').GeometryTypes;
 
 var CAPABILITIES = {
@@ -51,33 +50,6 @@ function Layer(config) {
   this.fields = config.fields;
   // le features
   this.features = null;
-  /*this.state = {
-   fields: options.fields,
-   bbox: options.bbox,getI
-   capabilities: options.capabilities,
-   crs: options.crs,
-   disabled: options.disabled,
-   editops: options.editops,
-   geometrytype: options.geometrytype,
-   id: options.id,
-   infoformat: options.infoformat,
-   infourl: options.infourl,
-   maxscale: options.maxscale,
-   minscale: options.minscale,
-   multilayer: options.multilayer,
-   name: options.name,
-   origname: options.origname,
-   relations: options.relations,
-   scalebasedvisibility: options.scalebasedvisibility,
-   selected: options.selected,
-   servertype: options.servertype,
-   source: options.source,
-   title: options.title,
-   visible: options.visible,
-   selected: options.selected | false,
-   disabled: options.disabled | false
-   }*/
-
 }
 
 var proto = Layer.prototype;

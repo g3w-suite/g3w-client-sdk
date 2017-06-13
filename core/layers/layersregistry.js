@@ -5,7 +5,6 @@ var Layer = require('core/layers/layer');
 
 // Interfaccia per registare i layers
 function LayersRegistry() {
-  
   this._config = null;
   this._layers = {};
   this._layerstree = null;
@@ -23,7 +22,6 @@ function LayersRegistry() {
       })
     }
   };
-
   base(this);
 }
 
