@@ -8,7 +8,7 @@ g3w.core = {
    Router: require('core/router'),
    ProjectsRegistry: require('core/project/projectsregistry'),
    Project: require('core/project/project'),
-   ProjectLayer: require('core/project/projectlayer'),
+   Layer: require('core/layers/layer'),
    QueryService: require('core/query/queryservice'),
    MapLayer: require('core/map/layer/maplayer'),
    VectorLayer: require('core/map/layer/vectorlayer'),
@@ -24,7 +24,9 @@ g3w.core = {
    PluginService: require('core/plugin/pluginservice'),
    Editor: require('core/editing/editor'),
    EditBuffer: require('core/editing/editbuffer'),
-   RelationEditBuffer: require('core/editing/relationeditbuffer')
+   RelationEditBuffer: require('core/editing/relationeditbuffer'),
+   LayersRegistry: require('core/layers/layersregistry')
+
 };
 
 g3w.gui = {

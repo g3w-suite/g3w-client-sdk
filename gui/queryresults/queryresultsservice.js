@@ -1,7 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var ProjectsRegistry = require('core/project/projectsregistry');
-var ProjectLayer = require('core/project/projectlayer');
+var Layer = require('core/layers/layer');
 var GUI = require('gui/gui');
 var G3WObject = require('core/g3wobject');
 var VectorLayer = require('core/map/layer/vectorlayer');
@@ -90,7 +90,7 @@ function QueryResultsService() {
       var layer = featuresForLayer.layer;
       // verifico che tipo ti vector layer ci sono
       switch (layer.constructor) {
-        case ProjectLayer:
+        case Layer:
           layerAttributes = layer.getAttributes();
           layerRelationsAttributes =  layer.getRelationsAttributes();
           layerTitle = layer.state.title;

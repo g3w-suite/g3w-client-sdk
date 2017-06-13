@@ -6,6 +6,7 @@ var ComponentsRegistry = require('gui/componentsregistry');
 var GUI = require('gui/gui');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var ControlsRegistry = require('gui/map/control/registry');
+var LayersRegistry = require('core/layers/layersregistry');
 var Service = require('../catalogservice');
 var ChromeComponent = VueColor.Chrome;
 var CatalogEventHub = new Vue();
@@ -62,7 +63,7 @@ var vueComponentOptions = {
       return this.project.state.title;
     },
     layerstree: function() {
-      return this.project.state.layerstree;
+      return LayersRegistry.getLayersTree();
     },
     baselayers: function(){
       return this.project.state.baselayers;
@@ -113,7 +114,7 @@ var vueComponentOptions = {
         layer.setVisible(!layer.getVisible());
         node.visible = !node.visible;
       } else {
-        self.project.toggleLayer(node.id);
+        LayersRegistry.toggleLayer(node.id);
       }
     });
 
@@ -129,17 +130,17 @@ var vueComponentOptions = {
         }
       }
       _.map(nodes,checkNodes);
-      self.project.toggleLayers(layersIds, parentChecked);
+      LayersRegistry.toggleLayers(layersIds, parentChecked);
     });
 
     CatalogEventHub.$on('treenodeselected',function(node) {
       var mapservice = GUI.getComponent('map').getService();
       if (!node.selected) {
-        self.project.selectLayer(node.id);
+        LayersRegistry.selectLayer(node.id);
         // emetto il segnale layer selezionato dal catalogo
         mapservice.emit('cataloglayerselected');
       } else {
-        self.project.unselectLayer(node.id);
+        LayersRegistry.unselectLayer(node.id);
         mapservice.emit('cataloglayerunselected');
       }
     });
@@ -265,7 +266,7 @@ Vue.component('tristate-tree', {
     },
     select: function (layerstree) {
       if (!this.isFolder && !layerstree.external) {
-        CatalogEventHub.$emit('treenodeselected',this.layerstree);
+        CatalogEventHub.$emit('treenodeselected', this.layerstree);
       }
     },
     triClass: function () {
@@ -339,7 +340,7 @@ Vue.component('layerslegend-item',{
     legendurl: function(){
       // in attesa di risolvere lo schianto di QGSI Server...
       //return "http://localhost/cgi-bin/qgis_mapserv.fcgi?map=/home/giohappy/Scrivania/Dev/G3W/g3w-client/test/progetto/test.qgs&SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&FORMAT=image/png&LAYERTITLE=False&ITEMFONTSIZE=10&LAYER="+this.layer.name;
-      var projectLyer = ProjectsRegistry.getCurrentProject().getLayerById(this.layer.id);
+      var projectLyer = LayersRegistry.getLayerById(this.layer.id);
       if (projectLyer) {
         return projectLyer.getLegendUrl();
       }

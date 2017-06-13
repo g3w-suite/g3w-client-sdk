@@ -4,6 +4,7 @@ var G3WObject = require('core/g3wobject');
 var GUI = require('gui/gui');
 var VectorLoaderLayer = require('core/map/layer/loader/vectorloaderlayer');
 var FormClass = require('gui/form/vue/form');
+var LayersRegistry = require('core/layers/layersregistry');
 
 function EditingService(options) {
   var options = options || {};
@@ -98,7 +99,7 @@ function EditingService(options) {
       // i layers nella configurazione passata i layers hanno due attributi: id e name
       var layerId = config.layers[layerCode].id;
       // recupera il layer dal mapservice
-      var layer = self._mapService.getProject().getLayerById(layerId);
+      var layer = LayersRegistry.getLayerById(layerId);
       // recupero l'origin name dal projectlayer
       Layer.name = layer.getOrigName();
       Layer.id = layerId;

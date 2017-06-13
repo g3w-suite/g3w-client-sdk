@@ -11,48 +11,48 @@ var EDITOPS = {
   DELETE: 4
 };
 
-function ProjectLayer(state) {
+function Layer(state) {
   /*this.state = {
-    fields: options.fields,
-    bbox: options.bbox,getI
-    capabilities: options.capabilities,
-    crs: options.crs,
-    disabled: options.disabled,
-    editops: options.editops,
-    geometrytype: options.geometrytype,
-    id: options.id,
-    infoformat: options.infoformat,
-    infourl: options.infourl,
-    maxscale: options.maxscale,
-    minscale: options.minscale,
-    multilayer: options.multilayer,
-    name: options.name,
-    origname: options.origname,
-    relations: options.relations,
-    scalebasedvisibility: options.scalebasedvisibility,
-    selected: options.selected,
-    servertype: options.servertype,
-    source: options.source,
-    title: options.title,
-    visible: options.visible,
-    selected: options.selected | false,
-    disabled: options.disabled | false
-  }*/
+   fields: options.fields,
+   bbox: options.bbox,getI
+   capabilities: options.capabilities,
+   crs: options.crs,
+   disabled: options.disabled,
+   editops: options.editops,
+   geometrytype: options.geometrytype,
+   id: options.id,
+   infoformat: options.infoformat,
+   infourl: options.infourl,
+   maxscale: options.maxscale,
+   minscale: options.minscale,
+   multilayer: options.multilayer,
+   name: options.name,
+   origname: options.origname,
+   relations: options.relations,
+   scalebasedvisibility: options.scalebasedvisibility,
+   selected: options.selected,
+   servertype: options.servertype,
+   source: options.source,
+   title: options.title,
+   visible: options.visible,
+   selected: options.selected | false,
+   disabled: options.disabled | false
+   }*/
   // lo stato è sincronizzato con quello del layerstree
   this.state = state;
 
   /*if (!this.state.selected) {
-    this.state.selected = false;
-  }
-  if (!this.state.disabled) {
-    this.state.disabled = false;
-  }*/
+   this.state.selected = false;
+   }
+   if (!this.state.disabled) {
+   this.state.disabled = false;
+   }*/
 
   this._project = null;
 }
 
 
-var proto = ProjectLayer.prototype;
+var proto = Layer.prototype;
 
 proto.getProject = function() {
   return this._project;
@@ -179,7 +179,7 @@ proto.getServerType = function() {
     return this.state.servertype;
   }
   else {
-    return ProjectLayer.ServerTypes.QGIS;
+    return Layer.ServerTypes.QGIS;
   }
 };
 
@@ -188,7 +188,7 @@ proto.getCrs = function() {
 };
 
 proto.isWMS = function() {
-  return ProjectLayer.WMSServerTypes.indexOf(this.state.servertype) > -1;
+  return Layer.WMSServerTypes.indexOf(this.state.servertype) > -1;
 };
 
 proto.isExternalWMS = function() {
@@ -219,7 +219,7 @@ proto.getQueryUrl = function() {
     infoUrl = this.state.infourl;
   }
   else {
-    infoUrl = this.getProject().getWmsUrl();
+    infoUrl = state.wmsUrl;
   }
   if (this.getServerType() != 'QGIS') {
     infoUrl+='SOURCE=wms';
@@ -254,7 +254,7 @@ proto.getWmsUrl = function() {
     url = this.state.source.url
   }
   else {
-    url = this.getProject().getWmsUrl();
+    url = this.state.wmsUrl;
   }
   return url;
 };
@@ -265,7 +265,7 @@ proto.getLegendUrl = function() {
   return this.getWmsUrl()+sep+'SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.1.0&FORMAT=image/png&TRANSPARENT=true&ITEMFONTCOLOR=white&LAYERTITLE=True&ITEMFONTSIZE=10&WIDTH=300&LAYER='+this.getWMSLayerName();
 };
 
-ProjectLayer.ServerTypes = {
+Layer.ServerTypes = {
   OGC: "OGC",
   QGIS: "QGIS",
   Mapserver: "Mapserver",
@@ -275,6 +275,6 @@ ProjectLayer.ServerTypes = {
   Bing: "Bing"
 };
 
-ProjectLayer.WMSServerTypes = [ProjectLayer.ServerTypes.QGIS,ProjectLayer.ServerTypes.Mapserver,ProjectLayer.ServerTypes.Geoserver,ProjectLayer.ServerTypes.OGC];
+Layer.WMSServerTypes = [Layer.ServerTypes.QGIS,Layer.ServerTypes.Mapserver,Layer.ServerTypes.Geoserver,Layer.ServerTypes.OGC];
 
-module.exports = ProjectLayer;
+module.exports = Layer;
