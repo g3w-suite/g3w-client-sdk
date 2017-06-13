@@ -11,7 +11,21 @@ var EDITOPS = {
   DELETE: 4
 };
 
-function Layer(state) {
+function Layer(config) {
+  // contiene la configurazione statica del layer
+  this.config = null;
+  // contiene il provider associato al layer
+  this.provider = null;
+  //contiene i dati del layer
+  this.data = null;
+  // contiene l'editor associato al layer
+  this.editor = null;
+  // contiene la parte dinamica del layer
+  this.state = config;
+  // struttura campi del layer
+  this.fields = null;
+  // le features
+  this._features = null;
   /*this.state = {
    fields: options.fields,
    bbox: options.bbox,getI
@@ -38,29 +52,11 @@ function Layer(state) {
    selected: options.selected | false,
    disabled: options.disabled | false
    }*/
-  // lo stato è sincronizzato con quello del layerstree
-  this.state = state;
 
-  /*if (!this.state.selected) {
-   this.state.selected = false;
-   }
-   if (!this.state.disabled) {
-   this.state.disabled = false;
-   }*/
-
-  this._project = null;
 }
-
 
 var proto = Layer.prototype;
 
-proto.getProject = function() {
-  return this._project;
-};
-
-proto.setProject = function(project) {
-  this._project = project
-};
 
 proto.getId = function() {
   return this.state.id;
@@ -184,7 +180,9 @@ proto.getServerType = function() {
 };
 
 proto.getCrs = function() {
-  return this.getProject().getCrs();
+  var LayersRegistry = require('./layersregistry');
+  var project = LayersRegistry.getProject();
+  return project.getCrs();
 };
 
 proto.isWMS = function() {
@@ -219,7 +217,7 @@ proto.getQueryUrl = function() {
     infoUrl = this.state.infourl;
   }
   else {
-    infoUrl = state.wmsUrl;
+    infoUrl = this.state.wmsUrl;
   }
   if (this.getServerType() != 'QGIS') {
     infoUrl+='SOURCE=wms';
@@ -236,7 +234,9 @@ proto.getInfoFormat = function(ogcService) {
     return this.state.infoformat;
   }
   else {
-    return this.getProject().getInfoFormat();
+    var LayersRegistry = require('./layersregistry');
+    var project = LayersRegistry.getProject();
+    return project.getInfoFormat();
   }
 };
 

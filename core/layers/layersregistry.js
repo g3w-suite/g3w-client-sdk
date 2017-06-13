@@ -3,11 +3,12 @@ var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
 var Layer = require('core/layers/layer');
 
-// Public interface
+// Interfaccia per registare i layers
 function LayersRegistry() {
-  var self = this;
-  this._layers = [];
-  this._layerstee = null;
+  
+  this._config = null;
+  this._layers = {};
+  this._layerstree = null;
   this.setters = {
     setLayersVisible: function (layersIds, visible) {
       var self = this;
@@ -17,36 +18,49 @@ function LayersRegistry() {
     },
     setLayerSelected: function(layerId, selected) {
       var layers = this.getLayers();
-    _.forEach(layers, function(layer){
-      layer.state.selected = ((layerId == layer.state.id) && selected) || false;
-    })
-  }
+      _.forEach(layers, function(layer) {
+        layer.state.selected = ((layerId == layer.state.id) && selected) || false;
+      })
+    }
   };
 
-  this.init = function(config) {
-    this._layerstree = config.layerstree;
-    function traverse(obj) {
-      _.forIn(obj, function (layerConfig, key) {
-        //verifica che il valore dell'id non sia nullo
-        if (!_.isNil(layerConfig.id)) {
-          //costruisco il project layer per ogni layer
-          layerConfig.wmsUrl = config.WMSUrl;
-          var layer = self.buildLayer(layerConfig);
-          self._layers[layer.getId()] = layer;
-        }
-        if (!_.isNil(layerConfig.nodes)) {
-          traverse(layerConfig.nodes);
-        }
-      });
-    }
-    traverse(this._layerstree);
-  };
   base(this);
 }
 
 inherit(LayersRegistry, G3WObject);
 
 proto = LayersRegistry.prototype;
+
+// funzione di inzializzazione del registro dei layers
+proto.init = function(config) {
+  var self = this;
+  // setto la configurazione passata dal project registry
+  this._config = config;
+  this._layerstree = config.layerstree;
+  function traverse(obj) {
+    _.forIn(obj, function (layerConfig, key) {
+      //verifica che il valore dell'id non sia nullo
+      if (!_.isNil(layerConfig.id)) {
+        //costruisco il project layer per ogni layer
+        layerConfig.wmsUrl = config.WMSUrl;
+        var layer = self.buildLayer(layerConfig);
+        self._layers[layer.getId()] = layer;
+      }
+      if (!_.isNil(layerConfig.nodes)) {
+        traverse(layerConfig.nodes);
+      }
+    });
+  }
+  traverse(this._layerstree);
+};
+
+proto.setProject = function(project) {
+  this._project = project;
+};
+
+proto.getProject = function() {
+  return this._project;
+};
 
 proto.getLayersTree = function() {
   return this._layerstree;
@@ -58,7 +72,6 @@ proto.getLayers = function() {
 
 proto.buildLayer = function(layerConfig) {
   var layer = new Layer(layerConfig);
-  layer.setProject(this);
   // aggiungo proprietà non ottenute dalla consfigurazione
   layer.state.selected = false;
   layer.state.disabled = false;
@@ -81,17 +94,20 @@ proto.getLayersDict = function(options) {
   if (_.isUndefined(filterQueryable) && _.isUndefined(filterVisible) && _.isUndefined(filterActive) && _.isUndefined(filterSelected) && _.isUndefined(filterSelectedOrAll)) {
     return this._layers;
   }
+  var layers = [];
+  _.forEach(this._layers, function(layer, key) {
+    layers.push(layer);
+  });
 
-  var layers = this._layers;
 
   if (filterActive) {
-    layers = _.filter(layers,function(layer){
+    layers = _.filter(layers, function(layer) {
       return filterActive && !layer.isDisabled();
     });
   }
 
   if (filterQueryable) {
-    layers = _.filter(layers,function(layer){
+    layers = _.filter(layers, function(layer) {
       return filterQueryable && layer.isQueryable();
     });
   }
@@ -129,9 +145,10 @@ proto.getLayersDict = function(options) {
   if (filterWfs) {
     layers = _.filter(layers,function(layer) {
       // specifico che deve evare lo stesso crs del progetto
-      return layer.getWfsCapabilities() && layer.state.crs == self.state.crs;
+      return layer.getWfsCapabilities() && layer.state.crs == self._project.getCrs();
     });
   }
+
   return layers;
 };
 

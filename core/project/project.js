@@ -19,15 +19,13 @@ function Project(projectConfig) {
   }
   */
   this.state = projectConfig;
-  this._layers = {};
-
   // vado a registrare i layers
-
   LayersRegistry.init(projectConfig);
+  LayersRegistry.setProject(this);
 
   this.setters = {
-    setBaseLayer: function(id){
-      _.forEach(self.state.baselayers,function(baseLayer){
+    setBaseLayer: function(id) {
+      _.forEach(self.state.baselayers, function(baseLayer) {
         baseLayer.visible = (baseLayer.id == id || (baseLayer.fixed === true));
       })
     }
@@ -35,7 +33,7 @@ function Project(projectConfig) {
 
   base(this);
 }
-inherit(Project,G3WObject);
+inherit(Project, G3WObject);
 
 var proto = Project.prototype;
 

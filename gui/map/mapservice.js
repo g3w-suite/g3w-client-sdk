@@ -895,7 +895,7 @@ proto.getOverviewMapLayers = function(project) {
     var multilayerId = 'overview_layer_'+id;
     var tiled = layers[0].state.tiled;
     var config = {
-      url: project.getWmsUrl(),
+      url: layers[0].getWmsUrl(),
       id: multilayerId,
       tiled: tiled
     };
