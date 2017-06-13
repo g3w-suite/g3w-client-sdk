@@ -90,6 +90,10 @@ proto.getId = function() {
   return this.config.id;
 };
 
+proto.getTitle = function() {
+  return this.config.title;
+};
+
 proto.getName = function() {
   return this.config.name;
 };
