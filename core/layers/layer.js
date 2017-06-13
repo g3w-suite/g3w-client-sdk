@@ -1,3 +1,4 @@
+var QueryProvider = require('./providers/queryprovider');
 var GeometryTypes = require('core/geometry/geometry').GeometryTypes;
 
 var CAPABILITIES = {
@@ -13,7 +14,26 @@ var EDITOPS = {
 
 function Layer(config) {
   // contiene la configurazione statica del layer
-  this.config = null;
+  this.config = {
+    bbox: config.bbox,
+    capabilities: config.capabilities,
+    crs: config.crs,
+    editops: config.editops,
+    geometrytype: config.geometrytype,
+    id: config.id,
+    infoformat: config.infoformat,
+    infourl: config.infourl,
+    maxscale: config.maxscale,
+    minscale: config.minscale,
+    multilayer: config.multilayer,
+    name: config.name,
+    origname: config.origname,
+    scalebasedvisibility: config.scalebasedvisibility,
+    servertype: config.servertype,
+    source: config.source,
+    title: config.title,
+    wmsUrl: config.wmsUrl
+  };
   // contiene il provider associato al layer
   this.provider = null;
   //contiene i dati del layer
@@ -21,11 +41,16 @@ function Layer(config) {
   // contiene l'editor associato al layer
   this.editor = null;
   // contiene la parte dinamica del layer
-  this.state = config;
+  this.state = {
+    visible: config.visible,
+    selected: config.selected | false,
+    disabled: config.disabled | false,
+    relations: config.relations
+  };
   // struttura campi del layer
-  this.fields = null;
+  this.fields = config.fields;
   // le features
-  this._features = null;
+  this.features = null;
   /*this.state = {
    fields: options.fields,
    bbox: options.bbox,getI
@@ -57,29 +82,60 @@ function Layer(config) {
 
 var proto = Layer.prototype;
 
+proto.getConfig = function() {
+  return this.config;
+};
+
+proto.getState = function() {
+  return this.state;
+};
+
+proto.getData = function() {
+  return this.data;
+};
+
+proto.setData = function(data) {
+  this.data = data;
+};
+
+proto.getEditor = function() {
+  return this.editor;
+};
+
+proto.setEditor = function(editor) {
+  this.editor = editor;
+};
+
+proto.setProvider = function(provider) {
+  this.provider = provider;
+};
+
+proto.getProvider = function() {
+  return this.provider;
+};
 
 proto.getId = function() {
-  return this.state.id;
+  return this.config.id;
 };
 
 proto.getName = function() {
-  return this.state.name;
+  return this.config.name;
 };
 
 proto.getOrigName = function() {
-  return this.state.origname;
+  return this.config.origname;
 };
 
 proto.getGeometryType = function() {
-  return this.state.geometrytype;
+  return this.config.geometrytype;
 };
 
 proto.getAttributes = function() {
-  return this.state.fields;
+  return this.fields;
 };
 
 proto.changeAttribute = function(attribute, type, options) {
-  _.forEach(this.state.fields, function(field) {
+  _.forEach(this.fields, function(field) {
     if (field.name == attribute) {
       field.type = type;
       field.options = options;
@@ -151,31 +207,31 @@ proto.isVisible = function() {
 proto.getQueryLayerName = function() {
   var queryLayerName;
   if (this.state.infolayer && this.state.infolayer != '') {
-    queryLayerName = this.state.infolayer;
+    queryLayerName = this.config.infolayer;
   }
   else {
-    queryLayerName = this.state.name;
+    queryLayerName = this.config.name;
   }
   return queryLayerName;
 };
 
 proto.getQueryLayerOrigName = function() {
   var queryLayerName;
-  if (this.state.infolayer && this.state.infolayer != '') {
-    queryLayerName = this.state.infolayer;
+  if (this.state.infolayer && this.config.infolayer != '') {
+    queryLayerName = this.config.infolayer;
   }
   else {
-    queryLayerName = this.state.origname;
+    queryLayerName = this.config.origname;
   }
   return queryLayerName;
 };
 
 proto.getServerType = function() {
-  if (this.state.servertype && this.state.servertype != '') {
-    return this.state.servertype;
+  if (this.state.servertype && this.config.servertype != '') {
+    return this.config.servertype;
   }
   else {
-    return Layer.ServerTypes.QGIS;
+    return ServerTypes.QGIS;
   }
 };
 
@@ -186,38 +242,38 @@ proto.getCrs = function() {
 };
 
 proto.isWMS = function() {
-  return Layer.WMSServerTypes.indexOf(this.state.servertype) > -1;
+  return WMSServerTypes.indexOf(this.config.servertype) > -1;
 };
 
 proto.isExternalWMS = function() {
-  return (this.state.source && this.state.source.url);
+  return (this.config.source && this.config.source.url);
 };
 
 proto.getWMSLayerName = function() {
   // prendo come inizio 'attributo name come nome del layer wms
-  var layerName = this.state.name;
-  if (this.state.source && this.state.source.layers) {
-    layerName = this.state.source.layers;
+  var layerName = this.config.name;
+  if (this.config.source && this.config.source.layers) {
+    layerName = this.config.source.layers;
   }
   return layerName;
 };
 
 proto.getWFSLayerName = function() {
   // prendo come inizio 'attributo name come nome del layer wms
-  var layerName = this.state.origname;
-  if (this.state.source && this.state.source.layers) {
-    layerName = this.state.source.layers;
+  var layerName = this.config.origname;
+  if (this.config.source && this.config.source.layers) {
+    layerName = this.config.source.layers;
   }
   return layerName;
 };
 
 proto.getQueryUrl = function() {
   var infoUrl;
-  if (this.state.infourl && this.state.infourl != '') {
-    infoUrl = this.state.infourl;
+  if (this.config.infourl && this.config.infourl != '') {
+    infoUrl = this.config.infourl;
   }
   else {
-    infoUrl = this.state.wmsUrl;
+    infoUrl = this.config.wmsUrl;
   }
   if (this.getServerType() != 'QGIS') {
     infoUrl+='SOURCE=wms';
@@ -226,12 +282,12 @@ proto.getQueryUrl = function() {
 };
 
 proto.setQueryUrl = function(queryUrl) {
-  this.state.inforurl = queryUrl;
+  this.config.inforurl = queryUrl;
 };
 
 proto.getInfoFormat = function(ogcService) {
-  if (this.state.infoformat && this.state.infoformat != '' && ogcService !='wfs') {
-    return this.state.infoformat;
+  if (this.config.infoformat && this.config.infoformat != '' && ogcService !='wfs') {
+    return this.config.infoformat;
   }
   else {
     var LayersRegistry = require('./layersregistry');
@@ -245,16 +301,16 @@ proto.setInfoFormat = function(infoFormat) {
 };
 
 proto.getWfsCapabilities = function() {
-  return this.state.wfscapabilities || this.state.capabilities == 1 ;
+  return this.config.wfscapabilities || this.config.capabilities == 1 ;
 };
 
 proto.getWmsUrl = function() {
   var url;
-  if (this.state.source && this.state.source.type == 'wms' && this.state.source.url){
-    url = this.state.source.url
+  if (this.config.source && this.config.source.type == 'wms' && this.config.source.url){
+    url = this.config.source.url
   }
   else {
-    url = this.state.wmsUrl;
+    url = this.config.wmsUrl;
   }
   return url;
 };
@@ -262,10 +318,10 @@ proto.getWmsUrl = function() {
 proto.getLegendUrl = function() {
   var url = this.getWmsUrl();
   sep = (url.indexOf('?') > -1) ? '&' : '?';
-  return this.getWmsUrl()+sep+'SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.1.0&FORMAT=image/png&TRANSPARENT=true&ITEMFONTCOLOR=white&LAYERTITLE=True&ITEMFONTSIZE=10&WIDTH=300&LAYER='+this.getWMSLayerName();
+  return url+sep+'SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.1.0&FORMAT=image/png&TRANSPARENT=true&ITEMFONTCOLOR=white&LAYERTITLE=True&ITEMFONTSIZE=10&WIDTH=300&LAYER='+this.getWMSLayerName();
 };
 
-Layer.ServerTypes = {
+ServerTypes = {
   OGC: "OGC",
   QGIS: "QGIS",
   Mapserver: "Mapserver",
@@ -275,6 +331,11 @@ Layer.ServerTypes = {
   Bing: "Bing"
 };
 
-Layer.WMSServerTypes = [Layer.ServerTypes.QGIS,Layer.ServerTypes.Mapserver,Layer.ServerTypes.Geoserver,Layer.ServerTypes.OGC];
+WMSServerTypes = [
+  ServerTypes.QGIS,
+  ServerTypes.Mapserver,
+  ServerTypes.Geoserver,
+  ServerTypes.OGC
+];
 
 module.exports = Layer;
