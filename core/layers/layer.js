@@ -161,11 +161,11 @@ proto.isDisabled = function() {
 
 proto.isQueryable = function() {
   var queryEnabled = false;
-  var queryableForCababilities = (this.state.capabilities && (this.state.capabilities && CAPABILITIES.QUERY)) ? true : false;
+  var queryableForCababilities = (this.config.capabilities && (this.config.capabilities && CAPABILITIES.QUERY)) ? true : false;
   if (queryableForCababilities) {
     // è interrogabile se visibile e non disabilitato (per scala) oppure se interrogabile comunque (forzato dalla proprietà infowhennotvisible)
     queryEnabled = (this.state.visible && !this.state.disabled);
-    if (!_.isUndefined(this.state.infowhennotvisible) && (this.state.infowhennotvisible === true)) {
+    if (!_.isUndefined(this.config.infowhennotvisible) && (this.config.infowhennotvisible === true)) {
       queryEnabled = true;
     }
   }

@@ -93,8 +93,8 @@ function QueryResultsService() {
         case Layer:
           layerAttributes = layer.getAttributes();
           layerRelationsAttributes =  layer.getRelationsAttributes();
-          layerTitle = layer.state.title;
-          layerId = layer.state.id;
+          layerTitle = layer.config.title;
+          layerId = layer.config.id;
           break;
         case ol.layer.Vector:
           layerAttributes = layer.getProperties();
