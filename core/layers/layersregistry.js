@@ -40,7 +40,6 @@ proto.init = function(config) {
       //verifica che il valore dell'id non sia nullo
       if (!_.isNil(layerConfig.id)) {
         //costruisco il project layer per ogni layer
-        layerConfig.wmsUrl = config.WMSUrl;
         var layer = self.buildLayer(layerConfig);
         self._layers[layer.getId()] = layer;
       }
@@ -64,8 +63,16 @@ proto.getLayersTree = function() {
   return this._layerstree;
 };
 
-proto.getLayers = function() {
-  return this._layers;
+proto.addLayer = function(layerConfig) {
+  var layer = this.buildLayer(layerConfig);
+  self._layers[layer.getId()] = layer;
+};
+
+proto.addLayers = function(layersConfig) {
+  var self = this;
+  _.forEach(layersConfig, function(layerConfig) {
+    self.addLayer(layerConfig);
+  });
 };
 
 proto.buildLayer = function(layerConfig) {
