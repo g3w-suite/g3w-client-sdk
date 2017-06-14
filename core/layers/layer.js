@@ -38,8 +38,9 @@ function Layer(config) {
     wmsUrl: config.wmsUrl
   };
   // contiene il provider associato al layer
-  this.provider = null; // o this.providers ???? nel caso di un layer wms che vector?
-  //contiene i dati del layer
+  this.providers = {}; // o this.providers ???? nel caso di un layer wms che vector?
+  //contiene i dati del layer che siano vettoriali, tabellari o ogc
+  // sono forniti dal provider
   this.data = null;
   // contiene l'editor associato al layer
   this.editor = null;
@@ -67,6 +68,9 @@ function Layer(config) {
     },
     stopEditing: function() {
       self._stopEditing();
+    },
+    setData: function(data) {
+      self._setData(data);
     }
   };
   base(this);
@@ -84,7 +88,7 @@ proto.getState = function() {
   return this.state;
 };
 
-proto.setData = function(data) {
+proto._setData = function(data) {
   this.data = data;
 };
 
@@ -109,7 +113,8 @@ proto._stopEditing = function() {
 proto.getData = function(options) {
   // a seconda delle opzioni cheido al provieder di fornirmi i dati
   /* var provider = this.getCurrentProvider();
-  this.data = provider.getData(options);
+  var data = this.getCuprovider.getData(options);
+  this.setData(data);
    */
   console.log('getData', options);
   return this.data;
@@ -120,12 +125,24 @@ proto.isModified = function() {
   return this.state.modified;
 };
 
-proto.setProvider = function(provider) {
-  this.provider = provider;
+proto.getProviders = function() {
+  return this.providers;
 };
 
-proto.getProvider = function() {
-  return this.provider;
+proto.addProvider = function(provider) {
+  this.providers.push(provider);
+};
+
+proto.getProvider = function(type) {
+  return this.providers[type];
+};
+
+proto.setCurrentProvider = function(provider) {
+  this.state.currentProvider = provider;
+};
+
+proto.getCurrentProvider = function() {
+  return this.state.currentProvider;
 };
 
 proto.getId = function() {
