@@ -25,7 +25,7 @@ function Provider(options) {
   var type = options.type || 'g3w';
   this._provider = Providers[type];
   this.getData = function(options) {
-    return this._provider.getData(options);
+    return this._provider.getData(options); // il getData del provider ritorna sempre una promessa
   };
   base(this);
 }

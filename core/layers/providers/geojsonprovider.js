@@ -1,3 +1,17 @@
-/**
- * Created by volterra79 on 14/06/17.
- */
+var inherit = require('core/utils/utils').inherit;
+var base = require('core/utils/utils').base;
+var G3WObject = require('core/g3wobject');
+
+function GeoJsonProvider(options) {
+  options = options || {};
+  this.getData = function() {
+    var d = $.Deferred();
+    return d.promise();
+  };
+  base(this);
+}
+
+inherit(GeoJsonProvider, G3WObject);
+
+module.exports = GeoJsonProvider;
+
