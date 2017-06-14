@@ -40,16 +40,19 @@ function Layer(config) {
   // contiene l'editor associato al layer
   this.editor = null;
   // contiene la parte dinamica del layer
+  //this.state = config; // questo fa in modo che il catalog reagisca al mutamento
+  // delle proprietà dinamiche (select, disable, visible)
   this.state = {
     visible: config.visible,
     selected: config.selected | false,
-    disabled: config.disabled | false,
-    relations: config.relations
+    disabled: config.disabled | false
   };
   // struttura campi del layer
   this.fields = config.fields;
   // le features
   this.features = null;
+  // relations
+  this.relations = config.relations || null;
 }
 
 var proto = Layer.prototype;
@@ -76,6 +79,10 @@ proto.getEditor = function() {
 
 proto.setEditor = function(editor) {
   this.editor = editor;
+};
+
+proto.startEditing = function() {
+  this.editor.startEditing();
 };
 
 proto.setProvider = function(provider) {
@@ -182,7 +189,7 @@ proto.isVisible = function() {
 
 proto.getQueryLayerName = function() {
   var queryLayerName;
-  if (this.state.infolayer && this.state.infolayer != '') {
+  if (this.config.infolayer && this.config.infolayer != '') {
     queryLayerName = this.config.infolayer;
   }
   else {
@@ -249,7 +256,8 @@ proto.getQueryUrl = function() {
     infoUrl = this.config.infourl;
   }
   else {
-    infoUrl = this.config.wmsUrl;
+    var LayersRegistry = require('./layersregistry');
+    infoUrl = LayersRegistry.getConfig().WMSUrl;
   }
   if (this.getServerType() != 'QGIS') {
     infoUrl+='SOURCE=wms';
@@ -286,7 +294,8 @@ proto.getWmsUrl = function() {
     url = this.config.source.url
   }
   else {
-    url = this.config.wmsUrl;
+    var LayersRegistry = require('./layersregistry');
+    url = LayersRegistry.getConfig().WMSUrl;
   }
   return url;
 };

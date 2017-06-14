@@ -2,9 +2,11 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
 var Layer = require('core/layers/layer');
+var ProjectRegistry = require('core/project/projectsregistry');
 
 // Interfaccia per registare i layers
 function LayersRegistry() {
+  var self = this;
   this._config = null;
   this._layers = {};
   this._layerstree = null;
@@ -18,10 +20,19 @@ function LayersRegistry() {
     setLayerSelected: function(layerId, selected) {
       var layers = this.getLayers();
       _.forEach(layers, function(layer) {
-        layer.state.selected = ((layerId == layer.state.id) && selected) || false;
+        layer.state.selected = ((layerId == layer.getId()) && selected) || false;
       })
+    },
+    addLayer: function(layerConfig) {
+      this._addLayer(layerConfig);
     }
   };
+  ProjectRegistry.onafter('setCurrentProject', function(project) {
+    // inizializzo
+    self.init(project.getState());
+    self.setProject(project); // mi serve per poter recuperare info
+  });
+
   base(this);
 }
 
@@ -51,6 +62,15 @@ proto.init = function(config) {
   traverse(this._layerstree);
 };
 
+proto.buildLayer = function(layerConfig) {
+  var layer = new Layer(layerConfig);
+  return layer;
+};
+
+proto.getConfig = function() {
+  return this._config;
+};
+
 proto.setProject = function(project) {
   this._project = project;
 };
@@ -63,7 +83,7 @@ proto.getLayersTree = function() {
   return this._layerstree;
 };
 
-proto.addLayer = function(layerConfig) {
+proto._addLayer = function(layerConfig) {
   var layer = this.buildLayer(layerConfig);
   self._layers[layer.getId()] = layer;
 };
@@ -73,14 +93,6 @@ proto.addLayers = function(layersConfig) {
   _.forEach(layersConfig, function(layerConfig) {
     self.addLayer(layerConfig);
   });
-};
-
-proto.buildLayer = function(layerConfig) {
-  var layer = new Layer(layerConfig);
-  // aggiungo proprietà non ottenute dalla consfigurazione
-  layer.state.selected = false;
-  layer.state.disabled = false;
-  return layer;
 };
 
 proto.getLayersDict = function(options) {
@@ -196,11 +208,11 @@ proto.toggleLayers = function(layersIds,visible){
 };
 
 proto.selectLayer = function(layerId){
-  this.setLayerSelected(layerId,true);
+  this.setLayerSelected(layerId, true);
 };
 
 proto.unselectLayer = function(layerId) {
-  this.setLayerSelected(layerId,false);
+  this.setLayerSelected(layerId, false);
 };
 
 module.exports = new LayersRegistry();

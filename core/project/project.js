@@ -1,7 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
-var LayersRegistry = require('core/layers/layersregistry');
+
 
 function Project(projectConfig) {
   var self = this;
@@ -19,9 +19,6 @@ function Project(projectConfig) {
   }
   */
   this.state = projectConfig;
-  // vado a registrare i layers
-  LayersRegistry.init(projectConfig);
-  LayersRegistry.setProject(this);
 
   this.setters = {
     setBaseLayer: function(id) {
