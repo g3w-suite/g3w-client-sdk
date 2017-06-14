@@ -283,6 +283,13 @@ function EditingService(options) {
       return;
     }
     var self = this;
+    var layer;
+
+    // vado a ciclare sui layer e faccio lo start editing
+    _.forEach(this._layers, function(value, layerId) {
+      layer = LayersRegistry.getLayerById(layerId);
+      layer.startEditing();
+    });
     // chiedo al loader di caricare i dati
     this._loader.loadLayers('w') // carico i layer in modalità editing (scrittura)
     .then(function(vectorLayersLoaded) {

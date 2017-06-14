@@ -1,3 +1,6 @@
+var inherit = require('core/utils/utils').inherit;
+var base = require('core/utils//utils').base;
+var G3WObject = require('core/g3wobject');
 var GeometryTypes = require('core/geometry/geometry').GeometryTypes;
 
 var CAPABILITIES = {
@@ -12,6 +15,7 @@ var EDITOPS = {
 };
 
 function Layer(config) {
+  var self = this;
   // contiene la configurazione statica del layer
   this.config = {
     bbox: config.bbox,
@@ -34,7 +38,7 @@ function Layer(config) {
     wmsUrl: config.wmsUrl
   };
   // contiene il provider associato al layer
-  this.provider = null;
+  this.provider = null; // o this.providers ???? nel caso di un layer wms che vector?
   //contiene i dati del layer
   this.data = null;
   // contiene l'editor associato al layer
@@ -45,7 +49,9 @@ function Layer(config) {
   this.state = {
     visible: config.visible,
     selected: config.selected | false,
-    disabled: config.disabled | false
+    disabled: config.disabled | false,
+    editing: false,
+    currentProvider: null
   };
   // struttura campi del layer
   this.fields = config.fields;
@@ -53,7 +59,16 @@ function Layer(config) {
   this.features = null;
   // relations
   this.relations = config.relations || null;
+  // setters
+  this.setters = {
+    startEditing: function() {
+      self._startEditing();
+    }
+  };
+  base(this);
 }
+
+inherit(Layer, G3WObject);
 
 var proto = Layer.prototype;
 
@@ -81,8 +96,16 @@ proto.setEditor = function(editor) {
   this.editor = editor;
 };
 
-proto.startEditing = function() {
-  this.editor.startEditing();
+proto._startEditing = function() {
+  console.log('start Editing')
+  //this.editor.startEditing();
+};
+
+proto.getData = function(options) {
+  // a seconda delle opzioni cheido al provieder di fornirmi i dati
+  /* var provider = this.getCurrentProvider();
+  provider.getData(options);
+   */
 };
 
 proto.setProvider = function(provider) {
