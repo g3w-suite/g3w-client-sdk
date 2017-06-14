@@ -397,6 +397,9 @@ proto.setupControls = function(){
               QUERYABLE: true,
               SELECTEDORALL: true
             });
+            _.forEach(layers, function(layer) {
+              layer.getData(coordinates);
+            });
             //faccio query by location su i layers selezionati o tutti
             var queryResultsPanel = showQueryResults('interrogazione');
             QueryService.queryByLocation(coordinates, layers)

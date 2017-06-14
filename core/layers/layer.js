@@ -51,7 +51,8 @@ function Layer(config) {
     selected: config.selected | false,
     disabled: config.disabled | false,
     editing: false,
-    currentProvider: null
+    currentProvider: null,
+    modified: false
   };
   // struttura campi del layer
   this.fields = config.fields;
@@ -63,6 +64,9 @@ function Layer(config) {
   this.setters = {
     startEditing: function() {
       self._startEditing();
+    },
+    stopEditing: function() {
+      self._stopEditing();
     }
   };
   base(this);
@@ -80,10 +84,6 @@ proto.getState = function() {
   return this.state;
 };
 
-proto.getData = function() {
-  return this.data;
-};
-
 proto.setData = function(data) {
   this.data = data;
 };
@@ -98,14 +98,26 @@ proto.setEditor = function(editor) {
 
 proto._startEditing = function() {
   console.log('start Editing')
-  //this.editor.startEditing();
+  //this.editor.start();
+};
+
+proto._stopEditing = function() {
+  console.log('stop editing');
+  // this.editor.stop()
 };
 
 proto.getData = function(options) {
   // a seconda delle opzioni cheido al provieder di fornirmi i dati
   /* var provider = this.getCurrentProvider();
-  provider.getData(options);
+  this.data = provider.getData(options);
    */
+  console.log('getData', options);
+  return this.data;
+};
+
+proto.isModified = function() {
+  //medodo che stbilisce se modificato o no
+  return this.state.modified;
 };
 
 proto.setProvider = function(provider) {
