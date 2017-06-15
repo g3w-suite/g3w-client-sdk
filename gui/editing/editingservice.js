@@ -288,6 +288,11 @@ function EditingService(options) {
     // vado a ciclare sui layer e faccio lo start editing
     _.forEach(this._layers, function(value, layerId) {
       layer = LayersRegistry.getLayerById(layerId);
+      // var provider_options = {
+      //   'baseurl': self.config.baseurl,
+      //   'mapService': self._mapService,
+      //   'editingApiField': self._editingApiField
+      // };
       layer.startEditing();
     });
     // chiedo al loader di caricare i dati

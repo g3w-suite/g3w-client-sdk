@@ -1,7 +1,23 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
-var DataProvider = require('./dataproviders/dataprovider');
+// providers
+var GEOJSONDataProvider = require('./dataproviders/geojsondataprovider');
+var G3WDataProvider = require('./dataproviders/g3wdataprovider');
+var KMLDataProvider = require('./dataproviders/kmldataprovider');
+var XMLDataProvider = require('./dataproviders/xmldataprovider');
+var WMSDataProvider = require('./dataproviders/wmsdataprovider');
+var WFSDataProvider = require('./dataproviders/wfsdataprovider');
+
+var Providers = {
+  geojson: GEOJSONDataProvider,
+  kml: KMLDataProvider,
+  xml: XMLDataProvider,
+  g3w: G3WDataProvider,
+  wms: WMSDataProvider,
+  wfs: WFSDataProvider
+};
+
 var GeometryTypes = require('core/geometry/geometry').GeometryTypes;
 
 var CAPABILITIES = {
@@ -16,6 +32,7 @@ var EDITOPS = {
 };
 
 function Layer(config) {
+  console.log(config)
   var self = this;
   // contiene la configurazione statica del layer
   this.config = {
@@ -71,6 +88,8 @@ function Layer(config) {
       self._stopEditing();
     },
     setData: function(data) {
+      // fa in modo che chi interressa saper quando ci sono dat  nuovi
+      // le legga e ne faccia ciò che vuole
       self._setData(data);
     }
   };
@@ -111,14 +130,28 @@ proto._stopEditing = function() {
   // this.editor.stop()
 };
 
+// funzione per la lettura dei dati precedentemente acquisiti dal provider
+proto.readData = function() {
+  return this.data;
+};
+
+// scrive i dati nella feature dopo ad esempio un commit etc / caso wms non serve non ha senso
+proto.writeData = function(data) {
+  this.data = data;
+};
+
+// funzione che recupera i dati da qualsisasi fonte (server, wms, etc..)
 proto.getData = function(options) {
+  options = options || {};
+  var providerName = options.providerName;
+  var provider = new Providers[providerName];
+  provider.getData(options);
   // a seconda delle opzioni cheido al provieder di fornirmi i dati
   /* var provider = this.getCurrentProvider();
   var data = this.getCuprovider.getData(options);
   this.setData(data);
    */
   console.log('getData', options);
-  return this.data;
 };
 
 proto.isModified = function() {
