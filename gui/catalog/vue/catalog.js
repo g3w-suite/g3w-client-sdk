@@ -131,7 +131,6 @@ var vueComponentOptions = {
         }
       }
       _.map(nodes,checkNodes);
-      console.log(layersIds);
       LayersRegistry.toggleLayers(layersIds, parentChecked);
     });
 

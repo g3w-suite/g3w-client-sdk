@@ -19,6 +19,24 @@ var Providers = {
   wfs: WFSDataProvider
 };
 
+
+var ServerTypes = {
+  OGC: "OGC",
+  QGIS: "QGIS",
+  Mapserver: "Mapserver",
+  Geoserver: "Geoserver",
+  ArcGIS: "ArcGIS",
+  OSM: "OSM",
+  Bing: "Bing"
+};
+
+var WMSServerTypes = [
+  ServerTypes.QGIS,
+  ServerTypes.Mapserver,
+  ServerTypes.Geoserver,
+  ServerTypes.OGC
+];
+
 var GeometryTypes = require('core/geometry/geometry').GeometryTypes;
 
 var CAPABILITIES = {
@@ -56,10 +74,7 @@ function Layer(config) {
     wmsUrl: config.wmsUrl
   };
   // contiene il provider associato al layer
-  this.providers = {}; // o this.providers ???? nel caso di un layer wms che vector?
-  //contiene i dati del layer che siano vettoriali, tabellari o ogc
-  // sono forniti dal provider
-  this.data = null;
+  this.dataprovider = null; //
   // contiene l'editor associato al layer
   this.editor = null;
   // contiene la parte dinamica del layer
@@ -89,14 +104,22 @@ function Layer(config) {
     stopEditing: function() {
       self._stopEditing();
     },
-    setData: function(data) {
+    addFeatures: function(features) {
+      _.forEach(features, function(feature) {
+        self.addFeature(feature);
+      })
+    },
+    addFeature: function(feature) {
       // fa in modo che chi interressa saper quando ci sono dat  nuovi
       // le legga e ne faccia ciò che vuole
-      self._setData(data);
+      self._addFeature(feature);
     },
-    // cancellazione di tutti i dati del layer
-    clearData: function() {
-      self._clearData();
+    removeFeature: function(feature) {
+      this._removeFeature(feature);
+    },
+    // cancellazione di tutte le features del layer
+    clearFeatures: function() {
+      self._clearFeatures();
     }
   };
   base(this);
@@ -114,7 +137,7 @@ proto.getState = function() {
   return this.state;
 };
 
-proto._setData = function(data) {
+proto._addFeature = function(data) {
   this.data = data;
 };
 
@@ -137,31 +160,32 @@ proto._stopEditing = function() {
 };
 
 // funzione per la lettura dei dati precedentemente acquisiti dal provider
-proto.readData = function() {
-  return this.data;
+proto.readFeatures = function() {
+  return this.feature;
 };
 
-// scrive i dati nella feature dopo ad esempio un commit etc / caso wms non serve non ha senso
-proto.writeData = function(data) {
-  this.data = data;
+proto.readFeature = function() {
+  //TODO
 };
 
-proto._clearData = function() {
-  this.data = null;
+proto._clearFeatures = function() {
+  this.features = null;
 };
 
 // funzione che recupera i dati da qualsisasi fonte (server, wms, etc..)
-proto.getData = function(options) {
+proto.getFeatures = function(options) {
+  var self = this;
   options = options || {};
-  var providerName = options.providerName;
-  var provider = new Providers[providerName];
-  provider.getData(options);
+  this.provider.getFeatures(options)
+    .then(function(features) {
+      self.addFeatures(features);
+    });
   // a seconda delle opzioni cheido al provieder di fornirmi i dati
   /* var provider = this.getCurrentProvider();
   var data = this.getCuprovider.getData(options);
   this.setData(data);
    */
-  console.log('getData', options);
+  console.log('getFeatures', options);
 };
 
 proto.isModified = function() {
@@ -169,24 +193,8 @@ proto.isModified = function() {
   return this.state.modified;
 };
 
-proto.getProviders = function() {
-  return this.providers;
-};
-
-proto.addProvider = function(provider) {
-  this.providers.push(provider);
-};
-
-proto.getProvider = function(type) {
-  return this.providers[type];
-};
-
-proto.setCurrentProvider = function(provider) {
-  this.state.currentProvider = provider;
-};
-
-proto.getCurrentProvider = function() {
-  return this.state.currentProvider;
+proto.getDataProvider = function() {
+  return this.dataprovider;
 };
 
 proto.getId = function() {
@@ -380,22 +388,5 @@ proto.getWfsCapabilities = function() {
   return this.config.wfscapabilities || this.config.capabilities == 1 ;
 };
 
-
-ServerTypes = {
-  OGC: "OGC",
-  QGIS: "QGIS",
-  Mapserver: "Mapserver",
-  Geoserver: "Geoserver",
-  ArcGIS: "ArcGIS",
-  OSM: "OSM",
-  Bing: "Bing"
-};
-
-WMSServerTypes = [
-  ServerTypes.QGIS,
-  ServerTypes.Mapserver,
-  ServerTypes.Geoserver,
-  ServerTypes.OGC
-];
 
 module.exports = Layer;
