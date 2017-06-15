@@ -12,9 +12,23 @@ inherit(G3WDataProvider, G3WObject);
 
 var proto = G3WDataProvider.prototype;
 
-proto.getData = function() {
+proto.getFeatures = function(options) {
+  options = options || {};
+  var method = options.method || 'query';
+
+  switch (method) {
+    case 'query':
+      return this._query(options.options);
+      break;
+    case 'editing':
+      return
+  }
+};
+
+proto._query = function(options) {
   var d = $.Deferred();
-  return d.promise();
+  d.resolve('ci saranno i dati');
+  return d.promise()
 };
 
 

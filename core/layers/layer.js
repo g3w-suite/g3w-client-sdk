@@ -9,6 +9,7 @@ var KMLDataProvider = require('./dataproviders/kmldataprovider');
 var XMLDataProvider = require('./dataproviders/xmldataprovider');
 var WMSDataProvider = require('./dataproviders/wmsdataprovider');
 var WFSDataProvider = require('./dataproviders/wfsdataprovider');
+var GeometryTypes = require('core/geometry/geometry').GeometryTypes;
 
 var Providers = {
   geojson: GEOJSONDataProvider,
@@ -36,8 +37,6 @@ var WMSServerTypes = [
   ServerTypes.Geoserver,
   ServerTypes.OGC
 ];
-
-var GeometryTypes = require('core/geometry/geometry').GeometryTypes;
 
 var CAPABILITIES = {
   QUERY: 1,
@@ -74,7 +73,7 @@ function Layer(config) {
     wmsUrl: config.wmsUrl
   };
   // contiene il provider associato al layer
-  this.dataprovider = null; //
+  this.dataprovider = new Providers['g3w']; //
   // contiene l'editor associato al layer
   this.editor = null;
   // contiene la parte dinamica del layer
@@ -175,8 +174,7 @@ proto._clearFeatures = function() {
 // funzione che recupera i dati da qualsisasi fonte (server, wms, etc..)
 proto.getFeatures = function(options) {
   var self = this;
-  options = options || {};
-  this.provider.getFeatures(options)
+  this.dataprovider.getFeatures(options)
     .then(function(features) {
       self.addFeatures(features);
     });

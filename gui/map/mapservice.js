@@ -399,18 +399,23 @@ proto.setupControls = function(){
             });
             var dataPromises = [];// raccoglie tutte le promises dei provider del layer
             _.forEach(layers, function(layer) {
-              //dataPromises.push(layer.getData(coordinates));
+              dataPromises.push(layer.getFeatures({
+                method: 'query',
+                options: {
+                  coordinates: coordinates
+                }
+              }))
             });
             //faccio query by location su i layers selezionati o tutti
             var queryResultsPanel = showQueryResults('interrogazione');
-            QueryService.queryByLocation(coordinates, layers)
-            .then(function(results) {
-              queryResultsPanel.setQueryResponse(results,coordinates,self.state.resolution);
-            })
-            .fail(function() {
-              GUI.notify.error('Si è verificato un errore nella richiesta al server');
-              GUI.closeContent();
-            })
+            // QueryService.queryByLocation(coordinates, layers)
+            // .then(function(results) {
+            //   queryResultsPanel.setQueryResponse(results,coordinates,self.state.resolution);
+            // })
+            // .fail(function() {
+            //   GUI.notify.error('Si è verificato un errore nella richiesta al server');
+            //   GUI.closeContent();
+            // })
           });
           self.addControl(controlType,control);
           break;
