@@ -2,20 +2,20 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 // providers
-var GeoJsonProvider = require('./geojsonprovider');
-var G3WProvider = require('./g3wprovider');
-var KmlProvider = require('./kmlprovider');
-var XmlProvider = require('./xmlprovider');
-var WmsProvider = require('./wmsprovider');
-var WfsProvider = require('./wfsprovider');
+var GEOJSONDataProvider = require('./geojsondataprovider');
+var G3WDataProvider = require('./g3wdataprovider');
+var KMLDataProvider = require('./kmldataprovider');
+var XMLDataProvider = require('./xmldataprovider');
+var WMSDataProvider = require('./wmsdataprovider');
+var WFSDataProvider = require('./wfsdataprovider');
 
 var Providers = {
-  geojson: GeoJsonProvider,
-  kml: KmlProvider,
-  xml: XmlProvider,
-  g3w: G3WProvider,
-  wms: WmsProvider,
-  wfs: WfsProvider
+  geojson: GEOJSONDataProvider,
+  kml: KMLDataProvider,
+  xml: XMLDataProvider,
+  g3w: G3WDataProvider,
+  wms: WMSDataProvider,
+  wfs: WFSDataProvider
 };
 
 // classe costruttore che permette a seconda delle caratteristiche dei layers

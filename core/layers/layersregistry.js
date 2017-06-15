@@ -215,4 +215,12 @@ proto.unselectLayer = function(layerId) {
   this.setLayerSelected(layerId, false);
 };
 
+proto.isVisible = function() {
+  return this.state.visible;
+};
+
+proto.isSelected = function() {
+  return this.state.selected;
+};
+
 module.exports = new LayersRegistry();

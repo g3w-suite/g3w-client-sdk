@@ -2,7 +2,7 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 
-function WmsProvider(options) {
+function WFSDataProvider(options) {
   options = options || {};
   this.getData = function() {
     var d = $.Deferred();
@@ -11,6 +11,6 @@ function WmsProvider(options) {
   base(this);
 }
 
-inherit(WmsProvider, G3WObject);
+inherit(WFSDataProvider, G3WObject);
 
-module.exports = WmsProvider;
+module.exports = WFSDataProvider;

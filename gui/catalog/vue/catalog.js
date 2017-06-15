@@ -130,6 +130,7 @@ var vueComponentOptions = {
         }
       }
       _.map(nodes,checkNodes);
+      console.log(layersIds);
       LayersRegistry.toggleLayers(layersIds, parentChecked);
     });
 
@@ -199,7 +200,8 @@ Vue.component('tristate-tree', {
       expanded: this.layerstree.expanded,
       parentChecked: !this.checked,
       controltoggled: false,
-      n_childs: null
+      n_childs: null,
+      layer: null // aggiiunto il layer perchè voglio lavorare con i layer e non con i layerstree
     }
   },
   watch: {
@@ -225,8 +227,9 @@ Vue.component('tristate-tree', {
       this.n_childs = _childsLength;//this.layerstree.nodes ? this.layerstree.nodes.length : 0;
       var isFolder = this.n_childs ? true : false;
       if (isFolder) {
-
         this.n_parentChilds = this.n_childs - _visibleChilds;
+      } else {
+        this.layer = LayersRegistry.getLayerById(this.layerstree.id);
       }
       return isFolder
     },
@@ -264,8 +267,8 @@ Vue.component('tristate-tree', {
         CatalogEventHub.$emit('treenodetoogled',this.layerstree);
       }
     },
-    select: function (layerstree) {
-      if (!this.isFolder && !layerstree.external) {
+    select: function (layer) {
+      if (!this.isFolder && !this.layerstree.external) {
         CatalogEventHub.$emit('treenodeselected', this.layerstree);
       }
     },
