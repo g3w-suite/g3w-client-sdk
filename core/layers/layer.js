@@ -32,7 +32,6 @@ var EDITOPS = {
 };
 
 function Layer(config) {
-  console.log(config)
   var self = this;
   // contiene la configurazione statica del layer
   this.config = {
