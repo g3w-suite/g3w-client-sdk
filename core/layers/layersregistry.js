@@ -36,22 +36,6 @@ inherit(LayersRegistry, G3WObject);
 
 proto = LayersRegistry.prototype;
 
-proto.getConfig = function() {
-  return this._config;
-};
-
-proto.setProject = function(project) {
-  this._project = project;
-};
-
-proto.getProject = function() {
-  return this._project;
-};
-
-proto.getLayersTree = function() {
-  return this._layerstree;
-};
-
 proto._addLayer = function(layer) {
   this._layers[layer.getId()] = layer;
 };
@@ -72,7 +56,6 @@ proto.removeLayers = function(layersId) {
     self.removeLayer(layer)
   })
 };
-
 
 proto.getLayersDict = function(options) {
   var options = options || {};
