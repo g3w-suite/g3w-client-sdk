@@ -859,7 +859,7 @@ proto.setupLayers = function(){
     // creo configurazione per costruire il layer wms
     var config = {
       // getWMSUrl funzione creata in fase di inizializzazione dell'applicazione
-      url: layers[0].getWmsUrl(),
+      url: self.project.getWmsUrl(),
       id: multilayerId,
       tiled: tiled
     };
@@ -899,7 +899,7 @@ proto.getOverviewMapLayers = function(project) {
     var multilayerId = 'overview_layer_'+id;
     var tiled = layers[0].state.tiled;
     var config = {
-      url: layers[0].getWmsUrl(),
+      url: project.getWmsUrl(),
       id: multilayerId,
       tiled: tiled
     };

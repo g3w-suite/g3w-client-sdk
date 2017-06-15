@@ -315,9 +315,7 @@ proto.getServerType = function() {
 };
 
 proto.getCrs = function() {
-  var LayersRegistry = require('./layersregistry');
-  var project = LayersRegistry.getProject();
-  return project.getCrs();
+  return 3003;
 };
 
 proto.isWMS = function() {
@@ -370,9 +368,7 @@ proto.getInfoFormat = function(ogcService) {
     return this.config.infoformat;
   }
   else {
-    var LayersRegistry = require('./layersregistry');
-    var project = LayersRegistry.getProject();
-    return project.getInfoFormat();
+    return 'application/vnd.ogc.gml';
   }
 };
 
@@ -384,23 +380,6 @@ proto.getWfsCapabilities = function() {
   return this.config.wfscapabilities || this.config.capabilities == 1 ;
 };
 
-proto.getWmsUrl = function() {
-  var url;
-  if (this.config.source && this.config.source.type == 'wms' && this.config.source.url){
-    url = this.config.source.url
-  }
-  else {
-    var LayersRegistry = require('./layersregistry');
-    url = LayersRegistry.getConfig().WMSUrl;
-  }
-  return url;
-};
-
-proto.getLegendUrl = function() {
-  var url = this.getWmsUrl();
-  sep = (url.indexOf('?') > -1) ? '&' : '?';
-  return url+sep+'SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.1.0&FORMAT=image/png&TRANSPARENT=true&ITEMFONTCOLOR=white&LAYERTITLE=True&ITEMFONTSIZE=10&WIDTH=300&LAYER='+this.getWMSLayerName();
-};
 
 ServerTypes = {
   OGC: "OGC",

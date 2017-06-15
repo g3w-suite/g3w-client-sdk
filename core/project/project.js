@@ -70,6 +70,23 @@ proto.getInfoFormat = function() {
   return 'application/vnd.ogc.gml';
 };
 
+proto.getWmsUrl = function() {
+  var url;
+  if (this.state.source && this.state.source.type == 'wms' && this.state.source.url){
+    url = this.state.source.url
+  }
+  else {
+    url = this.state.WMSUrl;
+  }
+  return url;
+};
+
+proto.getLegendUrl = function() {
+  var url = this.getWmsUrl();
+  sep = (url.indexOf('?') > -1) ? '&' : '?';
+  return url+sep+'SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.1.0&FORMAT=image/png&TRANSPARENT=true&ITEMFONTCOLOR=white&LAYERTITLE=True&ITEMFONTSIZE=10&WIDTH=300&LAYER='+this.getWMSLayerName();
+};
+
 
 proto.getLegendUrl = function(layer){
   var url = this.getWmsUrl();

@@ -3,6 +3,8 @@ var base = require('core/utils/utils').base;
 var reject = require('core/utils/utils').reject;
 var G3WObject = require('core/g3wobject');
 var Project = require('core/project/project');
+var Layer = require('core/layers/layer');
+var LayersRegistry = require('core/layers/layersregistry');
 
 /* service
 Funzione costruttore contentente tre proprieta':
@@ -18,11 +20,13 @@ function ProjectsRegistry() {
   this.initialized = false;
   //tipo di progetto
   this.projectType = null;
+  this._currentProjectLayersId = [];
   this.setters = {
     setCurrentProject: function(project) {
       self.state.currentProject = project;
       //aggiunto tipo progetto
       self.setProjectType(project.state.type);
+      self.addProjectLayers(project);
     }
   };
   //stato del registro progetti
@@ -69,6 +73,42 @@ proto.init = function(config) {
     })
   }
   return deferred.promise();
+};
+
+proto.addProjectLayers = function(project) {
+  var self = this;
+
+  // prima di tutto verifico che non sia già stato settato un currentProject
+  // andando a rimuovere eventuali layerid appartenti al currentProject precedente
+  this.removeProjectLayers();
+
+  var layerstree = project.getState().layerstree;
+
+  function traverse(obj) {
+    _.forIn(obj, function (layerConfig, key) {
+      //verifica che il valore dell'id non sia nullo
+      if (!_.isNil(layerConfig.id)) {
+        //costruisco il project layer per ogni layer
+        var layer = new Layer(layerConfig);
+        LayersRegistry.addLayer(layer);
+        self._currentProjectLayersId.push(layerConfig.id);
+      }
+      if (!_.isNil(layerConfig.nodes)) {
+        traverse(layerConfig.nodes);
+      }
+    });
+  }
+  traverse(layerstree);
+};
+
+proto.removeProjectLayers = function() {
+  if (this._currentProjectLayersId.length) {
+    _.forEach(this._currentProjectLayersId, function(layerId) {
+      LayersRegistry.removeLayer(layerId);
+    })
+  }
+  // vado a risettare ll'array vuoto
+  this._currentProjectLayersId = [];
 };
 
 proto.setProjectType = function(projectType) {
