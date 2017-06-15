@@ -18,18 +18,24 @@ var Providers = {
   wfs: WFSDataProvider
 };
 
-// classe costruttore che permette a seconda delle caratteristiche dei layers
-// ogcservice etc... di chiamare il proprio providers per effettuare le chiamte al server
-function Provider(options) {
+//
+function DataProvider(options) {
   options = options || {};
   var type = options.type || 'g3w';
   this._provider = Providers[type];
   this.getData = function(options) {
     return this._provider.getData(options); // il getData del provider ritorna sempre una promessa
   };
+  this.addData = function() {
+    console.log('se vedi questo messaggio vuol dire che non è stato sovrascritto dalla classe figlio');
+  };
+  this.deleteData = function() {
+    console.log('se vedi questo messaggio vuol dire che non è stato sovrascritto dalla classe figlio');
+  };
+
   base(this);
 }
 
-inherit(Provider, G3WObject);
+inherit(DataProvider, G3WObject);
 
-module.exports =  Provider;
+module.exports =  DataProvider;

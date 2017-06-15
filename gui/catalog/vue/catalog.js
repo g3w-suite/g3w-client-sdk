@@ -136,7 +136,8 @@ var vueComponentOptions = {
 
     CatalogEventHub.$on('treenodeselected',function(node) {
       var mapservice = GUI.getComponent('map').getService();
-      if (!node.selected) {
+      var layer = LayersRegistry.getLayerById(node.id);
+      if (!layer.isSelected()) {
         LayersRegistry.selectLayer(node.id);
         // emetto il segnale layer selezionato dal catalogo
         mapservice.emit('cataloglayerselected');
