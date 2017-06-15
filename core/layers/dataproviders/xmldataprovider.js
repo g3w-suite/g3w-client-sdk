@@ -4,13 +4,17 @@ var G3WObject = require('core/g3wobject');
 
 function XMLDataProvider(options) {
   options = options || {};
-  this.getData = function() {
-    var d = $.Deferred();
-    return d.promise();
-  };
   base(this);
+  this._name = 'xml';
 }
 
 inherit(XMLDataProvider, G3WObject);
+
+var proto = XMLDataProvider.prototype;
+
+proto.getData = function() {
+  var d = $.Deferred();
+  return d.promise();
+};
 
 module.exports = XMLDataProvider;

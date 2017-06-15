@@ -4,13 +4,18 @@ var G3WObject = require('core/g3wobject');
 
 function WFSDataProvider(options) {
   options = options || {};
-  this.getData = function() {
-    var d = $.Deferred();
-    return d.promise();
-  };
   base(this);
+  this._name = 'wfs';
 }
 
 inherit(WFSDataProvider, G3WObject);
+
+var proto = WFSDataProvider.prototype;
+
+proto.getData = function() {
+  var d = $.Deferred();
+  return d.promise();
+};
+
 
 module.exports = WFSDataProvider;

@@ -4,13 +4,17 @@ var G3WObject = require('core/g3wobject');
 
 function WMSDataProvider(options) {
   options = options || {};
-  this.getData = function() {
-    var d = $.Deferred();
-    return d.promise();
-  };
   base(this);
+  this._name = 'wms';
 }
 
 inherit(WMSDataProvider, G3WObject);
+
+var proto = WMSDataProvider.prototype;
+
+proto.getData = function() {
+  var d = $.Deferred();
+  return d.promise();
+};
 
 module.exports = WMSDataProvider;

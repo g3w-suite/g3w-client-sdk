@@ -4,11 +4,8 @@ var G3WObject = require('core/g3wobject');
 
 function GEOJSONDataProvider(options) {
   options = options || {};
-  this.getData = function() {
-    var d = $.Deferred();
-    return d.promise();
-  };
   base(this);
+  this._name = 'geojson';
 }
 
 inherit(GEOJSONDataProvider, G3WObject);
