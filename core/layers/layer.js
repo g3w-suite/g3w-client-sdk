@@ -1,6 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
+var Editor = require('core/editing/editor');
 // providers
 var GEOJSONDataProvider = require('./dataproviders/geojsondataprovider');
 var G3WDataProvider = require('./dataproviders/g3wdataprovider');
@@ -80,9 +81,11 @@ function Layer(config) {
   this.relations = config.relations || null;
   // setters
   this.setters = {
+    //funzione che segnala lo start editing
     startEditing: function() {
       self._startEditing();
     },
+    // segnalazione stop editing
     stopEditing: function() {
       self._stopEditing();
     },
@@ -90,6 +93,10 @@ function Layer(config) {
       // fa in modo che chi interressa saper quando ci sono dat  nuovi
       // le legga e ne faccia ciò che vuole
       self._setData(data);
+    },
+    // cancellazione di tutti i dati del layer
+    clearData: function() {
+      self._clearData();
     }
   };
   base(this);
@@ -137,6 +144,10 @@ proto.readData = function() {
 // scrive i dati nella feature dopo ad esempio un commit etc / caso wms non serve non ha senso
 proto.writeData = function(data) {
   this.data = data;
+};
+
+proto._clearData = function() {
+  this.data = null;
 };
 
 // funzione che recupera i dati da qualsisasi fonte (server, wms, etc..)
