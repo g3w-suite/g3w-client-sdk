@@ -397,17 +397,25 @@ proto.setupControls = function(){
               QUERYABLE: true,
               SELECTEDORALL: true
             });
-            var dataPromises = [];// raccoglie tutte le promises dei provider del layer
+            var queryPromises = [];// raccoglie tutte le promises dei provider del layer
             _.forEach(layers, function(layer) {
-              dataPromises.push(layer.getFeatures({
+              queryPromises.push(layer.getFeatures({
                 method: 'query',
-                options: {
+                params: {
                   coordinates: coordinates
                 }
               }))
             });
             //faccio query by location su i layers selezionati o tutti
             var queryResultsPanel = showQueryResults('interrogazione');
+            $.when.apply(this, queryPromises)
+              .then(function(results) {
+                queryResultsPanel.setQueryResponse(results,coordinates,self.state.resolution);
+                })
+              .fail(function() {
+                GUI.notify.error('Si è verificato un errore nella richiesta al server');
+                GUI.closeContent();
+              })
             // QueryService.queryByLocation(coordinates, layers)
             // .then(function(results) {
             //   queryResultsPanel.setQueryResponse(results,coordinates,self.state.resolution);

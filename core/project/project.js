@@ -19,7 +19,6 @@ function Project(projectConfig) {
   }
   */
   this.state = projectConfig;
-
   this.setters = {
     setBaseLayer: function(id) {
       _.forEach(self.state.baselayers, function(baseLayer) {

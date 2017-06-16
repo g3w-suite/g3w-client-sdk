@@ -25,7 +25,7 @@ proto.getFeatures = function(options) {
   }
 };
 
-proto._query = function(options) {
+proto.query = function(options) {
   var d = $.Deferred();
   d.resolve('ci saranno i dati');
   return d.promise()

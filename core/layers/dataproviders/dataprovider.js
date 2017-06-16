@@ -10,11 +10,14 @@ function DataProvider(options) {
   base(this);
 }
 
-
 var proto = DataProvider.prototype;
 
-proto.getData = function() {
+proto.getFeatures = function() {
   console.log('da sovrascrivere')
+};
+
+proto.query= function(options) {
+  console.log('metodo da sovrascrivere')
 };
 
 proto.setReady = function(bool) {
@@ -38,7 +41,6 @@ proto.getName = function() {
 };
 
 inherit(DataProvider, G3WObject);
-
 
 
 var Providers = {

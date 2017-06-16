@@ -74,8 +74,10 @@ function Layer(config) {
   };
   // struttura campi del layer
   this.fields = config.fields;
-  // le features
-  this.features = null;
+  // le features di editing (al momento)
+  this.features = [];
+  // le feature derivanti da query info
+  this.queryfeatures = [];
   // relations
   this.relations = config.relations || null;
   // setters
@@ -99,11 +101,21 @@ function Layer(config) {
       self._addFeature(feature);
     },
     removeFeature: function(feature) {
-      this._removeFeature(feature);
+      self._removeFeature(feature);
+    },
+    addQueryFeature: function(feature) {
+      self._addQueryFeature();
+    },
+    removeQueryFeature: function() {
+      sef._removeQueryFeature(feature);
     },
     // cancellazione di tutte le features del layer
     clearFeatures: function() {
       self._clearFeatures();
+    },
+    // cancellazione query features
+    clearQueryFeatures: function() {
+      self._clearQueryFeatures()
     }
   };
   base(this);
@@ -121,8 +133,12 @@ proto.getState = function() {
   return this.state;
 };
 
-proto._addFeature = function(data) {
-  this.data = data;
+proto._addFeature = function(feature) {
+  this.features.push(feature);
+};
+
+proto._addQueryFeature = function(feature) {
+  this.queryfeatures.push(feature);
 };
 
 proto.getEditor = function() {
@@ -169,6 +185,16 @@ proto.getFeatures = function(options) {
   this.setData(data);
    */
   console.log('getFeatures', options);
+};
+
+proto.query = function(options) {
+  var self = this;
+  // vado a cancellate tutte le query features
+  this.clearQueryFeatures();
+  this.dataprovider.query(options)
+    .then(function(features) {
+      self.addQueryFeatures
+    })
 };
 
 proto.isModified = function() {
@@ -306,6 +332,7 @@ proto.getServerType = function() {
 };
 
 proto.getCrs = function() {
+  return 3003;
   return 3003;
 };
 
