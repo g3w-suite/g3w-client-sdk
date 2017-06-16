@@ -37,7 +37,26 @@ proto.getName = function() {
   return this._name;
 };
 
-
 inherit(DataProvider, G3WObject);
 
-module.exports =  DataProvider;
+
+
+var Providers = {
+  geojson: require('./geojsondataprovider'),
+  kml: require('./g3wdataprovider'),
+  xml: require('./kmldataprovider'),
+  g3w: require('./xmldataprovider'),
+  wms: require('./wmsdataprovider'),
+  wfs: require('./wfsdataprovider')
+};
+
+function DataProviderFactory(type,options) {
+  this.build = function(type,options){
+    return Providers[type](options);
+  };
+}
+
+module.exports =  {
+  DataProvider: DataProvider,
+  DataProviderFactory: new DataProviderFactory()
+};

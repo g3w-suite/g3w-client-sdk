@@ -1,6 +1,6 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
-var G3WObject = require('core/g3wobject');
+var DataProvider = require('core/layers/dataproviders/dataprovider').DataProvider;
 
 function KMLDataProvider(options) {
   options = options || {};
@@ -8,7 +8,7 @@ function KMLDataProvider(options) {
   this._name = 'kml';
 }
 
-inherit(KMLDataProvider, G3WObject);
+inherit(KMLDataProvider, DataProvider);
 
 var proto = KMLDataProvider.prototype;
 

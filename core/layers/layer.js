@@ -1,25 +1,10 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
+var DataProviderFactory = require('core/layers/dataproviders/dataprovider').DataProviderFactory;
 var Editor = require('core/editing/editor');
-// providers
-var GEOJSONDataProvider = require('./dataproviders/geojsondataprovider');
-var G3WDataProvider = require('./dataproviders/g3wdataprovider');
-var KMLDataProvider = require('./dataproviders/kmldataprovider');
-var XMLDataProvider = require('./dataproviders/xmldataprovider');
-var WMSDataProvider = require('./dataproviders/wmsdataprovider');
-var WFSDataProvider = require('./dataproviders/wfsdataprovider');
+
 var GeometryTypes = require('core/geometry/geometry').GeometryTypes;
-
-var Providers = {
-  geojson: GEOJSONDataProvider,
-  kml: KMLDataProvider,
-  xml: XMLDataProvider,
-  g3w: G3WDataProvider,
-  wms: WMSDataProvider,
-  wfs: WFSDataProvider
-};
-
 
 var ServerTypes = {
   OGC: "OGC",
@@ -73,7 +58,7 @@ function Layer(config) {
     wmsUrl: config.wmsUrl
   };
   // contiene il provider associato al layer
-  this.dataprovider = new Providers['g3w']; //
+  this.dataprovider = new DataProviderFactory.build('g3w',{}); //
   // contiene l'editor associato al layer
   this.editor = null;
   // contiene la parte dinamica del layer

@@ -1,6 +1,6 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
-var G3WObject = require('core/g3wobject');
+var DataProvider = require('core/layers/dataproviders/dataprovider').DataProvider;
 
 function GEOJSONDataProvider(options) {
   options = options || {};
@@ -8,7 +8,7 @@ function GEOJSONDataProvider(options) {
   this._name = 'geojson';
 }
 
-inherit(GEOJSONDataProvider, G3WObject);
+inherit(GEOJSONDataProvider, DataProvider);
 
 var proto = GEOJSONDataProvider.prototype;
 

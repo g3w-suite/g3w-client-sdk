@@ -1,6 +1,6 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
-var G3WObject = require('core/g3wobject');
+var DataProvider = require('core/layers/dataproviders/dataprovider').DataProvider;
 
 function XMLDataProvider(options) {
   options = options || {};
@@ -8,7 +8,7 @@ function XMLDataProvider(options) {
   this._name = 'xml';
 }
 
-inherit(XMLDataProvider, G3WObject);
+inherit(XMLDataProvider, DataProvider);
 
 var proto = XMLDataProvider.prototype;
 

@@ -1,6 +1,6 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
-var G3WObject = require('core/g3wobject');
+var DataProvider = require('core/layers/dataproviders/dataprovider').DataProvider;
 
 function G3WDataProvider(options) {
   options = options || {};
@@ -8,7 +8,7 @@ function G3WDataProvider(options) {
   this._name = 'g3w';
 }
 
-inherit(G3WDataProvider, G3WObject);
+inherit(G3WDataProvider, DataProvider);
 
 var proto = G3WDataProvider.prototype;
 
