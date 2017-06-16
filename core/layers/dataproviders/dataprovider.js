@@ -17,7 +17,7 @@ proto.getFeatures = function() {
   console.log('da sovrascrivere')
 };
 
-proto.query= function(options) {
+proto.query = function(options) {
   console.log('metodo da sovrascrivere')
 };
 

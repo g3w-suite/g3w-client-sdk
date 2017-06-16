@@ -1,3 +1,7 @@
-/**
- * Created by volterra79 on 14/06/17.
- */
+// implementato 
+
+var Feature = function(options) {
+  ol.Feature.call(this, options);
+};
+
+ol.inherits(Feature, ol.Feature);
