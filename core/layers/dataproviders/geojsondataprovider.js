@@ -12,7 +12,7 @@ inherit(GEOJSONDataProvider, DataProvider);
 
 var proto = GEOJSONDataProvider.prototype;
 
-proto.getData = function() {
+proto.getFearures = function() {
   var d = $.Deferred();
   return d.promise();
 };

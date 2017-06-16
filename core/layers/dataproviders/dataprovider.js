@@ -43,6 +43,7 @@ proto.getName = function() {
 
 function DataProviderFactory(type,options) {
   this.build = function(type,options) {
+    // messo qui altrimenti errore nell'inheritance
     var Providers = {
       geojson: require('./geojsondataprovider'),
       kml: require('./g3wdataprovider'),
