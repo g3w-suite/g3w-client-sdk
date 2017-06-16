@@ -7,6 +7,7 @@ var ProjectsRegistry = require('core/project/projectsregistry');
 var Layer = require('core/layers/layer');
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 var WMSLayer = require('core/map/layer/wmslayer');
+var XYZLayer = require('core/map/layer/xyzlayer');
 var VectorLayer = require('core/map/layer/vectorlayer');
 var ControlsFactory = require('gui/map/control/factory');
 var QueryService = require('core/query/queryservice');
@@ -856,10 +857,10 @@ proto.setupLayers = function(){
   this._reset();
   // recupero i layers dal project
   // sono di tipo projectLayers
-  var layers = LayersRegistry.getLayers();
+  var liveLayers = LayersRegistry.getLayers({CACHED:false});
   //raggruppo per valore del multilayer con chiave valore multilayer
   // e valore array
-  var multiLayers = _.groupBy(layers, function(layer){
+  var multiLayers = _.groupBy(liveLayers, function(layer){
     return layer.state.multilayer;
   });
   //una volta raggruppati per multilayer dove la chiave è il valore del multilayer
@@ -888,6 +889,17 @@ proto.setupLayers = function(){
       mapLayer.addLayer(layer);
     });
   });
+
+  var cachedLayers = LayersRegistry.getLayers({CACHED:true});
+
+  _.forEach(cachedLayers, function(layer, id) {
+    var mapLayer = new XYZLayer({
+      id: id
+    });
+    mapLayer.addLayer(layer);
+    self.addMapLayer(mapLayer);
+  });
+
   // una volta creati tutti i mapLayer apparteneti alla mappa
   _.forEach(this.getMapLayers().reverse(), function(mapLayer) {
     // scorro sui mapLayer (reverse) e aggiungo alla mappa

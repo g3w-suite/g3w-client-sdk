@@ -60,9 +60,31 @@ RasterLayers._WMSLayer = function(options){
   
   imageOptions.source = source;
   
-  var layer = new imageClass(imageOptions);
-  
-  return layer;
+  return new imageClass(imageOptions);
+};
+
+RasterLayers.XYZLayer = function(options){
+  if (!options.url){
+    return;
+  }
+
+  var sourceOptions = {
+    url: options.url
+  };
+
+  if (options.projection){
+    sourceOptions.projection = options.projection;
+  }
+  if (options.maxZoom) {
+    sourceOptions.maxZoom = options.maxZoom;
+  }
+  if (options.minZoom) {
+    sourceOptions.minZoom = options.minZoom;
+  }
+
+  return new ol.layer.Tile({
+    source: new ol.source.XYZ(sourceOptions)
+  });
 };
 
 /*RasterLayers.TiledWMSLayer = function(layerObj){

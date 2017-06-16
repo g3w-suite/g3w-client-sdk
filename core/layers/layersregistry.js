@@ -63,13 +63,14 @@ proto.getLayersDict = function(options) {
   var filterQueryable = options.QUERYABLE;
   var filterVisible = options.VISIBLE;
   var filterSelected = options.SELECTED;
+  var filterCached = options.CACHED;
   var filterSelectedOrAll = options.SELECTEDORALL;
   var filterAllNotSelected = options.ALLNOTSELECTED;
   var filterWfs = options.WFS;
   if (filterSelectedOrAll) {
     filterSelected = null;
   }
-  if (_.isUndefined(filterQueryable) && _.isUndefined(filterVisible) && _.isUndefined(filterActive) && _.isUndefined(filterSelected) && _.isUndefined(filterSelectedOrAll)) {
+  if (_.isUndefined(filterQueryable) && _.isUndefined(filterVisible) && _.isUndefined(filterActive) && _.isUndefined(filterSelected) && _.isUndefined(filterCached) && _.isUndefined(filterSelectedOrAll)) {
     return this._layers;
   }
   var layers = [];
@@ -78,25 +79,31 @@ proto.getLayersDict = function(options) {
   });
 
 
-  if (filterActive) {
+  if (typeof filterActive == 'boolean') {
     layers = _.filter(layers, function(layer) {
-      return filterActive && !layer.isDisabled();
+      return filterActive == !layer.isDisabled();
     });
   }
 
-  if (filterQueryable) {
+  if (typeof filterQueryable == 'boolean') {
     layers = _.filter(layers, function(layer) {
-      return filterQueryable && layer.isQueryable();
+      return filterQueryable == layer.isQueryable();
     });
   }
 
-  if (filterVisible) {
+  if (typeof filterVisible == 'boolean') {
     layers = _.filter(layers,function(layer){
-      return filterVisible && layer.isVisible();
+      return filterVisible == layer.isVisible();
     });
   }
 
-  if (filterSelected) {
+  if (typeof filterCached == 'boolean') {
+    layers = _.filter(layers,function(layer){
+      return filterCached == layer.isCached();
+    });
+  }
+
+  if (typeof filterSelected == 'boolean') {
     layers = _.filter(layers,function(layer){
       return filterSelected && layer.isSelected();
     });

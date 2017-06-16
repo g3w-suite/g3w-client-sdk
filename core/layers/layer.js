@@ -55,7 +55,8 @@ function Layer(config) {
     servertype: config.servertype,
     source: config.source,
     title: config.title,
-    wmsUrl: config.wmsUrl
+    wmsUrl: config.wmsUrl,
+    cacheUrl: config.cache_url
   };
   // contiene il provider associato al layer
   this.dataprovider = new DataProviderFactory.build('g3w',{}); //
@@ -283,6 +284,10 @@ proto.isDisabled = function() {
   return this.state.disabled;
 };
 
+proto.isCached = function() {
+  return this.config.cacheUrl && this.config.cacheUrl != '' ? true : false;
+};
+
 proto.isQueryable = function() {
   var queryEnabled = false;
   var queryableForCababilities = (this.config.capabilities && (this.config.capabilities && CAPABILITIES.QUERY)) ? true : false;
@@ -332,8 +337,7 @@ proto.getServerType = function() {
 };
 
 proto.getCrs = function() {
-  return 3003;
-  return 3003;
+  return this.config.crs;
 };
 
 proto.isWMS = function() {
@@ -360,6 +364,12 @@ proto.getWFSLayerName = function() {
     layerName = this.config.source.layers;
   }
   return layerName;
+};
+
+proto.getCacheUrl = function(){
+  if (this.isCached()) {
+    return this.config.cacheUrl;
+  }
 };
 
 proto.getQueryUrl = function() {
