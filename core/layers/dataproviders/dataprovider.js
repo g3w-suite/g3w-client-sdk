@@ -2,13 +2,14 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 
-
 function DataProvider(options) {
   options = options || {};
   this._isReady = false;
   this._name = 'dataprovider';
   base(this);
 }
+
+inherit(DataProvider, G3WObject);
 
 var proto = DataProvider.prototype;
 
@@ -40,20 +41,16 @@ proto.getName = function() {
   return this._name;
 };
 
-inherit(DataProvider, G3WObject);
-
-
-var Providers = {
-  geojson: require('./geojsondataprovider'),
-  kml: require('./g3wdataprovider'),
-  xml: require('./kmldataprovider'),
-  g3w: require('./xmldataprovider'),
-  wms: require('./wmsdataprovider'),
-  wfs: require('./wfsdataprovider')
-};
-
 function DataProviderFactory(type,options) {
-  this.build = function(type,options){
+  this.build = function(type,options) {
+    var Providers = {
+      geojson: require('./geojsondataprovider'),
+      kml: require('./g3wdataprovider'),
+      xml: require('./kmldataprovider'),
+      g3w: require('./xmldataprovider'),
+      wms: require('./wmsdataprovider'),
+      wfs: require('./wfsdataprovider')
+    };
     return Providers[type](options);
   };
 }
