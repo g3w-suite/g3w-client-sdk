@@ -41,22 +41,5 @@ proto.getName = function() {
   return this._name;
 };
 
-function DataProviderFactory(type,options) {
-  this.build = function(type,options) {
-    // messo qui altrimenti errore nell'inheritance
-    var Providers = {
-      geojson: require('./geojsondataprovider'),
-      kml: require('./g3wdataprovider'),
-      xml: require('./kmldataprovider'),
-      g3w: require('./xmldataprovider'),
-      wms: require('./wmsdataprovider'),
-      wfs: require('./wfsdataprovider')
-    };
-    return Providers[type](options);
-  };
-}
 
-module.exports =  {
-  DataProvider: DataProvider,
-  DataProviderFactory: new DataProviderFactory()
-};
+module.exports = DataProvider;

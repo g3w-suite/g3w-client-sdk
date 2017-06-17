@@ -3,11 +3,10 @@ var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
 
 // Interfaccia per registare i layers
-function LayersRegistry() {
+function LayersStore() {
   var self = this;
   this._config = null;
   this._layers = {};
-  this._layerstree = null;
   this.setters = {
     setLayersVisible: function (layersIds, visible) {
       var self = this;
@@ -32,9 +31,9 @@ function LayersRegistry() {
   base(this);
 }
 
-inherit(LayersRegistry, G3WObject);
+inherit(LayersStore, G3WObject);
 
-proto = LayersRegistry.prototype;
+proto = LayersStore.prototype;
 
 proto._addLayer = function(layer) {
   this._layers[layer.getId()] = layer;
@@ -191,4 +190,4 @@ proto.isSelected = function() {
   return this.state.selected;
 };
 
-module.exports = new LayersRegistry();
+module.exports = new LayersStore();

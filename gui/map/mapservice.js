@@ -13,7 +13,7 @@ var ControlsFactory = require('gui/map/control/factory');
 var QueryService = require('core/query/queryservice');
 var StreetViewService = require('gui/streetview/streetviewservice');
 var ControlsRegistry = require('gui/map/control/registry');
-var LayersRegistry = require('core/layers/layersregistry');
+var LayersStore = require('core/layers/layersstore');
 
 
 function MapService(options) {
@@ -196,9 +196,9 @@ function MapService(options) {
     this.emit('ready');
   };
   
-  LayersRegistry.onafter('setLayersVisible',function(layersIds){
+  LayersStore.onafter('setLayersVisible',function(layersIds){
     var mapLayers = _.map(layersIds,function(layerId){
-      var layer = LayersRegistry.getLayerById(layerId);
+      var layer = LayersStore.getLayerById(layerId);
       return self.getMapLayerForLayer(layer);
     });
     self.updateMapLayers(self.getMapLayers());
@@ -211,7 +211,7 @@ function MapService(options) {
 
   this.on('cataloglayerselected', function() {
    var self = this;
-   var layer = LayersRegistry.getLayers({
+   var layer = LayersStore.getLayers({
       SELECTED: true
     });
    if (layer) {
@@ -394,7 +394,7 @@ proto.setupControls = function(){
             var coordinates = e.coordinates;
             self.showMarker(coordinates);
             var showQueryResults = GUI.showContentFactory('query');
-            var layers = LayersRegistry.getLayers({
+            var layers = LayersStore.getLayers({
               QUERYABLE: true,
               SELECTEDORALL: true
             });
@@ -429,7 +429,7 @@ proto.setupControls = function(){
           self.addControl(controlType,control);
           break;
         case 'querybypolygon':
-          var controlLayers = LayersRegistry.getLayers({
+          var controlLayers = LayersStore.getLayers({
             QUERYABLE: true,
             SELECTEDORALL: true
           });
@@ -443,7 +443,7 @@ proto.setupControls = function(){
               var showQueryResults = GUI.showContentFactory('query');
               //faccio query by location su i layers selezionati o tutti
               var queryResultsPanel = showQueryResults('interrogazione');
-              var layers = LayersRegistry.getLayers({
+              var layers = LayersStore.getLayers({
                 QUERYABLE: true,
                 SELECTED: true
               });
@@ -451,7 +451,7 @@ proto.setupControls = function(){
                 .then(function (results) {
                   if (results && results.data && results.data[0].features.length) {
                     var geometry = results.data[0].features[0].getGeometry();
-                    var queryLayers = LayersRegistry.getLayers({
+                    var queryLayers = LayersStore.getLayers({
                       QUERYABLE: true,
                       ALLNOTSELECTED: true,
                       WFS: true
@@ -487,7 +487,7 @@ proto.setupControls = function(){
           break;
         case 'querybbox':
           if (!isMobile.any && self.checkWFSLayers()) {
-            var controlLayers = LayersRegistry.getLayers({
+            var controlLayers = LayersStore.getLayers({
               QUERYABLE: true,
               SELECTEDORALL: true,
               WFS: true
@@ -499,7 +499,7 @@ proto.setupControls = function(){
             if (control) {
               control.on('bboxend', function (e) {
                 var bbox = e.extent;
-                var layers = LayersRegistry.getLayers({
+                var layers = LayersStore.getLayers({
                   QUERYABLE: true,
                   SELECTEDORALL: true,
                   WFS: true
@@ -662,7 +662,7 @@ proto.setupControls = function(){
 // verifica se esistono layer querabili che hanno wfs capabilities
 proto.checkWFSLayers = function() {
   var iswfs = false;
-  var layers = LayersRegistry.getLayers({
+  var layers = LayersStore.getLayers({
     QUERYABLE: true,
     SELECTEDORALL: true
   });
@@ -797,7 +797,7 @@ proto.getMapLayerForLayer = function(layer){
 };
 
 proto.getProjectLayer = function(layerId) {
-  return LayersRegistry.getLayerById(layerId);
+  return LayersStore.getLayerById(layerId);
 };
 
 proto.setupBaseLayers = function(){
@@ -857,7 +857,7 @@ proto.setupLayers = function(){
   this._reset();
   // recupero i layers dal project
   // sono di tipo projectLayers
-  var liveLayers = LayersRegistry.getLayers({CACHED:false});
+  var liveLayers = LayersStore.getLayers({CACHED:false});
   //raggruppo per valore del multilayer con chiave valore multilayer
   // e valore array
   var multiLayers = _.groupBy(liveLayers, function(layer){
@@ -890,7 +890,7 @@ proto.setupLayers = function(){
     });
   });
 
-  var cachedLayers = LayersRegistry.getLayers({CACHED:true});
+  var cachedLayers = LayersStore.getLayers({CACHED:true});
 
   _.forEach(cachedLayers, function(layer, id) {
     var mapLayer = new XYZLayer({
@@ -911,7 +911,7 @@ proto.setupLayers = function(){
 
 proto.getOverviewMapLayers = function(project) {
 
-  var projectLayers = LayersRegistry.getLayers({
+  var projectLayers = LayersStore.getLayers({
     'VISIBLE': true
   });
 

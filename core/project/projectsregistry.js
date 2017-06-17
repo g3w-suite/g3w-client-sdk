@@ -4,7 +4,7 @@ var reject = require('core/utils/utils').reject;
 var G3WObject = require('core/g3wobject');
 var Project = require('core/project/project');
 var Layer = require('core/layers/layer');
-var LayersRegistry = require('core/layers/layersregistry');
+var LayersStore = require('core/layers/layersstore');
 
 /* service
 Funzione costruttore contentente tre proprieta':
@@ -92,7 +92,7 @@ proto.addProjectLayers = function(project) {
         layerConfig.wmsUrl = project.getState().WMSUrl;
         //costruisco il project layer per ogni layer
         var layer = new Layer(layerConfig);
-        LayersRegistry.addLayer(layer);
+        LayersStore.addLayer(layer);
         self._currentProjectLayersId.push(layerConfig.id);
       }
       if (!_.isNil(layerConfig.nodes)) {
@@ -106,7 +106,7 @@ proto.addProjectLayers = function(project) {
 proto.removeProjectLayers = function() {
   if (this._currentProjectLayersId.length) {
     _.forEach(this._currentProjectLayersId, function(layerId) {
-      LayersRegistry.removeLayer(layerId);
+      LayersStore.removeLayer(layerId);
     })
   }
   // vado a risettare ll'array vuoto

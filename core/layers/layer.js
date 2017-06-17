@@ -1,9 +1,10 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
-var DataProviderFactory = require('core/layers/dataproviders/dataprovider').DataProviderFactory;
+var DataProviderFactory = require('core/layers/dataproviders/dataprovidersfactory');
+var FeaturesStore = require('core/layers/features/featuresstore');
+var Feature = require('core/layers/features/feature');
 var Editor = require('core/editing/editor');
-
 var GeometryTypes = require('core/geometry/geometry').GeometryTypes;
 
 var ServerTypes = {
@@ -76,9 +77,9 @@ function Layer(config) {
   // struttura campi del layer
   this.fields = config.fields;
   // le features di editing (al momento)
-  this.features = [];
+  this._featuresStore = new FeaturesStore();
   // le feature derivanti da query info
-  this.queryfeatures = [];
+  this._queryfeaturesStore = new FeaturesStore();
   // relations
   this.relations = config.relations || null;
   // setters
@@ -91,24 +92,26 @@ function Layer(config) {
     stopEditing: function() {
       self._stopEditing();
     },
-    addFeatures: function(features) {
-      _.forEach(features, function(feature) {
-        self.addFeature(feature);
+    addFeatures: function(featuresConfig) {
+      _.forEach(featuresConfig, function(featureConfig) {
+        self.addFeature(featureConfig);
       })
     },
-    addFeature: function(feature) {
-      // fa in modo che chi interressa saper quando ci sono dat  nuovi
-      // le legga e ne faccia ciò che vuole
-      self._addFeature(feature);
+    addFeature: function(featureConfig) {
+      // leggo la configurazione, istanzio la feature
+      var feature = new Feature(featureConfig);
+      //e la passo al featurestore
+      self._featuresStore.addFeature(feature);
     },
     removeFeature: function(feature) {
-      self._removeFeature(feature);
+      self._featuresStore.removeFeature(feature);
     },
-    addQueryFeature: function(feature) {
-      self._addQueryFeature();
+    addQueryFeature: function(featureConfig) {
+      var feature = new Feature(featureConfig);
+      self._queryfeaturesStore.addFeature(feature);
     },
-    removeQueryFeature: function() {
-      sef._removeQueryFeature(feature);
+    removeQueryFeature: function(feature) {
+      self._queryfeaturesStore.removeFeature(feature);
     },
     // cancellazione di tutte le features del layer
     clearFeatures: function() {
@@ -132,14 +135,6 @@ proto.getConfig = function() {
 
 proto.getState = function() {
   return this.state;
-};
-
-proto._addFeature = function(feature) {
-  this.features.push(feature);
-};
-
-proto._addQueryFeature = function(feature) {
-  this.queryfeatures.push(feature);
 };
 
 proto.getEditor = function() {
@@ -378,7 +373,7 @@ proto.getQueryUrl = function() {
     infoUrl = this.config.infourl;
   }
   else {
-    var LayersRegistry = require('./layersregistry');
+    var LayersRegistry = require('./layersstore');
     infoUrl = LayersRegistry.getConfig().WMSUrl;
   }
   if (this.getServerType() != 'QGIS') {

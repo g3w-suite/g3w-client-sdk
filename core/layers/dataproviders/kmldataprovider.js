@@ -1,6 +1,6 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
-var DataProvider = require('core/layers/dataproviders/dataprovider').DataProvider;
+var DataProvider = require('core/layers/dataproviders/dataprovider');
 
 function KMLDataProvider(options) {
   options = options || {};

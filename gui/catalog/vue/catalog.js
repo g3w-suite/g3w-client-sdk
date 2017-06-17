@@ -6,7 +6,7 @@ var ComponentsRegistry = require('gui/componentsregistry');
 var GUI = require('gui/gui');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var ControlsRegistry = require('gui/map/control/registry');
-var LayersRegistry = require('core/layers/layersregistry');
+var LayersStore = require('core/layers/layersstore');
 var Service = require('../catalogservice');
 var ChromeComponent = VueColor.Chrome;
 var CatalogEventHub = new Vue();
@@ -115,7 +115,7 @@ var vueComponentOptions = {
         layer.setVisible(!layer.getVisible());
         node.visible = !node.visible;
       } else {
-        LayersRegistry.toggleLayer(node.id);
+        LayersStore.toggleLayer(node.id);
       }
     });
 
@@ -131,18 +131,18 @@ var vueComponentOptions = {
         }
       }
       _.map(nodes,checkNodes);
-      LayersRegistry.toggleLayers(layersIds, parentChecked);
+      LayersStore.toggleLayers(layersIds, parentChecked);
     });
 
     CatalogEventHub.$on('treenodeselected',function(node) {
       var mapservice = GUI.getComponent('map').getService();
-      var layer = LayersRegistry.getLayerById(node.id);
+      var layer = LayersStore.getLayerById(node.id);
       if (!layer.isSelected()) {
-        LayersRegistry.selectLayer(node.id);
+        LayersStore.selectLayer(node.id);
         // emetto il segnale layer selezionato dal catalogo
         mapservice.emit('cataloglayerselected');
       } else {
-        LayersRegistry.unselectLayer(node.id);
+        LayersStore.unselectLayer(node.id);
         mapservice.emit('cataloglayerunselected');
       }
     });
@@ -230,7 +230,7 @@ Vue.component('tristate-tree', {
       if (isFolder) {
         this.n_parentChilds = this.n_childs - _visibleChilds;
       } else {
-        this.layer = LayersRegistry.getLayerById(this.layerstree.id);
+        this.layer = LayersStore.getLayerById(this.layerstree.id);
       }
       return isFolder
     },
