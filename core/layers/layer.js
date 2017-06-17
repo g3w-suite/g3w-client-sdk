@@ -160,8 +160,12 @@ proto.readFeatures = function() {
   return this.feature;
 };
 
-proto.readFeature = function() {
-  //TODO
+proto.readFeatures = function() {
+  return this._featuresStore.readFeatures();
+};
+
+proto.readQueryFeatures = function() {
+  return this._queryfeaturesStore.readFeatures();
 };
 
 proto._clearFeatures = function() {

@@ -38,4 +38,8 @@ proto._clearFeatures = function() {
   // possa reagire allacancellazione di elementi di un array
 };
 
+proto.readFeatures = function() {
+  return this._features;
+};
+
 module.exports = FeaturesStore;
