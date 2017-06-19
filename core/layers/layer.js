@@ -60,7 +60,11 @@ function Layer(config) {
     cacheUrl: config.cache_url
   };
   // contiene il provider associato al layer
-  this.dataprovider = new DataProviderFactory.build('g3w',{}); //
+  this.dataprovider = DataProviderFactory.build('g3w',
+    {
+      layer: this
+    }
+  ); //
   // contiene l'editor associato al layer
   this.editor = null;
   // contiene la parte dinamica del layer
@@ -106,6 +110,11 @@ function Layer(config) {
     removeFeature: function(feature) {
       self._featuresStore.removeFeature(feature);
     },
+    addQueryFeatures: function(featuresConfig) {
+      _.forEach(featuresConfig, function(featureConfig) {
+        self.addQueryFeature(featureConfig);
+      })
+    },
     addQueryFeature: function(featureConfig) {
       var feature = new Feature(featureConfig);
       self._queryfeaturesStore.addFeature(feature);
@@ -119,7 +128,7 @@ function Layer(config) {
     },
     // cancellazione query features
     clearQueryFeatures: function() {
-      self._clearQueryFeatures()
+      self._clearQueryFeatures();
     }
   };
   base(this);
@@ -164,6 +173,9 @@ proto._clearFeatures = function() {
   this._featuresStore.clearFeatures();
 };
 
+proto._clearQueryFeatures = function() {
+  this._queryfeaturesStore.clearFeatures();
+};
 
 proto.readQueryFeatures = function() {
   return this._queryfeaturesStore.readFeatures();

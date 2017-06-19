@@ -3,7 +3,7 @@ var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var GUI = require('gui/gui');
 var ApplicationService = require('core/applicationservice');
-var ProjectsRegistry = require('core/project/projectsregistry');
+var ProjectsStore = require('core/project/projectsstore');
 var Layer = require('core/layers/layer');
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 var WMSLayer = require('core/map/layer/wmslayer');
@@ -67,8 +67,8 @@ function MapService(options) {
   if(!_.isNil(options.project)) {
     this.project = options.project;
   } else {
-    this.project = ProjectsRegistry.getCurrentProject();
-    ProjectsRegistry.onafter('setCurrentProject',function(project){
+    this.project = ProjectsStore.getCurrentProject();
+    ProjectsStore.onafter('setCurrentProject',function(project){
       self.project = project;
       self.setupLayers();
       self._resetView();
@@ -400,11 +400,8 @@ proto.setupControls = function(){
             });
             var queryPromises = [];// raccoglie tutte le promises dei provider del layer
             _.forEach(layers, function(layer) {
-              queryPromises.push(layer.getFeatures({
-                method: 'query',
-                params: {
+              queryPromises.push(layer.query({
                   coordinates: coordinates
-                }
               }))
             });
             //faccio query by location su i layers selezionati o tutti
@@ -577,7 +574,7 @@ proto.setupControls = function(){
           if (!isMobile.any) {
             var overviewProjectGid = self.project.getOverviewProjectGid();
             if (overviewProjectGid) {
-              ProjectsRegistry.getProject(overviewProjectGid)
+              ProjectsStore.getProject(overviewProjectGid)
               .then(function(project){
                 var overViewMapLayers = self.getOverviewMapLayers(project);
                 control = ControlsFactory.create({

@@ -3,7 +3,7 @@ var base = require('core/utils/utils').base;
 var merge = require('core/utils/utils').merge;
 var Component = require('gui/vue/component');
 var QueryResultsService = require('gui/queryresults/queryresultsservice');
-var ProjectsRegistry = require('core/project/projectsregistry');
+var ProjectsStore = require('core/project/projectsstore');
 
 Fields = {};
 Fields.SIMPLE = 'simple';
@@ -78,7 +78,7 @@ var vueComponentOptions = {
     },
     isRelativePath: function(url) {
       if (!_.startsWith(url,'/')) {
-        return ProjectsRegistry.getConfig().mediaurl + url
+        return ProjectsStore.getConfig().mediaurl + url
       }
       return url
     },

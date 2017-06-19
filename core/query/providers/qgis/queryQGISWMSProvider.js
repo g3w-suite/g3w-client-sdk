@@ -2,7 +2,7 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var resolve = require('core/utils/utils').resolve;
-var ProjectsRegistry = require('core/project/projectsregistry');
+var ProjectsStore = require('core/project/projectsstore');
 
 // FILTRI
 var Filters = {
@@ -26,7 +26,7 @@ function QueryQGISWMSProvider() {
     var url = options.url || '';
     var layername = options.layername || null;
     var filter = options.filter || null;
-    var bbox = options.bbox || ProjectsRegistry.getCurrentProject().state.extent.join(',');
+    var bbox = options.bbox || ProjectsStore.getCurrentProject().state.extent.join(',');
     var simpleWmsSearchMaxResults = options.simpleWmsSearchMaxResults || null;
     var crs = options.crs || '4326;';
     return $.get( url, {

@@ -1,7 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
-var ProjectsRegistry = require('core/project/projectsregistry');
+var ProjectsStore = require('core/project/projectsstore');
 var MapService = require('core/map/mapservice');
 
 function Nominatim(){
@@ -10,7 +10,7 @@ function Nominatim(){
   
   this.search = function(query){
     var deferred = $.Deferred();
-    var extent = MapService.extentToWGS84(ProjectsRegistry.getCurrentProject().state.extent);
+    var extent = MapService.extentToWGS84(ProjectsStore.getCurrentProject().state.extent);
     bboxstring = _.join(extent,',');
     var searchUrl = this.url+"/search?viewboxlbrt="+bboxstring+"&bounded=1&format=json&polygon_geojson=1&q="+query;
     $.get(searchUrl,function(result){

@@ -5,7 +5,7 @@ var GUI = require('gui/gui');
 var QueryService = require('core/query/queryservice');
 var ListPanel = require('gui/listpanel').ListPanel;
 var Panel = require('gui/panel');
-var ProjectsRegistry = require('core/project/projectsregistry');
+var ProjectsStore = require('core/project/projectsstore');
 var LayersStore = require('core/layers/layersstore');
 
 //componente vue pannello search

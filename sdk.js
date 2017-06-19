@@ -6,7 +6,7 @@ g3w.core = {
    ApplicationService: require('core/applicationservice'),
    ApiService: require('core/apiservice'),
    Router: require('core/router'),
-   ProjectsRegistry: require('core/project/projectsregistry'),
+   ProjectsStore: require('core/project/projectsstore'),
    Project: require('core/project/project'),
    Layer: require('core/layers/layer'),
    QueryService: require('core/query/queryservice'),

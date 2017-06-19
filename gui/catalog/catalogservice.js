@@ -1,11 +1,11 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
-var ProjectsRegistry = require('core/project/projectsregistry');
+var ProjectsStore = require('core/project/projectsstore');
 
 function CatalogService() {
   this.state = {
-    prstate: ProjectsRegistry.state,
+    prstate: ProjectsStore.state,
     highlightlayers: false,
     externallayers:[]
   };

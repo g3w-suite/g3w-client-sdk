@@ -14,7 +14,7 @@ Funzione costruttore contentente tre proprieta':
 */
 
 // Public interface
-function ProjectsRegistry() {
+function ProjectsStore() {
   var self = this;
   this.config = null;
   this.initialized = false;
@@ -45,9 +45,9 @@ function ProjectsRegistry() {
   base(this);
 }
 
-inherit(ProjectsRegistry, G3WObject);
+inherit(ProjectsStore, G3WObject);
 
-var proto = ProjectsRegistry.prototype;
+var proto = ProjectsStore.prototype;
 
 proto.init = function(config) {
   var self = this;
@@ -268,4 +268,4 @@ proto._buildProjectTree = function(project) {
   });
 };
 
-module.exports = new ProjectsRegistry();
+module.exports = new ProjectsStore();

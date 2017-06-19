@@ -11,3 +11,6 @@ var Feature = function(options) {
 };
 
 ol.inherits(Feature, ol.Feature);
+
+
+module.exports = Feature;

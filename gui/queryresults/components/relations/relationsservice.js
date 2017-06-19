@@ -1,13 +1,13 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
-var ProjectsRegistry = require('core/project/projectsregistry');
+var ProjectsStore = require('core/project/projectsstore');
 var G3WObject = require('core/g3wobject');
 var GUI = require('gui/gui');
 
 
 function RelationsService(options) {
   this.state = {};
-  this._project = ProjectsRegistry.getCurrentProject();
+  this._project = ProjectsStore.getCurrentProject();
   base(this);
 
   this.getRelations = function(options) {

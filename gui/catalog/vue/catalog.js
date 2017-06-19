@@ -4,7 +4,7 @@ var merge = require('core/utils/utils').merge;
 var Component = require('gui/vue/component');
 var ComponentsRegistry = require('gui/componentsregistry');
 var GUI = require('gui/gui');
-var ProjectsRegistry = require('core/project/projectsregistry');
+var ProjectsStore = require('core/project/projectsstore');
 var ControlsRegistry = require('gui/map/control/registry');
 var LayersStore = require('core/layers/layersstore');
 var Service = require('../catalogservice');
@@ -63,7 +63,7 @@ var vueComponentOptions = {
       return this.project.state.title;
     },
     layerstree: function() {
-      var project = ProjectsRegistry.getCurrentProject();
+      var project = ProjectsStore.getCurrentProject();
       return project.state.layerstree;
     },
     baselayers: function(){
@@ -242,7 +242,7 @@ Vue.component('tristate-tree', {
       return isSelected;
     },
     isHighLight: function() {
-      var project = ProjectsRegistry.getCurrentProject();
+      var project = ProjectsStore.getCurrentProject();
       return this.highlightlayers && project.state.crs == this.layerstree.crs &&  this.layerstree.wfscapabilities == 1 ;
     }
 
@@ -344,7 +344,7 @@ Vue.component('layerslegend-item',{
     legendurl: function(){
       // in attesa di risolvere lo schianto di QGSI Server...
       //return "http://localhost/cgi-bin/qgis_mapserv.fcgi?map=/home/giohappy/Scrivania/Dev/G3W/g3w-client/test/progetto/test.qgs&SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&FORMAT=image/png&LAYERTITLE=False&ITEMFONTSIZE=10&LAYER="+this.layer.name;
-      var project = ProjectsRegistry.getCurrentProject();
+      var project = ProjectsStore.getCurrentProject();
       if (project) {
         return project.getLegendUrl(this.layer);
       }
