@@ -390,8 +390,7 @@ proto.getQueryUrl = function() {
     infoUrl = this.config.infourl;
   }
   else {
-    var LayersRegistry = require('./layersstore');
-    infoUrl = LayersRegistry.getConfig().WMSUrl;
+    infoUrl = this.config.wmsUrl;
   }
   if (this.getServerType() != 'QGIS') {
     infoUrl+='SOURCE=wms';
