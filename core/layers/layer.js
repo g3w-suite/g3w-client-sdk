@@ -81,7 +81,7 @@ function Layer(config) {
   // le feature derivanti da query info
   this._queryfeaturesStore = new FeaturesStore();
   // relations
-  this.relations = config.relations || null;
+  this.relations = config.relations || null; // da vedere com gestirle
   // setters
   this.setters = {
     //funzione che segnala lo start editing
@@ -157,44 +157,45 @@ proto._stopEditing = function() {
 
 // funzione per la lettura dei dati precedentemente acquisiti dal provider
 proto.readFeatures = function() {
-  return this.feature;
-};
-
-proto.readFeatures = function() {
   return this._featuresStore.readFeatures();
 };
+
+proto._clearFeatures = function() {
+  this._featuresStore.clearFeatures();
+};
+
 
 proto.readQueryFeatures = function() {
   return this._queryfeaturesStore.readFeatures();
 };
 
 proto._clearFeatures = function() {
-  this.features = null;
+  this._queryfeaturesStore.clearFeatures();
 };
 
 // funzione che recupera i dati da qualsisasi fonte (server, wms, etc..)
 proto.getFeatures = function(options) {
   var self = this;
+  var d = $.Deferred();
   this.dataprovider.getFeatures(options)
     .then(function(features) {
       self.addFeatures(features);
+      return d.resolve(self.readFeatures());
     });
-  // a seconda delle opzioni cheido al provieder di fornirmi i dati
-  /* var provider = this.getCurrentProvider();
-  var data = this.getCuprovider.getData(options);
-  this.setData(data);
-   */
-  console.log('getFeatures', options);
+  return d.promise();
 };
 
 proto.query = function(options) {
   var self = this;
+  var d = $.Deferred();
   // vado a cancellate tutte le query features
   this.clearQueryFeatures();
   this.dataprovider.query(options)
     .then(function(features) {
-      self.addQueryFeatures
-    })
+      self.addQueryFeatures(features);
+      d.resolve(self.readQueryFeatures());
+    });
+  return d.promise();
 };
 
 proto.isModified = function() {

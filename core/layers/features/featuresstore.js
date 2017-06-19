@@ -34,8 +34,9 @@ proto._removeFeature = function(feature) {
 };
 
 proto._clearFeatures = function() {
-  // vado a rimuovere le feature in modo reattivo utlizzando metodi che vue
+  // vado a rimuovere le feature in modo reattivo (per vue) utlizzando metodi che vue
   // possa reagire allacancellazione di elementi di un array
+  this._features.splice(0, this._features.length);
 };
 
 proto.readFeatures = function() {
