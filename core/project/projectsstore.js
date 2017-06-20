@@ -89,7 +89,8 @@ proto.addProjectLayers = function(project) {
       //verifica che il valore dell'id non sia nullo
       if (!_.isNil(layerConfig.id)) {
         // vado ad aggiungere il wmsUrl
-        layerConfig.wmsUrl = project.getState().WMSUrl;
+        layerConfig.wmsUrl = project.getWmsUrl();
+        layerConfig.projectCrs = project.getCrs();
         //costruisco il project layer per ogni layer
         var layer = new Layer(layerConfig);
         LayersStore.addLayer(layer);

@@ -42,6 +42,7 @@ function Layer(config) {
     bbox: config.bbox,
     capabilities: config.capabilities,
     crs: config.crs,
+    projectCrs: config.projectCrs,
     editops: config.editops,
     geometrytype: config.geometrytype,
     id: config.id,
@@ -319,6 +320,10 @@ proto.getServerType = function() {
 
 proto.getCrs = function() {
   return this.config.crs;
+};
+
+proto.getProjectCrs = function() {
+  return this.config.projectCrs
 };
 
 proto.getEpsg = function() {
