@@ -1,6 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var DataProvider = require('core/layers/dataproviders/dataprovider');
+var GUI = require('gui/gui');
 
 var PIXEL_TOLERANCE = 10;
 
@@ -9,6 +10,8 @@ function  QGISDataProvider(options) {
   base(this);
   this._name = 'qgis';
   this._layer = options.layer || null;
+  this._layerName = options.layerName || null;
+  this._infoFormat = options.infoFormat || 'application/vnd.ogc.gml';
 }
 
 inherit(QGISDataProvider, DataProvider);
@@ -17,51 +20,6 @@ var proto = QGISDataProvider.prototype;
 
 proto.getFeatures = function(options) {
   options = options || {};
-};
-
-proto.query = function(options) {
-  var d = $.Deferred();
-  var coordinates = options.coordinates || [];
-  var urlForLayer = this.getInfoFromLayer();
-  var resolution = options.resolution || null;
-  var epsg = this._layer.getEpsg();
-  var queryUrlForLayer = [];
-  var sourceParam = urlForLayer.url.split('SOURCE');
-  urlForLayer.url = sourceParam[0];
-  if (sourceParam.length > 1) {
-    sourceParam = '&SOURCE' + sourceParam[1];
-  } else {
-    sourceParam = '';
-  }
-  var queryLayers = [this._layer];
-  var infoFormat = this._layer.getInfoFormat();
-  var params = {
-    LAYERS: _.map(queryLayers,function(layer){ return layer.getQueryLayerName(); }),
-    QUERY_LAYERS: _.map(queryLayers,function(layer){ return layer.getQueryLayerName(); }),
-    INFO_FORMAT: infoFormat,
-    FEATURE_COUNT: 10,
-    // PARAMETRI DI TOLLERANZA PER QGIS SERVER
-    FI_POINT_TOLERANCE: PIXEL_TOLERANCE,
-    FI_LINE_TOLERANCE: PIXEL_TOLERANCE,
-    FI_POLYGON_TOLERANCE: PIXEL_TOLERANCE,
-    G3W_TOLERANCE: PIXEL_TOLERANCE * resolution
-  };
-  var getFeatureInfoUrl = mapService.getGetFeatureInfoUrlForLayer(queryLayers[0],coordinates,resolution,epsg,params);
-  var queryString = getFeatureInfoUrl.split('?')[1];
-  var url = urlForLayer.url+'?'+queryString + sourceParam;
-  queryUrlForLayer.push({
-    url: url,
-    infoformat: infoFormat,
-    queryLayers: queryLayers
-  });
-  this.makeQueryForLayer(queryUrlForLayer, coordinates, resolution)
-    .then(function(response) {
-      d.resolve(response)
-    })
-    .fail(function(e){
-      d.reject(e);
-    });
-  return d.promise();
 };
 
 // funzione che in base ai layers e alla tipologia di servizio
@@ -77,11 +35,62 @@ proto.getInfoFromLayer = function(ogcService) {
     var queryUrl = this._layer.getQueryUrl();
   }
   return {
-      url: queryUrl,
-      infoFormat: this._layer.getInfoFormat(ogcService),
-      crs: this._layer.getCrs(), // dovrebbe essere comune a tutti
-      serverType: this._layer.getServerType() // aggiungo anche il tipo di server
+    url: queryUrl,
+    infoFormat: this._layer.getInfoFormat(ogcService),
+    crs: this._layer.getCrs(), // dovrebbe essere comune a tutti
+    serverType: this._layer.getServerType() // aggiungo anche il tipo di server
   };
+};
+
+// funzione che deve esserere "estratta dal mapservice"
+proto.getGetFeatureInfoUrlForLayer = function(coordinates,resolution,epsg,params) {
+    return this.getOLLayer().getSource().getGetFeatureInfoUrl(coordinate,resolution,epsg,params);
+};
+
+proto.query = function(options) {
+  var d = $.Deferred();
+  var mapService = GUI.getComponent('map').getService();
+  var coordinates = options.coordinates || [];
+  var urlForLayer = this.getInfoFromLayer();
+  var resolution = options.resolution || null;
+  var epsg = this._layer.getEpsg();
+  var queryUrlForLayer = [];
+  var sourceParam = urlForLayer.url.split('SOURCE');
+  urlForLayer.url = sourceParam[0];
+  if (sourceParam.length > 1) {
+    sourceParam = '&SOURCE' + sourceParam[1];
+  } else {
+    sourceParam = '';
+  }
+  var queryLayers = [this._layer];
+  var infoFormat = this._infoFormat;
+  var params = {
+    LAYERS: this._layerName,
+    QUERY_LAYERS: this._layerName,
+    INFO_FORMAT: infoFormat,
+    FEATURE_COUNT: 10,
+    // PARAMETRI DI TOLLERANZA PER QGIS SERVER
+    FI_POINT_TOLERANCE: PIXEL_TOLERANCE,
+    FI_LINE_TOLERANCE: PIXEL_TOLERANCE,
+    FI_POLYGON_TOLERANCE: PIXEL_TOLERANCE,
+    G3W_TOLERANCE: PIXEL_TOLERANCE * resolution
+  };
+  var getFeatureInfoUrl = mapService.getGetFeatureInfoUrlForLayer(queryLayers[0],coordinates,resolution,epsg,params); //urlForLayer.url + '?'+$.param(params, true);
+  var queryString = getFeatureInfoUrl.split('?')[1];
+  var url = urlForLayer.url+'?'+queryString + sourceParam;
+  queryUrlForLayer.push({
+    url: url,
+    infoformat: infoFormat,
+    queryLayers: queryLayers
+  });
+  this.makeQueryForLayer(queryUrlForLayer, coordinates, resolution)
+    .then(function(response) {
+      d.resolve(response)
+    })
+    .fail(function(e){
+      d.reject(e);
+    });
+  return d.promise();
 };
 
 // da verificare generalizzazione
@@ -134,6 +143,33 @@ proto.makeQueryForLayer = function(queryUrlsForLayers, coordinates, resolution) 
   }
   return d.promise()
 };
+
+proto.doRequestAndParse = function(options) {
+  var options = options || {};
+  var url = options.url;
+  var infoFormat = options.infoFormat;
+  var queryLayers = options.queryLayers;
+  var postData = options.postData || null;
+  var self = this;
+  var d = $.Deferred();
+  var request;
+  if (postData) {
+    request = $.post(url, postData)
+  } else {
+    request = $.get(url);
+  }
+  request
+    .done(function(response) {
+      var featuresForLayers = self.handleQueryResponseFromServer(response, infoFormat, queryLayers);
+      d.resolve(featuresForLayers);
+    })
+    .fail(function(){
+      d.reject();
+    });
+  return d;
+};
+
+
 
 proto.convertG3wRelations = function(feature) {
   var g3w_relations = feature.getProperties().g3w_relations;
@@ -258,33 +294,5 @@ proto._parseLayerGeoJSON = function(queryLayer, data) {
   });
   return geojson.readFeatures(data);
 };
-
-
-proto.doRequestAndParse = function(options) {
-  var options = options || {};
-  var url = options.url;
-  var infoFormat = options.infoFormat;
-  var queryLayers = options.queryLayers;
-  var postData = options.postData || null;
-  var self = this;
-  var d = $.Deferred();
-  var request;
-  if (postData) {
-    request = $.post(url, postData)
-  } else {
-    request = $.get(url);
-  }
-  request
-    .done(function(response) {
-      var featuresForLayers = self.handleQueryResponseFromServer(response, infoFormat, queryLayers);
-      d.resolve(featuresForLayers);
-    })
-    .fail(function(){
-      d.reject();
-    });
-  return d;
-};
-
-
 
 module.exports = QGISDataProvider;

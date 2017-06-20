@@ -60,11 +60,11 @@ function Layer(config) {
     cacheUrl: config.cache_url
   };
   // contiene il provider associato al layer
-  this.dataprovider = DataProviderFactory.build('qgis',
-    {
-      layer: this
-    }
-  ); //
+  this.dataprovider = DataProviderFactory.build('qgis', {
+    layer: this,
+    layerName: this.getQueryLayerName(),
+    infoFormat: this.getInfoFormat()
+  }); //
   // contiene l'editor associato al layer
   this.editor = null;
   // contiene la parte dinamica del layer
