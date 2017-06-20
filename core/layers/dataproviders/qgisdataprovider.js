@@ -4,16 +4,16 @@ var DataProvider = require('core/layers/dataproviders/dataprovider');
 
 var PIXEL_TOLERANCE = 10;
 
-function G3WDataProvider(options) {
+function  QGISDataProvider(options) {
   options = options || {};
   base(this);
-  this._name = 'g3w';
+  this._name = 'qgis';
   this._layer = options.layer || null;
 }
 
-inherit(G3WDataProvider, DataProvider);
+inherit(QGISDataProvider, DataProvider);
 
-var proto = G3WDataProvider.prototype;
+var proto = QGISDataProvider.prototype;
 
 proto.getFeatures = function(options) {
   options = options || {};
@@ -287,4 +287,4 @@ proto.doRequestAndParse = function(options) {
 
 
 
-module.exports = G3WDataProvider;
+module.exports = QGISDataProvider;
