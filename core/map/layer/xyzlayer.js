@@ -51,7 +51,7 @@ proto.isVisible = function(){
 
 proto._makeOlLayer = function(){
   var self = this;
-  var crs = this.layer.getCrs();
+  var crs = this.layer.getProjectCrs();
 
   var layerOptions = {
     url: this.layer.getCacheUrl()+"/{z}/{x}/{y}.png",

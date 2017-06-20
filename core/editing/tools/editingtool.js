@@ -63,6 +63,7 @@ proto.stop = function() {
 proto.run = function() {
   console.log('Se appare quasto messaggio significa che non è stato sovrascritto il metodo run() dalla sottoclasse');
 };
+
 // classe costruttore dell'istanza steps
 EditingTool.Steps = function(steps) {
   // metto a -1 in quanto la prima cosa che faccio è

@@ -6,7 +6,7 @@ var EditingTool = require('./editingtool');
 // eridita dalla classe padre EditingTool
 function AddFeatureTool(editor, options) {
 
-  var options = options || {};
+  options = options || {};
   this._running = false;
   this._busy = false;
   // source del layer di editing
