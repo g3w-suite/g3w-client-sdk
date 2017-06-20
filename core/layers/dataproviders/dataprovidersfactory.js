@@ -2,7 +2,7 @@ var Providers = {
   geojson: require('./geojsondataprovider'),
   kml: require('./kmldataprovider'),
   xml: require('./xmldataprovider'),
-  g3w: require('./g3wdataprovider'),
+  qgis: require('./qgisdataprovider'),
   wms: require('./wmsdataprovider'),
   wfs: require('./wfsdataprovider')
 };

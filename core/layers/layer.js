@@ -60,7 +60,7 @@ function Layer(config) {
     cacheUrl: config.cache_url
   };
   // contiene il provider associato al layer
-  this.dataprovider = DataProviderFactory.build('g3w',
+  this.dataprovider = DataProviderFactory.build('qgis',
     {
       layer: this
     }
@@ -205,7 +205,8 @@ proto.query = function(options) {
   this.dataprovider.query(options)
     .then(function(features) {
       self.addQueryFeatures(features);
-      d.resolve(self.readQueryFeatures());
+      d.resolve(features);
+      //d.resolve(self.readQueryFeatures());
     });
   return d.promise();
 };
@@ -350,6 +351,10 @@ proto.getServerType = function() {
 
 proto.getCrs = function() {
   return this.config.crs;
+};
+
+proto.getEpsg = function() {
+  return 'EPSG:' + this.getCrs();
 };
 
 proto.isWMS = function() {
