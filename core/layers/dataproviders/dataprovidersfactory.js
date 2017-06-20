@@ -7,7 +7,7 @@ var Providers = {
   wfs: require('./wfsdataprovider')
 };
 
-function DataProviderFactory(type, options) {
+function DataProviderFactory() {
   this.build = function(type,options) {
     // ritorna l'sitanza del provider selezionato
     return new Providers[type](options);
