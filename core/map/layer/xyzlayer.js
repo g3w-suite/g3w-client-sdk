@@ -4,7 +4,8 @@ var geo = require('core/utils/geo');
 var MapLayer = require('core/map/layer/maplayer');
 var RasterLayers = require('g3w-ol3/src/layers/rasters');
 
-var CACHE_GRID_EXTENT = [0,0,8388608,8388608];
+var GENERCI_GRID_EXTENT = [0,0,8388608,8388608];
+var STANDARD_PROJECTIONS = [3857,900913,4326];
 
 function XYZLayer(options,extraParams){
   var self = this;
@@ -50,17 +51,21 @@ proto.isVisible = function(){
 
 proto._makeOlLayer = function(){
   var self = this;
+  var crs = this.layer.getCrs();
 
-  var projection = new ol.proj.Projection({
-    code: "EPSG:"+this.layer.getCrs(),
-    extent: CACHE_GRID_EXTENT
-  });
-
-  var olLayer = RasterLayers.XYZLayer({
+  var layerOptions = {
     url: this.layer.getCacheUrl()+"/{z}/{x}/{y}.png",
-    projection: projection,
     maxZoom: 20
-  });
+  };
+
+  if (STANDARD_PROJECTIONS.indexOf(crs) < 0) {
+    layerOptions.projection = new ol.proj.Projection({
+      code: "EPSG:"+crs,
+      extent: GENERCI_GRID_EXTENT
+    })
+  }
+
+  var olLayer = RasterLayers.XYZLayer(layerOptions);
 
   olLayer.getSource().on('imageloadstart', function() {
     self.emit("loadstart");
