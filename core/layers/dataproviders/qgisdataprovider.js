@@ -1,6 +1,5 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
-var GUI = require('gui/gui');
 var DataProvider = require('core/layers/dataproviders/dataprovider');
 
 var PIXEL_TOLERANCE = 10;
@@ -23,9 +22,8 @@ proto.getFeatures = function(options) {
 proto.query = function(options) {
   var d = $.Deferred();
   var coordinates = options.coordinates || [];
-  var mapService = GUI.getComponent('map').getService();
   var urlForLayer = this.getInfoFromLayer();
-  var resolution = options.resolution || null;//mapService.getResolution();
+  var resolution = options.resolution || null;
   var epsg = this._layer.getEpsg();
   var queryUrlForLayer = [];
   var sourceParam = urlForLayer.url.split('SOURCE');
