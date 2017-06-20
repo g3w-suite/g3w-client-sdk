@@ -416,7 +416,6 @@ proto.setupControls = function(){
                   data.push(result.data);
                 });
                 results.data = data;
-                console.log(data);
                 queryResultsPanel.setQueryResponse(results, coordinates, self.state.resolution);
                 })
               .fail(function() {
