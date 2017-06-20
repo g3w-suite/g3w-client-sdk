@@ -3,10 +3,17 @@ var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
 
 // Interfaccia per registare i layers
-function FeaturesStore() {
+function FeaturesStore(options) {
   var self = this;
+  options = options || {};
   this._features = [];
+  this._dataprovider = options.dataprovider || null;
   this.setters = {
+    addFeatures: function(features) {
+      _.forEach(features, function(feature) {
+        self._addFeature(feature);
+      })
+    },
     addFeature: function(feature) {
       self._addFeature(feature);
     },
@@ -25,6 +32,18 @@ inherit(FeaturesStore, G3WObject);
 
 proto = FeaturesStore.prototype;
 
+proto.getFeatures = function(options) {
+  var self = this;
+  var d = $.Deferred();
+  this._dataprovider.getFeatures(options)
+    .then(function(features) {
+      // il provider ritornerà 
+      self.addFeatures(features);
+      d.resolve(this._features);
+    });
+  return d.promise();
+};
+
 proto._addFeature = function(feature) {
   this._features.push(feature);
 };
@@ -37,10 +56,6 @@ proto._clearFeatures = function() {
   // vado a rimuovere le feature in modo reattivo (per vue) utlizzando metodi che vue
   // possa reagire allacancellazione di elementi di un array
   this._features.splice(0, this._features.length);
-};
-
-proto.readFeatures = function() {
-  return this._features;
 };
 
 module.exports = FeaturesStore;

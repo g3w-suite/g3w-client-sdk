@@ -814,7 +814,7 @@ proto.setupBaseLayers = function(){
   var baseLayersArray = this.project.state.baselayers;
   var baseLayers = this.project.state.baselayers;
   _.forEach(baseLayers,function(layerConfig){
-    var layer = new ProjectLayer(layerConfig);
+    var layer = new Layer(layerConfig);
     layer.setProject(this);
 
     if (layer.isWMS()) {

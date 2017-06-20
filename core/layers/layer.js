@@ -1,7 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
-var DataProviderFactory = require('core/layers/dataproviders/dataprovidersfactory');
+var ProviderFactory = require('core/layers/providers/providersfactory');
 var FeaturesStore = require('core/layers/features/featuresstore');
 var Feature = require('core/layers/features/feature');
 var Editor = require('core/editing/editor');
@@ -59,12 +59,30 @@ function Layer(config) {
     wmsUrl: config.wmsUrl,
     cacheUrl: config.cache_url
   };
-  // contiene il provider associato al layer
-  this.dataprovider = DataProviderFactory.build('qgis', {
-    layer: this,
-    layerName: this.getQueryLayerName(),
-    infoFormat: this.getInfoFormat()
-  }); //
+
+  // in base alla tipologia di configurazione del layer
+  // viene deciso quale provider deve essere instanziato
+  //TEMPORANEO
+  if (this.config.servertype == 'QGIS') {
+    // contiene il provider associato al layer
+    this.provider = ProviderFactory.build('qgis', {
+      layer: this,
+      layerName: this.getQueryLayerName(),
+      infoFormat: this.getInfoFormat()
+    });
+    // vado a creare il featuresStore che si prenderà cura del recupero
+    // dati (attraverso il suo provider) e salvataggio features
+    this._featuresStore = new FeaturesStore({
+     dataprovider: this._provider //momentaneo
+    });
+  } else {
+    // contiene il provider associato al layer
+    this.provider = ProviderFactory.build('qgis', {
+      layer: this,
+      layerName: this.getQueryLayerName(),
+      infoFormat: this.getInfoFormat()
+    }); //
+  }
   // contiene l'editor associato al layer
   this.editor = null;
   // contiene la parte dinamica del layer
@@ -80,10 +98,6 @@ function Layer(config) {
   };
   // struttura campi del layer
   this.fields = config.fields;
-  // le features di editing (al momento)
-  this._featuresStore = new FeaturesStore();
-  // le feature derivanti da query info
-  this._queryfeaturesStore = new FeaturesStore();
   // relations
   this.relations = config.relations || null; // da vedere com gestirle
   // setters
@@ -96,39 +110,9 @@ function Layer(config) {
     stopEditing: function() {
       self._stopEditing();
     },
-    addFeatures: function(featuresConfig) {
-      _.forEach(featuresConfig, function(featureConfig) {
-        self.addFeature(featureConfig);
-      })
-    },
-    addFeature: function(featureConfig) {
-      // leggo la configurazione, istanzio la feature
-      var feature = new Feature(featureConfig);
-      //e la passo al featurestore
-      self._featuresStore.addFeature(feature);
-    },
-    removeFeature: function(feature) {
-      self._featuresStore.removeFeature(feature);
-    },
-    addQueryFeatures: function(featuresConfig) {
-      _.forEach(featuresConfig, function(featureConfig) {
-        self.addQueryFeature(featureConfig);
-      })
-    },
-    addQueryFeature: function(featureConfig) {
-      var feature = new Feature(featureConfig);
-      self._queryfeaturesStore.addFeature(feature);
-    },
-    removeQueryFeature: function(feature) {
-      self._queryfeaturesStore.removeFeature(feature);
-    },
     // cancellazione di tutte le features del layer
     clearFeatures: function() {
       self._clearFeatures();
-    },
-    // cancellazione query features
-    clearQueryFeatures: function() {
-      self._clearQueryFeatures();
     }
   };
   base(this);
@@ -173,26 +157,14 @@ proto._clearFeatures = function() {
   this._featuresStore.clearFeatures();
 };
 
-proto._clearQueryFeatures = function() {
-  this._queryfeaturesStore.clearFeatures();
-};
-
-proto.readQueryFeatures = function() {
-  return this._queryfeaturesStore.readFeatures();
-};
-
-proto._clearFeatures = function() {
-  this._queryfeaturesStore.clearFeatures();
-};
 
 // funzione che recupera i dati da qualsisasi fonte (server, wms, etc..)
 proto.getFeatures = function(options) {
   var self = this;
   var d = $.Deferred();
-  this.dataprovider.getFeatures(options)
+  this._featuresStore.getFeatures(options)
     .then(function(features) {
-      self.addFeatures(features);
-      return d.resolve(self.readFeatures());
+      return d.resolve(features);
     });
   return d.promise();
 };
@@ -200,13 +172,9 @@ proto.getFeatures = function(options) {
 proto.query = function(options) {
   var self = this;
   var d = $.Deferred();
-  // vado a cancellate tutte le query features
-  this.clearQueryFeatures();
-  this.dataprovider.query(options)
+  this.provider.query(options)
     .then(function(features) {
-      self.addQueryFeatures(features);
       d.resolve(features);
-      //d.resolve(self.readQueryFeatures());
     });
   return d.promise();
 };

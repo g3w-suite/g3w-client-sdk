@@ -1,6 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
-var DataProvider = require('core/layers/dataproviders/dataprovider');
+var DataProvider = require('core/layers/providers/provider');
+var Feature = require('core/layers/features/feature');
 var GUI = require('gui/gui');
 
 var PIXEL_TOLERANCE = 10;

@@ -1,11 +1,12 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
+var Feature = require('core/layers/features/feature');
 
 function DataProvider(options) {
   options = options || {};
   this._isReady = false;
-  this._name = 'dataprovider';
+  this._name = 'provider';
   base(this);
 }
 
