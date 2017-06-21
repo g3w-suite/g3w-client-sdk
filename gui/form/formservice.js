@@ -5,7 +5,7 @@ var G3WObject = require('core/g3wobject');
 var PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
 var ClipBoard = require('core/clipboardservice');
 var QueryService = require('core/query/queryservice');
-var LayersStore = require('core/layers/layersstore');
+var LayersStoresRegistry = require('core/layers/layersstoresregistry');
 
 var Inputs = {};
 Inputs.STRING = 'string';
@@ -346,7 +346,7 @@ function FormService() {
     // disabilito temporanemante lo strato modale per permettere l'interazione con la mappa
     GUI.setModal(false);
     var mapService = GUI.getComponent('map').getService();
-    var layer = LayersStore.getLayerById(field.input.options.layerid);
+    var layer = mapService.getLayersStore.getLayerById(field.input.options.layerid);
     var relFieldName = field.input.options.field;
     var relFieldLabel = layer.getAttributeLabel(field.input.options.field);
     mapService.addInteraction(this.createPickInteraction());
@@ -389,7 +389,7 @@ function FormService() {
     // recupero mapservice perchè mi permette di ineteragire con la mappa
     var mapService = GUI.getComponent('map').getService();
     var vectorLayer = this.editor.getVectorLayer();
-    var layer = LayersStore.getLayerById(vectorLayer.id);
+    var layer = mapService.getLayersStore().getLayerById(vectorLayer.id);
     // l'aggiungo alla mappa
     mapService.addInteraction(this.createPickInteraction());
     // on picked
@@ -437,7 +437,7 @@ function FormService() {
   };
   // restituisce il nome del layer che si è appena cliccato con il picklayer
   this._getlayerPickerLayerName = function(layerId){
-    var layer = LayersStore.getLayerById(layerId);
+    var layer = LayersStoresRegistry.getLayersStore().getLayerById(layerId);
     if (layer){
       return layer.getName();
     }

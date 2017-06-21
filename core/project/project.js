@@ -72,7 +72,7 @@ proto.getCrs = function() {
 
 proto.getProjection = function() {
   return this.projection;
-}
+};
 
 proto.getInfoFormat = function() {
   return 'application/vnd.ogc.gml';

@@ -3,10 +3,10 @@ var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
 
 // Interfaccia per registare i layers
-function LayersStore() {
+function LayersStore(options) {
   var self = this;
-  this._config = null;
-  this._layers = {};
+  options = options || {};
+  this._layers = options.layers || {};
   this.setters = {
     setLayersVisible: function (layersIds, visible) {
       var self = this;
@@ -190,4 +190,4 @@ proto.isSelected = function() {
   return this.state.selected;
 };
 
-module.exports = new LayersStore();
+module.exports = LayersStore;

@@ -6,7 +6,7 @@ var ComponentsRegistry = require('gui/componentsregistry');
 var GUI = require('gui/gui');
 var ProjectsStore = require('core/project/projectsstore');
 var ControlsRegistry = require('gui/map/control/registry');
-var LayersStore = require('core/layers/layersstore');
+var LayersStoresRegistry = require('core/layers/layersstoresregistry');
 var Service = require('../catalogservice');
 var ChromeComponent = VueColor.Chrome;
 var CatalogEventHub = new Vue();
@@ -115,7 +115,7 @@ var vueComponentOptions = {
         layer.setVisible(!layer.getVisible());
         node.visible = !node.visible;
       } else {
-        LayersStore.toggleLayer(node.id);
+        LayersStoresRegistry.getLayersStore().toggleLayer(node.id);
       }
     });
 
@@ -131,18 +131,18 @@ var vueComponentOptions = {
         }
       }
       _.map(nodes,checkNodes);
-      LayersStore.toggleLayers(layersIds, parentChecked);
+      LayersStoresRegistry.getLayersStore().toggleLayers(layersIds, parentChecked);
     });
 
     CatalogEventHub.$on('treenodeselected',function(node) {
       var mapservice = GUI.getComponent('map').getService();
-      var layer = LayersStore.getLayerById(node.id);
+      var layer = LayersStoresRegistry.getLayersStore().getLayerById(node.id);
       if (!layer.isSelected()) {
-        LayersStore.selectLayer(node.id);
+        LayersStoresRegistry.getLayersStore().selectLayer(node.id);
         // emetto il segnale layer selezionato dal catalogo
         mapservice.emit('cataloglayerselected');
       } else {
-        LayersStore.unselectLayer(node.id);
+        LayersStoresRegistry.getLayersStore().unselectLayer(node.id);
         mapservice.emit('cataloglayerunselected');
       }
     });
@@ -230,7 +230,7 @@ Vue.component('tristate-tree', {
       if (isFolder) {
         this.n_parentChilds = this.n_childs - _visibleChilds;
       } else {
-        this.layer = LayersStore.getLayerById(this.layerstree.id);
+        this.layer = LayersStoresRegistry.getLayersStore().getLayerById(this.layerstree.id);
       }
       return isFolder
     },

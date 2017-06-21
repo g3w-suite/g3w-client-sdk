@@ -3,8 +3,8 @@ var base = require('core/utils/utils').base;
 var reject = require('core/utils/utils').reject;
 var G3WObject = require('core/g3wobject');
 var Project = require('core/project/project');
-var Layer = require('core/layers/layer');
-var LayersStore = require('core/layers/layersstore');
+var GeoLayer = require('core/layers/geolayer');
+var LayersStoresRegistry = require('core/layers/layersstoresregistry');
 
 /* service
 Funzione costruttore contentente tre proprieta':
@@ -92,8 +92,8 @@ proto.addProjectLayers = function(project) {
         layerConfig.wmsUrl = project.getWmsUrl();
         layerConfig.project = project;
         //costruisco il project layer per ogni layer
-        var layer = new Layer(layerConfig);
-        LayersStore.addLayer(layer);
+        var layer = new GeoLayer(layerConfig);
+        LayersStoresRegistry.getLayersStore().addLayer(layer);
         self._currentProjectLayersId.push(layerConfig.id);
       }
       if (!_.isNil(layerConfig.nodes)) {
@@ -107,7 +107,7 @@ proto.addProjectLayers = function(project) {
 proto.removeProjectLayers = function() {
   if (this._currentProjectLayersId.length) {
     _.forEach(this._currentProjectLayersId, function(layerId) {
-      LayersStore.removeLayer(layerId);
+      LayersStoresRegistry.getLayersStore().removeLayer(layerId);
     })
   }
   // vado a risettare ll'array vuoto
