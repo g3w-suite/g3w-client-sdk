@@ -2,21 +2,22 @@ var inherit = require('core/utils/utils').inherit;
 var resolve = require('core/utils/utils').resolve;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
-var ProjectsStore = require('core/project/projectsstore');
+var LayersStoresRegistry = require('core/layers/layersstoresregistry');
 
 
 function PrinterQGISProvider() {
   base(this);
+
   this._getPrintUrl = function(options) {
     var options = options || {};
-    var project =  ProjectsStore.getCurrentProject();
+    var layersStore =  LayersStoresRegistry.getLayersStore();
     var templateMap = options.map || 'map0';
     var url = project.getWmsUrl();
     // devo fare il reverse perchè l'odine conta sulla visualizzazione del print
-    var layers = _.reverse(project.getLayers({
+    var layers = _.reverse(layersStore.getLayers({
       ACTIVE: true,
-      VISIBLE: true
-      //SELECTEDORALL: true
+      VISIBLE: true,
+      SERVERTYPE: 'QGIS'
     }));
     layers = _.map(layers,function(layer){
       return layer.getQueryLayerName()
@@ -28,7 +29,7 @@ function PrinterQGISProvider() {
       TEMPLATE: options.template,
       DPI: options.dpi,
       FORMAT: 'pdf',
-      CRS:'EPSG:'+project.state.crs,
+      CRS:layersStore.getProjection().getCode(),
       LAYERS: layers.join()
     };
     // AL comento commento

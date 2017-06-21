@@ -60,7 +60,7 @@ var vueComponentOptions = {
       return this.state.prstate.currentProject
     },
     title: function() {
-      return this.project.state.title;
+      return this.project.state.name;
     },
     layerstree: function() {
       var project = ProjectsStore.getCurrentProject();

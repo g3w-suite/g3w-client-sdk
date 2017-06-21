@@ -74,11 +74,18 @@ proto.getLayersDict = function(options) {
   var filterCached = options.CACHED;
   var filterSelectedOrAll = options.SELECTEDORALL;
   var filterAllNotSelected = options.ALLNOTSELECTED;
+  var filterServerType = options.SERVERTYPE;
   var filterWfs = options.WFS;
   if (filterSelectedOrAll) {
     filterSelected = null;
   }
-  if (_.isUndefined(filterQueryable) && _.isUndefined(filterVisible) && _.isUndefined(filterActive) && _.isUndefined(filterSelected) && _.isUndefined(filterCached) && _.isUndefined(filterSelectedOrAll)) {
+  if (_.isUndefined(filterQueryable)
+    && _.isUndefined(filterVisible)
+    && _.isUndefined(filterActive)
+    && _.isUndefined(filterSelected)
+    && _.isUndefined(filterCached)
+    && _.isUndefined(filterSelectedOrAll)
+    && _.isUndefined(filterServerType)) {
     return this._layers;
   }
   var layers = [];
@@ -114,6 +121,12 @@ proto.getLayersDict = function(options) {
   if (typeof filterSelected == 'boolean') {
     layers = _.filter(layers,function(layer){
       return filterSelected && layer.isSelected();
+    });
+  }
+
+  if (typeof filterServerType == 'string' && filterServerType!='') {
+    layers = _.filter(layers,function(layer){
+      return filterServerType = layer.getServerType();
     });
   }
   // filtra solo i selezionati

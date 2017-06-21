@@ -15,7 +15,7 @@ function Layer(config) {
     origname: config.origname,
     servertype: config.servertype,
     source: config.source,
-    title: config.title
+    name: config.title
   };
 
   // contiene l'editor associato al layer
