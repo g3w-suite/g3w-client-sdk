@@ -42,7 +42,7 @@ function GeoLayer(config) {
     infourl: config.infourl,
     maxscale: config.maxscale,
     minscale: config.minscale,
-    multilayer: config.multilayer,
+    multilayerid: config.multilayer,
     scalebasedvisibility: config.scalebasedvisibility,
     wmsUrl: config.wmsUrl,
     cacheUrl: config.cache_url
@@ -170,6 +170,10 @@ proto.getOrigName = function() {
 proto.getGeometryType = function() {
   return this.config.geometrytype;
 };
+
+proto.getMultiLayerId = function() {
+  return this.config.multilayerid;
+}
 
 proto.getAttributes = function() {
   return this.fields;
