@@ -25,6 +25,7 @@ g3w.core = {
    Editor: require('core/editing/editor'),
    EditBuffer: require('core/editing/editbuffer'),
    RelationEditBuffer: require('core/editing/relationeditbuffer'),
+   LayersStoreRegistry: require('core/layers/layersstoresregistry'),
    LayersStore: require('core/layers/layersstore')
 
 };

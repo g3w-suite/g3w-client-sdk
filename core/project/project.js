@@ -20,23 +20,43 @@ function Project(projectConfig) {
   }
   */
   this.state = projectConfig;
-  this.layers = [];
-
+  // costruisce il layers tree del progetto in pratica ricostruice le configurazioni dei layers
+  // ad albero
   function traverse(obj) {
-    _.forIn(obj, function (layerConfig, key) {
-      //verifica che il valore dell'id non sia nullo
-      if (!_.isNil(layerConfig.id)) {
-        // vado ad aggiungere il wmsUrl
-        layerConfig.wmsUrl = self.getWmsUrl();
-        layerConfig.project = self;
-        self.layers.push(layerConfig);
+    _.forIn(obj, function (layer, key) {
+      //verifica che il nodo sia un layer e non un folder
+      if (!_.isNil(layer.id)) {
+        var fulllayer;
+        _.forEach(self.state.layers, function(lyr) {
+          if (layer.id == lyr.id) {
+            lyr.wmsUrl = self.getWmsUrl();
+            lyr.project = self;
+            fulllayer = _.merge(lyr, layer);
+            return false
+          }
+        });
+        obj[parseInt(key)] = fulllayer;
       }
-      if (!_.isNil(layerConfig.nodes)) {
-        traverse(layerConfig.nodes);
+      if (!_.isNil(layer.nodes)){
+        // aggiungo proprietà title per l'albero
+        layer.title = layer.name;
+        traverse(layer.nodes);
       }
-    });
+      });
   }
   traverse(this.state.layerstree);
+
+  //BASE LAYERS
+  _.forEach(this.state.baselayers, function(layerConfig) {
+    var visible = false;
+    if (this.initbaselayer) {
+      visible = (layerConfig.id == (project.initbaselayer));
+    }
+    if (layerConfig.fixed) {
+      visible = layerConfig.fixed;
+    }
+    layerConfig.visible = visible;
+  });
 
   this.projection = Projections.get(this.state.crs,this.state.proj4);
 
@@ -50,12 +70,13 @@ function Project(projectConfig) {
 
   base(this);
 }
+
 inherit(Project, G3WObject);
 
 var proto = Project.prototype;
 
 proto.getLayers = function() {
-  return this.layers;
+  return this.state.layers;
 };
 
 proto.getState = function() {

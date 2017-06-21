@@ -194,7 +194,6 @@ proto.getProject = function(projectGid) {
     return this._getProjectFullConfig(pendingProject)
     .then(function(projectFullConfig){
       var projectConfig = _.merge(pendingProject,projectFullConfig);
-      self._buildProjectTree(projectConfig);
       projectConfig.WMSUrl = self.config.getWmsUrl(projectConfig);
       var project = new Project(projectConfig);
       self._projects[projectConfig.gid] = project;
@@ -222,38 +221,5 @@ proto._getProjectFullConfig = function(projectBaseConfig) {
   return deferred.promise();
 };
 
-// costruisce il layers tree del progetto
-proto._buildProjectTree = function(project) {
-  var layers = _.keyBy(project.layers,'id');
-  var layersTree = _.cloneDeep(project.layerstree);
-  
-  function traverse(obj){
-    _.forIn(obj, function (layer, key) {
-      //verifica che il nodo sia un layer e non un folder
-      if (!_.isNil(layer.id)) {
-          var fulllayer = _.merge(layer,layers[layer.id]);
-          obj[parseInt(key)] = fulllayer;
-      }
-      if (!_.isNil(layer.nodes)){
-        // aggiungo proprietà title per l'albero
-        layer.title = layer.name;
-        traverse(layer.nodes);
-      }
-    });
-  }
-  traverse(layersTree);
-  project.layerstree = layersTree;
-  
-  _.forEach(project.baselayers,function(layerConfig){
-    var visible = false;
-    if (project.initbaselayer) {
-      visible = (layerConfig.id == (project.initbaselayer));
-    }
-    if (layerConfig.fixed) {
-      visible = layerConfig.fixed;
-    }
-    layerConfig.visible = visible;
-  });
-};
 
 module.exports = new ProjectsStore();
