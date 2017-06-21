@@ -23,4 +23,12 @@ proto.getLayersStore = function(id) {
   return id ? this.stores[id] : this.defaultStore;
 };
 
+proto.addLayersStore = function(id) {
+  if (id || ! this.stores[id]) {
+    this.stores[id] = new LayersStore();
+    return this.stores[id];
+  }
+};
+
+
 module.exports = new LayersStoresRegistry();

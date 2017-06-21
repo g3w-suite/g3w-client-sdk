@@ -12,7 +12,7 @@ function PrinterQGISProvider() {
     var options = options || {};
     var layersStore =  LayersStoresRegistry.getLayersStore();
     var templateMap = options.map || 'map0';
-    var url = project.getWmsUrl();
+    var url = layersStore.getWmsUrl();
     // devo fare il reverse perchè l'odine conta sulla visualizzazione del print
     var layers = _.reverse(layersStore.getLayers({
       ACTIVE: true,

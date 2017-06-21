@@ -30,7 +30,8 @@ function ProjectsStore() {
       self.defaultLayersStore.setOptions({
         projection: project.getProjection(),
         extent: project.state.extent,
-        initextent: project.state.initextent
+        initextent: project.state.initextent,
+        wmsUrl: project.getWmsUrl()
       });
       self.addProjectLayers(project);
     }
@@ -83,42 +84,22 @@ proto.init = function(config) {
 
 proto.addProjectLayers = function(project) {
   var self = this;
-
   // prima di tutto verifico che non sia già stato settato un currentProject
   // andando a rimuovere eventuali layerid appartenti al currentProject precedente
   this.removeProjectLayers();
-
-  var layerstree = project.getState().layerstree;
-
-  function traverse(obj) {
-    _.forIn(obj, function (layerConfig, key) {
-      //verifica che il valore dell'id non sia nullo
-      if (!_.isNil(layerConfig.id)) {
-        // vado ad aggiungere il wmsUrl
-        layerConfig.wmsUrl = project.getWmsUrl();
-        layerConfig.project = project;
-        //costruisco il project layer per ogni layer
-        var layer = new GeoLayer(layerConfig);
-        self.defaultLayersStore.addLayer(layer);
-        self._currentProjectLayersId.push(layerConfig.id);
-      }
-      if (!_.isNil(layerConfig.nodes)) {
-        traverse(layerConfig.nodes);
-      }
-    });
-  }
-  traverse(layerstree);
+  //costruisco il project layer per ogni layer
+  _.forEach(project.getLayersId, function(layerId) {
+    var layer = new GeoLayer(layerConfig);
+    self.defaultLayersStore.addLayer(layer);
+  })
 };
 
 proto.removeProjectLayers = function() {
-  if (this._currentProjectLayersId.length) {
-    _.forEach(this._currentProjectLayersId, function(layerId) {
-      LayersStoresRegistry.getLayersStore().removeLayer(layerId);
-    })
-  }
-  // vado a risettare ll'array vuoto
-  this._currentProjectLayersId = [];
+  _.forEach(this.currentProject.getLayersId, function(layerId) {
+    LayersStoresRegistry.getLayersStore().removeLayer(layerId);
+  })
 };
+
 
 proto.setProjectType = function(projectType) {
    this.projectType = projectType;

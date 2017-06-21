@@ -3,7 +3,6 @@ var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
 var Projections = require('core/geo/projections');
 
-
 function Project(projectConfig) {
   var self = this;
   /* struttura oggetto 'project'
@@ -21,6 +20,25 @@ function Project(projectConfig) {
   }
   */
   this.state = projectConfig;
+  this._layersId = [];
+
+  var layerstree = this.state.layerstree;
+
+  function traverse(obj) {
+    _.forIn(obj, function (layerConfig, key) {
+      //verifica che il valore dell'id non sia nullo
+      if (!_.isNil(layerConfig.id)) {
+        // vado ad aggiungere il wmsUrl
+        layerConfig.wmsUrl = project.getWmsUrl();
+        layerConfig.project = project;
+        self._layersId.push(layerConfig.id);
+      }
+      if (!_.isNil(layerConfig.nodes)) {
+        traverse(layerConfig.nodes);
+      }
+    });
+  }
+  traverse(layerstree);
 
   this.projection = Projections.get(this.state.crs,this.state.proj4);
 
@@ -38,6 +56,9 @@ inherit(Project, G3WObject);
 
 var proto = Project.prototype;
 
+proto.getLayersId = function() {
+  return this._layersId;
+};
 
 proto.getState = function() {
   return this.state;

@@ -9,7 +9,8 @@ function LayersStore(config) {
   this.config = {
     projection: config.projection,
     extent: config.extent,
-    initextent: config.initextent
+    initextent: config.initextent,
+    wmsUrl: config.wmsUrl
   };
   this._layers = this.config.layers || {};
   this.setters = {
@@ -214,6 +215,10 @@ proto.getExtent = function() {
 
 proto.getInitExtent = function() {
   return this.config.initextent;
+};
+
+proto.getWmsUrl = function() {
+  this.config.wmsUrl;
 };
 
 module.exports = LayersStore;
