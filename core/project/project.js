@@ -20,25 +20,23 @@ function Project(projectConfig) {
   }
   */
   this.state = projectConfig;
-  this._layersId = [];
-
-  var layerstree = this.state.layerstree;
+  this.layers = [];
 
   function traverse(obj) {
     _.forIn(obj, function (layerConfig, key) {
       //verifica che il valore dell'id non sia nullo
       if (!_.isNil(layerConfig.id)) {
         // vado ad aggiungere il wmsUrl
-        layerConfig.wmsUrl = project.getWmsUrl();
-        layerConfig.project = project;
-        self._layersId.push(layerConfig.id);
+        layerConfig.wmsUrl = self.getWmsUrl();
+        layerConfig.project = self;
+        self.layers.push(layerConfig);
       }
       if (!_.isNil(layerConfig.nodes)) {
         traverse(layerConfig.nodes);
       }
     });
   }
-  traverse(layerstree);
+  traverse(this.state.layerstree);
 
   this.projection = Projections.get(this.state.crs,this.state.proj4);
 
@@ -56,8 +54,8 @@ inherit(Project, G3WObject);
 
 var proto = Project.prototype;
 
-proto.getLayersId = function() {
-  return this._layersId;
+proto.getLayers = function() {
+  return this.layers;
 };
 
 proto.getState = function() {

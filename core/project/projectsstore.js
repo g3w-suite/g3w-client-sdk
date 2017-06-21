@@ -88,15 +88,15 @@ proto.addProjectLayers = function(project) {
   // andando a rimuovere eventuali layerid appartenti al currentProject precedente
   this.removeProjectLayers();
   //costruisco il project layer per ogni layer
-  _.forEach(project.getLayersId, function(layerId) {
+  _.forEach(project.getLayers(), function(layerConfig) {
     var layer = new GeoLayer(layerConfig);
     self.defaultLayersStore.addLayer(layer);
   })
 };
 
 proto.removeProjectLayers = function() {
-  _.forEach(this.currentProject.getLayersId, function(layerId) {
-    LayersStoresRegistry.getLayersStore().removeLayer(layerId);
+  _.forEach(this.state.currentProject.getLayers(), function(layerConfig) {
+    LayersStoresRegistry.getLayersStore().removeLayer(layerConfig.id);
   })
 };
 
