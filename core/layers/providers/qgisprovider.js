@@ -38,7 +38,7 @@ proto.getInfoFromLayer = function(ogcService) {
   return {
     url: queryUrl,
     infoFormat: this._layer.getInfoFormat(ogcService),
-    crs: this._layer.getCrs(), // dovrebbe essere comune a tutti
+    crs: this._layer.getProjection().getCode(), // dovrebbe essere comune a tutti
     serverType: this._layer.getServerType() // aggiungo anche il tipo di server
   };
 };
@@ -54,7 +54,7 @@ proto.query = function(options) {
   var coordinates = options.coordinates || [];
   var urlForLayer = this.getInfoFromLayer();
   var resolution = options.resolution || null;
-  var epsg = this._layer.getEpsg();
+  var crs = this._layer.getProjection().getCode();
   var queryUrlForLayer = [];
   var sourceParam = urlForLayer.url.split('SOURCE');
   urlForLayer.url = sourceParam[0];
@@ -76,7 +76,7 @@ proto.query = function(options) {
     FI_POLYGON_TOLERANCE: PIXEL_TOLERANCE,
     G3W_TOLERANCE: PIXEL_TOLERANCE * resolution
   };
-  var getFeatureInfoUrl = mapService.getGetFeatureInfoUrlForLayer(queryLayers[0],coordinates,resolution,epsg,params); //urlForLayer.url + '?'+$.param(params, true);
+  var getFeatureInfoUrl = mapService.getGetFeatureInfoUrlForLayer(queryLayers[0],coordinates,resolution,crs,params); //urlForLayer.url + '?'+$.param(params, true);
   var queryString = getFeatureInfoUrl.split('?')[1];
   var url = urlForLayer.url+'?'+queryString + sourceParam;
   queryUrlForLayer.push({

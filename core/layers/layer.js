@@ -1,6 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
+var Projections = require('core/geo/projections');
 var ProviderFactory = require('core/layers/providers/providersfactory');
 var FeaturesStore = require('core/layers/features/featuresstore');
 var Feature = require('core/layers/features/feature');
@@ -41,8 +42,8 @@ function Layer(config) {
   this.config = {
     bbox: config.bbox,
     capabilities: config.capabilities,
-    crs: config.crs,
-    projectCrs: config.projectCrs,
+    projection: null,
+    project: config.project,
     editops: config.editops,
     geometrytype: config.geometrytype,
     id: config.id,
@@ -60,6 +61,20 @@ function Layer(config) {
     wmsUrl: config.wmsUrl,
     cacheUrl: config.cache_url
   };
+
+  if (config.projection) {
+    this.config.projection = config.projection;
+  }
+  else if (config.crs) {
+    if (config.project) {
+      if (config.project.projection.getCode() != config.crs) {
+        Projections.get(config.crs,config.proj4);
+      }
+      else {
+        this.config.projection = config.project.projection;
+      }
+    }
+  }
 
   // in base alla tipologia di configurazione del layer
   // viene deciso quale provider deve essere instanziato
@@ -84,6 +99,7 @@ function Layer(config) {
       infoFormat: this.getInfoFormat()
     }); //
   }
+
   // contiene l'editor associato al layer
   this.editor = null;
   // contiene la parte dinamica del layer
@@ -129,6 +145,10 @@ proto.getConfig = function() {
 
 proto.getState = function() {
   return this.state;
+};
+
+proto.getProject = function() {
+  return this.config.getProject();
 };
 
 proto.getEditor = function() {
@@ -318,16 +338,24 @@ proto.getServerType = function() {
   }
 };
 
+this.setProjection = function(crs,proj4) {
+  this.config.projection = Projections.get(crs,proj4);
+};
+
+proto.getProjection = function() {
+  return this.config.projection;
+};
+
 proto.getCrs = function() {
-  return this.config.crs;
+  if (this.config.projection) {
+    return this.config.projection.getCode();
+  }
 };
 
 proto.getProjectCrs = function() {
-  return this.config.projectCrs
-};
-
-proto.getEpsg = function() {
-  return 'EPSG:' + this.getCrs();
+  if (this.config.project) {
+    return this.config.project.getProjection().getCode();
+  }
 };
 
 proto.isWMS = function() {

@@ -5,6 +5,7 @@ var G3WObject = require('core/g3wobject');
 function MapLayer(config){
   this.config = config || {};
   this.id = config.id;
+  this.projection = config.projection;
   this._olLayer = null;
   base(this);
 }

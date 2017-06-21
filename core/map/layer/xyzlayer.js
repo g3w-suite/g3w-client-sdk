@@ -53,17 +53,21 @@ proto._makeOlLayer = function(){
   var self = this;
   var crs = this.layer.getProjectCrs();
 
+  var projection = this.projection ? this.projection : this.layer.getProjection();
+
   var layerOptions = {
     url: this.layer.getCacheUrl()+"/{z}/{x}/{y}.png",
     maxZoom: 20
   };
 
-  if (STANDARD_PROJECTIONS.indexOf(crs) < 0) {
+  /*if (STANDARD_PROJECTIONS.indexOf(crs) < 0) {
     layerOptions.projection = new ol.proj.Projection({
       code: "EPSG:"+crs,
-      extent: GENERCI_GRID_EXTENT
+      extent: GENERIC_GRID_EXTENT
     })
-  }
+  }*/
+
+  layerOptions.projection = projection;
 
   var olLayer = RasterLayers.XYZLayer(layerOptions);
 

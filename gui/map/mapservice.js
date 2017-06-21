@@ -274,12 +274,7 @@ proto.defineProjection = function(crs) {
 };
 
 proto.getProjection = function() {
-  var extent = this.project.state.extent;
-  var projection = new ol.proj.Projection({
-    code: "EPSG:"+this.project.state.crs,
-    extent: extent
-  });
-  return projection;
+  return this.project.getProjection();
 };
 
 proto.getCrs = function() {
@@ -899,7 +894,8 @@ proto.setupLayers = function(){
 
   _.forEach(cachedLayers, function(layer, id) {
     var mapLayer = new XYZLayer({
-      id: id
+      id: id,
+      projection: self.getProjection()
     });
     mapLayer.addLayer(layer);
     self.addMapLayer(mapLayer);

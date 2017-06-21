@@ -1,6 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
+var Projections = require('core/geo/projections');
 
 
 function Project(projectConfig) {
@@ -12,6 +13,7 @@ function Project(projectConfig) {
     gid,
     name,
     crs,
+    proj4,
     extent,
     initextent,
     layerstree,
@@ -19,6 +21,9 @@ function Project(projectConfig) {
   }
   */
   this.state = projectConfig;
+
+  this.projection = Projections.get(this.state.crs,this.state.proj4);
+
   this.setters = {
     setBaseLayer: function(id) {
       _.forEach(self.state.baselayers, function(baseLayer) {
@@ -62,8 +67,12 @@ proto.getOverviewProjectGid = function() {
 
 
 proto.getCrs = function() {
-  return this.state.crs;
+  return this.projection.getCode();
 };
+
+proto.getProjection = function() {
+  return this.projection;
+}
 
 proto.getInfoFormat = function() {
   return 'application/vnd.ogc.gml';
