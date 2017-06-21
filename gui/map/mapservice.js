@@ -97,7 +97,6 @@ function MapService(options) {
       if (width == 0 || height == 0) {
         return
       }
-      proj4.defs("EPSG:"+self.project.state.crs,this.project.state.proj4);
       if (self.viewer) {
         self.viewer.destroy();
         self.viewer = null;
@@ -118,7 +117,7 @@ function MapService(options) {
   this._resetView = function() {
     var width = this.viewer.map.getSize()[0];
     var height = this.viewer.map.getSize()[1];
-    var extent = this.project.state.extent;
+    var extent = self.layersstore.config.extent;
     var maxxRes = ol.extent.getWidth(extent) / width;
     var minyRes = ol.extent.getHeight(extent) / height;
     var maxResolution = Math.max(maxxRes,minyRes) > this.viewer.map.getView().getMaxResolution() ? Math.max(maxxRes,minyRes): this.viewer.map.getView().getMaxResolution();
@@ -137,9 +136,9 @@ function MapService(options) {
     var self = this;
     var projection = this.getProjection();
     // ricavo l'estensione iniziale del progetto)
-    var initextent = this.project.state.initextent;
+    var initextent = self.layersstore.config.initextent;
     // ricavo l'estensione del progetto
-    var extent = this.project.state.extent;
+    var extent = self.layersstore.config.extent;
 
     var maxxRes = ol.extent.getWidth(extent) / width;
     var minyRes = ol.extent.getHeight(extent) / height;
@@ -285,11 +284,11 @@ proto.defineProjection = function(crs) {
 };
 
 proto.getProjection = function() {
-  return this.project.getProjection();
+  return this.layersstore.getProjection();
 };
 
 proto.getCrs = function() {
-  return this.project.state.crs;
+  return this.getProjection().getCode();
 };
 
 proto.getViewerElement = function(){

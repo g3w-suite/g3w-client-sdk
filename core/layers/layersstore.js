@@ -3,10 +3,15 @@ var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
 
 // Interfaccia per registare i layers
-function LayersStore(options) {
+function LayersStore(config) {
   var self = this;
-  options = options || {};
-  this._layers = options.layers || {};
+  config = config || {};
+  this.config = {
+    projection: config.projection,
+    extent: config.extent,
+    initextent: config.initextent
+  };
+  this._layers = this.config.layers || {};
   this.setters = {
     setLayersVisible: function (layersIds, visible) {
       var self = this;
@@ -34,6 +39,10 @@ function LayersStore(options) {
 inherit(LayersStore, G3WObject);
 
 proto = LayersStore.prototype;
+
+proto.setOptions = function(config) {
+  this.config = config;
+};
 
 proto._addLayer = function(layer) {
   this._layers[layer.getId()] = layer;
@@ -182,12 +191,16 @@ proto.unselectLayer = function(layerId) {
   this.setLayerSelected(layerId, false);
 };
 
-proto.isVisible = function() {
-  return this.state.visible;
+proto.getProjection = function() {
+  return this.config.projection;
 };
 
-proto.isSelected = function() {
-  return this.state.selected;
+proto.getExtent = function() {
+  return this.config.extent;
+};
+
+proto.getInitExtent = function() {
+  return this.config.initextent;
 };
 
 module.exports = LayersStore;

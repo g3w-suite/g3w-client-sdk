@@ -18,6 +18,7 @@ function ProjectsStore() {
   var self = this;
   this.config = null;
   this.initialized = false;
+  this.defaultLayersStore = LayersStoresRegistry.getLayersStore();
   //tipo di progetto
   this.projectType = null;
   this._currentProjectLayersId = [];
@@ -26,6 +27,11 @@ function ProjectsStore() {
       self.state.currentProject = project;
       //aggiunto tipo progetto
       self.setProjectType(project.state.type);
+      self.defaultLayersStore.setOptions({
+        projection: project.getProjection(),
+        extent: project.state.extent,
+        initextent: project.state.initextent
+      });
       self.addProjectLayers(project);
     }
   };
@@ -93,7 +99,7 @@ proto.addProjectLayers = function(project) {
         layerConfig.project = project;
         //costruisco il project layer per ogni layer
         var layer = new GeoLayer(layerConfig);
-        LayersStoresRegistry.getLayersStore().addLayer(layer);
+        self.defaultLayersStore.addLayer(layer);
         self._currentProjectLayersId.push(layerConfig.id);
       }
       if (!_.isNil(layerConfig.nodes)) {
