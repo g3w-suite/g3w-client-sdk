@@ -118,7 +118,7 @@ proto.getProjection = function() {
 
 proto.getWmsUrl = function() {
   return this.state.WMSUrl;
-},
+};
 
 proto.getInfoFormat = function() {
   return 'application/vnd.ogc.gml';
