@@ -71,7 +71,7 @@ proto._getRequestUrl = function(url, extent, size, pixelRatio, projection, param
 };
 
 // funzione che deve esserere "estratta dal mapservice"
-proto._getGetFeatureInfoUrlForLayer = function(coordinates,resolution,epsg,params) {
+proto._getGetFeatureInfoUrlForLayer = function(coordinates,resolution,params) {
   var url = this._layer.getQueryUrl();
   var extent = ol.extent.getForViewAndSize(
     coordinates, resolution, 0,
@@ -103,7 +103,6 @@ proto.query = function(options) {
   var coordinates = options.coordinates || [];
   var urlForLayer = this.getInfoFromLayer();
   var resolution = options.resolution || null;
-  var crs = this._layer.getProjection().getEpsg();
   var queryUrlForLayer = [];
   var sourceParam = urlForLayer.url.split('SOURCE');
   urlForLayer.url = sourceParam[0];
@@ -125,7 +124,7 @@ proto.query = function(options) {
     FI_POLYGON_TOLERANCE: PIXEL_TOLERANCE,
     G3W_TOLERANCE: PIXEL_TOLERANCE * resolution
   };
-  var getFeatureInfoUrl = this._getGetFeatureInfoUrlForLayer(coordinates,resolution,crs,params); //urlForLayer.url + '?'+$.param(params, true);
+  var getFeatureInfoUrl = this._getGetFeatureInfoUrlForLayer(coordinates,resolution,params); 
   var queryString = getFeatureInfoUrl.split('?')[1];
   var url = urlForLayer.url+'?'+queryString + sourceParam;
   queryUrlForLayer.push({

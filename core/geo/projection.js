@@ -15,13 +15,6 @@ var Projection = function(options) {
   });
 };
 
-
 ol.inherits(Projection, ol.proj.Projection);
-
-proto = Projection.prototype;
-
-proto.getEpsg = function() {
-  return this.getCode().split('EPSG:')[1];
-};
 
 module.exports = Projection;
