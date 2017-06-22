@@ -30,9 +30,7 @@ var WMSServerTypes = [
 
 function GeoLayer(config) {
   base(this, config);
-
   var self = this;
-
   _.extend(this.config,{
     bbox: config.bbox,
     projection: null,
@@ -151,29 +149,13 @@ proto.getDataProvider = function() {
   return this.dataprovider;
 };
 
-proto.getId = function() {
-  return this.config.id;
-};
-
-proto.getTitle = function() {
-  return this.config.title;
-};
-
-proto.getName = function() {
-  return this.config.name;
-};
-
-proto.getOrigName = function() {
-  return this.config.origname;
-};
-
 proto.getGeometryType = function() {
   return this.config.geometrytype;
 };
 
 proto.getMultiLayerId = function() {
   return this.config.multilayerid;
-}
+};
 
 proto.getAttributes = function() {
   return this.fields;

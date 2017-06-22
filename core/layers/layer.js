@@ -122,7 +122,7 @@ proto.getId = function() {
 };
 
 proto.getTitle = function() {
-  return this.config.title;
+  return this.config.name;
 };
 
 proto.getName = function() {

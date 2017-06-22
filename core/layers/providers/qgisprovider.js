@@ -5,6 +5,7 @@ var Feature = require('core/layers/features/feature');
 var GUI = require('gui/gui');
 
 var PIXEL_TOLERANCE = 10;
+var GETFEATUREINFO_IMAGE_SIZE = [101, 101];
 
 function  QGISDataProvider(options) {
   options = options || {};
@@ -43,18 +44,66 @@ proto.getInfoFromLayer = function(ogcService) {
   };
 };
 
+proto._getRequestUrl = function(url, extent, size, pixelRatio, projection, params) {
+
+  ol.asserts.assert(url !== undefined, 9); // `url` must be configured or set using `#setUrl()`
+
+  params['CRS'] = projection.getCode();
+
+  if (!('STYLES' in params)) {
+    params['STYLES'] = '';
+  }
+
+  params['DPI'] = 90 * pixelRatio;
+  params['WIDTH'] = size[0];
+  params['HEIGHT'] = size[1];
+
+  var axisOrientation = projection.getAxisOrientation();
+  var bbox;
+  if (axisOrientation.substr(0, 2) == 'ne') {
+    bbox = [extent[1], extent[0], extent[3], extent[2]];
+  } else {
+    bbox = extent;
+  }
+  params['BBOX'] = bbox.join(',');
+
+  return ol.uri.appendParams(/** @type {string} */ url, params);
+};
+
 // funzione che deve esserere "estratta dal mapservice"
-proto.getGetFeatureInfoUrlForLayer = function(coordinates,resolution,epsg,params) {
-    return this.getOLLayer().getSource().getGetFeatureInfoUrl(coordinate,resolution,epsg,params);
+proto._getGetFeatureInfoUrlForLayer = function(coordinates,resolution,epsg,params) {
+  var url = this._layer.getQueryUrl();
+  var extent = ol.extent.getForViewAndSize(
+    coordinates, resolution, 0,
+    GETFEATUREINFO_IMAGE_SIZE);
+
+  var baseParams = {
+    'SERVICE': 'WMS',
+    'VERSION': ol.DEFAULT_WMS_VERSION,
+    'REQUEST': 'GetFeatureInfo',
+    'FORMAT': 'image/png',
+    'TRANSPARENT': true,
+    'QUERY_LAYERS': this._layer.getName()
+  };
+
+  _.merge(baseParams, params);
+
+  var x = Math.floor((coordinates[0] - extent[0]) / resolution);
+  var y = Math.floor((extent[3] - coordinates[1]) / resolution);
+  baseParams[ 'I' ] = x;
+  baseParams['J'] = y;
+
+  return this._getRequestUrl(
+    url, extent, GETFEATUREINFO_IMAGE_SIZE,
+    1, this._layer.getProjection(), baseParams);
 };
 
 proto.query = function(options) {
   var d = $.Deferred();
-  var mapService = GUI.getComponent('map').getService();
   var coordinates = options.coordinates || [];
   var urlForLayer = this.getInfoFromLayer();
   var resolution = options.resolution || null;
-  var crs = this._layer.getProjection().getCode();
+  var crs = this._layer.getProjection().getEpsg();
   var queryUrlForLayer = [];
   var sourceParam = urlForLayer.url.split('SOURCE');
   urlForLayer.url = sourceParam[0];
@@ -76,7 +125,7 @@ proto.query = function(options) {
     FI_POLYGON_TOLERANCE: PIXEL_TOLERANCE,
     G3W_TOLERANCE: PIXEL_TOLERANCE * resolution
   };
-  var getFeatureInfoUrl = mapService.getGetFeatureInfoUrlForLayer(queryLayers[0],coordinates,resolution,crs,params); //urlForLayer.url + '?'+$.param(params, true);
+  var getFeatureInfoUrl = this._getGetFeatureInfoUrlForLayer(coordinates,resolution,crs,params); //urlForLayer.url + '?'+$.param(params, true);
   var queryString = getFeatureInfoUrl.split('?')[1];
   var url = urlForLayer.url+'?'+queryString + sourceParam;
   queryUrlForLayer.push({

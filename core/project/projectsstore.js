@@ -89,6 +89,8 @@ proto.addProjectLayers = function(project) {
   this.removeProjectLayers();
   //costruisco il project layer per ogni layer
   _.forEach(project.getLayers(), function(layerConfig) {
+    // aggiungo la proiezione
+    layerConfig.projection = project.getProjection();
     var layer = new GeoLayer(layerConfig);
     self.defaultLayersStore.addLayer(layer);
   })

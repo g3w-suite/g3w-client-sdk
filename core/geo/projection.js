@@ -14,7 +14,16 @@ var Projection = function(options) {
     extent: options.extent ? options.extent : GENERIC_GRID_EXTENT
   });
 };
+  this.getEpsg = function() {
+    return this.getCode().split('EPSG:')[1];
+  };
 
 ol.inherits(Projection, ol.proj.Projection);
+
+proto = Projection.prototype;
+
+proto.getEpsg = function() {
+  return this.getCode().split('EPSG:')[1];
+};
 
 module.exports = Projection;

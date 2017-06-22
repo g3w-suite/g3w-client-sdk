@@ -1,7 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var ProjectsStore = require('core/project/projectsstore');
-var Layer = require('core/layers/layer');
+var GeoLayer = require('core/layers/geolayer');
 var GUI = require('gui/gui');
 var G3WObject = require('core/g3wobject');
 var VectorLayer = require('core/map/layer/vectorlayer');
@@ -77,6 +77,7 @@ function QueryResultsService() {
   };
   // funzione che serve a far digerire i risultati delle features
   this._digestFeaturesForLayers = function(featuresForLayers) {
+    
     var self = this;
     var id = 0;
     // variabile che tiene traccia dei layer sotto query
@@ -91,7 +92,7 @@ function QueryResultsService() {
       var layer = featuresForLayer.layer;
       // verifico che tipo ti vector layer ci sono
       switch (layer.constructor) {
-        case Layer:
+        case GeoLayer:
           layerAttributes = layer.getAttributes();
           layerRelationsAttributes =  layer.getRelationsAttributes();
           layerTitle = layer.getTitle();

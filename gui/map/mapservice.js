@@ -795,9 +795,9 @@ proto.getMapLayers = function() {
   return this._mapLayers;
 };
 
-proto.getMapLayerForLayer = function(layer){
+proto.getMapLayerForLayer = function(layer) {
   var mapLayer;
-  var multilayerId = 'layer_'+layer.state.multilayer;
+  var multilayerId = 'layer_'+layer.getMultiLayerId();
   _.forEach(this.getMapLayers(),function(_mapLayer){
     if (_mapLayer.getId() == multilayerId) {
       mapLayer = _mapLayer;
