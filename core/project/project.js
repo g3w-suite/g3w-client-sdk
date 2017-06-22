@@ -104,6 +104,10 @@ proto.getGid = function() {
   return this.state.gid;
 };
 
+proto.getName = function() {
+  return this.state.name;
+};
+
 proto.getOverviewProjectGid = function() {
   return this.state.overviewprojectgid ? this.state.overviewprojectgid.gid : null;
 };
