@@ -21,7 +21,6 @@ function ProjectsStore() {
   this.defaultLayersStore = LayersStoresRegistry.getLayersStore();
   //tipo di progetto
   this.projectType = null;
-  this._currentProjectLayersId = [];
   this.setters = {
     setCurrentProject: function(project) {
       self.state.currentProject = project;
