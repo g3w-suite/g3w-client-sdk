@@ -137,6 +137,8 @@ proto.getLayersTree = function(full) {
           lightlayer.id = layer.id;
         }
         if (!_.isNil(layer.nodes)){
+          lightlayer.name = layer.name;
+          lightlayer.expanded = layer.expanded;
           lightlayer.nodes = [];
           traverse(layer.nodes,lightlayer.nodes)
         }

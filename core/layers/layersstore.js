@@ -14,7 +14,11 @@ function LayersStore(config) {
   };
 
   this.state = {
-    layerstree: []
+    layerstree: [{
+      name: "RADICE",
+      expanded: true,
+      nodes: []
+    }]
   };
 
   this._layers = this.config.layers || {};
@@ -283,7 +287,7 @@ proto.addLayersTree = function(id,layerstree,position) {
     }
     traverse(layerstree);
 
-    this.state.layerstree.splice(idx,0,layerstree);
+    this.state.layerstree[0].nodes.splice(idx,0,layerstree);
   }
 };
 
@@ -291,13 +295,13 @@ proto.removeLayersTree = function(id){
   var idx = this._layersTrees.indexOf(id);
   if (idx) {
     this._layersTrees.splice(idx,1);
-    this.state.layerstree.splice(idx,1);
+    this.state.layerstree[0].nodes.splice(idx,1);
   }
 };
 
 proto.getLayersTree = function(id) {
   if (id && this._layersTrees.indexOf(id)) {
-    return this.state.layerstree[this._layersTrees.indexOf(id)];
+    return this.state.layerstree[0].nodes[this._layersTrees.indexOf(id)];
   }
   return this.state.layerstree;
 };
@@ -306,7 +310,7 @@ proto._initLayersTrees = function(id,layerstree) {
   var treeId = id || Date.now();
   this._layersTrees.splice(0,this._layersTrees.length);
   this._layersTrees.push(treeId);
-  this.state.layerstree.push(layerstree);
+  this.state.layerstree[0].nodes.push(layerstree);
 };
 
 var LayersTree = {
