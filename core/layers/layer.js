@@ -20,15 +20,17 @@ function Layer(config) {
 
   // contiene l'editor associato al layer
   this.editor = null;
+  this.provider = null;
   // contiene la parte dinamica del layer
   //this.state = config; // questo fa in modo che il catalog reagisca al mutamento
   // delle proprietà dinamiche (select, disable, visible)
   this.state = {
+    id: config.id,
+    title: config.name,
     visible: config.visible,
     selected: config.selected | false,
     disabled: config.disabled | false,
     editing: false,
-    currentProvider: null,
     modified: false
   };
   // struttura campi del layer

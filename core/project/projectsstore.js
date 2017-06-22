@@ -93,6 +93,7 @@ proto.addProjectLayers = function(project) {
     var layer = new GeoLayer(layerConfig);
     self.defaultLayersStore.addLayer(layer);
   });
+  self.defaultLayersStore.addLayersTree(project.getGid(),project.getLayersTree(),'TOP');
 };
 
 proto.removeProjectLayers = function() {
@@ -204,7 +205,6 @@ proto.getProject = function(projectGid) {
       return d.reject();
     })
   }
-  return d.promise();
 };
   
 //ritorna una promises che verrà risolta con la

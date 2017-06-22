@@ -124,11 +124,29 @@ proto.getInfoFormat = function() {
   return 'application/vnd.ogc.gml';
 };
 
-proto.getTree = function(light) {
-  if (light === true) {
-    ///
+proto.getLayersTree = function(full) {
+  if (full === true) {
+    return this.state.layerstree;
   }
-  return this.state.layerstree;
+  else {
+    var layerstree = [];
+    function traverse(obj,newobj) {
+      _.forIn(obj, function (layer) {
+        var lightlayer = {};
+        if (!_.isNil(layer.id)) {
+          lightlayer.id = layer.id;
+        }
+        if (!_.isNil(layer.nodes)){
+          lightlayer.nodes = [];
+          traverse(layer.nodes,lightlayer.nodes)
+        }
+        newobj.push(lightlayer);
+      });
+    }
+    traverse(this.state.layerstree,layerstree);
+    return layerstree;
+  }
+
 };
 
 module.exports = Project;

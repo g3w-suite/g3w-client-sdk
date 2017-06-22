@@ -63,8 +63,10 @@ var vueComponentOptions = {
       return this.project.state.name;
     },
     layerstree: function() {
-      var project = ProjectsStore.getCurrentProject();
-      return project.state.layerstree;
+      //var project = ProjectsStore.getCurrentProject();
+      //return project.state.layerstree;
+      var layersstree = LayersStoresRegistry.getLayersStore().getLayersTree();
+      return layersstree;
     },
     baselayers: function(){
       return this.project.state.baselayers;

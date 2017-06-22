@@ -12,7 +12,19 @@ function LayersStore(config) {
     initextent: config.initextent,
     wmsUrl: config.wmsUrl
   };
+
+  this.state = {
+    layerstree: []
+  };
+
   this._layers = this.config.layers || {};
+
+  this._layersTrees = [];
+  // se si volesse passare un layerstree già all'inizio
+  if (config.layerstree) {
+    this._initLayersTrees(config.layerstreeid,config.layerstree);
+  }
+
   this.setters = {
     setLayersVisible: function (layersIds, visible) {
       var self = this;
@@ -235,7 +247,70 @@ proto.getInitExtent = function() {
 };
 
 proto.getWmsUrl = function() {
-  this.config.wmsUrl;
+  return this.config.wmsUrl;
+};
+
+proto.addLayersTree = function(id,layerstree,position) {
+  var self = this;
+  position = position || LayersTree.POSITIONS.BOTTOM;
+
+  var idx;
+  if (typeof position == 'number') {
+    idx = position;
+  }
+  else if (LayersTree.POSITIONS.indexOf(position) > -1) {
+    if (position == 'TOP') {
+      idx = 0;
+    }
+    if (position == 'BOTTOM') {
+      idx = this._layersTreesOrder.length - 1;
+    }
+  }
+
+  if (typeof idx != undefined) {
+    this._layersTrees.splice(idx,0,id);
+
+    function traverse(obj) {
+      _.forIn(obj, function (layer, key) {
+        //verifica che il nodo sia un layer e non un folder
+        if (!_.isNil(layer.id)) {
+          obj[key] = self.getLayerById(layer.id).getState();
+        }
+        if (!_.isNil(layer.nodes)){
+          traverse(layer.nodes);
+        }
+      });
+    }
+    traverse(layerstree);
+
+    this.state.layerstree.splice(idx,0,layerstree);
+  }
+};
+
+proto.removeLayersTree = function(id){
+  var idx = this._layersTrees.indexOf(id);
+  if (idx) {
+    this._layersTrees.splice(idx,1);
+    this.state.layerstree.splice(idx,1);
+  }
+};
+
+proto.getLayersTree = function(id) {
+  if (id && this._layersTrees.indexOf(id)) {
+    return this.state.layerstree[this._layersTrees.indexOf(id)];
+  }
+  return this.state.layerstree;
+};
+
+proto._initLayersTrees = function(id,layerstree) {
+  var treeId = id || Date.now();
+  this._layersTrees.splice(0,this._layersTrees.length);
+  this._layersTrees.push(treeId);
+  this.state.layerstree.push(layerstree);
+};
+
+var LayersTree = {
+  POSITIONS : ['TOP','BOTTOM']
 };
 
 module.exports = LayersStore;
