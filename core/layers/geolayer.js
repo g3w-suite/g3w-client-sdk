@@ -53,11 +53,11 @@ function GeoLayer(config) {
   }
   else if (config.crs) {
     if (config.project) {
-      if (config.project.projection.getCode() != config.crs) {
+      if (config.project.getProjection().getCode() != config.crs) {
         Projections.get(config.crs,config.proj4);
       }
       else {
-        this.config.projection = config.project.projection;
+        this.config.projection = config.project.getProjection();
       }
     }
   }

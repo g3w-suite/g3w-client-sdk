@@ -13,16 +13,14 @@ var ControlsFactory = require('gui/map/control/factory');
 var QueryService = require('core/query/queryservice');
 var StreetViewService = require('gui/streetview/streetviewservice');
 var ControlsRegistry = require('gui/map/control/registry');
-var LayersStoresRegistry = require('core/layers/layersstoresregistry');
 
 
 function MapService(options) {
   var self = this;
-  this.viewer;
-  this.target;
-  this.layersstore;
-  this.project;
-  this.selectedLayer;
+  this.viewer = null;
+  this.target = null;
+  this.layersstore = null;
+  this.project = null;
   this._mapControls = [];
   this._mapLayers = [];
   this.mapBaseLayers = {};
@@ -70,18 +68,17 @@ function MapService(options) {
   } else {
     this.project = ProjectsStore.getCurrentProject();
     ProjectsStore.onafter('setCurrentProject',function(project){
+      self._removeListeners();
       self.project = project;
-      self.setupLayers();
+      self.layersstore = project.getLayersStore();
+      self._setupListeners();
+      self._setupLayers();
       self._resetView();
     })
   }
+  this.layersstore = this.project.getLayersStore();
+  this._setupListeners();
   this._marker = null;
-
-  if(!_.isNil(options.layersstore)) {
-    this.layersstore = options.layersstore;
-  } else {
-    this.layersstore = LayersStoresRegistry.getLayersStore();
-  }
 
   this.setters = {
     setMapView: function(bbox, resolution, center) {
@@ -106,113 +103,13 @@ function MapService(options) {
       self.state.resolution = this.viewer.getResolution();
       self.state.center = this.viewer.getCenter();
       self.setupControls();
-      self.setupLayers();
+      self._setupLayers();
       self.emit('viewerset');
     },
     controlClick: function() {
 
     }
-  };
-
-  this._resetView = function() {
-    var width = this.viewer.map.getSize()[0];
-    var height = this.viewer.map.getSize()[1];
-    var extent = self.layersstore.config.extent;
-    var maxxRes = ol.extent.getWidth(extent) / width;
-    var minyRes = ol.extent.getHeight(extent) / height;
-    var maxResolution = Math.max(maxxRes,minyRes) > this.viewer.map.getView().getMaxResolution() ? Math.max(maxxRes,minyRes): this.viewer.map.getView().getMaxResolution();
-    var view = new ol.View({
-      extent: extent,
-      projection: this.viewer.map.getView().getProjection(),
-      center: this.viewer.map.getView().getCenter(),
-      resolution: this.viewer.map.getView().getResolution(),
-      maxResolution: maxResolution
-    });
-    this.viewer.map.setView(view);
-  };
-
-  // funzione che setta la view basata sulle informazioni del progetto
-  this._setupViewer = function(width,height) {
-    var self = this;
-    var projection = this.getProjection();
-    // ricavo l'estensione iniziale del progetto)
-    var initextent = self.layersstore.config.initextent;
-    // ricavo l'estensione del progetto
-    var extent = self.layersstore.config.extent;
-
-    var maxxRes = ol.extent.getWidth(extent) / width;
-    var minyRes = ol.extent.getHeight(extent) / height;
-    // calcolo la massima risoluzione
-    var maxResolution = Math.max(maxxRes,minyRes);
-
-    var initxRes = ol.extent.getWidth(initextent) / width;
-    var inityRes = ol.extent.getHeight(initextent) / height;
-    var initResolution = Math.max(initxRes,inityRes);
-
-    this.viewer = ol3helpers.createViewer({
-      id: this.target,
-      view: {
-        projection: projection,
-        /*center: this.config.initcenter || ol.extent.getCenter(extent),
-        zoom: this.config.initzoom || 0,
-        extent: this.config.constraintextent || extent,
-        minZoom: this.config.minzoom || 0, // default di OL3 3.16.0
-        maxZoom: this.config.maxzoom || 28 // default di OL3 3.16.0*/
-        center: ol.extent.getCenter(initextent),
-        extent: extent,
-        //minZoom: 0, // default di OL3 3.16.0
-        //maxZoom: 28 // default di OL3 3.16.0
-        maxResolution: maxResolution
-      }
-    });
-    
-    if (this.config.background_color) {
-      $('#' + this.target).css('background-color', this.config.background_color);
-    }
-    
-    $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute;right:0px;"></div>');
-    
-    this.viewer.map.getInteractions().forEach(function(interaction){
-      self._watchInteraction(interaction);
-    });
-    
-    this.viewer.map.getInteractions().on('add',function(interaction){
-      self._watchInteraction(interaction.element);
-    });
-    
-    this.viewer.map.getInteractions().on('remove',function(interaction){
-      //self._onRemoveInteraction(interaction);
-    });
-
-    this.viewer.map.getView().setResolution(initResolution);
-
-    this.viewer.map.on('moveend',function(e) {
-      self._setMapView();
-    });
-
-    this._marker = new ol.Overlay({
-      position: undefined,
-      positioning: 'center-center',
-      element: document.getElementById('marker'),
-      stopEvent: false
-    });
-
-    this.viewer.map.addOverlay(this._marker);
-
-    this.emit('ready');
-  };
-  
-  this.layersstore.onafter('setLayersVisible',function(layersIds){
-    var mapLayers = _.map(layersIds,function(layerId){
-      var layer = self.layersstore.getLayerById(layerId);
-      return self.getMapLayerForLayer(layer);
-    });
-    self.updateMapLayers(self.getMapLayers());
-  });
-  
-  this.project.onafter('setBaseLayer',function(){
-    self.updateMapLayers(self.mapBaseLayers);
-  });
+  }
 
 
   this.on('cataloglayerselected', function() {
@@ -586,7 +483,7 @@ proto.setupControls = function(){
           break;
         case 'overview':
           if (!isMobile.any) {
-            var overviewProjectGid = self.project.getOverviewProjectGid();
+            var overviewProjectGid = self.config.overviewproject.gid;
             if (overviewProjectGid) {
               ProjectsStore.getProject(overviewProjectGid)
               .then(function(project){
@@ -811,7 +708,119 @@ proto.getProjectLayer = function(layerId) {
   return this.layersstore.getLayerById(layerId);
 };
 
-proto.setupBaseLayers = function(){
+proto._resetView = function() {
+  var width = this.viewer.map.getSize()[0];
+  var height = this.viewer.map.getSize()[1];
+  var extent = self.layersstore.config.extent;
+  var maxxRes = ol.extent.getWidth(extent) / width;
+  var minyRes = ol.extent.getHeight(extent) / height;
+  var maxResolution = Math.max(maxxRes,minyRes) > this.viewer.map.getView().getMaxResolution() ? Math.max(maxxRes,minyRes): this.viewer.map.getView().getMaxResolution();
+  var view = new ol.View({
+    extent: extent,
+    projection: this.viewer.map.getView().getProjection(),
+    center: this.viewer.map.getView().getCenter(),
+    resolution: this.viewer.map.getView().getResolution(),
+    maxResolution: maxResolution
+  });
+  this.viewer.map.setView(view);
+};
+
+// funzione che setta la view basata sulle informazioni del progetto
+proto._setupViewer = function(width,height) {
+  var self = this;
+  var projection = this.getProjection();
+  // ricavo l'estensione iniziale del progetto)
+  var initextent = self.layersstore.config.initextent;
+  // ricavo l'estensione del progetto
+  var extent = self.layersstore.config.extent;
+
+  var maxxRes = ol.extent.getWidth(extent) / width;
+  var minyRes = ol.extent.getHeight(extent) / height;
+  // calcolo la massima risoluzione
+  var maxResolution = Math.max(maxxRes,minyRes);
+
+  var initxRes = ol.extent.getWidth(initextent) / width;
+  var inityRes = ol.extent.getHeight(initextent) / height;
+  var initResolution = Math.max(initxRes,inityRes);
+
+  this.viewer = ol3helpers.createViewer({
+    id: this.target,
+    view: {
+      projection: projection,
+      /*center: this.config.initcenter || ol.extent.getCenter(extent),
+       zoom: this.config.initzoom || 0,
+       extent: this.config.constraintextent || extent,
+       minZoom: this.config.minzoom || 0, // default di OL3 3.16.0
+       maxZoom: this.config.maxzoom || 28 // default di OL3 3.16.0*/
+      center: ol.extent.getCenter(initextent),
+      extent: extent,
+      //minZoom: 0, // default di OL3 3.16.0
+      //maxZoom: 28 // default di OL3 3.16.0
+      maxResolution: maxResolution
+    }
+  });
+
+  if (this.config.background_color) {
+    $('#' + this.target).css('background-color', this.config.background_color);
+  }
+
+  $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute;right:0px;"></div>');
+
+  this.viewer.map.getInteractions().forEach(function(interaction){
+    self._watchInteraction(interaction);
+  });
+
+  this.viewer.map.getInteractions().on('add',function(interaction){
+    self._watchInteraction(interaction.element);
+  });
+
+  this.viewer.map.getInteractions().on('remove',function(interaction){
+    //self._onRemoveInteraction(interaction);
+  });
+
+  this.viewer.map.getView().setResolution(initResolution);
+
+  this.viewer.map.on('moveend',function(e) {
+    self._setMapView();
+  });
+
+  this._marker = new ol.Overlay({
+    position: undefined,
+    positioning: 'center-center',
+    element: document.getElementById('marker'),
+    stopEvent: false
+  });
+
+  this.viewer.map.addOverlay(this._marker);
+
+  this.emit('ready');
+};
+
+proto._removeListeners = function() {
+  if (this._setLayersVisibleListenersKey) {
+    this.layersstore.un('setLayersVisible',this._setLayersVisibleListenersKey);
+  }
+  if (this._setBaseLayerListenerKey) {
+    this.project.un('setBaseLayer',this._setBaseLayerListenerKey);
+  }
+};
+
+proto._setupListeners = function(){
+  var self = this;
+  this._setLayersVisibleListenersKey = this.layersstore.onafter('setLayersVisible',function(layersIds){
+    var mapLayers = _.map(layersIds,function(layerId){
+      var layer = self.layersstore.getLayerById(layerId);
+      return self.getMapLayerForLayer(layer);
+    });
+    self.updateMapLayers(self.getMapLayers());
+  });
+
+  this._setBaseLayerListenerKey = this.project.onafter('setBaseLayer',function(){
+    self.updateMapLayers(self.mapBaseLayers);
+  });
+};
+
+proto._setupBaseLayers = function(){
   var self = this;
   var baseLayers = this.layersstore.getBaseLayers();
   if (!baseLayers.length){
@@ -858,10 +867,10 @@ proto.setupBaseLayers = function(){
   });
 };
 
-proto.setupLayers = function(){
+proto._setupLayers = function(){
   var self = this;
   this.viewer.removeLayers();
-  this.setupBaseLayers();
+  this._setupBaseLayers();
   this._reset();
   // recupero i layers dal project
   // sono di tipo projectLayers

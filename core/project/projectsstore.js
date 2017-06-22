@@ -3,8 +3,6 @@ var base = require('core/utils/utils').base;
 var reject = require('core/utils/utils').reject;
 var G3WObject = require('core/g3wobject');
 var Project = require('core/project/project');
-var GeoLayer = require('core/layers/geolayer');
-var LayersStoresRegistry = require('core/layers/layersstoresregistry');
 
 /* service
 Funzione costruttore contentente tre proprieta':
@@ -18,7 +16,6 @@ function ProjectsStore() {
   var self = this;
   this.config = null;
   this.initialized = false;
-  this.defaultLayersStore = LayersStoresRegistry.getLayersStore();
   //tipo di progetto
   this.projectType = null;
   this.setters = {
@@ -26,13 +23,6 @@ function ProjectsStore() {
       self.state.currentProject = project;
       //aggiunto tipo progetto
       self.setProjectType(project.state.type);
-      self.defaultLayersStore.setOptions({
-        projection: project.getProjection(),
-        extent: project.state.extent,
-        initextent: project.state.initextent,
-        wmsUrl: project.getWmsUrl()
-      });
-      self.addProjectLayers(project);
     }
   };
   //stato del registro progetti
@@ -80,28 +70,6 @@ proto.init = function(config) {
   }
   return deferred.promise();
 };
-
-proto.addProjectLayers = function(project) {
-  var self = this;
-  // prima di tutto verifico che non sia già stato settato un currentProject
-  // andando a rimuovere eventuali layerid appartenti al currentProject precedente
-  this.removeProjectLayers();
-  //costruisco il project layer per ogni layer
-  _.forEach(project.getLayers(), function(layerConfig) {
-    // aggiungo la proiezione
-    layerConfig.projection = project.getProjection();
-    var layer = new GeoLayer(layerConfig);
-    self.defaultLayersStore.addLayer(layer);
-  });
-  self.defaultLayersStore.addLayersTree(project.getGid(),project.getName(),project.getLayersTree(),'TOP');
-};
-
-proto.removeProjectLayers = function() {
-  _.forEach(this.state.currentProject.getLayers(), function(layerConfig) {
-    LayersStoresRegistry.getLayersStore().removeLayer(layerConfig.id);
-  })
-};
-
 
 proto.setProjectType = function(projectType) {
    this.projectType = projectType;

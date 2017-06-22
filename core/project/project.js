@@ -1,6 +1,9 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
+var GeoLayer = require('core/layers/geolayer');
+var LayersStore = require('core/layers/layersstore');
+var LayersStoresRegistry = require('core/layers/layersstoresregistry');
 var Projections = require('core/geo/projections');
 
 function Project(projectConfig) {
@@ -23,8 +26,30 @@ function Project(projectConfig) {
   }
   */
   this.state = projectConfig;
-  // costruisce il layers tree del progetto in pratica ricostruice le configurazioni dei layers
-  // ad albero
+
+  this._processLayers();
+
+  this._projection = Projections.get(this.state.crs,this.state.proj4);
+  this._layersStore = this._buildLayersStore();
+  LayersStoresRegistry.addLayersStore(this._layersStore);
+
+  this.setters = {
+    setBaseLayer: function(id) {
+      _.forEach(self.state.baselayers, function(baseLayer) {
+        baseLayer.visible = (baseLayer.id == id || (baseLayer.fixed === true));
+      })
+    }
+  };
+
+  base(this);
+}
+
+inherit(Project, G3WObject);
+
+var proto = Project.prototype;
+
+proto._processLayers = function() {
+  var self = this;
   function traverse(obj) {
     _.forIn(obj, function (layer, key) {
       //verifica che il nodo sia un layer e non un folder
@@ -45,11 +70,10 @@ function Project(projectConfig) {
         layer.title = layer.name;
         traverse(layer.nodes);
       }
-      });
+    });
   }
   traverse(this.state.layerstree);
 
-  //BASE LAYERS
   _.forEach(this.state.baselayers, function(layerConfig) {
     var visible = false;
 
@@ -64,23 +88,30 @@ function Project(projectConfig) {
     layerConfig.visible = visible;
     layerConfig.baselayer = true;
   });
+};
 
-  this.projection = Projections.get(this.state.crs,this.state.proj4);
+proto._buildLayersStore = function() {
+  var layersStore = new LayersStore();
 
-  this.setters = {
-    setBaseLayer: function(id) {
-      _.forEach(self.state.baselayers, function(baseLayer) {
-        baseLayer.visible = (baseLayer.id == id || (baseLayer.fixed === true));
-      })
-    }
-  };
+  layersStore.setOptions({
+    id: this.state.gid,
+    projection: this._projection,
+    extent: this.state.extent,
+    initextent: this.state.initextent,
+    wmsUrl: this.state.WMSUrl
+  });
 
-  base(this);
-}
+  _.forEach(this.getLayers(), function(layerConfig) {
+    // aggiungo la proiezione
+    layerConfig.projection = this._projection;
+    var layer = new GeoLayer(layerConfig);
+    layersStore.addLayer(layer);
+  });
 
-inherit(Project, G3WObject);
+  layersStore.setLayersTree(this.getLayersTree(),this.state.name);
 
-var proto = Project.prototype;
+  return layersStore;
+};
 
 proto.getLayers = function() {
   return _.concat(this.state.layers,this.state.baselayers);
@@ -113,11 +144,11 @@ proto.getOverviewProjectGid = function() {
 };
 
 proto.getCrs = function() {
-  return this.projection.getCode();
+  return this._projection.getCode();
 };
 
 proto.getProjection = function() {
-  return this.projection;
+  return this._projection;
 };
 
 proto.getWmsUrl = function() {
@@ -141,7 +172,7 @@ proto.getLayersTree = function(full) {
           lightlayer.id = layer.id;
         }
         if (!_.isNil(layer.nodes)){
-          lightlayer.name = layer.name;
+          lightlayer.title = layer.name;
           lightlayer.expanded = layer.expanded;
           lightlayer.nodes = [];
           traverse(layer.nodes,lightlayer.nodes)
@@ -153,6 +184,10 @@ proto.getLayersTree = function(full) {
     return layerstree;
   }
 
+};
+
+proto.getLayersStore = function() {
+  return this._layersStore;
 };
 
 module.exports = Project;

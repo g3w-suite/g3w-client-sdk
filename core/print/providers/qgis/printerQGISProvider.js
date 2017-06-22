@@ -2,7 +2,7 @@ var inherit = require('core/utils/utils').inherit;
 var resolve = require('core/utils/utils').resolve;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
-var LayersStoresRegistry = require('core/layers/layersstoresregistry');
+var ProjectsStore = require('core/project/projectsstore');
 
 
 function PrinterQGISProvider() {
@@ -10,7 +10,7 @@ function PrinterQGISProvider() {
 
   this._getPrintUrl = function(options) {
     var options = options || {};
-    var layersStore =  LayersStoresRegistry.getLayersStore();
+    var layersStore =   ProjectsStore.getCurrentProject().getLayersStore();
     var templateMap = options.map || 'map0';
     var url = layersStore.getWmsUrl();
     // devo fare il reverse perchè l'odine conta sulla visualizzazione del print

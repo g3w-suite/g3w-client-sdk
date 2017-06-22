@@ -61,11 +61,17 @@ var vueComponentOptions = {
     title: function() {
       return this.project.state.name;
     },
-    layerstree: function() {
+    layerstrees: function() {
       //var project = ProjectsStore.getCurrentProject();
       //return project.state.layerstree;
-      var layersstree = LayersStoresRegistry.getLayersStore().getLayersTree();
-      return layersstree;
+      var _layerstrees = [];
+      _.forEach(LayersStoresRegistry.getLayersStores(),function(layersStore){
+        _layerstrees.push({
+          tree: layersStore.getLayersTree(),
+          storeid: layersStore.getId()
+        });
+      });
+      return _layerstrees;
     },
     baselayers: function(){
       return this.project.state.baselayers;
@@ -108,7 +114,7 @@ var vueComponentOptions = {
   },
   mounted: function() {
     var self = this;
-    CatalogEventHub.$on('treenodetoogled',function(node) {
+    CatalogEventHub.$on('treenodetoogled',function(storeid,node) {
       if (node.external) {
         var mapService = GUI.getComponent('map').getService();
         var layer;
@@ -116,11 +122,11 @@ var vueComponentOptions = {
         layer.setVisible(!layer.getVisible());
         node.visible = !node.visible;
       } else {
-        LayersStoresRegistry.getLayersStore().toggleLayer(node.id);
+        LayersStoresRegistry.getLayersStore(storeid).toggleLayer(node.id);
       }
     });
 
-    CatalogEventHub.$on('treenodestoogled',function(nodes,parentChecked) {
+    CatalogEventHub.$on('treenodestoogled',function(storeid, nodes,parentChecked) {
       var layersIds = [];
       function checkNodes(obj) {
         if (obj.nodes) {
@@ -132,18 +138,18 @@ var vueComponentOptions = {
         }
       }
       _.map(nodes,checkNodes);
-      LayersStoresRegistry.getLayersStore().toggleLayers(layersIds, parentChecked);
+      LayersStoresRegistry.getLayersStore(storeid).toggleLayers(layersIds, parentChecked);
     });
 
-    CatalogEventHub.$on('treenodeselected',function(node) {
+    CatalogEventHub.$on('treenodeselected',function(storeid,node) {
       var mapservice = GUI.getComponent('map').getService();
-      var layer = LayersStoresRegistry.getLayersStore().getLayerById(node.id);
+      var layer = LayersStoresRegistry.getLayersStore(storeid).getLayerById(node.id);
       if (!layer.isSelected()) {
-        LayersStoresRegistry.getLayersStore().selectLayer(node.id);
+        LayersStoresRegistry.getLayersStore(storeid).selectLayer(node.id);
         // emetto il segnale layer selezionato dal catalogo
         mapservice.emit('cataloglayerselected');
       } else {
-        LayersStoresRegistry.getLayersStore().unselectLayer(node.id);
+        LayersStoresRegistry.getLayersStore(storeid).unselectLayer(node.id);
         mapservice.emit('cataloglayerunselected');
       }
     });
@@ -191,6 +197,7 @@ Vue.component('tristate-tree', {
   template: require('./tristate-tree.html'),
   props: {
     layerstree: {},
+    storeid: null,
     //eredito il numero di childs dal parent
     checked: false,
     //highlightlayers: false,
@@ -241,8 +248,10 @@ Vue.component('tristate-tree', {
     },
     isHighLight: function() {
       if (this.layerstree.id) {
-        this.layer = LayersStoresRegistry.getLayersStore().getLayerById(this.layerstree.id);
-        return this.highlightlayers && layer.isWFS() && layer.getProject() && layer.getProject().getProjection() == layer.getProjection();
+        // da sostituire con una proprietà precalcolata nello state del layer
+        //this.layer = LayersStoresRegistry.getLayersStore().getLayerById(this.layerstree.id);
+        //return this.highlightlayers && layer.isWFS() && layer.getProject() && layer.getProject().getProjection() == layer.getProjection();
+        //
       }
       return false;
     }
@@ -263,15 +272,15 @@ Vue.component('tristate-tree', {
         else {
           this.parentChecked = !this.parentChecked;
         }
-        CatalogEventHub.$emit('treenodestoogled',this.layerstree.nodes, this.parentChecked);
+        CatalogEventHub.$emit('treenodestoogled',this.storeid,this.layerstree.nodes, this.parentChecked);
       }
       else {
-        CatalogEventHub.$emit('treenodetoogled',this.layerstree);
+        CatalogEventHub.$emit('treenodetoogled',this.storeid,this.layerstree);
       }
     },
     select: function () {
       if (!this.isFolder && !this.layerstree.external) {
-        CatalogEventHub.$emit('treenodeselected', this.layerstree);
+        CatalogEventHub.$emit('treenodeselected',this.storeid,this.layerstree);
       }
     },
     triClass: function () {
@@ -290,7 +299,7 @@ Vue.component('tristate-tree', {
     },
     showLayerMenu: function(layerstree, evt) {
       if (!this.isFolder) {
-        CatalogEventHub.$emit('showmenulayer',layerstree, evt);
+        CatalogEventHub.$emit('showmenulayer', storeid, layerstree, evt);
       }
     }
   }

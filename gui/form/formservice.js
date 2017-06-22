@@ -5,7 +5,7 @@ var G3WObject = require('core/g3wobject');
 var PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
 var ClipBoard = require('core/clipboardservice');
 var QueryService = require('core/query/queryservice');
-var LayersStoresRegistry = require('core/layers/layersstoresregistry');
+var ProjectsStore = require('core/project/projectsstore');
 
 var Inputs = {};
 Inputs.STRING = 'string';
@@ -437,7 +437,7 @@ function FormService() {
   };
   // restituisce il nome del layer che si è appena cliccato con il picklayer
   this._getlayerPickerLayerName = function(layerId){
-    var layer = LayersStoresRegistry.getLayersStore().getLayerById(layerId);
+    var layer = ProjectsStore.getCurrentProject().getLayersStore().getLayerById(layerId);
     if (layer){
       return layer.getName();
     }

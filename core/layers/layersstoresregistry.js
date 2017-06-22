@@ -7,10 +7,8 @@ var LayersStore = require('core/layers/layersstore');
 function LayersStoresRegistry() {
   var self = this;
 
-  this.defaultStore = new LayersStore();
-  this.stores = {
-    'default': this.defaultStore
-  };
+  this.stores = {};
+  this.storesArray = [];
 
   base(this);
 }
@@ -20,15 +18,25 @@ inherit(LayersStoresRegistry, G3WObject);
 proto = LayersStoresRegistry.prototype;
 
 proto.getLayersStore = function(id) {
-  return id ? this.stores[id] : this.defaultStore;
+  return this.stores[id];
 };
 
-proto.addLayersStore = function(id) {
-  if (id || ! this.stores[id]) {
-    this.stores[id] = new LayersStore();
-    return this.stores[id];
-  }
+proto.getLayersStores = function() {
+  var self = this;
+  var stores = [];
+
+  _.forEach(this.storesArray,function(storeId){
+    stores.push(self.stores[storeId]);
+  });
+
+  return stores;
 };
 
+proto.addLayersStore = function(layerStore) {
+  // usiamo un array per garantire ordine di inserimento, poi potremo gestire richieste di inserimento in una specifica posizione
+  var storeId = layerStore.getId();
+  this.stores[storeId] = layerStore;
+  this.storesArray.push(storeId);
+};
 
 module.exports = new LayersStoresRegistry();

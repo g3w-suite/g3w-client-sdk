@@ -9,12 +9,14 @@
     </ul>
     <div  class="tab-content">
       <div role="tabpanel" class="tab-pane active tree" id="tree">
-        <ul class="tree-root">
-          <tristate-tree  :highlightlayers="state.highlightlayers" :layerstree="layerstree" class="item" v-for="layerstree in layerstree" :key="layerstree.id">
-          </tristate-tree>
-          <tristate-tree  :externallayers="state.externallayers" :layerstree="layerstree" class="item" v-for="layerstree in state.externallayers" :key="layerstree.id">
+        <ul class="tree-root" v-for="_layerstree in layerstrees">
+          <tristate-tree  :highlightlayers="state.highlightlayers" :layerstree="layerstree" class="item" v-for="layerstree in _layerstree.tree" :storeid="_layerstree.storeid" :key="layerstree.id">
           </tristate-tree>
         </ul>
+        <!--<ul>
+          <tristate-tree  :externallayers="state.externallayers" :layerstree="layerstree" class="item" v-for="layerstree in state.externallayers" :key="layerstree.id">
+          </tristate-tree>
+        </ul>-->
       </div>
       <div v-if="hasBaseLayers" role="tabpanel" class="tab-pane baselayers" id="baselayers">
         <form>
@@ -27,7 +29,7 @@
           </ul>
         </form>
       </div>
-      <layerslegend :layerstree="layerstree"></layerslegend>
+      <layerslegend v-for="_layerstree in layerstrees" layerstree="_layerstree"></layerslegend>
     </div>
   </div>
   <ul id="layer-menu" v-click-outside-layer-menu="closeLayerMenu"  tabindex="-1" v-if="layerMenu.show"  :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }">
