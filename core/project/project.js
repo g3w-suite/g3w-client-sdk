@@ -52,13 +52,9 @@ function Project(projectConfig) {
   //BASE LAYERS
   _.forEach(this.state.baselayers, function(layerConfig) {
     var visible = false;
-    if (self.state.baselayers.length == 1) {
-      visible = true;
-    }
-    else {
-      if (this.initbaselayer) {
-        visible = (layerConfig.id == (self.state.initbaselayer));
-      }
+
+    if (self.state.initbaselayer) {
+      visible = (layerConfig.id == (self.state.initbaselayer));
     }
 
     if (layerConfig.fixed) {
