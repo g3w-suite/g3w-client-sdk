@@ -43,7 +43,8 @@ function GeoLayer(config) {
     multilayerid: config.multilayer,
     scalebasedvisibility: config.scalebasedvisibility,
     wmsUrl: config.wmsUrl,
-    cacheUrl: config.cache_url
+    cacheUrl: config.cache_url,
+    baselayer: config.baselayer || false
   });
 
   if (config.projection) {
@@ -110,7 +111,7 @@ proto.setEditor = function(editor) {
 };
 
 proto._startEditing = function() {
-  console.log('start Editing')
+  console.log('start Editing');
   //this.editor.start();
 };
 
@@ -218,8 +219,12 @@ proto.isVisible = function() {
   return this.state.visible;
 };
 
+proto.isBaseLayer = function() {
+  return this.config.baselayer;
+};
+
 proto.getServerType = function() {
-  if (this.state.servertype && this.config.servertype != '') {
+  if (this.config.servertype && this.config.servertype != '') {
     return this.config.servertype;
   }
   else {
@@ -262,6 +267,23 @@ proto.getWMSLayerName = function() {
     layerName = this.config.source.layers;
   }
   return layerName;
+};
+
+proto.getWmsUrl = function() {
+  var url;
+  if (this.config.source && this.config.source.type == 'wms' && this.config.source.url){
+    url = this.config.source.url
+  }
+  else {
+    url = this.config.wmsUrl;
+  }
+  return url;
+};
+
+proto.getLegendUrl = function() {
+  var url = this.getWmsUrl();
+  sep = (url.indexOf('?') > -1) ? '&' : '?';
+  return url+sep+'SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.1.0&FORMAT=image/png&TRANSPARENT=true&ITEMFONTCOLOR=white&LAYERTITLE=True&ITEMFONTSIZE=10&WIDTH=300&LAYER='+this.getWMSLayerName();
 };
 
 proto.getWFSLayerName = function() {

@@ -67,6 +67,9 @@ proto.removeLayers = function(layersId) {
 };
 
 proto.getLayersDict = function(options) {
+  if (!options) {
+    return this._layers;
+  }
   var options = options || {};
   var filterActive = options.ACTIVE;
   var filterQueryable = options.QUERYABLE;
@@ -76,6 +79,7 @@ proto.getLayersDict = function(options) {
   var filterSelectedOrAll = options.SELECTEDORALL;
   var filterAllNotSelected = options.ALLNOTSELECTED;
   var filterServerType = options.SERVERTYPE;
+  var filterBaseLayer = options.BASELAYER || false;
   var filterWfs = options.WFS;
   if (filterSelectedOrAll) {
     filterSelected = null;
@@ -86,7 +90,8 @@ proto.getLayersDict = function(options) {
     && _.isUndefined(filterSelected)
     && _.isUndefined(filterCached)
     && _.isUndefined(filterSelectedOrAll)
-    && _.isUndefined(filterServerType)) {
+    && _.isUndefined(filterServerType)
+    && _.isUndefined(filterBaseLayer)) {
     return this._layers;
   }
   var layers = [];
@@ -121,7 +126,13 @@ proto.getLayersDict = function(options) {
 
   if (typeof filterSelected == 'boolean') {
     layers = _.filter(layers,function(layer){
-      return filterSelected && layer.isSelected();
+      return filterSelected == layer.isSelected();
+    });
+  }
+
+  if (typeof filterBaseLayer == 'boolean') {
+    layers = _.filter(layers,function(layer){
+      return filterBaseLayer == layer.isBaseLayer();
     });
   }
 
@@ -165,13 +176,19 @@ proto.getLayers = function(options) {
   return _.values(layers);
 };
 
+proto.getBaseLayers = function() {
+  return this.getLayersDict({
+    BASELAYER: true
+  });
+};
+
 proto.getLayerById = function(layerId) {
   return this.getLayersDict()[layerId];
 };
 
 proto.getLayerByName = function(name) {
   var layer = null;
-  _.forEach(this.getLayers(),function(layer){
+  _.forEach(this.getLayersDict(),function(layer){
     if (layer.getName() == name){
       layer = _layer;
     }

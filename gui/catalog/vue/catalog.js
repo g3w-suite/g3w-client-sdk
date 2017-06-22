@@ -344,10 +344,8 @@ Vue.component('layerslegend-item',{
     legendurl: function(){
       // in attesa di risolvere lo schianto di QGSI Server...
       //return "http://localhost/cgi-bin/qgis_mapserv.fcgi?map=/home/giohappy/Scrivania/Dev/G3W/g3w-client/test/progetto/test.qgs&SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&FORMAT=image/png&LAYERTITLE=False&ITEMFONTSIZE=10&LAYER="+this.layer.name;
-      var project = ProjectsStore.getCurrentProject();
-      if (project) {
-        return project.getLegendUrl(this.layer);
-      }
+      var layersStore = LayersStoresRegistry.getLayersStore();
+      layersStore.getLayerById(this.layer.id).getLegendUrl();
     }
   },
   methods: {

@@ -812,19 +812,16 @@ proto.getProjectLayer = function(layerId) {
 
 proto.setupBaseLayers = function(){
   var self = this;
-  if (!this.project.state.baselayers){
+  var baseLayers = this.layersstore.getBaseLayers();
+  if (!baseLayers.length){
     return;
   }
   this.mapBaseLayers = {};
-  var baseLayersArray = this.project.state.baselayers;
-  var baseLayers = this.project.state.baselayers;
-  _.forEach(baseLayers,function(layerConfig){
-    var layer = new Layer(layerConfig);
-    layer.setProject(this);
+  _.forEach(baseLayers,function(layer){
 
     if (layer.isWMS()) {
       var config = {
-        url: self.project.getWmsUrl(),
+        url: layer.getWmsUrl(),
         id: layer.state.id,
         tiled: layer.state.tiled
       };
@@ -851,7 +848,7 @@ proto.setupBaseLayers = function(){
     self.addMapLayer(mapLayer);
     self.registerListeners(mapLayer);
     mapLayer.addLayer(layer);
-    self.mapBaseLayers[layer.state.id] = mapLayer;
+    self.mapBaseLayers[layer.getId()] = mapLayer;
   });
 
   _.forEach(_.values(this.mapBaseLayers).reverse(),function(mapLayer){
@@ -878,9 +875,9 @@ proto.setupLayers = function(){
   _.forEach(multiLayers, function(layers, id) {
     var multilayerId = 'layer_'+id;
     var mapLayer;
+    var layer = layers[0];
 
     if (layers.length == 1) {
-      var layer = layers[0];
       if (layer.isCached()) {
         mapLayer = new XYZLayer({
           id: id,
@@ -890,7 +887,7 @@ proto.setupLayers = function(){
       else {
         mapLayer = new WMSLayer({
             // getWMSUrl funzione creata in fase di inizializzazione dell'applicazione
-            url: self.project.getWmsUrl(),
+            url: layer.getWmsUrl(),
             id: multilayerId,
             tiled: layer.state.tiled
         }, self.layersExtraParams);
@@ -901,22 +898,20 @@ proto.setupLayers = function(){
     }
     // in casi di multilayers
     else {
-      var tiled = layers[0].state.tiled;
       // creo configurazione per costruire il layer wms
       //creo il wms layer
       mapLayer = new WMSLayer({
         // getWMSUrl funzione creata in fase di inizializzazione dell'applicazione
-        url: self.project.getWmsUrl(),
-        id: multilayerId,
-        tiled: tiled
+        url: layer.getWmsUrl(),
+        id: multilayerId
       }, self.layersExtraParams);
       self.addMapLayer(mapLayer);
       self.registerListeners(mapLayer);
       // lo aggiungo alla lista dei mapLayers
-      _.forEach(layers.reverse(), function(layer) {
+      _.forEach(layers.reverse(), function(sub_layer) {
         // per ogni layer appartenete allo stesso multilayer (è un array)
         // viene aggiunto al mapLayer (WMSLayer) perecedentemente creato
-        mapLayer.addLayer(layer);
+        mapLayer.addLayer(sub_layer);
       });
     }
   });
@@ -931,7 +926,6 @@ proto.setupLayers = function(){
 };
 
 proto.getOverviewMapLayers = function(project) {
-
   var projectLayers = this.layersstore.getLayers({
     'VISIBLE': true
   });

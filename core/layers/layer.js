@@ -11,11 +11,11 @@ function Layer(config) {
     project: config.project,
     editops: config.editops,
     id: config.id,
+    title: config.title,
     name: config.name,
     origname: config.origname,
     servertype: config.servertype,
-    source: config.source,
-    name: config.title
+    source: config.source
   };
 
   // contiene l'editor associato al layer
@@ -122,7 +122,7 @@ proto.getId = function() {
 };
 
 proto.getTitle = function() {
-  return this.config.name;
+  return this.config.title;
 };
 
 proto.getName = function() {

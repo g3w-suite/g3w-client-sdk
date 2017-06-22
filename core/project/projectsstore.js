@@ -92,7 +92,7 @@ proto.addProjectLayers = function(project) {
     layerConfig.projection = project.getProjection();
     var layer = new GeoLayer(layerConfig);
     self.defaultLayersStore.addLayer(layer);
-  })
+  });
 };
 
 proto.removeProjectLayers = function() {

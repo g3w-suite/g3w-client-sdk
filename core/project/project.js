@@ -15,8 +15,11 @@ function Project(projectConfig) {
     proj4,
     extent,
     initextent,
+    layers,
     layerstree,
-    overviewprojectgid
+    overviewprojectgid,
+    baselayers,
+    initbaselayer
   }
   */
   this.state = projectConfig;
@@ -49,13 +52,21 @@ function Project(projectConfig) {
   //BASE LAYERS
   _.forEach(this.state.baselayers, function(layerConfig) {
     var visible = false;
-    if (this.initbaselayer) {
-      visible = (layerConfig.id == (project.initbaselayer));
+    if (self.state.baselayers.length == 1) {
+      visible = true;
     }
+    else {
+      if (this.initbaselayer) {
+        visible = (layerConfig.id == (self.state.initbaselayer));
+      }
+    }
+
     if (layerConfig.fixed) {
       visible = layerConfig.fixed;
     }
+
     layerConfig.visible = visible;
+    layerConfig.baselayer = true;
   });
 
   this.projection = Projections.get(this.state.crs,this.state.proj4);
@@ -76,7 +87,7 @@ inherit(Project, G3WObject);
 var proto = Project.prototype;
 
 proto.getLayers = function() {
-  return this.state.layers;
+  return _.concat(this.state.layers,this.state.baselayers);
 };
 
 proto.getState = function() {
@@ -101,7 +112,6 @@ proto.getOverviewProjectGid = function() {
   return this.state.overviewprojectgid ? this.state.overviewprojectgid.gid : null;
 };
 
-
 proto.getCrs = function() {
   return this.projection.getCode();
 };
@@ -110,32 +120,19 @@ proto.getProjection = function() {
   return this.projection;
 };
 
+proto.getWmsUrl = function() {
+  return this.state.WMSUrl;
+},
+
 proto.getInfoFormat = function() {
   return 'application/vnd.ogc.gml';
 };
 
-proto.getWmsUrl = function() {
-  var url;
-  if (this.state.source && this.state.source.type == 'wms' && this.state.source.url){
-    url = this.state.source.url
+proto.getTree = function(light) {
+  if (light === true) {
+    ///
   }
-  else {
-    url = this.state.WMSUrl;
-  }
-  return url;
-};
-
-proto.getLegendUrl = function() {
-  var url = this.getWmsUrl();
-  sep = (url.indexOf('?') > -1) ? '&' : '?';
-  return url+sep+'SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.1.0&FORMAT=image/png&TRANSPARENT=true&ITEMFONTCOLOR=white&LAYERTITLE=True&ITEMFONTSIZE=10&WIDTH=300&LAYER='+this.getWMSLayerName();
-};
-
-
-proto.getLegendUrl = function(layer){
-  var url = this.getWmsUrl();
-  sep = (url.indexOf('?') > -1) ? '&' : '?';
-  return this.getWmsUrl()+sep+'SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.1.0&FORMAT=image/png&TRANSPARENT=true&ITEMFONTCOLOR=white&LAYERTITLE=False&ITEMFONTSIZE=10&LAYER='+layer.name;
+  return this.state.layerstree;
 };
 
 module.exports = Project;
