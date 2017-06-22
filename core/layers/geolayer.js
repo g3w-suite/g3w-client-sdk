@@ -44,7 +44,8 @@ function GeoLayer(config) {
     scalebasedvisibility: config.scalebasedvisibility,
     wmsUrl: config.wmsUrl,
     cacheUrl: config.cache_url,
-    baselayer: config.baselayer || false
+    baselayer: config.baselayer || false,
+    wfscapabilities: config.wfscapabilities
   });
 
   if (config.projection) {
@@ -254,6 +255,10 @@ proto.getProjectCrs = function() {
 
 proto.isWMS = function() {
   return WMSServerTypes.indexOf(this.config.servertype) > -1;
+};
+
+proto.isWFS = function() {
+  return this.config.wfscapabilities == 1;
 };
 
 proto.isExternalWMS = function() {

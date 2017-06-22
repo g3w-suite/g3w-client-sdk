@@ -1,4 +1,4 @@
-<li class="tree-item" @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)" @click="select(layer)" :class="{selected: !isFolder ? layer.isSelected() : false, itemmarginbottom: !isFolder }">
+<li class="tree-item" @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)" @click="select()" :class="{selected: !isFolder ? layerstree.selected : false, itemmarginbottom: !isFolder }">
   <span :class="{bold: isFolder, 'fa-chevron-down': layerstree.expanded, 'fa-chevron-right': !layerstree.expanded}" @click="toggle" v-if="isFolder" class="root fa"></span>
   <span v-if="isFolder" @click.stop="toggle('true')" :class="[triClass()]" class="fa"></span>
   <span v-else @click.stop="toggle" :class="[layerstree.visible  ? 'fa-check-square-o': 'fa-square-o',layerstree.disabled  ? 'disabled': '',  parentFolder ? 'child' : 'root' ]" class="fa checkbox-layer"></span>

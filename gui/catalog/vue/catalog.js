@@ -4,7 +4,6 @@ var merge = require('core/utils/utils').merge;
 var Component = require('gui/vue/component');
 var ComponentsRegistry = require('gui/componentsregistry');
 var GUI = require('gui/gui');
-var ProjectsStore = require('core/project/projectsstore');
 var ControlsRegistry = require('gui/map/control/registry');
 var LayersStoresRegistry = require('core/layers/layersstoresregistry');
 var Service = require('../catalogservice');
@@ -194,7 +193,7 @@ Vue.component('tristate-tree', {
     layerstree: {},
     //eredito il numero di childs dal parent
     checked: false,
-    highlightlayers: false,
+    //highlightlayers: false,
     parentFolder: false,
     externallayers: null
   },
@@ -203,8 +202,7 @@ Vue.component('tristate-tree', {
       expanded: this.layerstree.expanded,
       parentChecked: !this.checked,
       controltoggled: false,
-      n_childs: null,
-      layer: null // aggiiunto il layer perchè voglio lavorare con i layer e non con i layerstree
+      n_childs: null
     }
   },
   watch: {
@@ -231,9 +229,7 @@ Vue.component('tristate-tree', {
       var isFolder = this.n_childs ? true : false;
       if (isFolder) {
         this.n_parentChilds = this.n_childs - _visibleChilds;
-      } else {
-        this.layer = LayersStoresRegistry.getLayersStore().getLayerById(this.layerstree.id);
-      }
+      } 
       return isFolder
     },
     isHidden: function() {
@@ -244,8 +240,11 @@ Vue.component('tristate-tree', {
       return isSelected;
     },
     isHighLight: function() {
-      var project = ProjectsStore.getCurrentProject();
-      return this.highlightlayers && project.state.crs == this.layerstree.crs &&  this.layerstree.wfscapabilities == 1 ;
+      if (this.layerstree.id) {
+        this.layer = LayersStoresRegistry.getLayersStore().getLayerById(this.layerstree.id);
+        return this.highlightlayers && layer.isWFS() && layer.getProject() && layer.getProject().getProjection() == layer.getProjection();
+      }
+      return false;
     }
 
   },
@@ -270,7 +269,7 @@ Vue.component('tristate-tree', {
         CatalogEventHub.$emit('treenodetoogled',this.layerstree);
       }
     },
-    select: function (layer) {
+    select: function () {
       if (!this.isFolder && !this.layerstree.external) {
         CatalogEventHub.$emit('treenodeselected', this.layerstree);
       }
@@ -347,7 +346,7 @@ Vue.component('layerslegend-item',{
       // in attesa di risolvere lo schianto di QGSI Server...
       //return "http://localhost/cgi-bin/qgis_mapserv.fcgi?map=/home/giohappy/Scrivania/Dev/G3W/g3w-client/test/progetto/test.qgs&SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&FORMAT=image/png&LAYERTITLE=False&ITEMFONTSIZE=10&LAYER="+this.layer.name;
       var layersStore = LayersStoresRegistry.getLayersStore();
-      layersStore.getLayerById(this.layer.id).getLegendUrl();
+      return layersStore.getLayerById(this.layer.id).getLegendUrl();
     }
   },
   methods: {

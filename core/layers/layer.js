@@ -59,16 +59,16 @@ inherit(Layer, G3WObject);
 
 var proto = Layer.prototype;
 
+proto.getProject = function() {
+  return this.config.project;
+};
+
 proto.getConfig = function() {
   return this.config;
 };
 
 proto.getState = function() {
   return this.state;
-};
-
-proto.getProject = function() {
-  return this.config.getProject();
 };
 
 proto.getEditor = function() {
@@ -223,6 +223,8 @@ proto.getCrs = function() {};
 proto.getProjectCrs = function() {};
 
 proto.isWMS = function() {return false};
+
+proto.isWFS = function() {return false};
 
 proto.isExternalWMS = function() {};
 
