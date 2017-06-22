@@ -414,7 +414,8 @@ proto.setupControls = function(){
             var queryResultsPanel = showQueryResults('interrogazione');
             $.when.apply(this, queryPromises)
               .then(function() {
-                var results = Array.prototype.slice.call(arguments);
+                results = arguments;
+                // vado ad unificare i rusltati delle promises
                 results.query = results[0].query;
                 var data = [];
                 _.forEach(results, function(result) {
