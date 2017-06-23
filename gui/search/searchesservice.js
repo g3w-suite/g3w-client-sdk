@@ -1,13 +1,13 @@
 var inherit = require('core/utils/utils').inherit;
 var GUI = require('gui/gui');
-var ProjectsStore = require('core/project/projectsstore');
+var ProjectsRegistry = require('core/project/projectsregistry');
 var G3WObject = require('core/g3wobject');
 var SearchPanel = require('gui/search/vue/panel/searchpanel');
 
 function SearchesService(){
 
   this.init = function(searchesObject) {
-    var searches = searchesObject || ProjectsStore.getCurrentProject().state.search;
+    var searches = searchesObject || ProjectsRegistry.getCurrentProject().state.search;
     this.state.searches = searches;
   };
   this.state = {
@@ -31,7 +31,7 @@ function SearchesService(){
   };
 
   this.reload = function() {
-    var searches = ProjectsStore.getCurrentProject().state.search;
+    var searches = ProjectsRegistry.getCurrentProject().state.search;
     Vue.set(this.state, 'searches', searches);
   }
 }

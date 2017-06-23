@@ -15,7 +15,8 @@ function Layer(config) {
     name: config.name,
     origname: config.origname,
     servertype: config.servertype,
-    source: config.source
+    source: config.source,
+    geolayer: false
   };
 
   // contiene l'editor associato al layer
@@ -31,7 +32,8 @@ function Layer(config) {
     selected: config.selected | false,
     disabled: config.disabled | false,
     editing: false,
-    modified: false
+    modified: false,
+    hidden: config.hidden || false
   };
   // struttura campi del layer
   this.fields = config.fields;
@@ -108,6 +110,14 @@ proto.getFeatures = function(options) {
       return d.resolve(features);
     });
   return d.promise();
+};
+
+proto.isHidden = function() {
+  return this.state.hidden;
+};
+
+proto.setHidden = function(bool) {
+  this.state.hidden = _.isBoolean(bool) ? bool: true;
 };
 
 proto.isModified = function() {

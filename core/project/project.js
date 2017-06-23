@@ -31,7 +31,6 @@ function Project(projectConfig) {
 
   this._projection = Projections.get(this.state.crs,this.state.proj4);
   this._layersStore = this._buildLayersStore();
-  LayersStoresRegistry.addLayersStore(this._layersStore);
 
   this.setters = {
     setBaseLayer: function(id) {
@@ -90,20 +89,25 @@ proto._processLayers = function() {
   });
 };
 
+// funzione che fa il buil del layers store
+// lo istanzia  crea il layersstree
 proto._buildLayersStore = function() {
+  var self = this;
   var layersStore = new LayersStore();
+  var overviewprojectgid = this.state.overviewprojectgid ? this.state.overviewprojectgid.gid : null;
 
   layersStore.setOptions({
     id: this.state.gid,
     projection: this._projection,
     extent: this.state.extent,
     initextent: this.state.initextent,
-    wmsUrl: this.state.WMSUrl
+    wmsUrl: this.state.WMSUrl,
+    catalog: this.state.gid != overviewprojectgid
   });
 
   _.forEach(this.getLayers(), function(layerConfig) {
     // aggiungo la proiezione
-    layerConfig.projection = this._projection;
+    layerConfig.projection = self._projection;
     var layer = new GeoLayer(layerConfig);
     layersStore.addLayer(layer);
   });

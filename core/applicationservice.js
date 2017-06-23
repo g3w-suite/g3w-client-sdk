@@ -3,7 +3,7 @@ var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var ApiService = require('core/apiservice');
 var RouterService = require('core/router');
-var ProjectsStore = require('core/project/projectsstore');
+var ProjectsRegistry = require('core/project/projectsregistry');
 var PluginsRegistry = require('core/plugin/pluginsregistry');
 var ClipboardService = require('core/clipboardservice');
 
@@ -122,7 +122,7 @@ var ApplicationService = function() {
       PluginsRegistry.init({
         pluginsBaseUrl: self._config.urls.staticurl,
         pluginsConfigs: self._config.plugins,
-        otherPluginsConfig: ProjectsStore.getCurrentProject().getState()
+        otherPluginsConfig: ProjectsRegistry.getCurrentProject().getState()
       });
       this.complete = true;
     }
@@ -141,7 +141,7 @@ var ApplicationService = function() {
       // A questo punto potrò avviare l'istanza Vue globale
       $.when(
         // registra i progetti
-        ProjectsStore.init(this._config),
+        ProjectsRegistry.init(this._config),
         // inizializza api service
         ApiService.init(this._config)
       ).then(function() {

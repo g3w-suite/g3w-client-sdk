@@ -9,6 +9,16 @@ function LayersStoresRegistry() {
 
   this.stores = {};
   this.storesArray = [];
+  // questi setters mi servono per far reagire  le varie parti dell'applicazione
+  // che dipendono o sono legate ai layersStores
+  this.setters = {
+    addLayersStore: function(layersStore, idx) {
+      this._addLayersStore(layersStore, idx);
+    },
+    removeLayersStore: function(layerStore) {
+      this._removeLayersStore(layerStore);
+    }
+  };
 
   base(this);
 }
@@ -32,11 +42,24 @@ proto.getLayersStores = function() {
   return stores;
 };
 
-proto.addLayersStore = function(layerStore) {
+// funzione che aggiunge un layersstore al registro della
+proto._addLayersStore = function(layerStore, idx) {
   // usiamo un array per garantire ordine di inserimento, poi potremo gestire richieste di inserimento in una specifica posizione
   var storeId = layerStore.getId();
   this.stores[storeId] = layerStore;
-  this.storesArray.push(storeId);
+  if (!_.isNil(idx)) {
+    this.storesArray.splice(0,1, storeId);
+  } else {
+    this.storesArray.push(storeId);
+  }
+};
+
+proto._removeLayersStore = function(layerStore) {
+  var id = layerStore.getId();
+  if (layerStore) {
+    delete this.stores[id];
+    this.storesArray.splice(this.storesArray.indexOf(layerStore, 1));
+  }
 };
 
 module.exports = new LayersStoresRegistry();

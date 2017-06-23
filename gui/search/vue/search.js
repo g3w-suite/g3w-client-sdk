@@ -2,7 +2,7 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var merge = require('core/utils/utils').merge;
 var Component = require('gui/vue/component');
-var ProjectsStore = require('core/project/projectsstore');
+var ProjectsRegistry = require('core/project/projectsregistry');
 var SearchesService = require('gui/search/searchesservice');
 
 var vueComponentOptions = {
@@ -36,7 +36,7 @@ function SearchComponent(options){
     searchesService: this._service
   });
   this.internalComponent.state = this._service.state;
-  this.state.visible = ProjectsStore.getCurrentProject().state.search.length > 0;
+  this.state.visible = ProjectsRegistry.getCurrentProject().state.search.length > 0;
   merge(this, options);
   this.initService = function() {
     //inizializzo il servizio
@@ -44,7 +44,7 @@ function SearchComponent(options){
   };
 
   this._reload = function() {
-    this.state.visible = ProjectsStore.getCurrentProject().state.search.length > 0;
+    this.state.visible = ProjectsRegistry.getCurrentProject().state.search.length > 0;
     this._service.reload();
   }
 }

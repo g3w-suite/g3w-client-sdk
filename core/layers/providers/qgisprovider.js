@@ -37,7 +37,7 @@ proto.getInfoFromLayer = function(ogcService) {
   return {
     url: queryUrl,
     infoFormat: this._layer.getInfoFormat(ogcService),
-    crs: this._layer.getProjection().getCode(), // dovrebbe essere comune a tutti
+    crs: this._layer.getProjectCrs(), // dovrebbe essere comune a tutti
     serverType: this._layer.getServerType() // aggiungo anche il tipo di server
   };
 };

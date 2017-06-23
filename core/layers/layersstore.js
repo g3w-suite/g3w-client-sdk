@@ -6,12 +6,15 @@ var G3WObject = require('core/g3wobject');
 function LayersStore(config) {
   var self = this;
   config = config || {};
+
   this.config = {
     id: config.id || Date.now(),
     projection: config.projection,
     extent: config.extent,
     initextent: config.initextent,
-    wmsUrl: config.wmsUrl
+    wmsUrl: config.wmsUrl,
+    //metto caratteristica catalogabile
+    catalog: _.isBoolean(config.catalog) ? config.catalog : true
   };
 
   this.state = {
@@ -47,6 +50,10 @@ function LayersStore(config) {
 inherit(LayersStore, G3WObject);
 
 proto = LayersStore.prototype;
+
+proto.showOnCatalog = function() {
+  return this.config.catalog;
+};
 
 proto.setOptions = function(config) {
   this.config = config;
@@ -91,6 +98,8 @@ proto.getLayersDict = function(options) {
   var filterAllNotSelected = options.ALLNOTSELECTED;
   var filterServerType = options.SERVERTYPE;
   var filterBaseLayer = options.BASELAYER || false;
+  var filterGeoLayer = options.GEOLAYER;
+  var filterHidden = options.HIDDEN;
   var filterWfs = options.WFS;
   if (filterSelectedOrAll) {
     filterSelected = null;
@@ -102,6 +111,8 @@ proto.getLayersDict = function(options) {
     && _.isUndefined(filterCached)
     && _.isUndefined(filterSelectedOrAll)
     && _.isUndefined(filterServerType)
+    && _.isUndefined(filterGeoLayer)
+    && _.isUndefined(filterHidden)
     && _.isUndefined(filterBaseLayer)) {
     return this._layers;
   }
@@ -144,6 +155,18 @@ proto.getLayersDict = function(options) {
   if (typeof filterBaseLayer == 'boolean') {
     layers = _.filter(layers,function(layer){
       return filterBaseLayer == layer.isBaseLayer();
+    });
+  }
+
+  if (typeof filterGeoLayer == 'boolean') {
+    layers = _.filter(layers,function(layer) {
+      return filterGeoLayer == layer.state.geolayer;
+    });
+  }
+
+  if (typeof filterHidden == 'boolean') {
+    layers = _.filter(layers,function(layer){
+      return filterHidden == layer.isHidden();
     });
   }
 
@@ -215,6 +238,10 @@ proto.getLayerAttributeLabel = function(layerId,name){
   return this.getLayerById(layerId).getAttributeLabel(name);
 };
 
+proto.getGeoLayers = function() {
+
+};
+
 proto.toggleLayer = function(layerId,visible){
   var layer = this.getLayerById(layerId);
   var visible = visible || !layer.state.visible;
@@ -249,6 +276,7 @@ proto.getWmsUrl = function() {
   return this.config.wmsUrl;
 };
 
+// funzione che setta il layersstree deli layers del layersstore
 proto.setLayersTree = function(layerstree,name) {
   var self = this;
   function traverse(obj) {
@@ -264,6 +292,9 @@ proto.setLayersTree = function(layerstree,name) {
   }
   traverse(layerstree);
 
+  // questo server per raggruppare ogni albero dei layer
+  // al proprio gruppo che sia un progetto, un plugin o altro
+  // quando viene creato il layersstore
   this.state.layerstree.splice(0,0,{
     title: name || this.config.id,
     expanded: true,

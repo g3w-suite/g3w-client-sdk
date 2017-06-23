@@ -5,7 +5,7 @@ var GUI = require('gui/gui');
 var QueryService = require('core/query/queryservice');
 var ListPanel = require('gui/listpanel').ListPanel;
 var Panel = require('gui/panel');
-var ProjectsStore = require('core/project/projectsstore');
+var ProjectsRegistry = require('core/project/projectsregistry');
 
 //componente vue pannello search
 var SearchPanelComponet = Vue.extend({
@@ -63,7 +63,7 @@ function SearchPanel(options) {
     this.internalPanel.queryurl = this.config.options.queryurl || null;
     var queryLayerId = this.config.options.querylayerid || this.querylayerid;
     // recupero il query layer dall'id della configurazione
-    this.queryLayer = ProjectsStore.getCurrentProject().getLayersStore().getLayerById(queryLayerId);
+    this.queryLayer = ProjectsRegistry.getCurrentProject().getLayersStore().getLayerById(queryLayerId);
     //vado a riempire gli input del form del pannello con campo e valore
     this.fillInputsFormFromFilter();
     //creo e assegno l'oggetto filtro

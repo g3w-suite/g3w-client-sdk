@@ -2,7 +2,7 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var GUI = require('gui/gui');
 var G3WObject = require('core/g3wobject');
-var ProjectsStore = require('core/project/projectsstore');
+var ProjectsRegistry = require('core/project/projectsregistry');
 var PrintService = require('core/print/printservice');
 var resToScale = require('core/utils/geo').resToScale;
 var scaleToRes = require('core/utils/geo').scaleToRes;
@@ -31,7 +31,7 @@ function PrintComponentService() {
   // inizializzazione
   this.init = function() {
     // recupero il project
-    this._project = ProjectsStore.getCurrentProject();
+    this._project = ProjectsRegistry.getCurrentProject();
     // prendo le informazioni del print
     this.state.print = this._project.state.print;
     // setto lo state visible
@@ -349,7 +349,7 @@ function PrintComponentService() {
 
   this.reload = function() {
     var self = this;
-    this._project = ProjectsStore.getCurrentProject();
+    this._project = ProjectsRegistry.getCurrentProject();
     this._mapService = GUI.getComponent('map').getService();
     this._map = this._mapService.viewer.map;
     // prendo le informazioni del print

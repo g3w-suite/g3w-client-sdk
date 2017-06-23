@@ -3,6 +3,7 @@ var base = require('core/utils/utils').base;
 var reject = require('core/utils/utils').reject;
 var G3WObject = require('core/g3wobject');
 var Project = require('core/project/project');
+var LayersStoresRegistry = require('core/layers/layersstoresregistry');
 
 /* service
 Funzione costruttore contentente tre proprieta':
@@ -12,7 +13,7 @@ Funzione costruttore contentente tre proprieta':
 */
 
 // Public interface
-function ProjectsStore() {
+function ProjectsRegistry() {
   var self = this;
   this.config = null;
   this.initialized = false;
@@ -20,9 +21,14 @@ function ProjectsStore() {
   this.projectType = null;
   this.setters = {
     setCurrentProject: function(project) {
+      if (this.state.currentProject) {
+        LayersStoresRegistry.removeLayersStore(this.state.currentProject.getLayersStore());
+      }
       self.state.currentProject = project;
       //aggiunto tipo progetto
       self.setProjectType(project.state.type);
+      // lo mette sempre in prima posizione mi serve per la mappa
+      LayersStoresRegistry.addLayersStore(project.getLayersStore(), 0);
     }
   };
   //stato del registro progetti
@@ -41,9 +47,9 @@ function ProjectsStore() {
   base(this);
 }
 
-inherit(ProjectsStore, G3WObject);
+inherit(ProjectsRegistry, G3WObject);
 
-var proto = ProjectsStore.prototype;
+var proto = ProjectsRegistry.prototype;
 
 proto.init = function(config) {
   var self = this;
@@ -166,6 +172,7 @@ proto.getProject = function(projectGid) {
       var projectConfig = _.merge(pendingProject,projectFullConfig);
       projectConfig.WMSUrl = self.config.getWmsUrl(projectConfig);
       var project = new Project(projectConfig);
+      // aggiungo/ registro il progetto
       self._projects[projectConfig.gid] = project;
       return d.resolve(project);
     })
@@ -191,4 +198,4 @@ proto._getProjectFullConfig = function(projectBaseConfig) {
 };
 
 
-module.exports = new ProjectsStore();
+module.exports = new ProjectsRegistry();

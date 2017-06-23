@@ -26,8 +26,6 @@ var WMSServerTypes = [
   ServerTypes.OGC
 ];
 
-
-
 function GeoLayer(config) {
   base(this, config);
   var self = this;
@@ -48,6 +46,10 @@ function GeoLayer(config) {
     wfscapabilities: config.wfscapabilities
   });
 
+  // temporaneo
+  this.state.geolayer = true;
+
+
   if (config.projection) {
     this.config.projection = config.projection;
   }
@@ -67,7 +69,7 @@ function GeoLayer(config) {
   //TEMPORANEO
   if (this.config.servertype == Layer.ServerTypes.QGIS) {
     // contiene il provider associato al layer
-    this.provider = ProviderFactory.build('qgis', {
+    this._queryprovider = ProviderFactory.build('qgis', {
       layer: this,
       layerName: this.getQueryLayerName(),
       infoFormat: this.getInfoFormat()
@@ -75,11 +77,11 @@ function GeoLayer(config) {
     // vado a creare il featuresStore che si prenderà cura del recupero
     // dati (attraverso il suo provider) e salvataggio features
     this._featuresStore = new FeaturesStore({
-      dataprovider: this._provider //momentaneo
+      dataprovider: this._queryprovider //momentaneo
     });
   } else {
     // contiene il provider associato al layer
-    this.provider = ProviderFactory.build('qgis', {
+    this._queryprovider = ProviderFactory.build('qgis', {
       layer: this,
       layerName: this.getQueryLayerName(),
       infoFormat: this.getInfoFormat()
@@ -148,7 +150,11 @@ proto.isModified = function() {
 };
 
 proto.getDataProvider = function() {
-  return this.dataprovider;
+  return this._dataprovider;
+};
+
+proto.getMultiLayerId = function() {
+  return this.config.multilayerid;
 };
 
 proto.getGeometryType = function() {
@@ -248,8 +254,8 @@ proto.getCrs = function() {
 };
 
 proto.getProjectCrs = function() {
-  if (this.config.project) {
-    return this.config.project.getProjection().getCode();
+  if (this.config.projection) {
+    return this.config.projection.getCode();
   }
 };
 
@@ -326,7 +332,7 @@ proto.isQueryable = function() {
 proto.query = function(options) {
   var self = this;
   var d = $.Deferred();
-  this.provider.query(options)
+  this._queryprovider.query(options)
     .then(function(features) {
       d.resolve(features);
     });

@@ -1,6 +1,6 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
-var ProjectsStore = require('core/project/projectsstore');
+var ProjectsRegistry = require('core/project/projectsregistry');
 var GeoLayer = require('core/layers/geolayer');
 var GUI = require('gui/gui');
 var G3WObject = require('core/g3wobject');
@@ -14,7 +14,7 @@ var RelationsPage = require('./components/relations/vue/relationspage');
 function QueryResultsService() {
   var self = this;
   // prendo le relazioni dal progetto e se ci sono e le raggruppo per referencedLayer
-  this._relations = ProjectsStore.getCurrentProject().state.relations ? _.groupBy(ProjectsStore.getCurrentProject().state.relations,'referencedLayer'): null;
+  this._relations = ProjectsRegistry.getCurrentProject().state.relations ? _.groupBy(ProjectsRegistry.getCurrentProject().state.relations,'referencedLayer'): null;
   this._actions = {
     'zoomto': QueryResultsService.zoomToElement,
     'highlightgeometry': QueryResultsService.highlightGeometry,

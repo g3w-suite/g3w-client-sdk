@@ -1,12 +1,12 @@
 var t = require('i18n/i18n.service').t;
 var GUI = require('gui/gui');
-var ProjectsStore = require('core/project/projectsstore');
+var ProjectsRegistry = require('core/project/projectsregistry');
 
 Vue.component('g3w-projects-catalog',{
     template: require('./projects.html'),
     data: function() {
       return {
-        state: ProjectsStore.state
+        state: ProjectsRegistry.state
       }
     },
     computed: {
@@ -16,7 +16,7 @@ Vue.component('g3w-projects-catalog',{
     },
     methods: {
       switchProject: function(gid){
-        ProjectsStore.switchProject(gid);
+        ProjectsRegistry.switchProject(gid);
       }
     }
 });

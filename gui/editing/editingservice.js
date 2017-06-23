@@ -98,7 +98,7 @@ function EditingService(options) {
       // i layers nella configurazione passata i layers hanno due attributi: id e name
       var layerId = config.layers[layerCode].id;
       // recupera il layer dal mapservice
-      var layer = this._mapService.getLayersStore().getLayerById(layerId);
+      var layer = self._mapService.layersstore.getLayerById(layerId);
       // recupero l'origin name dal projectlayer
       Layer.name = layer.getOrigName();
       Layer.id = layerId;

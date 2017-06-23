@@ -1,7 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
-var ProjectsStore = require('core/project/projectsstore');
+var ProjectsRegistry = require('core/project/projectsregistry');
 var PluginsRegistry = require('./pluginsregistry');
 
 var Plugin = function() {
@@ -49,7 +49,7 @@ proto.setConfig = function(config) {
 
 //verifica la compatibilià con il progetto corrente
 proto.isCurrentProjectCompatible = function(projectId) {
-  var project = ProjectsStore.getCurrentProject();
+  var project = ProjectsRegistry.getCurrentProject();
   return projectId == project.getGid();
 };
 

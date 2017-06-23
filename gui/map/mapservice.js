@@ -3,8 +3,9 @@ var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var GUI = require('gui/gui');
 var ApplicationService = require('core/applicationservice');
-var ProjectsStore = require('core/project/projectsstore');
+var ProjectsRegistry = require('core/project/projectsregistry');
 var Layer = require('core/layers/layer');
+var LayersStoreRegistry = require('core/layers/layersstoresregistry');
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 var WMSLayer = require('core/map/layer/wmslayer');
 var XYZLayer = require('core/map/layer/xyzlayer');
@@ -19,7 +20,9 @@ function MapService(options) {
   var self = this;
   this.viewer = null;
   this.target = null;
-  this.layersstore = null;
+  this._layersStoresEventKeys = {};
+  // vado a prendere i layersSore eventualmente aggiunti (penso al progetto) nel LayersRegistryStore
+  this.layersstores = LayersStoreRegistry.getLayersStores();
   this.project = null;
   this._mapControls = [];
   this._mapLayers = [];
@@ -66,17 +69,14 @@ function MapService(options) {
   if(!_.isNil(options.project)) {
     this.project = options.project;
   } else {
-    this.project = ProjectsStore.getCurrentProject();
-    ProjectsStore.onafter('setCurrentProject',function(project){
+    this.project = ProjectsRegistry.getCurrentProject();
+    ProjectsRegistry.onafter('setCurrentProject',function(project){
       self._removeListeners();
       self.project = project;
-      self.layersstore = project.getLayersStore();
-      self._setupListeners();
       self._setupLayers();
       self._resetView();
     })
   }
-  this.layersstore = this.project.getLayersStore();
   this._setupListeners();
   this._marker = null;
 
@@ -109,16 +109,22 @@ function MapService(options) {
     controlClick: function() {
 
     }
-  }
+  };
 
 
   this.on('cataloglayerselected', function() {
    var self = this;
-   var layer = this.layersstore.getLayers({
-      SELECTED: true
-    });
+   var layers;
+   _.forEach(self.layersstores, function(layerStore) {
+     layers = layerStore.getLayers({
+       SELECTED: true
+     });
+     if (layers.length)
+       return false
+   });
+   var layer = layers.length ? layers[0]: null;
    if (layer) {
-     this.selectLayer = layer[0];
+     this.selectLayer = layer;
      _.forEach(this._mapControls, function(mapcontrol) {
        if (_.indexOf(_.keysIn(mapcontrol.control), 'onSelectLayer') > -1 && mapcontrol.control.onSelectLayer()) {
          if (mapcontrol.control.getGeometryTypes().indexOf(self.selectLayer.getGeometryType()) > -1 ) {
@@ -138,6 +144,20 @@ function MapService(options) {
         mapcontrol.control.setEnable(false);
       }
     })
+  });
+
+  // sto in ascolto di evantuali aggiunte di layersStore per poter eventualmente
+  // aggiungere i suoi layers alla mappa
+  LayersStoreRegistry.onafter('addLayersStore', function(layerStore) {
+    self.layersstores.push(layerStore);
+    self._setUpEventsKeysToLayersStore(layerStore);
+  });
+  // sto in ascolto di evantuali aggiunte di layersStore per poter eventualmente
+  // aggiungere i suoi layers alla mappa
+  LayersStoreRegistry.onafter('removeLayersStore', function(layerStore) {
+    var idxStore = self.layersstores.indexOf(layerStore);
+    self.layersstores.splice(idxStore, 1);
+    self._removeEventsKeysToLayersStore(layerStore);
   });
   
   base(this);
@@ -163,8 +183,12 @@ proto.getProject = function() {
   return this.project;
 };
 
-proto.getLayersStore = function() {
-  return this.layersstore;
+proto.getLayersStores = function() {
+  return this.layersstores;
+};
+
+proto.getLayersStore = function(id) {
+  return LayersStoreRegistry.getLayersStore(id);
 };
 
 proto.getMap = function() {
@@ -181,7 +205,7 @@ proto.defineProjection = function(crs) {
 };
 
 proto.getProjection = function() {
-  return this.layersstore.getProjection();
+  return this.layersstores[0].getProjection();
 };
 
 proto.getCrs = function() {
@@ -234,7 +258,6 @@ proto.getLayerByName = function(name) {
 // ritorna il layer della mappa in base all'id
 proto.getLayerById = function(id) {
   var map = this.viewer.map;
-  var layer = null;
   map.getLayers().forEach(function(lyr) {
     if (lyr.get('id') == id) {
       layer = lyr;
@@ -296,7 +319,7 @@ proto.setupControls = function(){
             var coordinates = e.coordinates;
             self.showMarker(coordinates);
             var showQueryResults = GUI.showContentFactory('query');
-            var layers = self.layersstore.getLayers({
+            var layers = self.getLayers({
               QUERYABLE: true,
               SELECTEDORALL: true
             });
@@ -337,7 +360,7 @@ proto.setupControls = function(){
           self.addControl(controlType,control);
           break;
         case 'querybypolygon':
-          var controlLayers = self.layersstore.getLayers({
+          var controlLayers = self.getLayers({
             QUERYABLE: true,
             SELECTEDORALL: true
           });
@@ -351,7 +374,7 @@ proto.setupControls = function(){
               var showQueryResults = GUI.showContentFactory('query');
               //faccio query by location su i layers selezionati o tutti
               var queryResultsPanel = showQueryResults('interrogazione');
-              var layers = self.layersstore.getLayers({
+              var layers = self.getLayers({
                 QUERYABLE: true,
                 SELECTED: true
               });
@@ -359,7 +382,7 @@ proto.setupControls = function(){
                 .then(function (results) {
                   if (results && results.data && results.data[0].features.length) {
                     var geometry = results.data[0].features[0].getGeometry();
-                    var queryLayers = self.layersstore.getLayers({
+                    var queryLayers = self.getLayers({
                       QUERYABLE: true,
                       ALLNOTSELECTED: true,
                       WFS: true
@@ -395,7 +418,7 @@ proto.setupControls = function(){
           break;
         case 'querybbox':
           if (!isMobile.any && self.checkWFSLayers()) {
-            var controlLayers = self.layersstore.getLayers({
+            var controlLayers = self.getLayers({
               QUERYABLE: true,
               SELECTEDORALL: true,
               WFS: true
@@ -407,7 +430,7 @@ proto.setupControls = function(){
             if (control) {
               control.on('bboxend', function (e) {
                 var bbox = e.extent;
-                var layers = self.layersstore.getLayers({
+                var layers = self.getLayers({
                   QUERYABLE: true,
                   SELECTEDORALL: true,
                   WFS: true
@@ -485,8 +508,8 @@ proto.setupControls = function(){
           if (!isMobile.any) {
             var overviewProjectGid = self.config.overviewproject.gid;
             if (overviewProjectGid) {
-              ProjectsStore.getProject(overviewProjectGid)
-              .then(function(project){
+              ProjectsRegistry.getProject(overviewProjectGid)
+              .then(function(project) {
                 var overViewMapLayers = self.getOverviewMapLayers(project);
                 control = ControlsFactory.create({
                   type: controlType,
@@ -567,10 +590,26 @@ proto.setupControls = function(){
     });
   }
 };
+
+// funzione che recupera i layers dagli stores
+proto.getLayers = function(filter) {
+  filter = filter || {};
+  var mapFilter = {
+    GEOLAYER: true,
+    HIDDEN: false
+  };
+  filter = _.merge(filter, mapFilter);
+  var layers = [];
+  _.forEach(this.layersstores, function(layerStore) {
+    _.merge(layers, layerStore.getLayers(filter));
+  });
+  return layers;
+};
+
 // verifica se esistono layer querabili che hanno wfs capabilities
 proto.checkWFSLayers = function() {
   var iswfs = false;
-  var layers = this.layersstore.getLayers({
+  var layers = this.getLayers({
     QUERYABLE: true,
     SELECTEDORALL: true
   });
@@ -711,7 +750,7 @@ proto.getProjectLayer = function(layerId) {
 proto._resetView = function() {
   var width = this.viewer.map.getSize()[0];
   var height = this.viewer.map.getSize()[1];
-  var extent = self.layersstore.config.extent;
+  var extent = this.layersstores[0].config.extent;
   var maxxRes = ol.extent.getWidth(extent) / width;
   var minyRes = ol.extent.getHeight(extent) / height;
   var maxResolution = Math.max(maxxRes,minyRes) > this.viewer.map.getView().getMaxResolution() ? Math.max(maxxRes,minyRes): this.viewer.map.getView().getMaxResolution();
@@ -730,9 +769,9 @@ proto._setupViewer = function(width,height) {
   var self = this;
   var projection = this.getProjection();
   // ricavo l'estensione iniziale del progetto)
-  var initextent = self.layersstore.config.initextent;
+  var initextent = self.layersstores[0].config.initextent;
   // ricavo l'estensione del progetto
-  var extent = self.layersstore.config.extent;
+  var extent = self.layersstores[0].config.extent;
 
   var maxxRes = ol.extent.getWidth(extent) / width;
   var minyRes = ol.extent.getHeight(extent) / height;
@@ -797,23 +836,40 @@ proto._setupViewer = function(width,height) {
 };
 
 proto._removeListeners = function() {
-  if (this._setLayersVisibleListenersKey) {
-    this.layersstore.un('setLayersVisible',this._setLayersVisibleListenersKey);
-  }
+
   if (this._setBaseLayerListenerKey) {
     this.project.un('setBaseLayer',this._setBaseLayerListenerKey);
   }
 };
 
-proto._setupListeners = function(){
+// vado a registrare tuti gli ebventi del layersStore
+proto._removeEventsKeysToLayersStore = function(layerStore) {
+  var layerStoreId = layerStore.getId();
+  if (this._layersStoresEventKeys[layerStoreId]) {
+    _.forEach(this._layersStoresEventKeys[layerStoreId], function(keyEvent) {
+      layerStore.un('setLayersVisible', keyEvent)
+    })
+  }
+};
+
+// vado a registrare tuti gli ebventi del layersStore
+proto._setUpEventsKeysToLayersStore = function(layerStore) {
   var self = this;
-  this._setLayersVisibleListenersKey = this.layersstore.onafter('setLayersVisible',function(layersIds){
-    var mapLayers = _.map(layersIds,function(layerId){
-      var layer = self.layersstore.getLayerById(layerId);
-      return self.getMapLayerForLayer(layer);
+  var layerStoreId = layerStore.getId();
+  if (!this._layersStoresEventKeys[layerStoreId]) {
+    this._layersStoresEventKeys[layerStoreId] = [];
+    var layerVisibleKey = layerStore.onafter('setLayersVisible', function (layersIds) {
+      var mapLayers = _.map(layersIds, function (layerId) {
+        var layer = layerStore.getLayerById(layerId);
+        return self.getMapLayerForLayer(layer);
+      });
+      self.updateMapLayers(self.getMapLayers());
     });
-    self.updateMapLayers(self.getMapLayers());
-  });
+    this._layersStoresEventKeys[layerStore.getId()].push(layerVisibleKey);
+  }
+};
+
+proto._setupListeners = function(){
 
   this._setBaseLayerListenerKey = this.project.onafter('setBaseLayer',function(){
     self.updateMapLayers(self.mapBaseLayers);
@@ -822,7 +878,9 @@ proto._setupListeners = function(){
 
 proto._setupBaseLayers = function(){
   var self = this;
-  var baseLayers = this.layersstore.getBaseLayers();
+  var baseLayers = self.getLayers({
+    BASELAYER: true
+  });
   if (!baseLayers.length){
     return;
   }
@@ -872,9 +930,8 @@ proto._setupLayers = function(){
   this.viewer.removeLayers();
   this._setupBaseLayers();
   this._reset();
-  // recupero i layers dal project
-  // sono di tipo projectLayers
-  var layers = this.layersstore.getLayers();
+  // recupero i layers dai vari layerstore mettendo coem condizione HIDDEN e GEOLAYER
+  var layers = this.getLayers();
   //raggruppo per valore del multilayer con chiave valore multilayer
   // e valore array
   var multiLayers = _.groupBy(layers, function(layer){
@@ -936,12 +993,15 @@ proto._setupLayers = function(){
 };
 
 proto.getOverviewMapLayers = function(project) {
-  var projectLayers = this.layersstore.getLayers({
-    'VISIBLE': true
+  var projectLayers = project.getLayersStore().getLayers({
+    VISIBLE: true,
+    GEOLAYER: true,
+    HIDDEN: false
   });
+  
 
   var multiLayers = _.groupBy(projectLayers,function(layer){
-    return layer.state.multilayer;
+    return layer.getMultiLayerId();
   });
   
   var overviewMapLayers = [];
