@@ -146,6 +146,10 @@ function MapService(options) {
     })
   });
 
+  _.forEach(this.layersstores, function(layerStore) {
+    self._setUpEventsKeysToLayersStore(layerStore);
+  });
+
   // sto in ascolto di evantuali aggiunte di layersStore per poter eventualmente
   // aggiungere i suoi layers alla mappa
   LayersStoreRegistry.onafter('addLayersStore', function(layerStore) {
@@ -205,7 +209,7 @@ proto.defineProjection = function(crs) {
 };
 
 proto.getProjection = function() {
-  return this.layersstores[0].getProjection();
+  return this.project.getProjection();
 };
 
 proto.getCrs = function() {
@@ -750,7 +754,7 @@ proto.getProjectLayer = function(layerId) {
 proto._resetView = function() {
   var width = this.viewer.map.getSize()[0];
   var height = this.viewer.map.getSize()[1];
-  var extent = this.layersstores[0].config.extent;
+  var extent = this.project.state.extent;
   var maxxRes = ol.extent.getWidth(extent) / width;
   var minyRes = ol.extent.getHeight(extent) / height;
   var maxResolution = Math.max(maxxRes,minyRes) > this.viewer.map.getView().getMaxResolution() ? Math.max(maxxRes,minyRes): this.viewer.map.getView().getMaxResolution();
@@ -769,9 +773,9 @@ proto._setupViewer = function(width,height) {
   var self = this;
   var projection = this.getProjection();
   // ricavo l'estensione iniziale del progetto)
-  var initextent = self.layersstores[0].config.initextent;
+  var initextent = self.project.state.initextent;
   // ricavo l'estensione del progetto
-  var extent = self.layersstores[0].config.extent;
+  var extent = self.project.state.extent;
 
   var maxxRes = ol.extent.getWidth(extent) / width;
   var minyRes = ol.extent.getHeight(extent) / height;
@@ -844,10 +848,13 @@ proto._removeListeners = function() {
 
 // vado a registrare tuti gli ebventi del layersStore
 proto._removeEventsKeysToLayersStore = function(layerStore) {
+  var self = this;
   var layerStoreId = layerStore.getId();
-  if (this._layersStoresEventKeys[layerStoreId]) {
-    _.forEach(this._layersStoresEventKeys[layerStoreId], function(keyEvent) {
-      layerStore.un('setLayersVisible', keyEvent)
+  if (self._layersStoresEventKeys[layerStoreId]) {
+    _.forEach(self._layersStoresEventKeys[layerStoreId], function(eventObj) {
+      _.forEach(eventObj, function(eventKey, event) {
+        layerStore.un(event, eventKey);
+      })
     })
   }
 };
@@ -865,7 +872,9 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
       });
       self.updateMapLayers(self.getMapLayers());
     });
-    this._layersStoresEventKeys[layerStore.getId()].push(layerVisibleKey);
+    this._layersStoresEventKeys[layerStore.getId()].push({
+      setLayersVisible:layerVisibleKey
+    });
   }
 };
 
