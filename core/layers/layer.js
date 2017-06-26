@@ -21,7 +21,9 @@ function Layer(config) {
 
   // contiene l'editor associato al layer
   this.editor = null;
-  this.provider = null;
+  // Query Provider server a poter effettuare chiamate di informazione sul layer
+  // es. query, quey bbox etc...
+  this._queryprovider = null;
   // contiene la parte dinamica del layer
   //this.state = config; // questo fa in modo che il catalog reagisca al mutamento
   // delle proprietà dinamiche (select, disable, visible)

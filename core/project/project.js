@@ -3,7 +3,6 @@ var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
 var GeoLayer = require('core/layers/geolayer');
 var LayersStore = require('core/layers/layersstore');
-var LayersStoresRegistry = require('core/layers/layersstoresregistry');
 var Projections = require('core/geo/projections');
 
 function Project(projectConfig) {

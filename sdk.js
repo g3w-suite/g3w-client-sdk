@@ -9,6 +9,7 @@ g3w.core = {
    ProjectsRegistry: require('core/project/projectsregistry'),
    Project: require('core/project/project'),
    Layer: require('core/layers/layer'),
+   GeoLayer: require('core/layers/geolayer'),
    QueryService: require('core/query/queryservice'),
    MapLayer: require('core/map/layer/maplayer'),
    VectorLayer: require('core/map/layer/vectorlayer'),
