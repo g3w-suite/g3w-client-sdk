@@ -55,10 +55,12 @@ proto._addLayersStore = function(layerStore, idx) {
 };
 
 proto._removeLayersStore = function(layerStore) {
-  var id = layerStore.getId();
+
   if (layerStore) {
-    delete this.stores[id];
-    this.storesArray.splice(this.storesArray.indexOf(layerStore, 1));
+    var storeId = layerStore.getId();
+    var idx = this.storesArray.indexOf(storeId);
+    delete this.stores[storeId];
+    this.storesArray.splice(idx, 1);
   }
 };
 

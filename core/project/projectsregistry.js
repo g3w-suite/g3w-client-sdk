@@ -22,7 +22,7 @@ function ProjectsRegistry() {
   this.setters = {
     setCurrentProject: function(project) {
       if (this.state.currentProject) {
-        LayersStoresRegistry.removeLayersStore(this.state.currentProject.getLayersStore());
+        LayersStoresRegistry.removeLayersStore(self.state.currentProject.getLayersStore());
       }
       self.state.currentProject = project;
       //aggiunto tipo progetto

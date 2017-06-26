@@ -49,7 +49,13 @@ function CatalogService() {
 
   //registro l'eventuale rimozione del layersSore dal LayersRegistryStore
   LayersStoresRegistry.onafter('removeLayersStore', function(layersStore) {
-    self.state.layerstrees.splice(self.state.layerstrees.indexOf(layersStore), 1);
+    _.forEach(self.state.layerstrees, function(layersTree, idx) {
+      if (layersTree.storeid == layersStore.getId()) {
+        self.state.layerstrees.splice(idx, 1);
+        return false;
+      }
+    });
+
   });
 }
 
