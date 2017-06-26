@@ -85,7 +85,7 @@ var utils = {
   },
   
   inherit:function(childCtor, parentCtor) {
-    function tempCtor() {};
+    function tempCtor() {}
     tempCtor.prototype = parentCtor.prototype;
     childCtor.superClass_ = parentCtor.prototype;
     childCtor.prototype = new tempCtor();

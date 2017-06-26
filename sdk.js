@@ -1,34 +1,47 @@
 var g3w = g3w || {};
 
 g3w.core = {
-   G3WObject: require('core/g3wobject'),
-   utils: require('core/utils/utils'),
-   ApplicationService: require('core/applicationservice'),
-   ApiService: require('core/apiservice'),
-   Router: require('core/router'),
-   ProjectsRegistry: require('core/project/projectsregistry'),
-   Project: require('core/project/project'),
-   Layer: require('core/layers/layer'),
-   GeoLayer: require('core/layers/geolayer'),
-   QueryService: require('core/query/queryservice'),
-   MapLayer: require('core/map/layer/maplayer'),
-   VectorLayer: require('core/map/layer/vectorlayer'),
-   WmsLayer: require('core/map/layer/wmslayer'),
-   VectorLayerLoader: require('core/map/layer/loader/vectorloaderlayer'),
-   Geometry: require('core/geometry/geometry'),
-   geom: require('core/geometry/geom'),
-   PickCoordinatesInteraction: require('g3w-ol3/src/interactions/pickcoordinatesinteraction'),
-   PickFeatureInteraction: require('g3w-ol3/src/interactions/pickfeatureinteraction'),
-   i18n: require('core/i18n/i18n.service'),
-   Plugin: require('core/plugin/plugin'),
-   PluginsRegistry: require('core/plugin/pluginsregistry'),
-   PluginService: require('core/plugin/pluginservice'),
-   Editor: require('core/editing/editor'),
-   EditBuffer: require('core/editing/editbuffer'),
-   RelationEditBuffer: require('core/editing/relationeditbuffer'),
-   LayersStoreRegistry: require('core/layers/layersstoresregistry'),
-   LayersStore: require('core/layers/layersstore')
-
+  G3WObject: require('core/g3wobject'),
+  utils: require('core/utils/utils'),
+  ApplicationService: require('core/applicationservice'),
+  ApiService: require('core/apiservice'),
+  Router: require('core/router'),
+  i18n: require('core/i18n/i18n.service'),
+  project: {
+    ProjectsRegistry: require('core/project/projectsregistry'),
+    Project: require('core/project/project')
+  },
+  layer: {
+    LayersStoreRegistry: require('core/layers/layersstoresregistry'),
+    LayersStore: require('core/layers/layersstore'),
+    Layer: require('core/layers/layer'),
+    GeoLayer: require('core/layers/geolayer'),
+    VectorLayer: require('core/map/layer/vectorlayer'),
+    WmsLayer: require('core/map/layer/wmslayer'),
+    VectorLayerLoader: require('core/map/layer/loader/vectorloaderlayer'),
+    geometry: {
+      Geometry: require('core/geometry/geometry'),
+      geom: require('core/geometry/geom')
+    },
+    MapLayer: require('core/map/layer/maplayer')
+  },
+  query: {
+    QueryService: require('core/query/queryservice')
+  },
+  interaction: {
+    PickCoordinatesInteraction: require('g3w-ol3/src/interactions/pickcoordinatesinteraction'),
+    PickFeatureInteraction: require('g3w-ol3/src/interactions/pickfeatureinteraction')
+  },
+  plugin: {
+    Plugin: require('core/plugin/plugin'),
+    PluginsRegistry: require('core/plugin/pluginsregistry'),
+    PluginService: require('core/plugin/pluginservice')
+  },
+  editor: {
+    Editor: require('core/editing/editor'),
+    EditBuffer: require('core/editing/editbuffer'),
+    RelationEditBuffer: require('core/editing/relationeditbuffer')
+  }
 };
 
 g3w.gui = {
