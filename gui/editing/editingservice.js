@@ -4,6 +4,7 @@ var G3WObject = require('core/g3wobject');
 var GUI = require('gui/gui');
 var VectorLoaderLayer = require('core/map/layer/loader/vectorloaderlayer');
 var FormClass = require('gui/form/vue/form');
+var LayersStoresRegistry = require('core/layers/layersstoresregistry');
 
 function EditingService(options) {
   var options = options || {};
@@ -98,7 +99,13 @@ function EditingService(options) {
       // i layers nella configurazione passata i layers hanno due attributi: id e name
       var layerId = config.layers[layerCode].id;
       // recupera il layer dal mapservice
-      var layer = self._mapService.layersstore.getLayerById(layerId);
+      var layer;
+      var layersstores = LayersStoresRegistry.getLayersStores();
+      _.forEach(layersstores, function(layerStore) {
+        layer = layerStore.getLayerById(layerId);
+        if (layer)
+          return false;
+      });
       // recupero l'origin name dal projectlayer
       Layer.name = layer.getOrigName();
       Layer.id = layerId;
@@ -286,7 +293,11 @@ function EditingService(options) {
 
     // vado a ciclare sui layer e faccio lo start editing
     _.forEach(this._layers, function(value, layerId) {
-      layer = self._mapService.getLayersStore().getLayerById(layerId);
+      _.forEach(LayersStoresRegistry.getLayersStores(), function(layersStore) {
+        layer = layersStore.getLayerById(layerId);
+        if (layer)
+          return false
+      });
       // var provider_options = {
       //   'baseurl': self.config.baseurl,
       //   'mapService': self._mapService,
