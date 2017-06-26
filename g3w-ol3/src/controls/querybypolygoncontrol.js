@@ -38,6 +38,7 @@ proto.setMap = function(map) {
       self.toggle();
     }
   });
+  this.setEnable(false);
 };
 
 module.exports = QueryByPolygonControl;

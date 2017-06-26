@@ -135,10 +135,10 @@ var vueComponentOptions = {
       if (!layer.isSelected()) {
         LayersStoresRegistry.getLayersStore(storeid).selectLayer(node.id);
         // emetto il segnale layer selezionato dal catalogo
-        mapservice.emit('cataloglayerselected');
+        mapservice.emit('cataloglayerselected', layer);
       } else {
         LayersStoresRegistry.getLayersStore(storeid).unselectLayer(node.id);
-        mapservice.emit('cataloglayerunselected');
+        mapservice.emit('cataloglayerunselected', layer);
       }
     });
 

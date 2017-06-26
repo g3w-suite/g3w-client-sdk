@@ -81,7 +81,7 @@ proto._makeOlLayer = function(){
   return olLayer
 };
 
-proto._updateLayer = function(mapState,extraParams){
+proto._updateLayer = function(mapState, extraParams) {
   this._olLayer.setVisible(this.layer.isVisible());
 };
 

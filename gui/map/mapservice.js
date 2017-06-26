@@ -21,9 +21,7 @@ function MapService(options) {
   this.viewer = null;
   this.target = null;
   this._layersStoresEventKeys = {};
-  // vado a prendere i layersSore eventualmente aggiunti (penso al progetto) nel LayersRegistryStore
-  this.layersstores = LayersStoreRegistry.getLayersStores();
-  this.project = null;
+  this.project   = null;
   this._mapControls = [];
   this._mapLayers = [];
   this.mapBaseLayers = {};
@@ -106,28 +104,14 @@ function MapService(options) {
       self._setupLayers();
       self.emit('viewerset');
     },
-    controlClick: function() {
-
-    }
+    controlClick: function() {}
   };
-
-
-  this.on('cataloglayerselected', function() {
-   var self = this;
-   var layers;
-   _.forEach(self.layersstores, function(layerStore) {
-     layers = layerStore.getLayers({
-       SELECTED: true
-     });
-     if (layers.length)
-       return false
-   });
-   var layer = layers.length ? layers[0]: null;
+  
+  this.on('cataloglayerselected', function(layer) {
    if (layer) {
-     this.selectLayer = layer;
      _.forEach(this._mapControls, function(mapcontrol) {
        if (_.indexOf(_.keysIn(mapcontrol.control), 'onSelectLayer') > -1 && mapcontrol.control.onSelectLayer()) {
-         if (mapcontrol.control.getGeometryTypes().indexOf(self.selectLayer.getGeometryType()) > -1 ) {
+         if (mapcontrol.control.getGeometryTypes().indexOf(layer.getGeometryType()) > -1 ) {
            mapcontrol.control.setEnable(true);
          } else {
            mapcontrol.control.setEnable(false);
@@ -137,8 +121,7 @@ function MapService(options) {
    }
   });
 
-  this.on('cataloglayerunselected', function() {
-    this.selectLayer = null;
+  this.on('cataloglayerunselected', function(layer) {
     _.forEach(this._mapControls, function(mapcontrol) {
       if (_.indexOf(_.keysIn(mapcontrol.control),'onSelectLayer') > -1 && mapcontrol.control.onSelectLayer()) {
         mapcontrol.control.setEnable(false);
@@ -146,21 +129,19 @@ function MapService(options) {
     })
   });
 
-  _.forEach(this.layersstores, function(layerStore) {
+  // vado a registrare gli eventi sui layerstores esistesenti nel registro
+  _.forEach(LayersStoreRegistry.getLayersStores(), function(layerStore) {
     self._setUpEventsKeysToLayersStore(layerStore);
   });
 
   // sto in ascolto di evantuali aggiunte di layersStore per poter eventualmente
   // aggiungere i suoi layers alla mappa
   LayersStoreRegistry.onafter('addLayersStore', function(layerStore) {
-    self.layersstores.push(layerStore);
     self._setUpEventsKeysToLayersStore(layerStore);
   });
   // sto in ascolto di evantuali aggiunte di layersStore per poter eventualmente
   // aggiungere i suoi layers alla mappa
   LayersStoreRegistry.onafter('removeLayersStore', function(layerStore) {
-    var idxStore = self.layersstores.indexOf(layerStore);
-    self.layersstores.splice(idxStore, 1);
     self._removeEventsKeysToLayersStore(layerStore);
   });
   
@@ -185,14 +166,6 @@ proto.setLayersExtraParams = function(params,update){
 
 proto.getProject = function() {
   return this.project;
-};
-
-proto.getLayersStores = function() {
-  return this.layersstores;
-};
-
-proto.getLayersStore = function(id) {
-  return LayersStoreRegistry.getLayersStore(id);
 };
 
 proto.getMap = function() {
@@ -604,7 +577,7 @@ proto.getLayers = function(filter) {
   };
   filter = _.merge(filter, mapFilter);
   var layers = [];
-  _.forEach(this.layersstores, function(layerStore) {
+  _.forEach(LayersStoreRegistry.getLayersStores(), function(layerStore) {
     _.merge(layers, layerStore.getLayers(filter));
   });
   return layers;
@@ -628,12 +601,6 @@ proto.checkWFSLayers = function() {
 
 proto.addControl = function(type, control) {
   var self = this;
-  // verico che il controllo abbia la funzione on selectLayer
-  if (_.indexOf(_.keysIn(control),'onSelectLayer') > -1 && control.onSelectLayer()) {
-    if (!this.selectLayer) {
-      control.setEnable(false);
-    }
-  }
   this.viewer.map.addControl(control);
   this._mapControls.push({
     type: type,
@@ -739,9 +706,10 @@ proto.getMapLayers = function() {
 proto.getMapLayerForLayer = function(layer) {
   var mapLayer;
   var multilayerId = 'layer_'+layer.getMultiLayerId();
-  _.forEach(this.getMapLayers(),function(_mapLayer){
+  _.forEach(this.getMapLayers(), function(_mapLayer) {
     if (_mapLayer.getId() == multilayerId) {
       mapLayer = _mapLayer;
+      return false;
     }
   });
   return mapLayer;
@@ -859,18 +827,18 @@ proto._removeEventsKeysToLayersStore = function(layerStore) {
   }
 };
 
-// vado a registrare tuti gli ebventi del layersStore
+// vado a registrare tuti gli eventi del layersStore
 proto._setUpEventsKeysToLayersStore = function(layerStore) {
   var self = this;
   var layerStoreId = layerStore.getId();
   if (!this._layersStoresEventKeys[layerStoreId]) {
     this._layersStoresEventKeys[layerStoreId] = [];
     var layerVisibleKey = layerStore.onafter('setLayersVisible', function (layersIds) {
-      var mapLayers = _.map(layersIds, function (layerId) {
+      var mapLayers = _.map(layersIds, function(layerId) {
         var layer = layerStore.getLayerById(layerId);
         return self.getMapLayerForLayer(layer);
       });
-      self.updateMapLayers(self.getMapLayers());
+      self.updateMapLayers(mapLayers);
     });
     this._layersStoresEventKeys[layerStore.getId()].push({
       setLayersVisible:layerVisibleKey
@@ -952,22 +920,11 @@ proto._setupLayers = function(){
     var multilayerId = 'layer_'+id;
     var mapLayer;
     var layer = layers[0];
-
-    if (layers.length == 1) {
-      if (layer.isCached()) {
-        mapLayer = new XYZLayer({
-          id: id,
-          projection: self.getProjection()
-        });
-      }
-      else {
-        mapLayer = new WMSLayer({
-            // getWMSUrl funzione creata in fase di inizializzazione dell'applicazione
-            url: layer.getWmsUrl(),
-            id: multilayerId,
-            tiled: layer.state.tiled
-        }, self.layersExtraParams);
-      }
+    if (layers.length == 1 && layer.isCached()) {
+      mapLayer = new XYZLayer({
+        id: multilayerId,
+        projection: self.getProjection()
+      });
       self.addMapLayer(mapLayer);
       self.registerListeners(mapLayer);
       mapLayer.addLayer(layer);
