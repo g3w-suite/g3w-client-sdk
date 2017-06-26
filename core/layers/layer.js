@@ -7,7 +7,6 @@ function Layer(config) {
   var self = this;
   config = config || {};
   // contiene la configurazione statica del layer
-  
   this.config = {
     capabilities: config.capabilities || null,
     project: config.project || null,
@@ -271,7 +270,8 @@ Layer.ServerTypes = {
   Geoserver: "Geoserver",
   ArcGIS: "ArcGIS",
   OSM: "OSM",
-  Bing: "Bing"
+  Bing: "Bing",
+  File: "File"
 };
 
 Layer.CAPABILITIES = {

@@ -68,7 +68,7 @@ function GeoLayer(config) {
   // in base alla tipologia di configurazione del layer
   // viene deciso quale provider deve essere instanziato
   //TEMPORANEO
-  if (this.config.servertype == Layer.ServerTypes.QGIS) {
+  if (this.config.servertype == Layer.ServerTypes.QGIS && this.config.source.type == 'postgres') {
     // contiene il provider associato al layer
     this._queryprovider = ProviderFactory.build('qgis', {
       layer: this,
@@ -80,7 +80,22 @@ function GeoLayer(config) {
     this._featuresStore = new FeaturesStore({
       dataprovider: this._queryprovider //momentaneo
     });
-  } else {
+  } else if (this.config.servertype == Layer.ServerTypes.File) {
+    console.log(this.config.servertype)
+    // QUI ANDRÒ A DEFINIRE IL QUERY PROVIDER CHE NON È ALTRO
+    // UNA PICK FEATURE
+    switch (this.config.source.type == 'json') {
+      case 'json':
+        //TODO
+        break;
+      case 'kml':
+        // TODO
+        break;
+      case 'shapefiles':
+        //TODO
+        break;
+    }
+  } else  {
     // contiene il provider associato al layer
     this._queryprovider = ProviderFactory.build('qgis', {
       layer: this,
