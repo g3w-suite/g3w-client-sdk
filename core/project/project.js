@@ -94,14 +94,14 @@ proto._buildLayersStore = function() {
   var self = this;
   var layersStore = new LayersStore();
   var overviewprojectgid = this.state.overviewprojectgid ? this.state.overviewprojectgid.gid : null;
-
   layersStore.setOptions({
     id: this.state.gid,
     projection: this._projection,
     extent: this.state.extent,
     initextent: this.state.initextent,
     wmsUrl: this.state.WMSUrl,
-    catalog: this.state.gid != overviewprojectgid
+    catalog: this.state.gid != overviewprojectgid,
+    layerstree: this.state.layerstree
   });
 
   _.forEach(this.getLayers(), function(layerConfig) {
@@ -111,7 +111,8 @@ proto._buildLayersStore = function() {
     layersStore.addLayer(layer);
   });
 
-  layersStore.setLayersTree(this.getLayersTree(),this.state.name);
+  //layersStore.setLayersTree(this.getLayersTree(),this.state.name);
+  layersStore.createLayersTree(this.state.name);
 
   return layersStore;
 };
@@ -162,32 +163,32 @@ proto.getInfoFormat = function() {
   return 'application/vnd.ogc.gml';
 };
 
-proto.getLayersTree = function(full) {
-  if (full === true) {
-    return this.state.layerstree;
-  }
-  else {
-    var layerstree = [];
-    function traverse(obj,newobj) {
-      _.forIn(obj, function (layer) {
-        var lightlayer = {};
-        if (!_.isNil(layer.id)) {
-          lightlayer.id = layer.id;
-        }
-        if (!_.isNil(layer.nodes)){
-          lightlayer.title = layer.name;
-          lightlayer.expanded = layer.expanded;
-          lightlayer.nodes = [];
-          traverse(layer.nodes,lightlayer.nodes)
-        }
-        newobj.push(lightlayer);
-      });
-    }
-    traverse(this.state.layerstree,layerstree);
-    return layerstree;
-  }
-
-};
+// proto.getLayersTree = function(full) {
+//   if (full === true) {
+//     return this.state.layerstree;
+//   }
+//   else {
+//     var layerstree = [];
+//     function traverse(obj,newobj) {
+//       _.forIn(obj, function (layer) {
+//         var lightlayer = {};
+//         if (!_.isNil(layer.id)) {
+//           lightlayer.id = layer.id;
+//         }
+//         if (!_.isNil(layer.nodes)){
+//           lightlayer.title = layer.name;
+//           lightlayer.expanded = layer.expanded;
+//           lightlayer.nodes = [];
+//           traverse(layer.nodes,lightlayer.nodes)
+//         }
+//         newobj.push(lightlayer);
+//       });
+//     }
+//     traverse(this.state.layerstree,layerstree);
+//     return layerstree;
+//   }
+//
+// };
 
 proto.getLayersStore = function() {
   return this._layersStore;

@@ -5,17 +5,19 @@ var G3WObject = require('core/g3wobject');
 
 function Layer(config) {
   var self = this;
+  config = config || {};
   // contiene la configurazione statica del layer
+  
   this.config = {
-    capabilities: config.capabilities,
-    project: config.project,
-    editops: config.editops,
-    id: config.id,
-    title: config.title,
-    name: config.name,
-    origname: config.origname,
-    servertype: config.servertype,
-    source: config.source,
+    capabilities: config.capabilities || null,
+    project: config.project || null,
+    editops: config.editops || null,
+    id: config.id || 'Layer' ,
+    title: config.title  || null,
+    name: config.name || null,
+    origname: config.origname || null,
+    servertype: config.servertype || null,
+    source: config.source || null,
     geolayer: false
   };
 

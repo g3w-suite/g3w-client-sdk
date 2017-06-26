@@ -27,23 +27,24 @@ var WMSServerTypes = [
 ];
 
 function GeoLayer(config) {
+  config = config || {};
   base(this, config);
   var self = this;
   _.extend(this.config,{
-    bbox: config.bbox,
+    bbox: config.bbox || null,
     projection: null,
-    project: config.project,
-    geometrytype: config.geometrytype,
-    infoformat: config.infoformat,
-    infourl: config.infourl,
-    maxscale: config.maxscale,
-    minscale: config.minscale,
-    multilayerid: config.multilayer,
-    scalebasedvisibility: config.scalebasedvisibility,
-    wmsUrl: config.wmsUrl,
-    cacheUrl: config.cache_url,
+    project: config.project || null,
+    geometrytype: config.geometrytype || null,
+    infoformat: config.infoformat || null,
+    infourl: config.infourl || null,
+    maxscale: config.maxscale || null,
+    minscale: config.minscale || null,
+    multilayerid: config.multilayer || null,
+    scalebasedvisibility: config.scalebasedvisibility || null,
+    wmsUrl: config.wmsUrl || null,
+    cacheUrl: config.cache_url || null,
     baselayer: config.baselayer || false,
-    wfscapabilities: config.wfscapabilities
+    wfscapabilities: config.wfscapabilities || null
   });
 
   // temporaneo

@@ -14,7 +14,9 @@ function LayersStore(config) {
     initextent: config.initextent,
     wmsUrl: config.wmsUrl,
     //metto caratteristica catalogabile
-    catalog: _.isBoolean(config.catalog) ? config.catalog : true
+    catalog: _.isBoolean(config.catalog) ? config.catalog : true,
+    // mettto come opzione se mi arriva dal server
+    layerstree: config.layerstree || null
   };
 
   this.state = {
@@ -239,7 +241,9 @@ proto.getLayerAttributeLabel = function(layerId,name){
 };
 
 proto.getGeoLayers = function() {
-
+  return this.getLayers({
+    GEOLAYER: true
+  })
 };
 
 proto.toggleLayer = function(layerId,visible){
@@ -302,7 +306,50 @@ proto.setLayersTree = function(layerstree,name) {
   });
 };
 
-proto.removeLayersTree = function(id){
+// funzione che posso sfruttare dai plugin per costruire un
+// layerstree senza tanto stare acreare  e ricordarmi come creare un layerstrree
+// naturalmente è ad una dimanesione altrimenti c'è da studiare
+// come creare un layers tree cosa innestata forse paasando un layertree nella configurazione
+proto.createLayersTree = function(groupName, options) {
+  var options = options || {};
+  var full = options.full || false;
+  var layerstree = [];
+  if (this.config.layerstree) {
+    if (full === true) {
+      return this.state.layerstree;
+    }
+    else {
+      function traverse(obj,newobj) {
+        _.forIn(obj, function (layer) {
+          var lightlayer = {};
+          if (!_.isNil(layer.id)) {
+            lightlayer.id = layer.id;
+          }
+          if (!_.isNil(layer.nodes)){
+            lightlayer.title = layer.name;
+            lightlayer.expanded = layer.expanded;
+            lightlayer.nodes = [];
+            traverse(layer.nodes,lightlayer.nodes)
+          }
+          newobj.push(lightlayer);
+        });
+      }
+      traverse(this.config.layerstree,layerstree);
+    }
+  } else {
+    _.forEach(this.getGeoLayers(), function (layer) {
+      layerstree.push({
+        id: layer.getId(),
+        name: layer.getName(),
+        title: layer.getTitle(),
+        visible: true
+      })
+    });
+  }  
+  this.setLayersTree(layerstree, groupName);
+};
+
+proto.removeLayersTree = function(id) {
   this.state.layerstree.splice(0,this.state.layerstree.length);
 };
 
