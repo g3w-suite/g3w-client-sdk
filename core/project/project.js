@@ -100,8 +100,7 @@ proto._buildLayersStore = function() {
     extent: this.state.extent,
     initextent: this.state.initextent,
     wmsUrl: this.state.WMSUrl,
-    catalog: this.state.gid != overviewprojectgid,
-    layerstree: this.state.layerstree
+    catalog: this.state.gid != overviewprojectgid
   });
 
   _.forEach(this.getLayers(), function(layerConfig) {
@@ -112,7 +111,9 @@ proto._buildLayersStore = function() {
   });
 
   //layersStore.setLayersTree(this.getLayersTree(),this.state.name);
-  layersStore.createLayersTree(this.state.name);
+  layersStore.createLayersTree(this.state.name, {
+    layerstree: this.state.layerstree
+  });
 
   return layersStore;
 };

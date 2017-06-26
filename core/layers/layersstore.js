@@ -6,7 +6,6 @@ var G3WObject = require('core/g3wobject');
 function LayersStore(config) {
   var self = this;
   config = config || {};
-
   this.config = {
     id: config.id || Date.now(),
     projection: config.projection,
@@ -14,9 +13,7 @@ function LayersStore(config) {
     initextent: config.initextent,
     wmsUrl: config.wmsUrl,
     //metto caratteristica catalogabile
-    catalog: _.isBoolean(config.catalog) ? config.catalog : true,
-    // mettto come opzione se mi arriva dal server
-    layerstree: config.layerstree || null
+    catalog: _.isBoolean(config.catalog) ? config.catalog : true
   };
 
   this.state = {
@@ -313,8 +310,9 @@ proto.setLayersTree = function(layerstree,name) {
 proto.createLayersTree = function(groupName, options) {
   var options = options || {};
   var full = options.full || false;
+  var _layerstree = options.layerstree || null;
   var layerstree = [];
-  if (this.config.layerstree) {
+  if (_layerstree) {
     if (full === true) {
       return this.state.layerstree;
     }
@@ -334,7 +332,7 @@ proto.createLayersTree = function(groupName, options) {
           newobj.push(lightlayer);
         });
       }
-      traverse(this.config.layerstree,layerstree);
+      traverse(_layerstree,layerstree);
     }
   } else {
     _.forEach(this.getGeoLayers(), function (layer) {
@@ -342,7 +340,7 @@ proto.createLayersTree = function(groupName, options) {
         id: layer.getId(),
         name: layer.getName(),
         title: layer.getTitle(),
-        visible: true
+        visible: layer.isVisible() || false
       })
     });
   }  
