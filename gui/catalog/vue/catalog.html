@@ -33,7 +33,8 @@
     </div>
   </div>
   <ul id="layer-menu" v-click-outside-layer-menu="closeLayerMenu"  tabindex="-1" v-if="layerMenu.show"  :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }">
-    <li @click.prevent.stop="zoomToLayer"> Zoom to Layer</li>
+    <li @click.prevent.stop="zoomToLayer"><span class="glyphicon glyphicon-search"> </span> Zoom to Layer</li>
+    <li @click.prevent.stop="startEditing"><span class="glyphicon glyphicon-pencil"> </span> Start Editing</li>
     <li @click.prevent.stop="" v-if="layerMenu.layer.external" @mouseleave.self="showColorMenu(false,$event)" @mouseover.self="showColorMenu(true,$event)"> Setta/Cambia Colore <i class="fa fa-chevron-right" style="padding-left:10px;" aria-hidden="true"></i>
       <ul v-if="layerMenu.colorMenu.show" style="position:fixed" :style="{ top: layerMenu.colorMenu.top + 'px', left: layerMenu.colorMenu.left +   'px' }">
         <li style="padding:0;">

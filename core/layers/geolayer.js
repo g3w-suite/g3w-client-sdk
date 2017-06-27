@@ -9,6 +9,7 @@ var Feature = require('core/layers/features/feature');
 var Editor = require('core/editing/editor');
 var GeometryTypes = require('core/geometry/geometry').GeometryTypes;
 
+
 var ServerTypes = {
   OGC: "OGC",
   QGIS: "QGIS",
@@ -31,7 +32,6 @@ function GeoLayer(config) {
   base(this, config);
   var self = this;
   _.extend(this.config,{
-    bbox: config.bbox || null,
     projection: null,
     project: config.project || null,
     geometrytype: config.geometrytype || null,
@@ -47,9 +47,11 @@ function GeoLayer(config) {
     wfscapabilities: config.wfscapabilities || null
   });
 
-  // temporaneo
-  this.state.geolayer = true;
-
+  // vado a modificare lo state aggiungendo il bbox e l'informazione geolayer
+  _.extend(this.state, {
+    geolayer: true,
+    bbox: config.bbox || null
+  });
 
   if (config.projection) {
     this.config.projection = config.projection;
@@ -68,7 +70,7 @@ function GeoLayer(config) {
   // in base alla tipologia di configurazione del layer
   // viene deciso quale provider deve essere instanziato
   //TEMPORANEO
-  if (this.config.servertype == Layer.ServerTypes.QGIS && this.config.source.type == 'postgres') {
+  if (this.config.servertype == Layer.ServerTypes.QGIS) {
     // contiene il provider associato al layer
     this._queryprovider = ProviderFactory.build('qgis', {
       layer: this,

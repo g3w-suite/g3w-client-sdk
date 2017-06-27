@@ -37,9 +37,10 @@ proto.getFeatures = function(options) {
   var d = $.Deferred();
   this._dataprovider.getFeatures(options)
     .then(function(features) {
+      console.log(features);
       // il provider ritornerà 
       self.addFeatures(features);
-      d.resolve(this._features);
+      d.resolve(self._features);
     });
   return d.promise();
 };

@@ -81,6 +81,16 @@ var vueComponentOptions = {
       mapService.goToBBox(bbox);
       this.layerMenu.show = false;
     },
+    startEditing: function() {
+      var layer;
+      var self = this;
+      _.forEach(LayersStoresRegistry.getLayersStores(), function(layerStore) {
+        layer = layerStore.getLayerById(self.layerMenu.layer.id);
+        if (layer)
+          return false;
+      })
+      layer.getFeatures();
+    },
     closeLayerMenu: function() {
       this.layerMenu.show = false;
       this.showColorMenu(false);
@@ -288,7 +298,7 @@ Vue.component('tristate-tree', {
     },
     showLayerMenu: function(layerstree, evt) {
       if (!this.isFolder) {
-        CatalogEventHub.$emit('showmenulayer', storeid, layerstree, evt);
+        CatalogEventHub.$emit('showmenulayer', layerstree, evt);
       }
     }
   }
