@@ -38,9 +38,9 @@ g3w.core = {
     PluginService: require('core/plugin/pluginservice')
   },
   editor: {
-    Editor: require('core/editing/editor'),
-    EditBuffer: require('core/editing/editbuffer'),
-    RelationEditBuffer: require('core/editing/relationeditbuffer')
+    Editor: require('core/editing_old/editor'),
+    EditBuffer: require('core/editing_old/editbuffer'),
+    RelationEditBuffer: require('core/editing_old/relationeditbuffer')
   }
 };
 
@@ -58,7 +58,7 @@ g3w.gui = {
     ToolsComponent: require('gui/tools/vue/tools'),
     QueryResultsComponent : require('gui/queryresults/vue/queryresults'),
     FormComponent: require('gui/form/vue/form'),
-    EditingComponent: require('gui/editing/vue/editing')
+    EditingComponent: require('gui/editing_old/vue/editing')
   }
 };
 
