@@ -48,7 +48,7 @@ proto._addLayersStore = function(layerStore, idx) {
   var storeId = layerStore.getId();
   this.stores[storeId] = layerStore;
   if (!_.isNil(idx)) {
-    this.storesArray.splice(0,1, storeId);
+    this.storesArray.splice(idx,0, storeId);
   } else {
     this.storesArray.push(storeId);
   }

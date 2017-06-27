@@ -20,10 +20,13 @@ function PluginsRegistry() {
 
   base(this);
 
+  // funzione di inizializzazione dei plugin
   this.init = function(options) {
     var self = this;
     this.pluginsBaseUrl = options.pluginsBaseUrl;
+    // oggetto contenente la configuarzione dei vvari plugins (che sono le chiavi dell'oggetto)
     this.pluginsConfigs = options.pluginsConfigs;
+    // configurazione altri plugin
     this.otherPluginsConfig = options.otherPluginsConfig;
     this.setOtherPlugins();
         //ciclo sull'oggetto plugins per fare il setup dei vari plugin legati al progetto
@@ -55,18 +58,37 @@ function PluginsRegistry() {
         self.setPluginsConfig(initConfig.group.plugins);
         // devo ricaricare quelli con custom
         self.setOtherPlugins();
-        // cliclo sugli scripte vado a togliere gli script che contengono plugin
-        _.forEach($('script'), function(scr) {
-          _.forEach(self._loadedPluginUrls, function(pluginUrl) {
-            if (scr.getAttribute('src') == pluginUrl) {
-              scr.parentNode.removeChild( scr );
-              return false;
-            }
-          })
+        // prendo dal documento tutti gli scripts
+        var scripts = $('script');
+        // va do a scorrere sui plugin registrati e verifico se il plugin esisteva oppure  no
+        // se non esiste devo chiamare il metodo unload per sganciare tutte le sue cose (se previsto)
+        // e implementato dal plugin
+        _.forEach(self.getPlugins(), function(plugin, pluginName) {
+          // verifico che il plugin non sia presente nella nuoav configurazione dei plugin
+          //e quindi chieamo l'unload (se implementato) del plugin prima di
+          // rimuovere lo script
+          if (_.keys(self.pluginsConfigs).indexOf(pluginName) == -1) {
+            // chaimo il metodo unload del plugin
+            plugin.unload();
+            // rimuovo il plugin anche dai pugin registrati
+            delete self._plugins[pluginName];
+            // cliclo sugli script vado a togliere gli script che contengono plugin
+            _.forEach(scripts, function(scr) {
+              _.forEach(self._loadedPluginUrls, function(pluginUrl, idx) {
+                if (scr.getAttribute('src') == pluginUrl && pluginUrl.indexOf(pluginName)) {
+                  scr.parentNode.removeChild( scr );
+                  //vado a cancellare lo script associato a quel plugin
+                  self._loadedPluginUrls.splice(idx, 1);
+                  return false;
+                }
+              })
+            });
+          } else {
+            plugin.load();
+            // lo devo togliere dalla configurazione
+            delete self.pluginsConfigs[pluginName];
+          }
         });
-        //vado a cancellare a risettare a vuoto l'array degli url
-        self._loadedPluginUrls = [];
-        // vado a ricarcicare i plugin
         _.forEach(self.pluginsConfigs, function(pluginConfig, pluginName) {
           self._setup(pluginName, pluginConfig);
         })
@@ -77,10 +99,12 @@ function PluginsRegistry() {
     this.pluginsConfigs = config;
   };
 
+  //funzione che permette il caricamento dello script del plugin
   this._setup = function(name, pluginConfig) {
     if (pluginConfig) {
       var url = this.pluginsBaseUrl+name+'/js/plugin.js?'+Date.now();
       $script(url);
+      // vado ad aggiunguere il plugin all'array dei plugin caricati
       this._loadedPluginUrls.push(url);
     }
   };
@@ -88,6 +112,14 @@ function PluginsRegistry() {
   this.getPluginConfig = function(pluginName) {
     return this.pluginsConfigs[pluginName];
   };
+
+  this.getPlugins = function() {
+    return this._plugins;
+  };
+  
+  this.getPlugin = function(pluginName) {
+    return this._plugins[pluginName];
+  }
 
 }
 

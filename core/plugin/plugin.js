@@ -67,4 +67,14 @@ proto.setupGui = function() {
   //al momento niente non so se verrà usata
 };
 
+// caso di sgancaimento del plugin (caso cambio progetto)
+proto.unload  = function() {
+  //console.log('UNLOAD deve essere sovrascritto eventalmente dal plugin');
+};
+
+// funzione che viene lanciata quando si fa il load del plugin
+proto.load = function() {
+  //console.log('LOAD deve essere sovrascritto eventalmente dal plugin');
+};
+
 module.exports = Plugin;

@@ -100,8 +100,7 @@ function EditingService(options) {
       var layerId = config.layers[layerCode].id;
       // recupera il layer dal mapservice
       var layer;
-      var layersstores = LayersStoresRegistry.getLayersStores();
-      _.forEach(layersstores, function(layerStore) {
+      _.forEach(LayersStoresRegistry.getLayersStores(), function(layerStore) {
         layer = layerStore.getLayerById(layerId);
         if (layer)
           return false;
