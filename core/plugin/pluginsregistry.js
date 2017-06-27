@@ -75,7 +75,7 @@ function PluginsRegistry() {
             // cliclo sugli script vado a togliere gli script che contengono plugin
             _.forEach(scripts, function(scr) {
               _.forEach(self._loadedPluginUrls, function(pluginUrl, idx) {
-                if (scr.getAttribute('src') == pluginUrl && pluginUrl.indexOf(pluginName)) {
+                if (scr.getAttribute('src') == pluginUrl && pluginUrl.indexOf(pluginName) != -1) {
                   scr.parentNode.removeChild( scr );
                   //vado a cancellare lo script associato a quel plugin
                   self._loadedPluginUrls.splice(idx, 1);
