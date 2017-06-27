@@ -3,6 +3,8 @@ var base = require('core/utils/utils').base;
 var DataProvider = require('core/layers/providers/provider');
 var Feature = require('core/layers/features/feature');
 
+//vado a sovrascrivere il metodo per leggere le feature
+// da un geojson
 var PIXEL_TOLERANCE = 10;
 var GETFEATUREINFO_IMAGE_SIZE = [101, 101];
 
@@ -659,6 +661,7 @@ proto._parseLayermsGMLOutput = function(queryLayer, data, ogcService) {
 };
 
 proto._parseLayerGeoJSON = function(data) {
+
   var geojson = new ol.format.GeoJSON({
     defaultDataProjection: this.crs,
     geometryName: "geometry"
@@ -673,8 +676,13 @@ proto._parseLayerGeoJSON = function(data) {
 proto.getFeatures = function(options) {
   var d = $.Deferred();
   options = options || {};
+  var features = [];
   var featuresGeoJson = ENTIGeoJSON;
-  var features = this._parseLayerGeoJSON(featuresGeoJson);
+  _.forEach(this._parseLayerGeoJSON(featuresGeoJson), function(feature) {
+    features.push(new Feature({
+      feature: feature
+    }))
+  });
   d.resolve(features);
   return d.promise();
 };
