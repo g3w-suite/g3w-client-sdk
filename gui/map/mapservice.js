@@ -6,6 +6,7 @@ var ApplicationService = require('core/applicationservice');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var Layer = require('core/layers/layer');
 var LayersStoreRegistry = require('core/layers/layersstoresregistry');
+var LayersStore = require('core/layers/layersstore');
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 var WMSLayer = require('core/map/layer/wmslayer');
 var XYZLayer = require('core/map/layer/xyzlayer');
@@ -542,6 +543,9 @@ proto.setupControls = function(){
               type: controlType
             });
             control.on('addlayer', function() {
+              if (!control.getLayersStore()) {
+                var layersSore = new LayersStore()
+              }
               self.emit('addexternallayer');
             });
             self.addControl(controlType, control);
