@@ -10,6 +10,9 @@ function WMSDataProvider(options) {
   options = options || {};
   base(this);
   this._name = 'wms';
+  this._layer = options.layer || null;
+  this._layerName = options.layerName || null;
+  this._infoFormat = options.infoFormat || 'application/vnd.ogc.gml';
 }
 
 inherit(WMSDataProvider, DataProvider);

@@ -77,7 +77,7 @@ function GeoLayer(config) {
   //TEMPORANEO
   if (this.config.servertype == Layer.ServerTypes.QGIS) {
     // contiene il provider associato al layer
-    this.provider.query = ProviderFactory.build('wms', {
+    this.providers.query = ProviderFactory.build('wms', {
       layer: this,
       layerName: this.getQueryLayerName(),
       infoFormat: this.getInfoFormat()
@@ -363,7 +363,7 @@ proto.isQueryable = function() {
 proto.query = function(options) {
   var self = this;
   var d = $.Deferred();
-  this._queryprovider.query(options)
+  this.providers.query.query(options)
     .then(function(features) {
       d.resolve(features);
     });
