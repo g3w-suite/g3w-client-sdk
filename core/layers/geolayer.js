@@ -53,6 +53,11 @@ function GeoLayer(config) {
     bbox: config.bbox || null
   });
 
+  this.providers = {
+    query: null,
+    filter: null
+  };
+
   if (config.projection) {
     this.config.projection = config.projection;
   }
@@ -77,13 +82,8 @@ function GeoLayer(config) {
       layerName: this.getQueryLayerName(),
       infoFormat: this.getInfoFormat()
     });
-    // vado a creare il featuresStore che si prenderà cura del recupero
-    // dati (attraverso il suo provider) e salvataggio features
-    this._featuresStore = new FeaturesStore({
-      dataprovider: this._queryprovider //momentaneo
-    });
+
   } else if (this.config.servertype == Layer.ServerTypes.File) {
-    console.log(this.config.servertype)
     // QUI ANDRÒ A DEFINIRE IL QUERY PROVIDER CHE NON È ALTRO
     // UNA PICK FEATURE
     switch (this.config.source.type == 'json') {
@@ -110,6 +110,18 @@ function GeoLayer(config) {
 inherit(GeoLayer, Layer);
 
 var proto = GeoLayer.prototype;
+
+proto.getVectorLayer = function() {
+  var vectorLayer = _.cloneDeep(this);
+  vectorLayer.config.servertype = 'vector';
+  // vado a creare il featuresStore che si prenderà cura del recupero
+  // dati (attraverso il suo provider) e salvataggio features
+  vectorLayer._featuresStore = new FeaturesStore({
+    dataprovider: this._queryprovider //momentaneo
+  });
+  return vectorLayer;
+};
+
 
 proto.getConfig = function() {
   return this.config;
