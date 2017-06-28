@@ -9,6 +9,7 @@ var Feature = function(options) {
   var feature = options.feature;
   //verificare come utilizzare clone
   if (feature) {
+    this.setId(feature.getId());
     this.setProperties(feature.getProperties());
     this.setGeometryName(feature.getGeometryName());
     var geometry = feature.getGeometry();

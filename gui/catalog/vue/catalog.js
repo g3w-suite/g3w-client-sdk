@@ -88,7 +88,7 @@ var vueComponentOptions = {
         layer = layerStore.getLayerById(self.layerMenu.layer.id);
         if (layer)
           return false;
-      })
+      });
       layer.getFeatures();
     },
     closeLayerMenu: function() {
