@@ -361,9 +361,17 @@ proto.isQueryable = function() {
 };
 
 proto.query = function(options) {
+
+  options = options || {};
   var self = this;
+  var provider;
+  if (options.type == 'query') {
+    provider = this.providers.query;
+  } else {
+    provider = this.provider.filter
+  }
   var d = $.Deferred();
-  this.providers.query.query(options)
+  provider.query(options)
     .then(function(features) {
       d.resolve(features);
     });

@@ -304,6 +304,7 @@ proto.setupControls = function(){
             var queryPromises = [];// raccoglie tutte le promises dei provider del layer
             _.forEach(layers, function(layer) {
               queryPromises.push(layer.query({
+                  type: 'query',
                   coordinates: coordinates,
                   resolution: self.getResolution()
               }))
