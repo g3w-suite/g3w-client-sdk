@@ -77,7 +77,13 @@ function GeoLayer(config) {
   //TEMPORANEO
   if (this.config.servertype == Layer.ServerTypes.QGIS) {
     // contiene il provider associato al layer
-    this._queryprovider = ProviderFactory.build('qgis', {
+    this.provider.query = ProviderFactory.build('wms', {
+      layer: this,
+      layerName: this.getQueryLayerName(),
+      infoFormat: this.getInfoFormat()
+    });
+
+    this.providers.filter = ProviderFactory.build('wfs', {
       layer: this,
       layerName: this.getQueryLayerName(),
       infoFormat: this.getInfoFormat()
@@ -98,12 +104,7 @@ function GeoLayer(config) {
         break;
     }
   } else  {
-    // contiene il provider associato al layer
-    this._queryprovider = ProviderFactory.build('qgis', {
-      layer: this,
-      layerName: this.getQueryLayerName(),
-      infoFormat: this.getInfoFormat()
-    }); //
+    //TODO
   }
 }
 
