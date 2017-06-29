@@ -133,7 +133,7 @@ proto.getState = function() {
 };
 
 proto.getProject = function() {
-  return this.config.getProject();
+  return this.config.project;
 };
 
 proto.getEditor = function() {
@@ -364,13 +364,19 @@ proto.query = function(options) {
 
   options = options || {};
   var self = this;
-  var provider;
-  if (options.type == 'query') {
-    provider = this.providers.query;
-  } else {
-    provider = this.provider.filter
-  }
   var d = $.Deferred();
+  var type = options.type;
+  var provider;
+  switch (type) {
+    case('query'):
+      provider = this.providers.query;
+      break;
+    case ('filter'):
+      provider = this.providers.filter;
+      break;
+    default:
+      provider = this.providers.query;
+  }
   provider.query(options)
     .then(function(features) {
       d.resolve(features);

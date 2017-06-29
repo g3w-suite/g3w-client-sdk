@@ -196,7 +196,7 @@ proto.getLayersDict = function(options) {
   if (filterWfs) {
     layers = _.filter(layers,function(layer) {
       // specifico che deve evare lo stesso crs del progetto
-      return layer.getWfsCapabilities() && layer.config.crs == 3003;
+      return layer.getWfsCapabilities() && layer.getCrs() == layer.getProjectCrs();
     });
   }
 

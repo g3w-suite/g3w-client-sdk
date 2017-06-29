@@ -327,14 +327,6 @@ proto.setupControls = function(){
                 GUI.notify.error('Si è verificato un errore nella richiesta al server');
                 GUI.closeContent();
               })
-            // QueryService.queryByLocation(coordinates, layers)
-            // .then(function(results) {
-            //   queryResultsPanel.setQueryResponse(results,coordinates,self.state.resolution);
-            // })
-            // .fail(function() {
-            //   GUI.notify.error('Si è verificato un errore nella richiesta al server');
-            //   GUI.closeContent();
-            // })
           });
           self.addControl(controlType,control);
           break;
@@ -414,25 +406,57 @@ proto.setupControls = function(){
                   SELECTEDORALL: true,
                   WFS: true
                 });
-                var showQueryResults = GUI.showContentFactory('query');
-                //faccio query by location su i layers selezionati o tutti
-                var queryResultsPanel = showQueryResults('interrogazione');
-                var filterObject = QueryService.createQueryFilterObject({
-                  queryLayers: layers,
-                  ogcService: 'wfs',
-                  filter: {
-                    bbox: bbox
-                  }
+                var queryPromises = [];// raccoglie tutte le promises dei provider del layer
+                _.forEach(layers, function(layer) {
+                  var filterObject = QueryService.createQueryFilterObject({
+                    queryLayer: layer,
+                    ogcService: 'wfs',
+                    filter: {
+                      bbox: bbox
+                    }
+                  });
+                  queryPromises.push(layer.query({
+                    type: 'filter',
+                    filter: filterObject
+                  }))
                 });
-                QueryService.queryByFilter(filterObject)
-                  .then(function (results) {
+                var showQueryResults = GUI.showContentFactory('query');
+                var queryResultsPanel = showQueryResults('interrogazione');
+                $.when.apply(this, queryPromises)
+                  .then(function() {
+                    results = arguments;
+                    // vado ad unificare i rusltati delle promises
+                    results.query = results[0].query;
+                    var data = [];
+                    _.forEach(results, function(result) {
+                      data.push(result.data);
+                    });
+                    results.data = data;
                     queryResultsPanel.setQueryResponse(results, bbox, self.state.resolution);
                   })
                   .fail(function() {
                     GUI.notify.error('Si è verificato un errore nella richiesta al server');
                     GUI.closeContent();
                   })
-              });
+                });
+              //   //faccio query by location su i layers selezionati o tutti
+              //   var queryResultsPanel = showQueryResults('interrogazione');
+              //   var filterObject = QueryService.createQueryFilterObject({
+              //     queryLayers: layers,
+              //     ogcService: 'wfs',
+              //     filter: {
+              //       bbox: bbox
+              //     }
+              //   });
+              //   QueryService.queryByFilter(filterObject)
+              //     .then(function (results) {
+              //       queryResultsPanel.setQueryResponse(results, bbox, self.state.resolution);
+              //     })
+              //     .fail(function() {
+              //       GUI.notify.error('Si è verificato un errore nella richiesta al server');
+              //       GUI.closeContent();
+              //     })
+              // });
               self.addControl(controlType, control);
             }
           }

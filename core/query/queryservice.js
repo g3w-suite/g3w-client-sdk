@@ -82,20 +82,18 @@ function QueryService(){
   // creerà un'array di oggetti a seconda del tipo di layer
   this.createQueryFilterObject = function(options) {
     var options = options || {};
-    var queryLayers = options.queryLayers || [];
+    var queryLayer = options.queryLayer || [];
     var ogcService = options.ogcService || 'wms';
     var filter =  options.filter || {};
-    var queryFilters = [];
-    var infoFromLayers = this.getInfoFromLayers(queryLayers, ogcService);
-    _.forEach(infoFromLayers, function(info) {
-      // vado a creare un oggetto/array di oggetti con informazioni rigurdanti layers in comune
-      queryFilters.push(_.merge(info, {
+    var queryFilter;
+    var infoFromLayer = this.getInfoFromLayer(queryLayer, ogcService);
+    // vado a creare un oggetto/array di oggetti con informazioni rigurdanti layers in comune
+    queryFilter = _.merge(infoFromLayer, {
         // Servizio ogc: wfs, wms etc..
         ogcService: ogcService,
         filter : filter // oggetto che descrive come dovrà essere composto il filtro dal provider
-      }));
     });
-    return queryFilters
+    return queryFilter;
   };
 
   /////PARSERS //////////////////
@@ -368,34 +366,23 @@ function QueryService(){
     }
     return d.promise()
   };
-  // funzione che in base ai layers e alla tipologia di servizio
-  // restituisce gli url per ogni layer o gruppo di layers
-  // che condividono lo stesso indirizzo di servizio
-  this.getInfoFromLayers = function(layers, ogcService) {
-    // wfs specifica se deve essere fatta chiamata wfs o no
-    var urlsForLayers = {};
-    // scooro sui ogni layer e catturo il queryUrl
-    _.forEach(layers, function(layer) {
-      // se wfs prendo l'api fornite dal server
-      if (ogcService == 'wfs') {
-        var queryUrl = layer.getProject().getWmsUrl();
-      } else {
-        var queryUrl = layer.getQueryUrl();
-      }
-      var urlHash = queryUrl.hashCode().toString();
-      if (_.keys(urlsForLayers).indexOf(urlHash) == -1) {
-        urlsForLayers[urlHash] = {
-          url: queryUrl,
-          layers: [],
-          infoFormat: layer.getInfoFormat(ogcService),
-          crs: layer.getCrs(), // dovrebbe essere comune a tutti
-          serverType: layer.getServerType() // aggiungo anche il tipo di server
-        };
-      }
-      urlsForLayers[urlHash].layers.push(layer);
-    });
+
+  this.getInfoFromLayer = function(layer, ogcService) {
+    // se wfs prendo l'api fornite dal server
+    if (ogcService == 'wfs') {
+      var queryUrl = layer.getProject().getWmsUrl();
+    } else {
+      var queryUrl = layer.getQueryUrl();
+    }
+    var urlsForLayer = {
+      url: queryUrl,
+      layers: [layer],
+      infoFormat: layer.getInfoFormat(ogcService),
+      crs: layer.getCrs(), // dovrebbe essere comune a tutti
+      serverType: layer.getServerType() // aggiungo anche il tipo di server
+    };
     // restituisce un oggetto contente oggetti avente l'url condiviso da più layers
-    return urlsForLayers;
+    return urlsForLayer;
   };
 
   this.doRequestAndParse = function(options) {
