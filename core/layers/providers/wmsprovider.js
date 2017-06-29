@@ -21,13 +21,6 @@ inherit(WMSDataProvider, DataProvider);
 
 var proto = WMSDataProvider.prototype;
 
-proto.getData = function() {
-  var d = $.Deferred();
-  return d.promise();
-};
-
-var proto = WMSDataProvider.prototype;
-
 // funzione che in base ai layers e alla tipologia di servizio
 // restituisce gli url per ogni layer o gruppo di layers
 // che condividono lo stesso indirizzo di servizio

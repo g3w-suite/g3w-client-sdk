@@ -15,6 +15,16 @@ function  QGISProvider(options) {
 
 inherit(QGISProvider, DataProvider);
 
+proto.getFeatures = function() {
+  console.log('da sovrascrivere')
+};
+
+
+
+
+
+// METODI DEL VECCHIO EDITOR //
+
 // funzione principale, starting point, chiamata dal plugin per
 // il recupero dei vettoriali (chiamata verso il server)
 proto.loadLayers = function(mode, customUrlParameters) {
