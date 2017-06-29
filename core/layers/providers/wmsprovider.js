@@ -1,5 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
+var utils = require('core/utils/utils');
+var geoutils = require('core/geo/utils');
 var DataProvider = require('core/layers/providers/provider');
 //vado a sovrascrivere il metodo per leggere le feature
 // da un geojson
@@ -48,8 +50,6 @@ proto.getInfoFromLayer = function(ogcService) {
 
 proto._getRequestUrl = function(url, extent, size, pixelRatio, projection, params) {
 
-  ol.asserts.assert(url !== undefined, 9); // `url` must be configured or set using `#setUrl()`
-
   params['CRS'] = projection.getCode();
 
   if (!('STYLES' in params)) {
@@ -61,6 +61,7 @@ proto._getRequestUrl = function(url, extent, size, pixelRatio, projection, param
   params['HEIGHT'] = size[1];
 
   var axisOrientation = projection.getAxisOrientation();
+
   var bbox;
   if (axisOrientation.substr(0, 2) == 'ne') {
     bbox = [extent[1], extent[0], extent[3], extent[2]];
@@ -69,13 +70,13 @@ proto._getRequestUrl = function(url, extent, size, pixelRatio, projection, param
   }
   params['BBOX'] = bbox.join(',');
 
-  return ol.uri.appendParams(/** @type {string} */ url, params);
+  return utils.appendParams(url, params);
 };
 
 // funzione che deve esserere "estratta dal mapservice"
 proto._getGetFeatureInfoUrlForLayer = function(coordinates,resolution,params) {
   var url = this._layer.getQueryUrl();
-  var extent = ol.extent.getForViewAndSize(
+  var extent = geoutils.getForViewAndSize(
     coordinates, resolution, 0,
     GETFEATUREINFO_IMAGE_SIZE);
 

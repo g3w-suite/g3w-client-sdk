@@ -14,7 +14,7 @@ var Projections = {
 
     var projection = new Projection({
       crs: crs,
-      proj4: proj4,
+      proj4def: proj4,
       extent: extent
     });
 

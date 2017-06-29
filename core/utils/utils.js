@@ -140,6 +140,22 @@ var utils = {
     deferred.reject(value);
     return deferred.promise();
   },
+  // Appends query parameters to a URI
+  appendParams: function(uri, params) {
+    var keyParams = [];
+    // Skip any null or undefined parameter values
+    Object.keys(params).forEach(function (k) {
+      if (params[k] !== null && params[k] !== undefined) {
+        keyParams.push(k + '=' + encodeURIComponent(params[k]));
+      }
+    });
+    var qs = keyParams.join('&');
+    // remove any trailing ? or &
+    uri = uri.replace(/[?&]$/, '');
+    // append ? or & depending on whether uri has existing parameters
+    uri = uri.indexOf('?') === -1 ? uri + '?' : uri + '&';
+    return uri + qs;
+  },
   
   Base64: Base64
 };
