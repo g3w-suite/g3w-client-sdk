@@ -390,8 +390,11 @@ proto.query = function(options) {
       provider = this.providers.query;
   }
   provider.query(options)
-    .then(function(features) {
+    .done(function(features) {
       d.resolve(features);
+    })
+    .fail(function(err) {
+      d.reject(err);
     });
   return d.promise();
 };

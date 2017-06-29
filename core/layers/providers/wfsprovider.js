@@ -82,7 +82,6 @@ proto._doRequest = function(options) {
     filter = featureRequest.children[0].innerHTML;
     params.FILTER = filter;
     request = this._post(url, params)
-
   }
   return request
 };
