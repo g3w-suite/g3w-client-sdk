@@ -340,14 +340,18 @@ proto.setupControls = function(){
             layers: controlLayers
           });
           if (control) {
+
             var showQueryResults = GUI.showContentFactory('query');
             control.on('picked', function (e) {
+              var results = {};
+              var response = [];
+              var queryPromises = [];// raccoglie tutte le promises dei provider del layer
+              var geometry;
               var coordinates = e.coordinates;
               var layers = self.getLayers({
                 QUERYABLE: true,
                 SELECTED: true
               });
-              var queryPromises = [];// raccoglie tutte le promises dei provider del layer
               _.forEach(layers, function (layer) {
                 queryPromises.push(layer.query({
                   type: 'query',
@@ -358,8 +362,9 @@ proto.setupControls = function(){
 
               $.when.apply(this, queryPromises)
                 .then(function () {
-                  var response = arguments;
-                  var results = {};
+                  queryPromises = [];
+                  response = arguments;
+                  results = {};
                   // vado ad unificare i rusltati delle promises
                   results.query = response[0].query;
                   var data = [];
@@ -368,7 +373,7 @@ proto.setupControls = function(){
                   });
                   results.data = data;
                   if(results && results.data && results.data.length) {
-                    var geometry = results.data[0].features[0].getGeometry();
+                    geometry = results.data[0].features[0].getGeometry();
                     var queryLayers = self.getLayers({
                       QUERYABLE: true,
                       ALLNOTSELECTED: true,
@@ -392,8 +397,8 @@ proto.setupControls = function(){
                     var queryResultsPanel = showQueryResults('interrogazione');
                     $.when.apply(this, queryPromises)
                       .then(function () {
-                        var response = arguments;
-                        var results = {};
+                        response = arguments;
+                        results = {};
                         // vado ad unificare i rusltati delle promises
                         results.query = response[0].query;
                         var data = [];
