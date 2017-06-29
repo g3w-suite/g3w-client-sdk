@@ -1,7 +1,6 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var DataProvider = require('core/layers/providers/provider');
-var ProviderService = require('core/layers/providers/providerservice');
 
 function WFSDataProvider(options) {
   options = options || {};
@@ -19,13 +18,14 @@ proto.getData = function() {
 };
 
 proto.query = function(options) {
+  var self = this;
   var filter = options.filter;
   var d = $.Deferred();
   this._doRequest(filter)
     .done(function(response) {
       var allFeaturesFoLayers = [];
-      var featuresForLayers = ProviderService.handleQueryResponseFromServer(response, filter.infoFormat, filter.layers, filter.ogcService);
-      allFeaturesFoLayers = _.union(allFeaturesFoLayers, ProviderService.handleResponseFeaturesAndRelations(featuresForLayers));
+      var featuresForLayers = self.handleQueryResponseFromServer(response, filter.infoFormat, filter.layers, filter.ogcService);
+      allFeaturesFoLayers = _.union(allFeaturesFoLayers, self.handleResponseFeaturesAndRelations(featuresForLayers));
       d.resolve({
         data: allFeaturesFoLayers
       });

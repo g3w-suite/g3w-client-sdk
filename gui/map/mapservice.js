@@ -340,37 +340,70 @@ proto.setupControls = function(){
             layers: controlLayers
           });
           if (control) {
+            var showQueryResults = GUI.showContentFactory('query');
             control.on('picked', function (e) {
               var coordinates = e.coordinates;
-              var showQueryResults = GUI.showContentFactory('query');
-              //faccio query by location su i layers selezionati o tutti
-              var queryResultsPanel = showQueryResults('interrogazione');
               var layers = self.getLayers({
                 QUERYABLE: true,
                 SELECTED: true
               });
-              QueryService.queryByLocation(coordinates, layers)
-                .then(function (results) {
-                  if (results && results.data && results.data[0].features.length) {
+              var queryPromises = [];// raccoglie tutte le promises dei provider del layer
+              _.forEach(layers, function (layer) {
+                queryPromises.push(layer.query({
+                  type: 'query',
+                  coordinates: coordinates,
+                  resolution: self.getResolution()
+                }));
+              });
+
+              $.when.apply(this, queryPromises)
+                .then(function () {
+                  var response = arguments;
+                  var results = {};
+                  // vado ad unificare i rusltati delle promises
+                  results.query = response[0].query;
+                  var data = [];
+                  _.forEach(response, function (result) {
+                    data.push(result.data[0]);
+                  });
+                  results.data = data;
+                  if(results && results.data && results.data.length) {
                     var geometry = results.data[0].features[0].getGeometry();
                     var queryLayers = self.getLayers({
                       QUERYABLE: true,
                       ALLNOTSELECTED: true,
                       WFS: true
                     });
-                    self.highlightGeometry(geometry);
-                    var filterObject = QueryService.createQueryFilterObject({
-                      queryLayers: queryLayers,
-                      ogcService: 'wfs',
-                      filter: {
-                        geometry: geometry
-                      }
+                    _.forEach(queryLayers, function (layer) {
+                      var filterObject = QueryService.createQueryFilterObject({
+                        queryLayer: layer,
+                        ogcService: 'wfs',
+                        filter: {
+                          geometry: geometry
+                        }
+                      });
+                      queryPromises.push(layer.query({
+                        type: 'filter',
+                        filter: filterObject
+                      }))
                     });
-                    QueryService.queryByFilter(filterObject)
-                      .then(function (results) {
+
+                    self.highlightGeometry(geometry);
+                    var queryResultsPanel = showQueryResults('interrogazione');
+                    $.when.apply(this, queryPromises)
+                      .then(function () {
+                        var response = arguments;
+                        var results = {};
+                        // vado ad unificare i rusltati delle promises
+                        results.query = response[0].query;
+                        var data = [];
+                        _.forEach(response, function (result) {
+                          data.push(result.data);
+                        });
+                        results.data = data;
                         queryResultsPanel.setQueryResponse(results, geometry, self.state.resolution);
                       })
-                      .fail(function() {
+                      .fail(function () {
                         GUI.notify.error('Si è verificato un errore nella richiesta al server');
                         GUI.closeContent();
                       })
@@ -379,11 +412,8 @@ proto.setupControls = function(){
                       });
                   }
                 })
-                .fail(function() {
-                  GUI.notify.error('Si è verificato un errore nella richiesta al server');
-                  GUI.closeContent();
-                })
             });
+
             self.addControl(controlType, control);
           }
           break;

@@ -1,7 +1,6 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var DataProvider = require('core/layers/providers/provider');
-var ProviderService = require('core/layers/providers/providerservice');
 //vado a sovrascrivere il metodo per leggere le feature
 // da un geojson
 var PIXEL_TOLERANCE = 10;
@@ -177,7 +176,7 @@ proto.makeQueryForLayer = function(queryUrlsForLayers, coordinates, resolution) 
           featuresForLayers = _.concat(featuresForLayers,_featuresForLayers);
         }
       });
-      featuresForLayers = ProviderService.handleResponseFeaturesAndRelations(featuresForLayers);
+      featuresForLayers = self.handleResponseFeaturesAndRelations(featuresForLayers);
       d.resolve({
         data: featuresForLayers,
         query: queryInfo
@@ -212,7 +211,7 @@ proto.doRequestAndParse = function(options) {
   }
   request
     .done(function(response) {
-      var featuresForLayers = ProviderService.handleQueryResponseFromServer(response, infoFormat, queryLayers);
+      var featuresForLayers = self.handleQueryResponseFromServer(response, infoFormat, queryLayers);
       d.resolve(featuresForLayers);
     })
     .fail(function(){
