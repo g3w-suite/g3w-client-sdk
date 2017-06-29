@@ -45,7 +45,7 @@ proto.getName = function() {
 // Messo qui generale la funzione che si prende cura della trasformazione dell'xml di risposta
 // dal server così da avere una risposta coerente in termini di formato risultati da presentare
 // nel componente QueryResults
-proto.handleQueryResponseFromServer = function(response, infoFormat, queryLayers, ogcService) {
+proto.handleQueryResponseFromServer = function(response, infoFormat, queryLayer, ogcService) {
   var jsonresponse;
   var featuresForLayers = [];
   var parser, data;
@@ -79,16 +79,12 @@ proto.handleQueryResponseFromServer = function(response, infoFormat, queryLayers
           break;
       }
   }
-  var nfeatures = 0;
   if (parser) {
-    _.forEach(queryLayers, function(queryLayer) {
-      var features = parser.call(self, queryLayer, data, ogcService);
-      nfeatures += features.length;
-      featuresForLayers.push({
-        layer: queryLayer,
-        features: features
-      })
-    });
+    var features = parser.call(self, queryLayer, data, ogcService);
+    featuresForLayers.push({
+      layer: queryLayer,
+      features: features
+    })
   }
   return featuresForLayers;
 };
@@ -122,40 +118,6 @@ proto._parseLayermsGMLOutput = function(queryLayer, data, ogcService) {
   return parser.readFeatures(data);
 };
 
-// funzione per il recupero delle relazioni della features se ci sono
-// nell'attributo g3w_relations
-proto.handleResponseFeaturesAndRelations = function(layersResponse) {
-  var self = this;
-  _.forEach(layersResponse, function(layer) {
-    _.forEach(layer.features, function(feature) {
-      self.convertG3wRelations(feature);
-    });
-  });
-  return layersResponse
-};
-
-proto.convertG3wRelations = function(feature) {
-  var g3w_relations = feature.getProperties().g3w_relations;
-  var relations = null;
-  if (g3w_relations) {
-    relations = [];
-    _.forEach(g3w_relations, function(elements, relationName) {
-      relation = {};
-      if (elements.length) {
-        relation.name = relationName;
-        relation.elements = elements;
-        relations.push(relation);
-      } else {
-        delete g3w_relations[relationName];
-      }
-    });
-    if (relations.length) {
-      feature.set('relations', relations);
-    } else {
-      feature.unset('g3w_relations');
-    }
-  }
-};
 
 proto._parseLayerGeoJSON = function(data) {
 
