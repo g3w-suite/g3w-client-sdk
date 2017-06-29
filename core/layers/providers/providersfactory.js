@@ -39,6 +39,13 @@ var ProvidersForServerTypes = {
       filter: null,
       data: null
     }
+  },
+  'OGC': {
+    'wms': {
+      query: Providers.wms,
+      filter: null,
+      data: null
+    }
   }
 };
 
