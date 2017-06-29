@@ -1,7 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
-
+var ProviderFactory = require('core/layers/providers/providersfactory');
 
 function Layer(config) {
   var self = this;
@@ -57,6 +57,28 @@ function Layer(config) {
       self._clearFeatures();
     }
   };
+
+  var serverType = this.config.servertype;
+  var sourceType = this.config.source.type;
+
+  this.providers = {
+    query: ProviderFactory.build('query',serverType,sourceType,{
+      layer: this,
+      layerName: this.getQueryLayerName(),
+      infoFormat: this.getInfoFormat()
+    }),
+    filter: ProviderFactory.build('filter',serverType,sourceType,{
+      layer: this,
+      layerName: this.getQueryLayerName(),
+      infoFormat: this.getInfoFormat()
+    }),
+    data: ProviderFactory.build('data',serverType,sourceType,{
+      layer: this,
+      layerName: this.getQueryLayerName(),
+      infoFormat: this.getInfoFormat()
+    })
+  };
+
   base(this);
 }
 

@@ -9,7 +9,6 @@ var Feature = require('core/layers/features/feature');
 var Editor = require('core/editing/editor');
 var GeometryTypes = require('core/geometry/geometry').GeometryTypes;
 
-
 var ServerTypes = {
   OGC: "OGC",
   QGIS: "QGIS",
@@ -53,11 +52,6 @@ function GeoLayer(config) {
     bbox: config.bbox || null
   });
 
-  this.providers = {
-    query: null,
-    filter: null
-  };
-
   if (config.projection) {
     this.config.projection = config.projection;
   }
@@ -70,41 +64,6 @@ function GeoLayer(config) {
         this.config.projection = config.project.getProjection();
       }
     }
-  }
-
-  // in base alla tipologia di configurazione del layer
-  // viene deciso quale provider deve essere instanziato
-  //TEMPORANEO
-  if (this.config.servertype == Layer.ServerTypes.QGIS) {
-    // contiene il provider associato al layer
-    this.providers.query = ProviderFactory.build('wms', {
-      layer: this,
-      layerName: this.getQueryLayerName(),
-      infoFormat: this.getInfoFormat()
-    });
-
-    this.providers.filter = ProviderFactory.build('wfs', {
-      layer: this,
-      layerName: this.getQueryLayerName(),
-      infoFormat: this.getInfoFormat()
-    });
-
-  } else if (this.config.servertype == Layer.ServerTypes.File) {
-    // QUI ANDRÒ A DEFINIRE IL QUERY PROVIDER CHE NON È ALTRO
-    // UNA PICK FEATURE
-    switch (this.config.source.type == 'json') {
-      case 'json':
-        //TODO
-        break;
-      case 'kml':
-        // TODO
-        break;
-      case 'shapefiles':
-        //TODO
-        break;
-    }
-  } else  {
-    //TODO
   }
 }
 
