@@ -1,5 +1,5 @@
 var utils = {
-  getForViewAndSize: function(center, resolution, rotation, size) {
+  getExtentForViewAndSize: function(center, resolution, rotation, size) {
     var dx = resolution * size[0] / 2;
     var dy = resolution * size[1] / 2;
     var cosRotation = Math.cos(rotation);

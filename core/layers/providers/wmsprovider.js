@@ -76,7 +76,7 @@ proto._getRequestUrl = function(url, extent, size, pixelRatio, projection, param
 // funzione che deve esserere "estratta dal mapservice"
 proto._getGetFeatureInfoUrlForLayer = function(coordinates,resolution,params) {
   var url = this._layer.getQueryUrl();
-  var extent = geoutils.getForViewAndSize(
+  var extent = geoutils.getExtentForViewAndSize(
     coordinates, resolution, 0,
     GETFEATUREINFO_IMAGE_SIZE);
 
