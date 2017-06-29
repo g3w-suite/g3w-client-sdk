@@ -388,9 +388,10 @@ proto.setupControls = function(){
                         }
                       });
                       queryPromises.push(layer.query({
-                        type: 'filter',
-                        filter: filterObject
-                      }))
+                          type: 'filter',
+                          filter: filterObject
+                        })
+                      )
                     });
 
                     self.highlightGeometry(geometry);
@@ -416,6 +417,10 @@ proto.setupControls = function(){
                         self.clearHighlightGeometry();
                       });
                   }
+                })
+                .fail(function () {
+                  GUI.notify.error('Si è verificato un errore nella richiesta al server');
+                  GUI.closeContent();
                 })
             });
 
