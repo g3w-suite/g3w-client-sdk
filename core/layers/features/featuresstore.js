@@ -59,4 +59,8 @@ proto._clearFeatures = function() {
   this._features.splice(0, this._features.length);
 };
 
+proto.getDataProvider = function() {
+  return this._dataprovider;
+};
+
 module.exports = FeaturesStore;

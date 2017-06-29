@@ -118,9 +118,21 @@ proto.getVectorLayer = function() {
   // vado a creare il featuresStore che si prenderà cura del recupero
   // dati (attraverso il suo provider) e salvataggio features
   vectorLayer._featuresStore = new FeaturesStore({
-    dataprovider: this._queryprovider //momentaneo
+    dataprovider: this._getDataProvider()
   });
   return vectorLayer;
+};
+
+proto._getDataProvider = function() {
+  //funzione che mi serve a costruire il dataprovidere
+  // da passare al featuresStore del layer vettoriale
+  var dataProvider = ProviderFactory.build('qgis', {
+    layer: this,
+    layerName: this.getQueryLayerName(),
+    infoFormat: this.getInfoFormat()
+  });
+
+  return dataProvider;
 };
 
 
@@ -439,6 +451,10 @@ proto.setInfoFormat = function(infoFormat) {
 
 proto.getWfsCapabilities = function() {
   return this.config.wfscapabilities || this.config.capabilities == 1 ;
+};
+
+proto.getFeaturesStore = function() {
+  return this._featuresStore;
 };
 
 GeoLayer.WMSServerTypes = [
