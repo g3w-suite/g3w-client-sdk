@@ -21,7 +21,21 @@ proto.getFeatures = function() {
 
 
 
+// METODI LOADING EDITING FEATURES //
 
+proto.getFeatures = function(options) {
+  var d = $.Deferred();
+  options = options || {};
+  var features = [];
+  var featuresGeoJson = ENTIGeoJSON;
+  _.forEach(this._parseLayerGeoJSON(featuresGeoJson), function(feature) {
+    features.push(new Feature({
+      feature: feature
+    }))
+  });
+  d.resolve(features);
+  return d.promise();
+};
 
 // METODI DEL VECCHIO EDITOR //
 

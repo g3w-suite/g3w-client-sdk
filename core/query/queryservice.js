@@ -376,7 +376,7 @@ function QueryService(){
     }
     var urlsForLayer = {
       url: queryUrl,
-      layers: [layer],
+      layer: layer,
       infoFormat: layer.getInfoFormat(ogcService),
       crs: layer.getCrs(), // dovrebbe essere comune a tutti
       serverType: layer.getServerType() // aggiungo anche il tipo di server

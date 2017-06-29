@@ -99,7 +99,6 @@ proto.query = function(options) {
   var coordinates = options.coordinates || [];
   var urlForLayer = this.getInfoFromLayer();
   var resolution = options.resolution || null;
-  var queryUrlForLayer = [];
   var sourceParam = urlForLayer.url.split('SOURCE');
   urlForLayer.url = sourceParam[0];
   if (sourceParam.length > 1) {
@@ -107,7 +106,7 @@ proto.query = function(options) {
   } else {
     sourceParam = '';
   }
-  var queryLayers = [this._layer];
+  var queryLayer = this._layer;
   var infoFormat = this._infoFormat;
   var params = {
     LAYERS: this._layerName,
@@ -120,14 +119,14 @@ proto.query = function(options) {
     FI_POLYGON_TOLERANCE: PIXEL_TOLERANCE,
     G3W_TOLERANCE: PIXEL_TOLERANCE * resolution
   };
-  var getFeatureInfoUrl = this._getGetFeatureInfoUrlForLayer(coordinates,resolution,params);
+  var getFeatureInfoUrl = this._getGetFeatureInfoUrlForLayer(coordinates, resolution, params);
   var queryString = getFeatureInfoUrl.split('?')[1];
   var url = urlForLayer.url+'?'+queryString + sourceParam;
-  queryUrlForLayer.push({
+  var queryUrlForLayer = {
     url: url,
     infoformat: infoFormat,
-    queryLayers: queryLayers
-  });
+    queryLayer: queryLayer
+  };
   this.makeQueryForLayer(queryUrlForLayer, coordinates, resolution)
     .then(function(response) {
       d.resolve(response)
@@ -139,53 +138,31 @@ proto.query = function(options) {
 };
 
 // da verificare generalizzazione
-proto.makeQueryForLayer = function(queryUrlsForLayers, coordinates, resolution) {
-  var self = this;
+proto.makeQueryForLayer = function(queryUrlForLayer, coordinates, resolution) {
   var d = $.Deferred();
   var queryInfo = {
     coordinates: coordinates,
     resolution: resolution
   };
-  if (queryUrlsForLayers.length > 0) {
-    var queryRequests = [];
-    var featuresForLayers = [];
-    _.forEach(queryUrlsForLayers,function(queryUrlForLayers){
-      var url = queryUrlForLayers.url;
-      var queryLayers = queryUrlForLayers.queryLayers;
-      var infoFormat = queryUrlForLayers.infoformat;
-      var postData = queryUrlForLayers.postData;
-      var request = self.doRequestAndParse({
-        url: url,
-        infoFormat: infoFormat,
-        queryLayers: queryLayers,
-        postData: postData
-      });
-      queryRequests.push(request);
-    });
-    $.when.apply(this, queryRequests).
-    then(function(){
-      var vectorsDataResponse = Array.prototype.slice.call(arguments);
-      _.forEach(vectorsDataResponse, function(_featuresForLayers){
-        if(featuresForLayers){
-          featuresForLayers = _.concat(featuresForLayers,_featuresForLayers);
-        }
-      });
-      featuresForLayers = self.handleResponseFeaturesAndRelations(featuresForLayers);
+  var url = queryUrlForLayer.url;
+  var queryLayer = queryUrlForLayer.queryLayer;
+  var infoFormat = queryUrlForLayer.infoformat;
+  var postData = queryUrlForLayer.postData;
+  this.doRequestAndParse({
+    url: url,
+    infoFormat: infoFormat,
+    queryLayer: queryLayer,
+    postData: postData
+  })
+    .then(function(response){
       d.resolve({
-        data: featuresForLayers,
+        data: response,
         query: queryInfo
       });
     })
-      .fail(function(e){
-        d.reject(e);
-      });
-  }
-  else {
-    d.resolve({
-      data: null,
-      query: queryInfo
+    .fail(function(e){
+      d.reject(e);
     });
-  }
   return d.promise()
 };
 
@@ -193,7 +170,7 @@ proto.doRequestAndParse = function(options) {
   var options = options || {};
   var url = options.url;
   var infoFormat = options.infoFormat;
-  var queryLayers = options.queryLayers;
+  var queryLayer = options.queryLayer;
   var postData = options.postData || null;
   var self = this;
   var d = $.Deferred();
@@ -205,7 +182,7 @@ proto.doRequestAndParse = function(options) {
   }
   request
     .done(function(response) {
-      var featuresForLayers = self.handleQueryResponseFromServer(response, infoFormat, queryLayers);
+      var featuresForLayers = self.handleQueryResponseFromServer(response, infoFormat, queryLayer);
       d.resolve(featuresForLayers);
     })
     .fail(function(){
@@ -215,22 +192,5 @@ proto.doRequestAndParse = function(options) {
 };
 
 
-
-// METODI LOADING EDITING FEATURES //
-
-
-proto.getFeatures = function(options) {
-  var d = $.Deferred();
-  options = options || {};
-  var features = [];
-  var featuresGeoJson = ENTIGeoJSON;
-  _.forEach(this._parseLayerGeoJSON(featuresGeoJson), function(feature) {
-    features.push(new Feature({
-      feature: feature
-    }))
-  });
-  d.resolve(features);
-  return d.promise();
-};
 
 module.exports = WMSDataProvider;

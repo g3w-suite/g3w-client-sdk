@@ -23,11 +23,9 @@ proto.query = function(options) {
   var d = $.Deferred();
   this._doRequest(filter)
     .done(function(response) {
-      var allFeaturesFoLayers = [];
-      var featuresForLayers = self.handleQueryResponseFromServer(response, filter.infoFormat, filter.layers, filter.ogcService);
-      allFeaturesFoLayers = _.union(allFeaturesFoLayers, self.handleResponseFeaturesAndRelations(featuresForLayers));
+      var featuresForLayers = self.handleQueryResponseFromServer(response, filter.infoFormat, filter.layer, filter.ogcService);
       d.resolve({
-        data: allFeaturesFoLayers
+        data: featuresForLayers
       });
     })
     .fail(function(e){
@@ -38,7 +36,7 @@ proto.query = function(options) {
 
 proto._post = function(url, params) {
   url = url + '/';
-  return request = $.post(url, params)
+  return  $.post(url, params)
 
 };
 
@@ -55,18 +53,15 @@ proto._doRequest = function(options) {
   var crs = options.crs;
   var filter = options.filter;
   var infoFormat = options.infoFormat;
-  var layers = options.layers;
-  var layers = _.map(layers,function(layer){
-    return layer.getQueryLayerName().replace(/ /g,'_');
-  });
+  var layer = options.layer;
 
   var params = {
     SERVICE: 'WFS',
     VERSION: '1.3.0',
     REQUEST: 'GetFeature',
-    TYPENAME: layers.join(),
+    TYPENAME: layer.getQueryLayerName().replace(/ /g,'_'),
     OUTPUTFORMAT: infoFormat,
-    SRSNAME: 'EPSG:' + crs
+    SRSNAME:  crs
   };
   if (filter.bbox) {
     params.BBOX = '' + filter.bbox;
@@ -76,7 +71,7 @@ proto._doRequest = function(options) {
     var geometry = filter.geometry;
     var f = ol.format.filter;
     var featureRequest = new ol.format.WFS().writeGetFeature({
-      featureTypes: layers,
+      featureTypes: [layer],
       filter: f.intersects('the_geom', geometry)
     });
     filter = featureRequest.children[0].innerHTML;
