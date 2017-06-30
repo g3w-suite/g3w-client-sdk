@@ -11,8 +11,14 @@ g3w.core = {
     ProjectsRegistry: require('core/project/projectsregistry'),
     Project: require('core/project/project')
   },
+  map: {
+    MapLayersStoreRegistry: require('core/map/maplayersstoresregistry')
+  },
+  catalog: {
+    CatalogLayersStoresRegistry: require('core/catalog/cataloglayersstoresregistry')
+  },
   layer: {
-    LayersStoreRegistry: require('core/layers/layersstoresregistry'),
+    LayersStoreRegistry: require('core/layers/layersstoresregistry'), //nel caso un plugin volesse instanziare un layersstoreregistry proprio
     LayersStore: require('core/layers/layersstore'),
     Layer: require('core/layers/layer'),
     GeoLayer: require('core/layers/geolayer'),

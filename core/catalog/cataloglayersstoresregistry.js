@@ -6,6 +6,6 @@ function CatalogLayersStoresRegistry() {
   base(this);
 }
 
-inherit(CatalogLayersStoresRegistry, LayersStoresRegistry );
+inherit(CatalogLayersStoresRegistry, LayersStoresRegistry);
 
 module.exports = new CatalogLayersStoresRegistry();
