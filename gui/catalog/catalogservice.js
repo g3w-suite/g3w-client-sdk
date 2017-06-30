@@ -2,7 +2,7 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var ProjectsRegistry = require('core/project/projectsregistry');
-var LayersStoresRegistry = require('core/layers/layersstoresregistry');
+var CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 
 function CatalogService() {
   var self = this;
@@ -37,18 +37,18 @@ function CatalogService() {
 
   base(this);
   // vado a popolare cosa c'è già
-  var layersStores = LayersStoresRegistry.getLayersStores();
+  var layersStores = CatalogLayersStoresRegistry.getLayersStores();
   _.forEach(layersStores, function(layersStore) {
     self.addLayersStoreToLayersTrees(layersStore);
   });
 
   // resto in ascolto di eventuali layersStore aggiunti
-  LayersStoresRegistry.onafter('addLayersStore', function(layersStore) {
+  CatalogLayersStoresRegistry.onafter('addLayersStore', function(layersStore) {
     self.addLayersStoreToLayersTrees(layersStore);
   });
 
   //registro l'eventuale rimozione del layersSore dal LayersRegistryStore
-  LayersStoresRegistry.onafter('removeLayersStore', function(layersStore) {
+  CatalogLayersStoresRegistry.onafter('removeLayersStore', function(layersStore) {
     _.forEach(self.state.layerstrees, function(layersTree, idx) {
       if (layersTree.storeid == layersStore.getId()) {
         self.state.layerstrees.splice(idx, 1);

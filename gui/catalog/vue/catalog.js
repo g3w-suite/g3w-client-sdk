@@ -5,7 +5,7 @@ var Component = require('gui/vue/component');
 var ComponentsRegistry = require('gui/componentsregistry');
 var GUI = require('gui/gui');
 var ControlsRegistry = require('gui/map/control/registry');
-var LayersStoresRegistry = require('core/layers/layersstoresregistry');
+var CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 var Service = require('../catalogservice');
 var ChromeComponent = VueColor.Chrome;
 var CatalogEventHub = new Vue();
@@ -84,7 +84,7 @@ var vueComponentOptions = {
     startEditing: function() {
       var layer;
       var self = this;
-      _.forEach(LayersStoresRegistry.getLayersStores(), function(layerStore) {
+      _.forEach(CatalogLayersStoresRegistry.getLayersStores(), function(layerStore) {
         layer = layerStore.getLayerById(self.layerMenu.layer.id);
         if (layer)
           return false;
@@ -120,7 +120,7 @@ var vueComponentOptions = {
         layer.setVisible(!layer.getVisible());
         node.visible = !node.visible;
       } else {
-        LayersStoresRegistry.getLayersStore(storeid).toggleLayer(node.id);
+        CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayer(node.id);
       }
     });
 
@@ -136,18 +136,18 @@ var vueComponentOptions = {
         }
       }
       _.map(nodes,checkNodes);
-      LayersStoresRegistry.getLayersStore(storeid).toggleLayers(layersIds, parentChecked);
+      CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayers(layersIds, parentChecked);
     });
 
     CatalogEventHub.$on('treenodeselected',function(storeid,node) {
       var mapservice = GUI.getComponent('map').getService();
-      var layer = LayersStoresRegistry.getLayersStore(storeid).getLayerById(node.id);
+      var layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(node.id);
       if (!layer.isSelected()) {
-        LayersStoresRegistry.getLayersStore(storeid).selectLayer(node.id);
+        CatalogLayersStoresRegistry.getLayersStore(storeid).selectLayer(node.id);
         // emetto il segnale layer selezionato dal catalogo
         mapservice.emit('cataloglayerselected', layer);
       } else {
-        LayersStoresRegistry.getLayersStore(storeid).unselectLayer(node.id);
+        CatalogLayersStoresRegistry.getLayersStore(storeid).unselectLayer(node.id);
         mapservice.emit('cataloglayerunselected', layer);
       }
     });
@@ -353,7 +353,7 @@ Vue.component('layerslegend-item',{
     legendurl: function(){
       var self = this;
       var _legendurl;
-      _.forEach(LayersStoresRegistry.getLayersStores(), function(layerStore) {
+      _.forEach(CatalogLayersStoresRegistry.getLayersStores(), function(layerStore) {
         if (layerStore.getLayerById(self.layer.id)){
           _legendurl = layerStore.getLayerById(self.layer.id).getLegendUrl();
           return false

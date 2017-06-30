@@ -5,7 +5,7 @@ var GUI = require('gui/gui');
 var ApplicationService = require('core/applicationservice');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var Layer = require('core/layers/layer');
-var LayersStoreRegistry = require('core/layers/layersstoresregistry');
+var MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 var LayersStore = require('core/layers/layersstore');
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 var WMSLayer = require('core/map/layer/wmslayer');
@@ -131,18 +131,18 @@ function MapService(options) {
   });
 
   // vado a registrare gli eventi sui layerstores esistesenti nel registro
-  _.forEach(LayersStoreRegistry.getLayersStores(), function(layerStore) {
+  _.forEach(MapLayersStoreRegistry.getLayersStores(), function(layerStore) {
     self._setUpEventsKeysToLayersStore(layerStore);
   });
 
   // sto in ascolto di evantuali aggiunte di layersStore per poter eventualmente
   // aggiungere i suoi layers alla mappa
-  LayersStoreRegistry.onafter('addLayersStore', function(layerStore) {
+  MapLayersStoreRegistry.onafter('addLayersStore', function(layerStore) {
     self._setUpEventsKeysToLayersStore(layerStore);
   });
   // sto in ascolto di evantuali aggiunte di layersStore per poter eventualmente
   // aggiungere i suoi layers alla mappa
-  LayersStoreRegistry.onafter('removeLayersStore', function(layerStore) {
+  MapLayersStoreRegistry.onafter('removeLayersStore', function(layerStore) {
     self._removeEventsKeysToLayersStore(layerStore);
   });
   
@@ -646,7 +646,7 @@ proto.getLayers = function(filter) {
   };
   filter = _.merge(filter, mapFilter);
   var layers = [];
-  _.forEach(LayersStoreRegistry.getLayersStores(), function(layerStore) {
+  _.forEach(MapLayersStoreRegistry.getLayersStores(), function(layerStore) {
     _.merge(layers, layerStore.getLayers(filter));
   });
   return layers;

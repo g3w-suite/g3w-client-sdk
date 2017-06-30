@@ -3,7 +3,8 @@ var base = require('core/utils/utils').base;
 var reject = require('core/utils/utils').reject;
 var G3WObject = require('core/g3wobject');
 var Project = require('core/project/project');
-var LayersStoresRegistry = require('core/layers/layersstoresregistry');
+var CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
+var MapLayersStoresRegistry = require('core/map/maplayersstoresregistry');
 
 /* service
 Funzione costruttore contentente tre proprieta':
@@ -28,7 +29,8 @@ function ProjectsRegistry() {
       //aggiunto tipo progetto
       self.setProjectType(project.state.type);
       // lo mette sempre in prima posizione mi serve per la mappa
-      LayersStoresRegistry.addLayersStore(project.getLayersStore(), 0);
+      CatalogLayersStoresRegistry.addLayersStore(project.getLayersStore(), 0);
+      MapLayersStoresRegistry.addLayersStore(project.getLayersStore(), 0);
     }
   };
   //stato del registro progetti

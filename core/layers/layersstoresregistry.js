@@ -1,12 +1,10 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
-var LayersStore = require('core/layers/layersstore');
 
 // Interfaccia per registare i layers
 function LayersStoresRegistry() {
   var self = this;
-
   this.stores = {};
   this.storesArray = [];
   // questi setters mi servono per far reagire  le varie parti dell'applicazione
@@ -64,4 +62,4 @@ proto._removeLayersStore = function(layerStore) {
   }
 };
 
-module.exports = new LayersStoresRegistry();
+module.exports = LayersStoresRegistry;
