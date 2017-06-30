@@ -1,4 +1,4 @@
-var Projection = require('core/geo/projection');
+var Projection = require('./projection');
 
 var STANDARD_PROJECTIONS = [3857,900913,4326];
 

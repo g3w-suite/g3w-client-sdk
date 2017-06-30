@@ -9,17 +9,16 @@ function Filter() {
 var proto = Filter.prototype;
 
 // server per creare un filtro complesso
-proto.setExpressionFilter = function(expression) {
-
+proto.setExpression = function(expression) {
 
 };
 
-proto.setGeometryFilter = function(geometry) {
+proto.setGeometry = function(geometry) {
   this.geometry = geometry;
   return this;
 };
 
-proto.setBBOXFilter = function(bbox) {
+proto.setBBOX = function(bbox) {
 
   this.bbox = [bbox];
   return this;

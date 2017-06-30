@@ -1,7 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var utils = require('core/utils/utils');
-var geoutils = require('core/geo/utils');
+var geoutils = require('g3w-ol3/src/utils/utils');
 var DataProvider = require('core/layers/providers/provider');
 //vado a sovrascrivere il metodo per leggere le feature
 // da un geojson

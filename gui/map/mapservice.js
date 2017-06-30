@@ -479,24 +479,6 @@ proto.setupControls = function(){
                     GUI.closeContent();
                   })
                 });
-              //   //faccio query by location su i layers selezionati o tutti
-              //   var queryResultsPanel = showQueryResults('interrogazione');
-              //   var filterObject = QueryService.createQueryFilterObject({
-              //     queryLayers: layers,
-              //     ogcService: 'wfs',
-              //     filter: {
-              //       bbox: bbox
-              //     }
-              //   });
-              //   QueryService.queryByFilter(filterObject)
-              //     .then(function (results) {
-              //       queryResultsPanel.setQueryResponse(results, bbox, self.state.resolution);
-              //     })
-              //     .fail(function() {
-              //       GUI.notify.error('Si è verificato un errore nella richiesta al server');
-              //       GUI.closeContent();
-              //     })
-              // });
               self.addControl(controlType, control);
             }
           }

@@ -1,13 +1,12 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var DataProvider = require('core/layers/providers/provider');
-var Filter = require('core/layers/filters/filter');
 
 function WFSDataProvider(options) {
   options = options || {};
   base(this);
   this._name = 'wfs';
-};
+}
 
 inherit(WFSDataProvider, DataProvider);
 
@@ -66,7 +65,7 @@ proto._doRequest = function(options) {
     SRSNAME:  crs
   };
   if (filter.bbox) {
-    params.BBOX = f.serialize();
+    params.BBOX = '' + filter.bbox;
     request = this._get(url, params)
 
   } else {

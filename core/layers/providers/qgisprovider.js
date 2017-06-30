@@ -2,8 +2,6 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var DataProvider = require('core/layers/providers/provider');
 var Feature = require('core/layers/features/feature');
-var Filter = require('core/layers/filters/filter');
-
 
 function  QGISProvider(options) {
   options = options || {};
