@@ -15,11 +15,29 @@ function  QGISProvider(options) {
 
 inherit(QGISProvider, DataProvider);
 
-proto.getFeatures = function() {
-  console.log('da sovrascrivere')
+
+var proto = QGISProvider.prototype;
+
+proto.query = function(options) {
+  var self = this;
+  var d = $.Deferred();
+  options = options || {};
+  var filter = options.filter || null;
+  if (filter) {
+    if (filter.bbox) {
+
+    }
+    // temporaneo per evitare che possa scoppiare
+    d.resolve({
+      query: '',
+      data: [{
+        features: [],
+        layer: this._layer
+      }]
+    });
+  }
+  return d.promise()
 };
-
-
 
 // METODI LOADING EDITING FEATURES //
 
@@ -37,24 +55,13 @@ proto.getFeatures = function(options) {
   return d.promise();
 };
 
-// METODI DEL VECCHIO EDITOR //
-
 // funzione principale, starting point, chiamata dal plugin per
 // il recupero dei vettoriali (chiamata verso il server)
-proto.loadLayers = function(mode, customUrlParameters) {
+proto._loadLayerData = function(mode, customUrlParameters) {
   // il parametro mode mi di è in scrittura, lettura etc ..
   var self = this;
   var deferred = $.Deferred();
-  // tiene conto dei codici dei layer che non sono stati
-  // i dati vettoriali
-  var noVectorlayerCodes = [];
-  // setto il mode (r/w)
-  this.setMode(mode);
-  //verifico che ci siano parametri custom (caso di alcuni plugin) da aggiungere alla base url
-  // per fare le chiamate al server
-  if (customUrlParameters) {
-    this._setCustomUrlParameters(customUrlParameters)
-  }
+
   //verifica se sono stati caricati i vettoriali dei layer
   // attraverso la proprietà vector del layer passato dal plugin
   _.forEach(this._layers, function(layer, layerCode) {
