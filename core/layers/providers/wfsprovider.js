@@ -1,6 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var DataProvider = require('core/layers/providers/provider');
+var Filter = require('core/layers/filters/filter');
 
 function WFSDataProvider(options) {
   options = options || {};
@@ -42,6 +43,7 @@ proto._post = function(url, params) {
 
 // get request
 proto._get = function(url, params) {
+  // trasformo i parametri
   var urlParams = $.param(params);
   url = url + '?' + urlParams;
   return $.get(url)
@@ -64,7 +66,7 @@ proto._doRequest = function(options) {
     SRSNAME:  crs
   };
   if (filter.bbox) {
-    params.BBOX = '' + filter.bbox;
+    params.BBOX = f.serialize();
     request = this._get(url, params)
 
   } else {
