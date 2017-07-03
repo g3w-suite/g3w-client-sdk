@@ -90,6 +90,7 @@ proto.getLayersDict = function(options) {
   var options = options || {};
   var filterActive = options.ACTIVE;
   var filterQueryable = options.QUERYABLE;
+  var filterFilterable = options.FILTERABLE;
   var filterVisible = options.VISIBLE;
   var filterSelected = options.SELECTED;
   var filterCached = options.CACHED;
@@ -104,6 +105,7 @@ proto.getLayersDict = function(options) {
     filterSelected = null;
   }
   if (_.isUndefined(filterQueryable)
+    && _.isUndefined(filterFilterable)
     && _.isUndefined(filterVisible)
     && _.isUndefined(filterActive)
     && _.isUndefined(filterSelected)
@@ -130,6 +132,12 @@ proto.getLayersDict = function(options) {
   if (typeof filterQueryable == 'boolean') {
     layers = _.filter(layers, function(layer) {
       return filterQueryable == layer.isQueryable();
+    });
+  }
+
+  if (typeof filterFilterable == 'boolean') {
+    layers = _.filter(layers,function(layer) {
+      return filterFilterable == layer.isFilterable();
     });
   }
 
@@ -190,14 +198,6 @@ proto.getLayersDict = function(options) {
       return !layer.isSelected();
     });
     layers = layers.length ? layers : _layers;
-  }
-
-  // filtra solo i quelli wfs
-  if (filterWfs) {
-    layers = _.filter(layers,function(layer) {
-      // specifico che deve evare lo stesso crs del progetto
-      return layer.getWfsCapabilities() && layer.getCrs() == layer.getProjectCrs();
-    });
   }
 
   return layers;

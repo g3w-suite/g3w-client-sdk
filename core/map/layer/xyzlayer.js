@@ -51,8 +51,7 @@ proto.isVisible = function(){
 
 proto._makeOlLayer = function(){
   var self = this;
-  var crs = this.layer.getProjectCrs();
-
+  
   var projection = this.projection ? this.projection : this.layer.getProjection();
 
   var layerOptions = {

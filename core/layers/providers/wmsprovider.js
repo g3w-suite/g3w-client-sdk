@@ -10,36 +10,17 @@ var GETFEATUREINFO_IMAGE_SIZE = [101, 101];
 
 function WMSDataProvider(options) {
   options = options || {};
-  base(this);
+  base(this, options);
   this._name = 'wms';
-  this._layer = options.layer || null;
-  this._layerName = options.layerName || null;
-  this._infoFormat = options.infoFormat || 'application/vnd.ogc.gml';
+  this._url = this._layer.getQueryUrl();
+  this._layerName = this._layer.getName() || null; // prendo sempre il name del layer di QGIS, perché le query sono proxate e gestite da g3w-server
+  this._infoFormat = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
 }
 
 inherit(WMSDataProvider, DataProvider);
 
 var proto = WMSDataProvider.prototype;
 
-// funzione che in base ai layers e alla tipologia di servizio
-// restituisce gli url per ogni layer o gruppo di layers
-// che condividono lo stesso indirizzo di servizio
-proto.getInfoFromLayer = function(ogcService) {
-  // wfs specifica se deve essere fatta chiamata wfs o no
-  // scooro sui ogni layer e catturo il queryUrl
-  // se wfs prendo l'api fornite dal server
-  if (ogcService == 'wfs') {
-    var queryUrl = this._layer.getWmsUrl();
-  } else {
-    var queryUrl = this._layer.getQueryUrl();
-  }
-  return {
-    url: queryUrl,
-    infoFormat: this._layer.getInfoFormat(ogcService),
-    crs: this._layer.getProjectCrs(), // dovrebbe essere comune a tutti
-    serverType: this._layer.getServerType() // aggiungo anche il tipo di server
-  };
-};
 
 proto._getRequestUrl = function(url, extent, size, pixelRatio, projection, params) {
 
@@ -67,15 +48,14 @@ proto._getRequestUrl = function(url, extent, size, pixelRatio, projection, param
 };
 
 // funzione che deve esserere "estratta dal mapservice"
-proto._getGetFeatureInfoUrlForLayer = function(coordinates,resolution,params) {
-  var url = this._layer.getQueryUrl();
+proto._getGetFeatureInfoUrlForLayer = function(url, coordinates,resolution,params) {
   var extent = geoutils.getExtentForViewAndSize(
     coordinates, resolution, 0,
     GETFEATUREINFO_IMAGE_SIZE);
 
   var baseParams = {
     'SERVICE': 'WMS',
-    'VERSION': ol.DEFAULT_WMS_VERSION,
+    'VERSION': '1.3.0',
     'REQUEST': 'GetFeatureInfo',
     'FORMAT': 'image/png',
     'TRANSPARENT': true,
@@ -97,21 +77,23 @@ proto._getGetFeatureInfoUrlForLayer = function(coordinates,resolution,params) {
 proto.query = function(options) {
   var d = $.Deferred();
   var coordinates = options.coordinates || [];
-  var urlForLayer = this.getInfoFromLayer();
   var resolution = options.resolution || null;
-  var sourceParam = urlForLayer.url.split('SOURCE');
-  urlForLayer.url = sourceParam[0];
-  if (sourceParam.length > 1) {
-    sourceParam = '&SOURCE' + sourceParam[1];
-  } else {
-    sourceParam = '';
+  var url = this._url;
+  var sourceParam = url.split('SOURCE');
+  if (sourceParam.length) {
+    url = sourceParam[0];
+    
+    if (sourceParam.length > 1) {
+      sourceParam = '&SOURCE' + sourceParam[1];
+    } else {
+      sourceParam = '';
+    }
   }
-  var queryLayer = this._layer;
-  var infoFormat = this._infoFormat;
+  
   var params = {
     LAYERS: this._layerName,
     QUERY_LAYERS: this._layerName,
-    INFO_FORMAT: infoFormat,
+    INFO_FORMAT: this._infoFormat,
     FEATURE_COUNT: 10,
     // PARAMETRI DI TOLLERANZA PER QGIS SERVER
     FI_POINT_TOLERANCE: PIXEL_TOLERANCE,
@@ -119,15 +101,11 @@ proto.query = function(options) {
     FI_POLYGON_TOLERANCE: PIXEL_TOLERANCE,
     G3W_TOLERANCE: PIXEL_TOLERANCE * resolution
   };
-  var getFeatureInfoUrl = this._getGetFeatureInfoUrlForLayer(coordinates, resolution, params);
+  var getFeatureInfoUrl = this._getGetFeatureInfoUrlForLayer(url, coordinates, resolution, params);
   var queryString = getFeatureInfoUrl.split('?')[1];
-  var url = urlForLayer.url+'?'+queryString + sourceParam;
-  var queryUrlForLayer = {
-    url: url,
-    infoformat: infoFormat,
-    queryLayer: queryLayer
-  };
-  this.makeQueryForLayer(queryUrlForLayer, coordinates, resolution)
+  url += '?'+queryString + sourceParam;
+
+  this.makeQueryForLayer(url, coordinates, resolution)
     .then(function(response) {
       d.resolve(response)
     })
@@ -137,23 +115,13 @@ proto.query = function(options) {
   return d.promise();
 };
 
-// da verificare generalizzazione
-proto.makeQueryForLayer = function(queryUrlForLayer, coordinates, resolution) {
+proto.makeQueryForLayer = function(url, coordinates, resolution) {
   var d = $.Deferred();
   var queryInfo = {
     coordinates: coordinates,
     resolution: resolution
   };
-  var url = queryUrlForLayer.url;
-  var queryLayer = queryUrlForLayer.queryLayer;
-  var infoFormat = queryUrlForLayer.infoformat;
-  var postData = queryUrlForLayer.postData;
-  this.doRequestAndParse({
-    url: url,
-    infoFormat: infoFormat,
-    queryLayer: queryLayer,
-    postData: postData
-  })
+  this.doRequestAndParse(url)
     .then(function(response){
       d.resolve({
         data: response,
@@ -166,23 +134,12 @@ proto.makeQueryForLayer = function(queryUrlForLayer, coordinates, resolution) {
   return d.promise()
 };
 
-proto.doRequestAndParse = function(options) {
-  var options = options || {};
-  var url = options.url;
-  var infoFormat = options.infoFormat;
-  var queryLayer = options.queryLayer;
-  var postData = options.postData || null;
+proto.doRequestAndParse = function(url) {
   var self = this;
   var d = $.Deferred();
-  var request;
-  if (postData) {
-    request = $.post(url, postData)
-  } else {
-    request = $.get(url);
-  }
-  request
+  $.get(url)
     .done(function(response) {
-      var featuresForLayers = self.handleQueryResponseFromServer(response, infoFormat, queryLayer);
+      var featuresForLayers = self.handleQueryResponseFromServer(response, this._infoFormat, this._layerName);
       d.resolve(featuresForLayers);
     })
     .fail(function(){

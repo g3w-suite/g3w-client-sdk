@@ -7,12 +7,11 @@ var ProjectsRegistry = require('core/project/projectsregistry');
 var Layer = require('core/layers/layer');
 var MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 var LayersStore = require('core/layers/layersstore');
+var Filter = require('core/layers/filter/filter');
+var WFSProvider = require('core/layers/providers/wfsprovider');
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 var WMSLayer = require('core/map/layer/wmslayer');
-var XYZLayer = require('core/map/layer/xyzlayer');
-var VectorLayer = require('core/map/layer/vectorlayer');
 var ControlsFactory = require('gui/map/control/factory');
-var QueryService = require('core/query/queryservice');
 var StreetViewService = require('gui/streetview/streetviewservice');
 var ControlsRegistry = require('gui/map/control/registry');
 
@@ -304,7 +303,6 @@ proto.setupControls = function(){
             var queryPromises = [];// raccoglie tutte le promises dei provider del layer
             _.forEach(layers, function(layer) {
               queryPromises.push(layer.query({
-                  type: 'query',
                   coordinates: coordinates,
                   resolution: self.getResolution()
               }))
@@ -428,7 +426,7 @@ proto.setupControls = function(){
           }
           break;
         case 'querybbox':
-          if (!isMobile.any && self.checkWFSLayers()) {
+          if (!isMobile.any && self.filterableLayersAvailable()) {
             var controlLayers = self.getLayers({
               QUERYABLE: true,
               SELECTEDORALL: true,
@@ -448,16 +446,10 @@ proto.setupControls = function(){
                 });
                 var queryPromises = [];// raccoglie tutte le promises dei provider del layer
                 _.forEach(layers, function(layer) {
-                  var filterObject = QueryService.createQueryFilterObject({
-                    queryLayer: layer,
-                    ogcService: 'wfs',
-                    filter: {
-                      bbox: bbox
-                    }
-                  });
+                  var filter = new Filter();
+                  filter.setBBOX(bbox);
                   queryPromises.push(layer.query({
-                    type: 'filter',
-                    filter: filterObject
+                    filter: filter
                   }))
                 });
                 var showQueryResults = GUI.showContentFactory('query');
@@ -474,8 +466,12 @@ proto.setupControls = function(){
                     results.data = data;
                     queryResultsPanel.setQueryResponse(results, bbox, self.state.resolution);
                   })
-                  .fail(function() {
-                    GUI.notify.error('Si è verificato un errore nella richiesta al server');
+                  .fail(function(error) {
+                    var msg = 'Si è verificato un errore nella richiesta al server';
+                    if (error) {
+                      msg += ' '+error;
+                    }
+                    GUI.notify.error(msg);
                     GUI.closeContent();
                   })
                 });
@@ -634,20 +630,21 @@ proto.getLayers = function(filter) {
   return layers;
 };
 
-// verifica se esistono layer querabili che hanno wfs capabilities
-proto.checkWFSLayers = function() {
-  var iswfs = false;
+// verifica se esistono layer filtrabili
+proto.filterableLayersAvailable = function() {
+  var self = this;
   var layers = this.getLayers({
     QUERYABLE: true,
+    FILTERABLE: true,
     SELECTEDORALL: true
   });
-  _.forEach(layers, function(layer) {
-    if (layer.getWfsCapabilities()) {
-      iswfs = true;
-      return false
+  return _.some(layers, function(layer) {
+    // nel caso il provider dei filtri sia WFS verifico che sia lo stesso sistema di riferimento del progetto, perché QGIS ancora non supporta riproiezione su WFS
+    if (layer.getProvider('filter') instanceof WFSProvider) {
+      return layer.getProjection().getCode() == self.project.getLayersStore().getProjection().getCode();
     }
+    return true;
   });
-  return iswfs
 };
 
 proto.addControl = function(type, control) {

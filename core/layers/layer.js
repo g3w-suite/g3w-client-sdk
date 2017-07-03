@@ -3,30 +3,34 @@ var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
 var ProviderFactory = require('core/layers/providers/providersfactory');
 
+var ServerTypes = {
+  OGC: "OGC",
+  QGIS: "QGIS",
+  Mapserver: "Mapserver",
+  Geoserver: "Geoserver",
+  ArcGIS: "ArcGIS",
+  OSM: "OSM",
+  Bing: "Bing"
+};
+
 function Layer(config) {
   var self = this;
   config = config || {};
   // contiene la configurazione statica del layer
-  this.config = {
-    capabilities: config.capabilities || null,
-    project: config.project || null,
-    editops: config.editops || null,
+  this.config = _.extend({
     id: config.id || 'Layer' ,
     title: config.title  || null,
     name: config.name || null,
     origname: config.origname || null,
+    capabilities: config.capabilities || null,
+    editops: config.editops || null,
     infoformat: config.infoformat || null,
     infourl: config.infourl || null,
     servertype: config.servertype || null,
     source: config.source || null,
     geolayer: false
-  };
-
-  // contiene l'editor associato al layer
-  this.editor = null;
-  // Query Provider server a poter effettuare chiamate di informazione sul layer
-  // es. query, quey bbox etc...
-  this._queryprovider = null;
+  },config);
+  
   // contiene la parte dinamica del layer
   //this.state = config; // questo fa in modo che il catalog reagisca al mutamento
   // delle proprietà dinamiche (select, disable, visible)
@@ -40,6 +44,11 @@ function Layer(config) {
     modified: false,
     hidden: config.hidden || false
   };
+
+  // contiene l'editor associato al layer
+  this.editor = null;
+  // Query Provider server a poter effettuare chiamate di informazione sul layer
+  // es. query, quey bbox etc...
   // struttura campi del layer
   this.fields = config.fields;
   // relations
@@ -65,19 +74,13 @@ function Layer(config) {
 
   this.providers = {
     query: ProviderFactory.build('query',serverType,sourceType,{
-      layer: this,
-      layerName: this.getQueryLayerName(),
-      infoFormat: this.getInfoFormat()
+      layer: this
     }),
     filter: ProviderFactory.build('filter',serverType,sourceType,{
-      layer: this,
-      layerName: this.getQueryLayerName(),
-      infoFormat: this.getInfoFormat()
+      layer: this
     }),
     data: ProviderFactory.build('data',serverType,sourceType,{
-      layer: this,
-      layerName: this.getQueryLayerName(),
-      infoFormat: this.getInfoFormat()
+      layer: this
     })
   };
 
@@ -234,7 +237,7 @@ proto.isVisible = function() {
 };
 
 proto.getServerType = function() {
-  if (this.state.servertype && this.config.servertype != '') {
+  if (this.config.servertype && this.config.servertype != '') {
     return this.config.servertype;
   }
   else {
@@ -260,24 +263,22 @@ proto.query = function(options) {
   var self = this;
   var d = $.Deferred();
   var type = options.type;
-  var provider;
-  switch (type) {
-    case('query'):
-      provider = this.providers.query;
-      break;
-    case ('filter'):
-      provider = this.providers.filter;
-      break;
-    default:
-      provider = this.providers.query;
+  var provider = this.providers.query;
+  if (options.filter) {
+    provider = this.providers.filter;
   }
-  provider.query(options)
-    .done(function(features) {
-      d.resolve(features);
-    })
-    .fail(function(err) {
-      d.reject(err);
-    });
+  if (provider) {
+    provider.query(options)
+      .done(function(features) {
+        d.resolve(features);
+      })
+      .fail(function(err) {
+        d.reject(err);
+      });
+  }
+  else {
+    d.reject('Il layer non è interrogabile tramite filtri');
+  }
   return d.promise();
 };
 
@@ -288,9 +289,6 @@ proto.getQueryUrl = function() {
   }
   else {
     infoUrl = this.config.wmsUrl;
-  }
-  if (this.getServerType() != 'QGIS') {
-    infoUrl+='SOURCE=wms';
   }
   return infoUrl;
 };
@@ -332,6 +330,14 @@ proto.getInfoFormat = function(ogcService) {
 
 proto.setInfoFormat = function(infoFormat) {
   this.state.infoformat = infoFormat;
+};
+
+proto.isFilterable = function() {
+  return this.providers.filter != undefined;
+};
+
+proto.getProvider = function(type) {
+  return this.providers[type];
 };
 
 

@@ -1,10 +1,11 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var DataProvider = require('core/layers/providers/provider');
+var Filter = require('core/layers/filter/filter');
 
 function WFSDataProvider(options) {
   options = options || {};
-  base(this);
+  base(this, options);
   this._name = 'wfs';
 }
 
@@ -23,7 +24,7 @@ proto.query = function(options) {
   var d = $.Deferred();
   this._doRequest(filter)
     .done(function(response) {
-      var featuresForLayers = self.handleQueryResponseFromServer(response, filter.infoFormat, filter.layer, filter.ogcService);
+      var featuresForLayers = self.handleQueryResponseFromServer(response);
       d.resolve({
         data: featuresForLayers
       });
@@ -48,13 +49,14 @@ proto._get = function(url, params) {
   return $.get(url)
 };
 
-proto._doRequest = function(options) {
-  var options = options || {};
-  var url = options.url;
-  var crs = options.crs;
-  var filter = options.filter;
-  var infoFormat = options.infoFormat;
-  var layer = options.layer;
+proto._doRequest = function(filter) {
+  if (!(filter instanceof Filter)) {
+    return;
+  }
+  var layer = this._layer;
+  var url = layer.getQueryUrl();
+  var crs = layer.getProjection().getCode();
+  var infoFormat = layer.getInfoFormat();
 
   var params = {
     SERVICE: 'WFS',
@@ -64,20 +66,24 @@ proto._doRequest = function(options) {
     OUTPUTFORMAT: infoFormat,
     SRSNAME:  crs
   };
-  if (filter.bbox) {
-    params.BBOX = filter.bbox.join();
+
+  var bbox = filter.getBBOX();
+  if (bbox) {
+    params.BBOX = bbox.join();
     request = this._get(url, params)
 
   } else {
-    var geometry = filter.geometry;
-    var f = ol.format.filter;
-    var featureRequest = new ol.format.WFS().writeGetFeature({
-      featureTypes: [layer],
-      filter: f.intersects('the_geom', geometry)
-    });
-    filter = featureRequest.children[0].innerHTML;
-    params.FILTER = filter;
-    request = this._post(url, params)
+    var geometry = filter.getGeometry();
+    if (geometry) {
+      var f = ol.format.filter;
+      var featureRequest = new ol.format.WFS().writeGetFeature({
+        featureTypes: [layer],
+        filter: f.intersects('the_geom', geometry)
+      });
+      filter = featureRequest.children[0].innerHTML;
+      params.FILTER = filter;
+      request = this._post(url, params)
+    }
   }
   return request
 };

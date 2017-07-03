@@ -9,40 +9,33 @@ var Feature = require('core/layers/features/feature');
 var Editor = require('core/editing/editor');
 var GeometryTypes = require('core/geometry/geometry').GeometryTypes;
 
-var ServerTypes = {
-  OGC: "OGC",
-  QGIS: "QGIS",
-  Mapserver: "Mapserver",
-  Geoserver: "Geoserver",
-  ArcGIS: "ArcGIS",
-  OSM: "OSM",
-  Bing: "Bing"
-};
-
-var WMSServerTypes = [
-  ServerTypes.QGIS,
-  ServerTypes.Mapserver,
-  ServerTypes.Geoserver,
-  ServerTypes.OGC
-];
-
 function GeoLayer(config) {
   config = config || {};
-  base(this, config);
-  var self = this;
-  _.extend(this.config,{
+  base(this, {
+    id: config.id || null,
+    title: config.title || null,
+    name: config.name || null,
+    origname: config.origname || null,
+    multilayerid: config.multilayer || null,
+    servertype: config.servertype || null,
+    source: config.source || null,
+    crs: config.crs || null,
     projection: null,
-    project: config.project || null,
+    bbox: config.bbox || null,
+    capabilities: config.capabilities || null,
+    cacheUrl: config.cache_url || null,
+    baselayer: config.baselayer || false,
     geometrytype: config.geometrytype || null,
+    editops: config.editops || null,
+    expanded: config.expanded || null,
+    fields: config.fields || null,
+    wmsUrl: config.wmsUrl || null,
     infoformat: config.infoformat || null,
     infourl: config.infourl || null,
     maxscale: config.maxscale || null,
     minscale: config.minscale || null,
-    multilayerid: config.multilayer || null,
+    visible: config.visible || null,
     scalebasedvisibility: config.scalebasedvisibility || null,
-    wmsUrl: config.wmsUrl || null,
-    cacheUrl: config.cache_url || null,
-    baselayer: config.baselayer || false,
     wfscapabilities: config.wfscapabilities || null
   });
 
@@ -103,58 +96,6 @@ proto.getState = function() {
   return this.state;
 };
 
-proto.getProject = function() {
-  return this.config.project;
-};
-
-proto.getEditor = function() {
-  return this.editor;
-};
-
-proto.setEditor = function(editor) {
-  this.editor = editor;
-};
-
-proto._startEditing = function() {
-  console.log('start Editing');
-  //this.editor.start();
-};
-
-proto._stopEditing = function() {
-  console.log('stop editing');
-  // this.editor.stop()
-};
-
-// funzione per la lettura dei dati precedentemente acquisiti dal provider
-proto.readFeatures = function() {
-  return this._featuresStore.readFeatures();
-};
-
-proto._clearFeatures = function() {
-  this._featuresStore.clearFeatures();
-};
-
-
-// funzione che recupera i dati da qualsisasi fonte (server, wms, etc..)
-proto.getFeatures = function(options) {
-  var self = this;
-  var d = $.Deferred();
-  this._featuresStore.getFeatures(options)
-    .then(function(features) {
-      return d.resolve(features);
-    });
-  return d.promise();
-};
-
-proto.isModified = function() {
-  //medodo che stbilisce se modificato o no
-  return this.state.modified;
-};
-
-proto.getDataProvider = function() {
-  return this._dataprovider;
-};
-
 proto.getMultiLayerId = function() {
   return this.config.multilayerid;
 };
@@ -167,78 +108,8 @@ proto.getMultiLayerId = function() {
   return this.config.multilayerid;
 };
 
-proto.getAttributes = function() {
-  return this.fields;
-};
-
-proto.changeAttribute = function(attribute, type, options) {
-  _.forEach(this.fields, function(field) {
-    if (field.name == attribute) {
-      field.type = type;
-      field.options = options;
-    }
-  })
-};
-
-proto.getAttributeLabel = function(name) {
-  var label;
-  _.forEach(this.getAttributes(),function(field){
-    if (field.name == name){
-      label = field.label;
-    }
-  });
-  return label;
-};
-
-// restituisce tutte le relazioni legati a quel layer
-proto.getRelations = function() {
-  return this.state.relations
-};
-
-//restituisce gli attributi fields di una deterninata relazione
-proto.getRelationAttributes = function(relationName) {
-  var fields = [];
-  _.forEach(this.state.relations, function(relation) {
-    if (relation.name == relationName) {
-      fields = relation.fields;
-      return false
-    }
-  });
-  return fields;
-};
-
-// retituisce un oggetto contenente nome relazione e fileds(attributi) associati
-proto.getRelationsAttributes = function() {
-  var fields = {};
-  _.forEach(this.state.relations, function(relation) {
-    fields[relation.name] = relation.fields;
-  });
-  return fields;
-};
-
-proto.isSelected = function() {
-  return this.state.selected;
-};
-
-proto.isDisabled = function() {
-  return this.state.disabled;
-};
-
-proto.isVisible = function() {
-  return this.state.visible;
-};
-
 proto.isBaseLayer = function() {
   return this.config.baselayer;
-};
-
-proto.getServerType = function() {
-  if (this.config.servertype && this.config.servertype != '') {
-    return this.config.servertype;
-  }
-  else {
-    return Layer.ServerTypes.QGIS;
-  }
 };
 
 this.setProjection = function(crs,proj4) {
@@ -255,18 +126,8 @@ proto.getCrs = function() {
   }
 };
 
-proto.getProjectCrs = function() {
-  if (this.config.projection) {
-    return this.config.projection.getCode();
-  }
-};
-
 proto.isWMS = function() {
-  return WMSServerTypes.indexOf(this.config.servertype) > -1;
-};
-
-proto.isWFS = function() {
-  return this.config.wfscapabilities == 1;
+  return GeoLayer.WMSServerTypes.indexOf(this.config.servertype) > -1;
 };
 
 proto.isExternalWMS = function() {
@@ -289,6 +150,14 @@ proto.getWmsUrl = function() {
   }
   else {
     url = this.config.wmsUrl;
+  }
+  return url;
+};
+
+proto.getQueryUrl = function() {
+  var url = base(this,'getQueryUrl');
+  if (this.getServerType() != 'QGIS') {
+    url+='SOURCE=wms';
   }
   return url;
 };
@@ -327,10 +196,10 @@ proto.getFeaturesStore = function() {
 };
 
 GeoLayer.WMSServerTypes = [
-  ServerTypes.QGIS,
-  ServerTypes.Mapserver,
-  ServerTypes.Geoserver,
-  ServerTypes.OGC
+  Layer.ServerTypes.QGIS,
+  Layer.ServerTypes.Mapserver,
+  Layer.ServerTypes.Geoserver,
+  Layer.ServerTypes.OGC
 ];
 
 

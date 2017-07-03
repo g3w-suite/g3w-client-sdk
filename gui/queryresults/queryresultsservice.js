@@ -105,21 +105,24 @@ function QueryResultsService() {
           layerId = layer.get('id');
           break;
       }
+
+      var layerObj = {
+        title: layerTitle,
+        id: layerId,
+        attributes: [],
+        features: [],
+        hasgeometry: false,
+        show: true,
+        expandable: true,
+        hasImageField: false, // regola che mi permette di vedere se esiste un campo image
+        relationsattributes: layerRelationsAttributes,
+        error: ''
+      };
+
       // verifico che ci siano feature legate a quel layer che sono il risultato della query
-      if (featuresForLayer.features.length) {
-        // se si vado a csotrure un layer object
-        var layerObj = {
-          title: layerTitle,
-          id: layerId,
-          // prendo solo gli attributi effettivamente ritornati dal WMS (usando la prima feature disponibile)
-          attributes: self._parseAttributes(layerAttributes, featuresForLayer.features[0].getProperties()),
-          features: [],
-          hasgeometry: false,
-          show: true,
-          expandable: true,
-          hasImageField: false, // regola che mi permette di vedere se esiste un campo image
-          relationsattributes: layerRelationsAttributes
-        };
+      if (featuresForLayer.features && featuresForLayer.features.length) {
+        // prendo solo gli attributi effettivamente ritornati dal WMS (usando la prima feature disponibile)
+        layerObj.attributes = self._parseAttributes(layerAttributes, featuresForLayer.features[0].getProperties()),
         // faccio una ricerca sugli attributi del layer se esiste un campo image
         // se si lo setto a true
         _.forEach(layerObj.attributes, function(attribute) {
@@ -148,6 +151,10 @@ function QueryResultsService() {
           id += 1;
         });
         layers.push(layerObj);
+      }
+      else if (featuresForLayer.error){
+        layerObj.error = featuresForLayer.error;
+        console.log(featuresForLayer.error);
       }
     });
     return layers;

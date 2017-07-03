@@ -3,16 +3,17 @@ var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var Feature = require('core/layers/features/feature');
 
-function DataProvider(options) {
+function Provider(options) {
   options = options || {};
   this._isReady = false;
   this._name = 'provider';
+  this._layer = options.layer;
   base(this);
 }
 
-inherit(DataProvider, G3WObject);
+inherit(Provider, G3WObject);
 
-var proto = DataProvider.prototype;
+var proto = Provider.prototype;
 
 proto.getFeatures = function() {
   console.log('da sovrascrivere')
@@ -45,11 +46,11 @@ proto.getName = function() {
 // Messo qui generale la funzione che si prende cura della trasformazione dell'xml di risposta
 // dal server così da avere una risposta coerente in termini di formato risultati da presentare
 // nel componente QueryResults
-proto.handleQueryResponseFromServer = function(response, infoFormat, queryLayer, ogcService) {
+proto.handleQueryResponseFromServer = function(response) {
+  var self = this;
   var jsonresponse;
-  var featuresForLayers = [];
-  var parser, data;
-  switch (infoFormat) {
+  var parser, data, features, error;
+  switch (this._layer.getInfoFormat()) {
     case 'json':
       parser = this._parseLayerGeoJSON;
       data = response.vector.data;
@@ -77,22 +78,29 @@ proto.handleQueryResponseFromServer = function(response, infoFormat, queryLayer,
           parser = this._parseLayermsGMLOutput;
           data = response;
           break;
+        case "ServiceExceptionReport":
+          error = 'an error occured while querying the layer';
+          if (jsonresponse.ServiceExceptionReport.ServiceException)  {
+            error = jsonresponse.ServiceExceptionReport.ServiceException.toString();
+          }
+        
       }
   }
   if (parser) {
-    var features = parser.call(self, queryLayer, data, ogcService);
-    featuresForLayers.push({
-      layer: queryLayer,
-      features: features
-    })
+    features = parser.call(self, data);
   }
-  return featuresForLayers;
+
+  return [{
+    layer: this._layer,
+    features: features,
+    error: error
+  }];
 };
 
 // Brutto ma per ora unica soluzione trovata per dividere per layer i risultati di un doc xml wfs.FeatureCollection.
 // OL3 li parserizza tutti insieme non distinguendo le features dei diversi layers
-proto._parseLayerFeatureCollection = function(queryLayer, data, ogcService) {
-  var layerName = (ogcService == 'wfs') ? queryLayer.getWMSLayerName().replace(/ /g,'_'): queryLayer.getWMSLayerName().replace(/ /g,''); // QGIS SERVER rimuove gli spazi dal nome del layer per creare l'elemento FeatureMember
+proto._parseLayerFeatureCollection = function(data, ogcService) {
+  var layerName = (this._layer.getServerType() == 'QGIS') ? this._layer.getWMSLayerName().replace(/ /g,'_'): this._layer.getWMSLayerName().replace(/ /g,''); // QGIS SERVER rimuove gli spazi dal nome del layer per creare l'elemento FeatureMember
   var layerData = _.cloneDeep(data);
   layerData.FeatureCollection.featureMember = [];
   var featureMembers = data.FeatureCollection.featureMember;
@@ -110,8 +118,8 @@ proto._parseLayerFeatureCollection = function(queryLayer, data, ogcService) {
 };
 
 // mentre con i risultati in msGLMOutput (da Mapserver) il parser può essere istruito per parserizzare in base ad un layer di filtro
-proto._parseLayermsGMLOutput = function(queryLayer, data, ogcService) {
-  var layers = queryLayer.getQueryLayerOrigName();
+proto._parseLayermsGMLOutput = function(data) {
+  var layers = this._layer.getQueryLayerOrigName();
   var parser = new ol.format.WMSGetFeatureInfo({
     layers: layers
   });
@@ -129,4 +137,4 @@ proto._parseLayerGeoJSON = function(data) {
 };
 
 
-module.exports = DataProvider;
+module.exports = Provider;
