@@ -126,17 +126,17 @@ proto._makeOlLayer = function(withLayers){
 proto.checkLayerDisabled = function(layer,resolution) {
   var scale = geo.resToScale(resolution);
   var enabled = true;
-  if (layer.state.maxresolution){
-    enabled = enabled && (layer.state.maxresolution > resolution);
+  if (layer.config.maxresolution){
+    enabled = enabled && (layer.config.maxresolution > resolution);
   }
-  if (layer.state.minresolution){
-    enabled = enabled && (layer.state.minresolution < resolution);
+  if (layer.config.minresolution){
+    enabled = enabled && (layer.config.minresolution < resolution);
   }
-  if (layer.state.minscale) {
-    enabled = enabled && (layer.state.minscale > scale);
+  if (layer.config.minscale) {
+    enabled = enabled && (layer.config.minscale > scale);
   }
-  if (layer.state.maxscale) {
-    enabled = enabled && (layer.state.maxscale < scale);
+  if (layer.config.maxscale) {
+    enabled = enabled && (layer.config.maxscale < scale);
   }
   layer.state.disabled = !enabled;
 };
