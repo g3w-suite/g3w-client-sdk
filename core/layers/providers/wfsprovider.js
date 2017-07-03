@@ -65,7 +65,7 @@ proto._doRequest = function(options) {
     SRSNAME:  crs
   };
   if (filter.bbox) {
-    params.BBOX = '' + filter.bbox;
+    params.BBOX = filter.bbox.join();
     request = this._get(url, params)
 
   } else {
