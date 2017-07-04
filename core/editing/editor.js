@@ -6,6 +6,8 @@ function Editor(layer){
   base(this);
 
   this._layer = layer;
+
+
 }
 inherit(Editor, G3WObject);
 

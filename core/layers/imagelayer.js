@@ -2,6 +2,7 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var mixin = require('core/utils/utils').mixin;
 var Layer = require('core/layers/layer');
+var VectorLayer = require('./vectorlayer');
 var GeoLayerMixin = require('./geolayermixin');
 
 function ImageLayer(config) {
@@ -49,14 +50,10 @@ var proto = ImageLayer.prototype;
 
 
 proto.getEditingLayer = function() {
-  var vectorLayer = _.cloneDeep(this);
-  vectorLayer.config.servertype = 'vector';
-  // vado a creare il featuresStore che si prenderà cura del recupero
-  // dati (attraverso il suo provider) e salvataggio features
-  vectorLayer._featuresStore = new FeaturesStore({
-    //dataprovider: this._getDataProvider()
-  });
-  return vectorLayer;
+  if (this.isEditable()) {
+    var config = _.cloneDeep(this.config);
+    return new VectorLayer(config);
+  }
 };
 
 proto.isBaseLayer = function() {

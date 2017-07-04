@@ -157,14 +157,19 @@ proto.isQueryable = function() {
 };
 
 proto.isFilterable = function() {
-  return this.providers.filter != undefined;
-  // lo deve implementare il server
+  // useremo Layer.CAPABILITIES.FILTERABLE
   // return this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.FILTERABLE);
+
+  // per ora facciamo così
+  return this.providers.filter != undefined;
 };
 
 proto.isEditable = function() {
-  // lo deve implementare il server
-  return this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.EDITABLE);
+  // useremo Layer.CAPABILITIES.EDITABLE appena il server l'avrà implementato
+  //return this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.EDITABLE);
+
+  // per ora facciamo così
+  return this.config.servertype == 'QGIS' && [Layer.SourceTypes.POSTGIS,Layer.SourceTypes.SPATIALITE].indexOf(this.config.source.type) > -1;
 };
 
 proto.query = function(options) {

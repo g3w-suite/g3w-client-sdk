@@ -1,14 +1,18 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var Layer = require('./layer');
+var Editor = require('core/editing/editor');
+var FeaturesStore = require('./features/featuresstore');
 
 function TableLayer(config) {
   base(this, config);
 
   this.config.type = Layer.LayerTypes.TABLE;
 
-  this._editor = null;
-  this._featuresStore = null;
+  this._editor = new Editor(this);
+  this._featuresStore = new FeaturesStore({
+    provider: this.providers.data
+  });
 }
 inherit(TableLayer, Layer);
 
@@ -23,16 +27,7 @@ proto.setEditor = function(editor) {
 };
 
 proto._startEditing = function() {
-  if (!this._editingLayer) {
-    console.log("Call startEditing() on the layer returned by getEditingLayer()");
-    return;
-  }
-  if (this._editingLayer != this) {
-    console.log("This layer is a proxy for the true editing layer. Cass startEditing() on it.");
-    return;
-  }
-  console.log('start Editing');
-  //this.editor.start();
+  console.log('start editing');
 };
 
 proto._stopEditing = function() {

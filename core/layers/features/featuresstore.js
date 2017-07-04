@@ -7,7 +7,7 @@ function FeaturesStore(options) {
   var self = this;
   options = options || {};
   this._features = [];
-  this._dataprovider = options.dataprovider || null;
+  this._provider = options.provider || null;
   this.setters = {
     addFeatures: function(features) {
       _.forEach(features, function(feature) {
@@ -35,7 +35,7 @@ proto = FeaturesStore.prototype;
 proto.getFeatures = function(options) {
   var self = this;
   var d = $.Deferred();
-  this._dataprovider.getFeatures(options)
+  this._provider.getFeatures(options)
     .then(function(features) {
       console.log(features);
       // il provider ritornerà 
