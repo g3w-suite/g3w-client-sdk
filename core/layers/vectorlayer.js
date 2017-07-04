@@ -49,8 +49,4 @@ mixin(VectorLayer, GeoLayerMixin);
 
 var proto = VectorLayer.prototype;
 
-proto.getFeaturesStore = function() {
-  return this._featuresStore;
-};
-
 module.exports = VectorLayer;

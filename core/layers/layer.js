@@ -36,12 +36,6 @@ function Layer(config) {
     hidden: config.hidden || false
   };
 
-  // contiene l'editor associato al layer
-  this._editingLayer = null;
-  this.editor = null;
-  // Query Provider server a poter effettuare chiamate di informazione sul layer
-  // es. query, quey bbox etc...
-  // struttura campi del layer
   this.fields = config.fields;
   // relations
   this.relations = config.relations || null; // da vedere com gestirle
@@ -95,57 +89,8 @@ proto.getState = function() {
   return this.state;
 };
 
-proto.getEditor = function() {
-  return this.editor;
-};
-
-proto.setEditor = function(editor) {
-  this.editor = editor;
-};
-
 proto.getEditingLayer = function() {
-  if (this._editingLayer == undefined) {
-
-  }
-};
-
-proto._startEditing = function() {
-  if (!this._editingLayer) {
-    console.log("Call startEditing() on the layer returned by getEditingLayer()");
-    return;
-  }
-  if (this._editingLayer != this) {
-    console.log("This layer is a proxy for the true editing layer. Cass startEditing() on it.");
-    return;
-  }
-  console.log('start Editing');
-  //this.editor.start();
-};
-
-proto._stopEditing = function() {
-  console.log('stop editing');
-  // this.editor.stop()
-};
-
-// funzione per la lettura dei dati precedentemente acquisiti dal provider
-proto.readFeatures = function() {
-  return this._featuresStore.readFeatures();
-};
-
-proto._clearFeatures = function() {
-  this._featuresStore.clearFeatures();
-};
-
-
-// funzione che recupera i dati da qualsisasi fonte (server, wms, etc..)
-proto.getFeatures = function(options) {
-  var self = this;
-  var d = $.Deferred();
-  this._featuresStore.getFeatures(options)
-    .then(function(features) {
-      return d.resolve(features);
-    });
-  return d.promise();
+  return self;
 };
 
 proto.isHidden = function() {
@@ -159,10 +104,6 @@ proto.setHidden = function(bool) {
 proto.isModified = function() {
   //medodo che stbilisce se modificato o no
   return this.state.modified;
-};
-
-proto.getDataProvider = function() {
-  return this.dataprovider;
 };
 
 proto.getId = function() {
@@ -181,53 +122,13 @@ proto.getOrigName = function() {
   return this.config.origname;
 };
 
-proto.getAttributes = function() {
-  return this.fields;
-};
-
-proto.changeAttribute = function(attribute, type, options) {
-  _.forEach(this.fields, function(field) {
-    if (field.name == attribute) {
-      field.type = type;
-      field.options = options;
-    }
-  })
-};
-
-proto.getAttributeLabel = function(name) {
-  var label;
-  _.forEach(this.getAttributes(),function(field){
-    if (field.name == name){
-      label = field.label;
-    }
-  });
-  return label;
-};
-
-// restituisce tutte le relazioni legati a quel layer
-proto.getRelations = function() {
-  return this.state.relations
-};
-
-//restituisce gli attributi fields di una deterninata relazione
-proto.getRelationAttributes = function(relationName) {
-  var fields = [];
-  _.forEach(this.state.relations, function(relation) {
-    if (relation.name == relationName) {
-      fields = relation.fields;
-      return false
-    }
-  });
-  return fields;
-};
-
-// retituisce un oggetto contenente nome relazione e fileds(attributi) associati
-proto.getRelationsAttributes = function() {
-  var fields = {};
-  _.forEach(this.state.relations, function(relation) {
-    fields[relation.name] = relation.fields;
-  });
-  return fields;
+proto.getServerType = function() {
+  if (this.config.servertype && this.config.servertype != '') {
+    return this.config.servertype;
+  }
+  else {
+    return ServerTypes.QGIS;
+  }
 };
 
 proto.isSelected = function() {
@@ -242,18 +143,9 @@ proto.isVisible = function() {
   return this.state.visible;
 };
 
-proto.getServerType = function() {
-  if (this.config.servertype && this.config.servertype != '') {
-    return this.config.servertype;
-  }
-  else {
-    return ServerTypes.QGIS;
-  }
-};
-
 proto.isQueryable = function() {
   var queryEnabled = false;
-  var queryableForCababilities = (this.config.capabilities && (this.config.capabilities && Layer.CAPABILITIES.QUERY)) ? true : false;
+  var queryableForCababilities = this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.QUERYABLE);
   if (queryableForCababilities) {
     // è interrogabile se visibile e non disabilitato (per scala) oppure se interrogabile comunque (forzato dalla proprietà infowhennotvisible)
     queryEnabled = (this.state.visible && !this.state.disabled);
@@ -262,6 +154,17 @@ proto.isQueryable = function() {
     }
   }
   return queryEnabled;
+};
+
+proto.isFilterable = function() {
+  return this.providers.filter != undefined;
+  // lo deve implementare il server
+  // return this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.FILTERABLE);
+};
+
+proto.isEditable = function() {
+  // lo deve implementare il server
+  return this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.EDITABLE);
 };
 
 proto.query = function(options) {
@@ -338,42 +241,58 @@ proto.setInfoFormat = function(infoFormat) {
   this.state.infoformat = infoFormat;
 };
 
-proto.isFilterable = function() {
-  return this.providers.filter != undefined;
+proto.getAttributes = function() {
+  return this.fields;
+};
+
+proto.changeAttribute = function(attribute, type, options) {
+  _.forEach(this.fields, function(field) {
+    if (field.name == attribute) {
+      field.type = type;
+      field.options = options;
+    }
+  })
+};
+
+proto.getAttributeLabel = function(name) {
+  var label;
+  _.forEach(this.getAttributes(),function(field){
+    if (field.name == name){
+      label = field.label;
+    }
+  });
+  return label;
+};
+
+// restituisce tutte le relazioni legati a quel layer
+proto.getRelations = function() {
+  return this.state.relations
+};
+
+//restituisce gli attributi fields di una deterninata relazione
+proto.getRelationAttributes = function(relationName) {
+  var fields = [];
+  _.forEach(this.state.relations, function(relation) {
+    if (relation.name == relationName) {
+      fields = relation.fields;
+      return false
+    }
+  });
+  return fields;
+};
+
+// retituisce un oggetto contenente nome relazione e fileds(attributi) associati
+proto.getRelationsAttributes = function() {
+  var fields = {};
+  _.forEach(this.state.relations, function(relation) {
+    fields[relation.name] = relation.fields;
+  });
+  return fields;
 };
 
 proto.getProvider = function(type) {
   return this.providers[type];
 };
-
-
-// SOLO GeoLayer implementa i seguenti metodi
-
-proto.getGeometryType = function() {};
-
-proto.setProjection = function(crs,proj4) {};
-
-proto.getProjection = function() {};
-
-proto.getCrs = function() {};
-
-proto.getProjectCrs = function() {};
-
-proto.isWMS = function() {return false};
-
-proto.isWFS = function() {return false};
-
-proto.isExternalWMS = function() {};
-
-proto.getWMSLayerName = function() {};
-
-proto.getWFSLayerName = function() {};
-
-proto.isCached = function() {return false};
-
-proto.getCacheUrl = function(){};
-
-proto.getWfsCapabilities = function() {};
 
 Layer.LayerTypes = {
   TABLE: "table",
@@ -400,8 +319,9 @@ Layer.SourceTypes = {
 };
 
 Layer.CAPABILITIES = {
-  QUERY: 1,
-  EDIT: 2
+  QUERYABLE: 1,
+  FILTERABLE: 3,
+  EDITABLE: 5
 };
 
 Layer.EDITOPS = {

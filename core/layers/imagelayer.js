@@ -47,7 +47,8 @@ mixin(ImageLayer, GeoLayerMixin);
 
 var proto = ImageLayer.prototype;
 
-proto.getVectorLayer = function() {
+
+proto.getEditingLayer = function() {
   var vectorLayer = _.cloneDeep(this);
   vectorLayer.config.servertype = 'vector';
   // vado a creare il featuresStore che si prenderà cura del recupero
@@ -57,9 +58,6 @@ proto.getVectorLayer = function() {
   });
   return vectorLayer;
 };
-
-
-
 
 proto.isBaseLayer = function() {
   return this.config.baselayer;
