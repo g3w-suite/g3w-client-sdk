@@ -1,7 +1,8 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
-var GeoLayer = require('core/layers/geolayer');
+var LayerFactory = require('core/layers/layerfactory');
+var ImageLayer = require('core/layers/imagelayer');
 var LayersStore = require('core/layers/layersstore');
 var Projections = require('g3w-ol3/src/projection/projections');
 
@@ -106,7 +107,7 @@ proto._buildLayersStore = function() {
   _.forEach(this.getLayers(), function(layerConfig) {
     // aggiungo la proiezione
     layerConfig.projection = self._projection;
-    var layer = new GeoLayer(layerConfig);
+    var layer = LayerFactory.build(layerConfig);
     layersStore.addLayer(layer);
   });
 

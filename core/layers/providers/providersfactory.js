@@ -24,6 +24,11 @@ var ProvidersForServerTypes = {
       filter: Providers.wfs,
       data: null
     },
+    'delimitedtext': {
+      query: Providers.wms,
+      filter: Providers.wfs,
+      data: null
+    },
     'wms': {
       query: Providers.wms,
       filter: Providers.wfs,

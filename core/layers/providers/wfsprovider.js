@@ -24,7 +24,7 @@ proto.query = function(options) {
   var d = $.Deferred();
   this._doRequest(filter)
     .done(function(response) {
-      var featuresForLayers = self.handleQueryResponseFromServer(response);
+      var featuresForLayers = self.handleQueryResponseFromServer(response,'wfs');
       d.resolve({
         data: featuresForLayers
       });

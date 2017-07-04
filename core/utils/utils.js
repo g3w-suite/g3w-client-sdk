@@ -60,11 +60,11 @@ var Base64 = {_keyStr:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234
 
 
 var utils = {
-  mixin: function mixin(destination, source) {
+  basemixin: function mixin(destination, source) {
       return utils.merge(destination.prototype, source);
   },
   
-  mixininstance: function mixininstance(destination,source){
+  mixin: function mixininstance(destination,source){
       var sourceInstance = new source;
       utils.merge(destination, sourceInstance);
       utils.merge(destination.prototype, source.prototype);

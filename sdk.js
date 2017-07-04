@@ -20,9 +20,10 @@ g3w.core = {
   layer: {
     LayersStoreRegistry: require('core/layers/layersstoresregistry'), //nel caso un plugin volesse instanziare un layersstoreregistry proprio
     LayersStore: require('core/layers/layersstore'),
-    Layer: require('core/layers/layer'),
-    GeoLayer: require('core/layers/geolayer'),
-    VectorLayer: require('core/map/layer/vectorlayer'),
+    LayerFactory: require('core/layers/layerfactory'),
+    TableLayer: require('core/layers/tablelayer'),
+    VectorLayer: require('core/layers/vectorlayer'),
+    ImageLayer: require('core/layers/imagelayer'),
     WmsLayer: require('core/map/layer/wmslayer'),
     VectorLayerLoader: require('core/map/layer/loader/vectorloaderlayer'),
     geometry: {

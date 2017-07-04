@@ -3,16 +3,6 @@ var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
 var ProviderFactory = require('core/layers/providers/providersfactory');
 
-var ServerTypes = {
-  OGC: "OGC",
-  QGIS: "QGIS",
-  Mapserver: "Mapserver",
-  Geoserver: "Geoserver",
-  ArcGIS: "ArcGIS",
-  OSM: "OSM",
-  Bing: "Bing"
-};
-
 function Layer(config) {
   var self = this;
   config = config || {};
@@ -28,9 +18,10 @@ function Layer(config) {
     infourl: config.infourl || null,
     servertype: config.servertype || null,
     source: config.source || null,
+    type: Layer.LayerTypes.TABLE,
     geolayer: false
   },config);
-  
+
   // contiene la parte dinamica del layer
   //this.state = config; // questo fa in modo che il catalog reagisca al mutamento
   // delle proprietà dinamiche (select, disable, visible)
@@ -46,6 +37,7 @@ function Layer(config) {
   };
 
   // contiene l'editor associato al layer
+  this._editingLayer = null;
   this.editor = null;
   // Query Provider server a poter effettuare chiamate di informazione sul layer
   // es. query, quey bbox etc...
@@ -111,8 +103,22 @@ proto.setEditor = function(editor) {
   this.editor = editor;
 };
 
+proto.getEditingLayer = function() {
+  if (this._editingLayer == undefined) {
+
+  }
+};
+
 proto._startEditing = function() {
-  console.log('start Editing')
+  if (!this._editingLayer) {
+    console.log("Call startEditing() on the layer returned by getEditingLayer()");
+    return;
+  }
+  if (this._editingLayer != this) {
+    console.log("This layer is a proxy for the true editing layer. Cass startEditing() on it.");
+    return;
+  }
+  console.log('start Editing');
   //this.editor.start();
 };
 
@@ -369,6 +375,12 @@ proto.getCacheUrl = function(){};
 
 proto.getWfsCapabilities = function() {};
 
+Layer.LayerTypes = {
+  TABLE: "table",
+  IMAGE: "image",
+  VECTOR: "vector"
+};
+
 Layer.ServerTypes = {
   OGC: "OGC",
   QGIS: "QGIS",
@@ -377,7 +389,14 @@ Layer.ServerTypes = {
   ArcGIS: "ArcGIS",
   OSM: "OSM",
   Bing: "Bing",
-  File: "File"
+  Local: "Local"
+};
+
+Layer.SourceTypes = {
+  POSTGIS: 'postgres',
+  SPATIALITE: 'spatialite',
+  CSV: 'delimitedtext',
+  WMS: 'wms'
 };
 
 Layer.CAPABILITIES = {

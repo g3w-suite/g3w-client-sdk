@@ -1,7 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var ProjectsRegistry = require('core/project/projectsregistry');
-var GeoLayer = require('core/layers/geolayer');
+var Layer = require('core/layers/layer');
 var GUI = require('gui/gui');
 var G3WObject = require('core/g3wobject');
 var VectorLayer = require('core/map/layer/vectorlayer');
@@ -91,20 +91,18 @@ function QueryResultsService() {
       // prendo il layer
       var layer = featuresForLayer.layer;
       // verifico che tipo ti vector layer ci sono
-      switch (layer.constructor) {
-        case GeoLayer:
-          layerAttributes = layer.getAttributes();
-          layerRelationsAttributes =  layer.getRelationsAttributes();
-          layerTitle = layer.getTitle();
-          layerId = layer.getId();
-          break;
-        case ol.layer.Vector:
-          layerAttributes = layer.getProperties();
-          layerRelationsAttributes =  [];
-          layerTitle = layer.get('name');
-          layerId = layer.get('id');
-          break;
+      if (layer instanceof Layer) {
+        layerAttributes = layer.getAttributes();
+        layerRelationsAttributes = layer.getRelationsAttributes();
+        layerTitle = layer.getTitle();
+        layerId = layer.getId();
       }
+      else if (layer instanceof ol.layer.Vector){
+        layerAttributes = layer.getProperties();
+        layerRelationsAttributes =  [];
+        layerTitle = layer.get('name');
+        layerId = layer.get('id');
+      };
 
       var layerObj = {
         title: layerTitle,

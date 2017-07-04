@@ -46,7 +46,7 @@ proto.getName = function() {
 // Messo qui generale la funzione che si prende cura della trasformazione dell'xml di risposta
 // dal server così da avere una risposta coerente in termini di formato risultati da presentare
 // nel componente QueryResults
-proto.handleQueryResponseFromServer = function(response) {
+proto.handleQueryResponseFromServer = function(response, ogcservice) {
   var self = this;
   var jsonresponse;
   var parser, data, features, error;
@@ -87,7 +87,7 @@ proto.handleQueryResponseFromServer = function(response) {
       }
   }
   if (parser) {
-    features = parser.call(self, data);
+    features = parser.call(self, data, ogcservice);
   }
 
   return [{
@@ -100,7 +100,7 @@ proto.handleQueryResponseFromServer = function(response) {
 // Brutto ma per ora unica soluzione trovata per dividere per layer i risultati di un doc xml wfs.FeatureCollection.
 // OL3 li parserizza tutti insieme non distinguendo le features dei diversi layers
 proto._parseLayerFeatureCollection = function(data, ogcService) {
-  var layerName = (this._layer.getServerType() == 'QGIS') ? this._layer.getWMSLayerName().replace(/ /g,'_'): this._layer.getWMSLayerName().replace(/ /g,''); // QGIS SERVER rimuove gli spazi dal nome del layer per creare l'elemento FeatureMember
+  var layerName = (ogcService == 'wfs') ? this._layer.getWMSLayerName().replace(/ /g,'_'): this._layer.getWMSLayerName().replace(/ /g,''); // QGIS SERVER rimuove gli spazi dal nome del layer per creare l'elemento FeatureMember
   var layerData = _.cloneDeep(data);
   layerData.FeatureCollection.featureMember = [];
   var featureMembers = data.FeatureCollection.featureMember;
