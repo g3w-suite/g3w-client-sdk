@@ -36,8 +36,9 @@ function ImageLayer(config) {
   }*/
   base(this, config);
 
-  this.config.type = Layer.LayerTypes.IMAGE;
   this.config.baselayer = config.baselayer || false;
+
+  this.type = Layer.LayerTypes.IMAGE;
 
   // vado a modificare lo state aggiungendo il bbox e l'informazione geolayer
   this.setup(config);

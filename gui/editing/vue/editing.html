@@ -1,0 +1,24 @@
+<div class="g3w-editing-panel">
+  <template v-for="control in editorcontrols">
+    <div class="panel panel-primary">
+      <div class="panel-heading">
+        <h3 class="panel-title">{{ control.name }}</h3>
+      </div>
+      <div class="panel-body">
+        <button class="btn btn-default" @click="toggleEditing(control)" :alt="labels.save" :title="labels.save" :class="{'enabled': (control.enabled)}">
+          <span class="glyphicon glyphicon-pencil" style="vertical-align:middle"></span> Centered
+        </button>
+        <button class="btn btn-default" v-disabled="!control.editing.dirty" @click="saveEdits" :alt="startorstop" :title="startorstop" :class="{'enabled': (control.editing.on)}">
+          <span class="glyphicon glyphicon glyphicon-floppy-save" style="vertical-align:middle"></span> Centered
+        </button>
+        <template v-for="tool in control.tools">
+          <div class="editbtn" :class="{'enabled' : (control.editing.on && tool.enabled), 'toggled' : tool.started}">
+            <img height="30px" width="30px" @click="toggletool(tool)" :alt="tool.name" :title="tool.name" :src="resourcesurl+'images/'+tool.icon"/>
+          </div>
+        </template>
+        <img v-show="control.loading" :src="resourcesurl +'images/loader.svg'">
+      </div>
+    </div>
+  </template>
+  <div class="message" v-html="message"></div>
+</div>

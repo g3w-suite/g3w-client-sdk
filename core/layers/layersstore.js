@@ -91,6 +91,7 @@ proto.getLayersDict = function(options) {
   var filterActive = options.ACTIVE;
   var filterQueryable = options.QUERYABLE;
   var filterFilterable = options.FILTERABLE;
+  var filterEditable = options.EDITABLE;
   var filterVisible = options.VISIBLE;
   var filterSelected = options.SELECTED;
   var filterCached = options.CACHED;
@@ -106,6 +107,7 @@ proto.getLayersDict = function(options) {
   }
   if (_.isUndefined(filterQueryable)
     && _.isUndefined(filterFilterable)
+    && _.isUndefined(filterEditable)
     && _.isUndefined(filterVisible)
     && _.isUndefined(filterActive)
     && _.isUndefined(filterSelected)
@@ -138,6 +140,12 @@ proto.getLayersDict = function(options) {
   if (typeof filterFilterable == 'boolean') {
     layers = _.filter(layers,function(layer) {
       return filterFilterable == layer.isFilterable();
+    });
+  }
+
+  if (typeof filterEditable == 'boolean') {
+    layers = _.filter(layers,function(layer) {
+      return filterEditable == layer.isEditable();
     });
   }
 

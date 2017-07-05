@@ -7,7 +7,7 @@ var FeaturesStore = require('./features/featuresstore');
 function TableLayer(config) {
   base(this, config);
 
-  this.config.type = Layer.LayerTypes.TABLE;
+  this.type = Layer.LayerTypes.TABLE;
 
   this._editor = new Editor(this);
   this._featuresStore = new FeaturesStore({

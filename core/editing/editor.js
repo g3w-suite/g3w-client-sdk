@@ -6,11 +6,13 @@ function Editor(layer){
   base(this);
 
   this._layer = layer;
-
-
 }
 inherit(Editor, G3WObject);
 
 var proto = Editor.prototype;
+
+proto.getLayer = function() {
+  return this._layer;
+};
 
 module.exports = Editor;

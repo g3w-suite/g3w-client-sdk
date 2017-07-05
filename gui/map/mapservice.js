@@ -11,6 +11,7 @@ var Filter = require('core/layers/filter/filter');
 var WFSProvider = require('core/layers/providers/wfsprovider');
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 var WMSLayer = require('core/map/layer/wmslayer');
+var XYZLayer = require('core/map/layer/xyzlayer');
 var ControlsFactory = require('gui/map/control/factory');
 var StreetViewService = require('gui/streetview/streetviewservice');
 var ControlsRegistry = require('gui/map/control/registry');

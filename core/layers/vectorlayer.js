@@ -36,7 +36,7 @@ function VectorLayer(config) {
 
   base(this,config);
 
-  this.config.type = Layer.LayerTypes.VECTOR;
+  this.type = Layer.LayerTypes.VECTOR;
 
   // vado a modificare lo state aggiungendo il bbox e l'informazione geolayer
   _.extend(this.state, {

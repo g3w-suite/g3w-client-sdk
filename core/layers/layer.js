@@ -18,7 +18,6 @@ function Layer(config) {
     infourl: config.infourl || null,
     servertype: config.servertype || null,
     source: config.source || null,
-    type: Layer.LayerTypes.TABLE,
     geolayer: false
   },config);
 
@@ -35,6 +34,8 @@ function Layer(config) {
     modified: false,
     hidden: config.hidden || false
   };
+
+  this.type = null;
 
   this.fields = config.fields;
   // relations
@@ -129,6 +130,10 @@ proto.getServerType = function() {
   else {
     return ServerTypes.QGIS;
   }
+};
+
+proto.getType = function() {
+  return this.type;
 };
 
 proto.isSelected = function() {

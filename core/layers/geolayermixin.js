@@ -70,7 +70,7 @@ proto.getCrs = function() {
 };
 
 proto.isCached = function() {
-  return this.config.cache_url && this.config.cache_url != '' ? true : false;
+  return this.config.cache_url && this.config.cache_url != '';
 };
 
 proto.getCacheUrl = function(){
