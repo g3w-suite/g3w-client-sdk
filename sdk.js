@@ -57,12 +57,7 @@ g3w.core = {
   },
   workflow: {
     Step: require('core/workflow/step'),
-    Workflow: equire('core/workflow/workflow')
-  },
-  editor: {
-    Editor: require('core/editing_old/editor'),
-    EditBuffer: require('core/editing_old/editbuffer'),
-    RelationEditBuffer: require('core/editing_old/relationeditbuffer')
+    Workflow: require('core/workflow/workflow')
   }
 };
 
@@ -79,8 +74,7 @@ g3w.gui = {
     MapComponent: require('gui/map/vue/map'),
     ToolsComponent: require('gui/tools/vue/tools'),
     QueryResultsComponent : require('gui/queryresults/vue/queryresults'),
-    FormComponent: require('gui/form/vue/form'),
-    EditingComponent: require('gui/editing_old/vue/editing')
+    FormComponent: require('gui/form/vue/form')
   }
 };
 
@@ -88,7 +82,7 @@ g3w.ol3 = {
   interactions : {
     PickFeatureInteraction : require('g3w-ol3/src/interactions/pickfeatureinteraction'),
     PickCoordsInteraction: require('g3w-ol3/src/interactions/pickcoordinatesinteraction'),
-    DeleteInteraction: require('g3w-ol3/src/interactions/deleteinteraction')
+    DeleteFeatureInteraction: require('g3w-ol3/src/interactions/deletefeatureinteraction')
   },
   controls: {
   }
