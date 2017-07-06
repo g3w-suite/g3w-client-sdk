@@ -25,6 +25,14 @@ inherit(LayersStoresRegistry, G3WObject);
 
 proto = LayersStoresRegistry.prototype;
 
+proto.getLayers = function(filter) {
+  var layers = [];
+  _.forEach(this.stores, function(layerStore) {
+    layers.concat(layerStore.getLayers(filter))
+  });
+  return layers;
+};
+
 proto.getLayersStore = function(id) {
   return this.stores[id];
 };

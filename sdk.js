@@ -7,12 +7,24 @@ g3w.core = {
   ApiService: require('core/apiservice'),
   Router: require('core/router'),
   i18n: require('core/i18n/i18n.service'),
+  editing: {
+    Session: require('core/editing/session'),
+    Editor: require('core/editing/editor')
+  },
+  geometry: {
+    Geom: require('core/geometry/geom'),
+    Geometry: require('core/geometry/geometry')
+  },
   project: {
     ProjectsRegistry: require('core/project/projectsregistry'),
     Project: require('core/project/project')
   },
   map: {
-    MapLayersStoreRegistry: require('core/map/maplayersstoresregistry')
+    MapLayersStoreRegistry: require('core/map/maplayersstoresregistry'),
+    layer: {
+      WmsLayer: require('core/map/layer/wmslayer'),
+      VectorLayerLoader: require('core/map/layer/loader/vectorloaderlayer'),
+    }
   },
   catalog: {
     CatalogLayersStoresRegistry: require('core/catalog/cataloglayersstoresregistry')
@@ -20,12 +32,11 @@ g3w.core = {
   layer: {
     LayersStoreRegistry: require('core/layers/layersstoresregistry'), //nel caso un plugin volesse instanziare un layersstoreregistry proprio
     LayersStore: require('core/layers/layersstore'),
+    Layer: require('core/layers/layer'),
     LayerFactory: require('core/layers/layerfactory'),
     TableLayer: require('core/layers/tablelayer'),
     VectorLayer: require('core/layers/vectorlayer'),
     ImageLayer: require('core/layers/imagelayer'),
-    WmsLayer: require('core/map/layer/wmslayer'),
-    VectorLayerLoader: require('core/map/layer/loader/vectorloaderlayer'),
     geometry: {
       Geometry: require('core/geometry/geometry'),
       geom: require('core/geometry/geom')
@@ -43,6 +54,10 @@ g3w.core = {
     Plugin: require('core/plugin/plugin'),
     PluginsRegistry: require('core/plugin/pluginsregistry'),
     PluginService: require('core/plugin/pluginservice')
+  },
+  workflow: {
+    Step: require('core/workflow/step'),
+    Workflow: equire('core/workflow/workflow')
   },
   editor: {
     Editor: require('core/editing_old/editor'),
@@ -71,7 +86,9 @@ g3w.gui = {
 
 g3w.ol3 = {
   interactions : {
-    PickFeatureInteraction : require('g3w-ol3/src/interactions/pickfeatureinteraction')
+    PickFeatureInteraction : require('g3w-ol3/src/interactions/pickfeatureinteraction'),
+    PickCoordsInteraction: require('g3w-ol3/src/interactions/pickcoordinatesinteraction'),
+    DeleteInteraction: require('g3w-ol3/src/interactions/deleteinteraction')
   },
   controls: {
   }
