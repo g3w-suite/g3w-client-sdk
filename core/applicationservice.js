@@ -7,9 +7,12 @@ var ProjectsRegistry = require('core/project/projectsregistry');
 var PluginsRegistry = require('core/plugin/pluginsregistry');
 var ClipboardService = require('core/clipboardservice');
 
+var G3W_VERSION = "{G3W_VERSION}";
+
 //oggetto servizio per la gestione dell'applicazione
 var ApplicationService = function() {
   var self = this;
+  this.version = G3W_VERSION.indexOf("G3W_VERSION") == -1 ? G3W_VERSION  : "";
   this.secret = "### G3W Client Application Service ###";
   this.ready = false;
   this.complete = false;
