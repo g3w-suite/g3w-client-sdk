@@ -11,12 +11,12 @@ var ProvidersForServerTypes = {
   'QGIS': {
     'postgres': {
       query: Providers.wms,
-      filter: Providers.qgis,
+      filter: Providers.wfs,
       data: Providers.qgis
     },
     'spatialite': {
       query: Providers.wms,
-      filter: Providers.qgis,
+      filter: Providers.wfs,
       data: Providers.qgis
     },
     'ogr': {
