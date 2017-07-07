@@ -528,6 +528,9 @@ proto.setupControls = function(){
           break;
         case 'overview':
           if (!isMobile.any) {
+            if (!self.config.overviewproject) {
+              return
+            }
             var overviewProjectGid = self.config.overviewproject.gid;
             if (overviewProjectGid) {
               ProjectsRegistry.getProject(overviewProjectGid)
