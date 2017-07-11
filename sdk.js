@@ -41,6 +41,10 @@ g3w.core = {
       Geometry: require('core/geometry/geometry'),
       geom: require('core/geometry/geom')
     },
+    features: {
+      Feature: require('core/layers/features/feature'),
+      FeaturesStore: require('core/layers/features/featuresstore')
+    },
     MapLayer: require('core/map/layer/maplayer')
   },
   query: {
@@ -57,6 +61,7 @@ g3w.core = {
   },
   workflow: {
     Step: require('core/workflow/step'),
+    Flow: require('core/workflow/flow'),
     Workflow: require('core/workflow/workflow')
   }
 };
