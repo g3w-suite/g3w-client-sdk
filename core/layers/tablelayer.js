@@ -4,16 +4,38 @@ var Layer = require('./layer');
 var Editor = require('core/editing/editor');
 var FeaturesStore = require('./features/featuresstore');
 
+// Layer di base su cui si possono fare operazioni di editing
 function TableLayer(config) {
+  
+  // setters
+  this.setters = {
+    //funzione che segnala lo start editing
+    startEditing: function() {
+      this._startEditing();
+    },
+    // segnalazione stop editing
+    stopEditing: function() {
+      this._stopEditing();
+    },
+    // cancellazione di tutte le features del layer
+    clearFeatures: function() {
+      this._clearFeatures();
+    }
+  };
+
   base(this, config);
 
   this.type = Layer.LayerTypes.TABLE;
-
-  this._editor = new Editor(this);
+  // istanzia un editor alla sua creazione
+  this._editor = new Editor({
+    layer: this
+  });
+  // viene istanziato un featiresstore
   this._featuresStore = new FeaturesStore({
     provider: this.providers.data
   });
 }
+
 inherit(TableLayer, Layer);
 
 var proto = TableLayer.prototype;

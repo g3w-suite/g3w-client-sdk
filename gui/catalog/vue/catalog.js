@@ -89,7 +89,7 @@ var vueComponentOptions = {
         if (layer)
           return false;
       });
-      layer.getFeatures();
+      layer.getLayerForEditing();
     },
     closeLayerMenu: function() {
       this.layerMenu.show = false;

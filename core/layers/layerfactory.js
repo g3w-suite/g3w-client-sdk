@@ -3,10 +3,11 @@ var TableLayer = require('./tablelayer');
 var VectorLayer = require('./vectorlayer');
 var ImageLayer = require('./imagelayer');
 
-
+// oggetto che ha il compito di costruire
+// l'istanza Layer a seconda della configurazione
 function LayerFactory() {
   this.build = function(config) {
-    // ritorna l'sitanza del provider selezionato
+    // ritorna l'istanza del layer in base alla configurazione
     var layerClass = this.get(config);
     if (layerClass) {
       return new layerClass(config);
@@ -17,16 +18,19 @@ function LayerFactory() {
   this.get = function(config) {
     var LayerClass;
     var serverType = config.servertype;
+    // server QGIS
     if (serverType == 'QGIS') {
+      // imposto subito a ImageLayer
       LayerClass = ImageLayer;
       if (config.source && config.geometrytype) {
-        if ([Layer.SourceTypes.POSTGIS,Layer.SourceTypes.SPATIALITE,Layer.SourceTypes.CSV].indexOf(config.source.type) > -1) {
+        if ([Layer.SourceTypes.POSTGIS, Layer.SourceTypes.SPATIALITE, Layer.SourceTypes.CSV].indexOf(config.source.type) > -1) {
           if (config.geometrytype && config.geometrytype == undefined) {
             LayerClass = TableLayer;
           }
         }
       }
     }
+    ///server OGC
     else if (serverType == 'OGC') {
       if (config.source) {
         var type = config.source.type;
@@ -39,6 +43,7 @@ function LayerFactory() {
         }
       }
     }
+    //Layer vettoriale caricato localmente
     else if (serverType == 'Local') {
       LayerClass = VectorLayer;
     }

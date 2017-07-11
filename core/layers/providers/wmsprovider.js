@@ -89,7 +89,6 @@ proto.query = function(options) {
       sourceParam = '';
     }
   }
-  
   var params = {
     LAYERS: this._layerName,
     QUERY_LAYERS: this._layerName,

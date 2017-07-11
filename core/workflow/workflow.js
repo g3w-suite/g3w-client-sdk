@@ -1,17 +1,21 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
+var Flow = require('./flow');
 
-function Worflow(){
+//classe che ha lo scopo generico di gestire un flusso
+// ordinato di passi (steps)
+function Workflow() {
   base(this);
 
   this._inputs = null;
   this._context = null;
   this._steps = [];
 }
-inherit(Worflow, G3WObject);
 
-var proto = Worflow.prototype;
+inherit(Workflow, G3WObject);
+
+var proto = Workflow.prototype;
 
 proto.getInputs = function() {
   return this._inputs;
@@ -33,12 +37,25 @@ proto.getSteps = function() {
   return this._steps;
 };
 
-proto.start = function(inputs, context) {
+proto.getSteps = function(index) {
+  return this._steps[index];
+};
+
+proto.getLastStep = function() {
+  var length = this._steps.length;
+  if (length) {
+    return this._steps[length]
+  }
+  return null;
+};
+
+// metodo che permette di avviare il workflow
+proto.start = function(inputs, context, flow) {
   var d = $.Deferred();
   this._inputs = inputs;
   this._context = context;
-  var flow = new Worflow.Flow();
-  flow.start(workflow).
+  var flow = flow || Flow();
+  flow.start(this). //ritorna una promessa
     then(function(outputs) {
       d.resolve(outputs);
     }).
@@ -47,45 +64,4 @@ proto.start = function(inputs, context) {
     })
 };
 
-Worflow.Flow = function() {
-  var self = this;
-  var d = $.Deferred();
-  var steps = [];
-  var counter = 0;
-  var context = null;
-  var onDone = null;
-  var onError = null;
-
-  this.start = function(workflow, ondone, onerror) {
-    if (counter > 0) {
-      console.log("reset workflow before restarting");
-      onerror('workflow not reset');
-    }
-    var inputs = workflow.getInputs();
-    context = workflow.getContext();
-    steps = this._workflow.getSteps();
-    if (steps) {
-      this.runStep(steps[0], inputs);
-    }
-  };
-
-  this.runStep = function(step, inputs) {
-    step.run(inputs, context, _.bind(this.onDone, this), _.bind(this.onError, this));
-  };
-
-  this.onDone = function(outputs) {
-    if (counter == steps.length) {
-      d.resolve(outputs);
-      return;
-    }
-    counter++;
-    this.runStep(steps[counter], outputs);
-  };
-
-  this.onError = function(error) {
-    console.log('step error');
-    d.reject(error);
-  };
-}
-
-module.exports = Worflow;
+module.exports = Workflow;

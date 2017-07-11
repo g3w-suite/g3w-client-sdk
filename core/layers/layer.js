@@ -3,6 +3,7 @@ var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
 var ProviderFactory = require('core/layers/providers/providersfactory');
 
+// classe padre di tutti i Layer
 function Layer(config) {
   var self = this;
   config = config || {};
@@ -40,33 +41,26 @@ function Layer(config) {
   this.fields = config.fields;
   // relations
   this.relations = config.relations || null; // da vedere com gestirle
-  // setters
-  this.setters = {
-    //funzione che segnala lo start editing
-    startEditing: function() {
-      self._startEditing();
-    },
-    // segnalazione stop editing
-    stopEditing: function() {
-      self._stopEditing();
-    },
-    // cancellazione di tutte le features del layer
-    clearFeatures: function() {
-      self._clearFeatures();
-    }
-  };
 
   var serverType = this.config.servertype;
   var sourceType = this.config.source.type;
-
+  /*
+    questi sono i providers che il layer ha per
+    la gestione di una query semplice, query che utilizza filtri e recupero dei
+    dati grezzi del layer. Tutto è delegato ai sui providers
+    Esistono tre tipi di provider:
+      1 - query
+      2 - filter
+      3 - data -- utilizzato quando dobbiamo recupeare i dati grezzi del layer (esempio editing)
+   */
   this.providers = {
-    query: ProviderFactory.build('query',serverType,sourceType,{
+    query: ProviderFactory.build('query', serverType, sourceType, {
       layer: this
     }),
-    filter: ProviderFactory.build('filter',serverType,sourceType,{
+    filter: ProviderFactory.build('filter', serverType, sourceType, {
       layer: this
     }),
-    data: ProviderFactory.build('data',serverType,sourceType,{
+    data: ProviderFactory.build('data', serverType, sourceType, {
       layer: this
     })
   };
@@ -77,6 +71,34 @@ function Layer(config) {
 inherit(Layer, G3WObject);
 
 var proto = Layer.prototype;
+
+// metodo che server a recupere informazioni del layer
+// vinene chiamato solo nei layers che sono interroabili
+proto.query = function(options) {
+  options = options || {};
+  var self = this;
+  var d = $.Deferred();
+  var type = options.type;
+  // prendo come provider di default il provider query
+  var provider = this.getProvider('query');
+  // nel caso in cui nell'opzioni della query ho passato il parametro filtro
+  if (options.filter) {
+    provider = this.providers.filter;
+  }
+  // solo nel caso in cui sia stato istanziato un provider
+  if (provider) {
+    provider.query(options)
+      .done(function(features) {
+        d.resolve(features);
+      })
+      .fail(function(err) {
+        d.reject(err);
+      });
+  } else {
+    d.reject('Il layer non è interrogabile');
+  }
+  return d.promise();
+};
 
 proto.getProject = function() {
   return this.config.project;
@@ -148,12 +170,14 @@ proto.isVisible = function() {
   return this.state.visible;
 };
 
+// verifica se il layer è interrogabile
 proto.isQueryable = function() {
   var queryEnabled = false;
   var queryableForCababilities = this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.QUERYABLE);
+  // se è interrogabile verifico che il suo stato sia visibile e non disabilitato
   if (queryableForCababilities) {
     // è interrogabile se visibile e non disabilitato (per scala) oppure se interrogabile comunque (forzato dalla proprietà infowhennotvisible)
-    queryEnabled = (this.state.visible && !this.state.disabled);
+    queryEnabled = (this.isVisible() && !this.isDisabled());
     if (!_.isUndefined(this.config.infowhennotvisible) && (this.config.infowhennotvisible === true)) {
       queryEnabled = true;
     }
@@ -161,6 +185,7 @@ proto.isQueryable = function() {
   return queryEnabled;
 };
 
+//verifica se il il Layer è filtrabile
 proto.isFilterable = function() {
   // useremo Layer.CAPABILITIES.FILTERABLE
   // return this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.FILTERABLE);
@@ -174,31 +199,7 @@ proto.isEditable = function() {
   //return this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.EDITABLE);
 
   // per ora facciamo così
-  return this.config.servertype == 'QGIS' && [Layer.SourceTypes.POSTGIS,Layer.SourceTypes.SPATIALITE].indexOf(this.config.source.type) > -1;
-};
-
-proto.query = function(options) {
-  options = options || {};
-  var self = this;
-  var d = $.Deferred();
-  var type = options.type;
-  var provider = this.providers.query;
-  if (options.filter) {
-    provider = this.providers.filter;
-  }
-  if (provider) {
-    provider.query(options)
-      .done(function(features) {
-        d.resolve(features);
-      })
-      .fail(function(err) {
-        d.reject(err);
-      });
-  }
-  else {
-    d.reject('Il layer non è interrogabile tramite filtri');
-  }
-  return d.promise();
+  return this.config.servertype == 'QGIS' && [Layer.SourceTypes.POSTGIS, Layer.SourceTypes.SPATIALITE].indexOf(this.config.source.type) > -1;
 };
 
 proto.getQueryUrl = function() {
@@ -304,12 +305,20 @@ proto.getProvider = function(type) {
   return this.providers[type];
 };
 
+proto.getProviders = function() {
+  return this.providers;
+};
+
+///PROPRIETÀ DEL LAYER
+
+// Tipo di Layer
 Layer.LayerTypes = {
   TABLE: "table",
   IMAGE: "image",
   VECTOR: "vector"
 };
 
+// Tipo di server che lo gestisce
 Layer.ServerTypes = {
   OGC: "OGC",
   QGIS: "QGIS",
@@ -321,6 +330,7 @@ Layer.ServerTypes = {
   Local: "Local"
 };
 
+// tipo di sorgente
 Layer.SourceTypes = {
   POSTGIS: 'postgres',
   SPATIALITE: 'spatialite',
@@ -328,12 +338,14 @@ Layer.SourceTypes = {
   WMS: 'wms'
 };
 
+// Caratteristiche del layer
 Layer.CAPABILITIES = {
   QUERYABLE: 1,
   FILTERABLE: 3,
   EDITABLE: 5
 };
 
+//Tipi di editing sul layer
 Layer.EDITOPS = {
   INSERT: 1,
   UPDATE: 2,

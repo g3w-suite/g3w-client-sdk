@@ -37,23 +37,26 @@ function ImageLayer(config) {
   base(this, config);
 
   this.config.baselayer = config.baselayer || false;
-
   this.type = Layer.LayerTypes.IMAGE;
-
   // vado a modificare lo state aggiungendo il bbox e l'informazione geolayer
   this.setup(config);
 }
 
 inherit(ImageLayer, Layer);
+
 mixin(ImageLayer, GeoLayerMixin);
 
 var proto = ImageLayer.prototype;
 
-
-proto.getEditingLayer = function() {
+proto.getLayerForEditing = function() {
   if (this.isEditable()) {
+    // vado a clonare la configurazione
+    // affinchè non vado a toccare l'originale
     var config = _.cloneDeep(this.config);
+    //ritorno l'istanza del vectorlayer
     return new VectorLayer(config);
+  } else {
+    return null
   }
 };
 
@@ -80,17 +83,16 @@ proto.getWMSLayerName = function() {
 
 proto.getWmsUrl = function() {
   var url;
-  if (this.config.source && this.config.source.type == 'wms' && this.config.source.url){
+  if (this.config.source && this.config.source.type == 'wms' && this.config.source.url) {
     url = this.config.source.url
-  }
-  else {
+  } else {
     url = this.config.wmsUrl;
   }
   return url;
 };
 
 proto.getQueryUrl = function() {
-  var url = base(this,'getQueryUrl');
+  var url = base(this, 'getQueryUrl');
   if (this.getServerType() == 'QGIS' && this.config.source && this.config.source.type == 'wms' && this.config.source.external) {
     url+='SOURCE=wms';
   }
@@ -122,6 +124,5 @@ ImageLayer.WMSServerTypes = [
   Layer.ServerTypes.Geoserver,
   Layer.ServerTypes.OGC
 ];
-
 
 module.exports = ImageLayer;

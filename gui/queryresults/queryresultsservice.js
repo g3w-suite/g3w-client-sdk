@@ -87,7 +87,7 @@ function QueryResultsService() {
       layerTitle,
       layerId;
     _.forEach(featuresForLayers, function(featuresForLayer) {
-      featuresForLayer = featuresForLayer[0];
+      featuresForLayer = featuresForLayer;
       // prendo il layer
       var layer = featuresForLayer.layer;
       // verifico che tipo ti vector layer ci sono
@@ -102,7 +102,7 @@ function QueryResultsService() {
         layerRelationsAttributes =  [];
         layerTitle = layer.get('name');
         layerId = layer.get('id');
-      };
+      }
 
       var layerObj = {
         title: layerTitle,

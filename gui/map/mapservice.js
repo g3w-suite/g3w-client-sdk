@@ -295,13 +295,17 @@ proto.setupControls = function(){
           });
           control.on('picked', function(e) {
             var coordinates = e.coordinates;
+            // visualizzo il marker per far vederee il punto dove ho cliccato
             self.showMarker(coordinates);
             var showQueryResults = GUI.showContentFactory('query');
+            // recupero i layers che hanno le caratteristiche di esserere interrogabili
             var layers = self.getLayers({
               QUERYABLE: true,
               SELECTEDORALL: true
             });
             var queryPromises = [];// raccoglie tutte le promises dei provider del layer
+            // ciclo sui layer e per ogni layer chiamo il metodo query
+            // passando alcune opzioni)
             _.forEach(layers, function(layer) {
               queryPromises.push(layer.query({
                   coordinates: coordinates,
@@ -312,14 +316,14 @@ proto.setupControls = function(){
             var queryResultsPanel = showQueryResults('interrogazione');
             $.when.apply(this, queryPromises)
               .then(function() {
-                results = arguments;
-                // vado ad unificare i rusltati delle promises
-                results.query = results[0].query;
-                var data = [];
-                _.forEach(results, function(result) {
-                  data.push(result.data);
+                layersResults = arguments;
+                var results = {
+                  query: layersResults[0].query,
+                  data: []
+                };
+                _.forEach(layersResults, function(result) {
+                  results.data.push(result.data[0]);
                 });
-                results.data = data;
                 queryResultsPanel.setQueryResponse(results, coordinates, self.state.resolution);
                 })
               .fail(function() {
@@ -353,7 +357,6 @@ proto.setupControls = function(){
               });
               _.forEach(layers, function (layer) {
                 queryPromises.push(layer.query({
-                  type: 'query',
                   coordinates: coordinates,
                   resolution: self.getResolution()
                 }));
@@ -373,22 +376,16 @@ proto.setupControls = function(){
                   results.data = data;
                   if(results && results.data && results.data.length) {
                     geometry = results.data[0].features[0].getGeometry();
+                    var filter = new Filter();
+                    filter.setGeometry(geometry);
                     var queryLayers = self.getLayers({
                       QUERYABLE: true,
                       ALLNOTSELECTED: true,
-                      WFS: true
+                      FILTERABLE: true
                     });
                     _.forEach(queryLayers, function (layer) {
-                      var filterObject = QueryService.createQueryFilterObject({
-                        queryLayer: layer,
-                        ogcService: 'wfs',
-                        filter: {
-                          geometry: geometry
-                        }
-                      });
                       queryPromises.push(layer.query({
-                          type: 'filter',
-                          filter: filterObject
+                          filter: filter
                         })
                       )
                     });
@@ -397,15 +394,14 @@ proto.setupControls = function(){
                     var queryResultsPanel = showQueryResults('interrogazione');
                     $.when.apply(this, queryPromises)
                       .then(function () {
-                        response = arguments;
-                        results = {};
-                        // vado ad unificare i rusltati delle promises
-                        results.query = response[0].query;
-                        var data = [];
-                        _.forEach(response, function (result) {
-                          data.push(result.data);
+                        layersResults = arguments;
+                        var results = {
+                          query: layersResults[0].query,
+                          data: []
+                        };
+                        _.forEach(layersResults, function(result) {
+                          results.data.push(result.data[0]);
                         });
-                        results.data = data;
                         queryResultsPanel.setQueryResponse(results, geometry, self.state.resolution);
                       })
                       .fail(function () {
@@ -443,7 +439,7 @@ proto.setupControls = function(){
                 var layers = self.getLayers({
                   QUERYABLE: true,
                   SELECTEDORALL: true,
-                  WFS: true
+                  FILTERABLE: true
                 });
                 var queryPromises = [];// raccoglie tutte le promises dei provider del layer
                 _.forEach(layers, function(layer) {
@@ -457,14 +453,14 @@ proto.setupControls = function(){
                 var queryResultsPanel = showQueryResults('interrogazione');
                 $.when.apply(this, queryPromises)
                   .then(function() {
-                    results = arguments;
-                    // vado ad unificare i rusltati delle promises
-                    results.query = results[0].query;
-                    var data = [];
-                    _.forEach(results, function(result) {
-                      data.push(result.data);
+                    layersResults = arguments;
+                    var results = {
+                      query: layersResults[0].query,
+                      data: []
+                    };
+                    _.forEach(layersResults, function(result) {
+                      results.data.push(result.data[0]);
                     });
-                    results.data = data;
                     queryResultsPanel.setQueryResponse(results, bbox, self.state.resolution);
                   })
                   .fail(function(error) {

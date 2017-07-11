@@ -8,5 +8,9 @@ function QueryService(){
 }
 inherit(QueryService, G3WObject);
 
+var proto = QueryService.prototype;
+
+//dato l'oggetto filter restituito dal server ricostruisco la struttura del filterObject
+
 module.exports =  new QueryService;
 

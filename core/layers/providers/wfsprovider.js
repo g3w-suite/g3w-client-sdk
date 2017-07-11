@@ -1,4 +1,5 @@
 var inherit = require('core/utils/utils').inherit;
+var resolve = require('core/utils/utils').resolve;
 var base = require('core/utils/utils').base;
 var DataProvider = require('core/layers/providers/provider');
 var Filter = require('core/layers/filter/filter');
@@ -18,6 +19,7 @@ proto.getData = function() {
   return d.promise();
 };
 
+// metodo del provider che risponde alla query del layer
 proto.query = function(options) {
   var self = this;
   var filter = options.filter;
@@ -49,9 +51,12 @@ proto._get = function(url, params) {
   return $.get(url)
 };
 
+//funzione che si occupa di fare la richiesta al server
 proto._doRequest = function(filter) {
+  filter = filter || null;
+  // verifico che il filtro sia istanza della classe Filter
   if (!(filter instanceof Filter)) {
-    return;
+    return resolve();
   }
   var layer = this._layer;
   var url = layer.getQueryUrl();
@@ -66,26 +71,35 @@ proto._doRequest = function(filter) {
     OUTPUTFORMAT: infoFormat,
     SRSNAME:  crs
   };
-
-  var bbox = filter.getBBOX();
-  if (bbox) {
-    params.BBOX = bbox.join();
-    request = this._get(url, params)
-
-  } else {
-    var geometry = filter.getGeometry();
-    if (geometry) {
-      var f = ol.format.filter;
-      var featureRequest = new ol.format.WFS().writeGetFeature({
-        featureTypes: [layer],
-        filter: f.intersects('the_geom', geometry)
-      });
-      filter = featureRequest.children[0].innerHTML;
-      params.FILTER = filter;
-      request = this._post(url, params)
+  var filterType = filter.getType();
+  var filter = filter.get();
+  if (filter) {
+    var f = ol.format.filter;
+    switch (filterType) {
+      case 'bbox':
+        var featureRequest = new ol.format.WFS().writeGetFeature({
+          featureTypes: [layer],
+          filter: f.bbox('the_geom', filter)
+        });
+        break;
+      case 'geometry':
+        var featureRequest = new ol.format.WFS().writeGetFeature({
+          featureTypes: [layer],
+          filter: f.intersects('the_geom', filter)
+        });
+        break;
+      case 'expression':
+        var featureRequest = new ol.format.WFS().writeGetFeature({
+          featureTypes: [layer],
+          filter: f.equalTo('nome', 'VICCHIO')
+        });
+      default:
+        break;
     }
+    params.FILTER = featureRequest.children[0].innerHTML;
+    request = this._post(url, params);
+    return request
   }
-  return request
 };
 
 

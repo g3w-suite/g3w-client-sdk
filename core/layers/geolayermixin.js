@@ -15,6 +15,8 @@ proto.setup = function(config){
 
   this.config.multilayerid = config.multilayer;
 
+  // estendo lo stato del layer settando la proprietà
+  // geolayer a true e aggiungendo le informazioni del bbox alla proprietà bbox
   _.extend(this.state, {
     geolayer: true,
     bbox: config.bbox || null

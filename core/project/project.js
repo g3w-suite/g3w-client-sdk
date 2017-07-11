@@ -104,6 +104,8 @@ proto._buildLayersStore = function() {
     catalog: this.state.gid != overviewprojectgid
   });
 
+  // vado a ciclare su tutti i layers per poterli istanziare
+  // e aggiungere al layersstore
   _.forEach(this.getLayers(), function(layerConfig) {
     // aggiungo la proiezione
     layerConfig.projection = self._projection;
