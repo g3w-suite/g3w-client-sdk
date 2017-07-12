@@ -6,7 +6,6 @@ var FeaturesStore = require('./features/featuresstore');
 
 // Layer di base su cui si possono fare operazioni di editing
 function TableLayer(config) {
-  
   // setters
   this.setters = {
     //funzione che segnala lo start editing
@@ -23,6 +22,7 @@ function TableLayer(config) {
     }
   };
 
+  // vado a chiamare il Layer di base
   base(this, config);
 
   this.type = Layer.LayerTypes.TABLE;
@@ -30,7 +30,8 @@ function TableLayer(config) {
   this._editor = new Editor({
     layer: this
   });
-  // viene istanziato un featiresstore
+  // viene istanziato un featuresstore e gli viene associato
+  // il data provider
   this._featuresStore = new FeaturesStore({
     provider: this.providers.data
   });
@@ -66,19 +67,29 @@ proto.readFeatures = function() {
   return this._featuresStore.readFeatures();
 };
 
+proto.addFeatures = function(features) {
+  this._featuresStore.addFeauters(features);
+};
+
 proto._clearFeatures = function() {
   this._featuresStore.clearFeatures();
 };
 
 // funzione che recupera i dati da qualsisasi fonte (server, wms, etc..)
 proto.getFeatures = function(options) {
-  var self = this;
   var d = $.Deferred();
   this._featuresStore.getFeatures(options)
     .then(function(features) {
       return d.resolve(features);
+    })
+    .fail(function(err) {
+       d.reject(err);
     });
   return d.promise();
+};
+
+proto.save = function() {
+  console.log('Saving .....');
 };
 
 

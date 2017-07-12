@@ -27,8 +27,8 @@ proto = LayersStoresRegistry.prototype;
 
 proto.getLayers = function(filter) {
   var layers = [];
-  _.forEach(this.stores, function(layerStore) {
-    layers.concat(layerStore.getLayers(filter))
+  _.forEach(this.stores, function(layersStore, storeId) {
+    layers = layers.concat(layersStore.getLayers(filter))
   });
   return layers;
 };
@@ -49,10 +49,10 @@ proto.getLayersStores = function() {
 };
 
 // funzione che aggiunge un layersstore al registro della
-proto._addLayersStore = function(layerStore, idx) {
+proto._addLayersStore = function(layersStore, idx) {
   // usiamo un array per garantire ordine di inserimento, poi potremo gestire richieste di inserimento in una specifica posizione
-  var storeId = layerStore.getId();
-  this.stores[storeId] = layerStore;
+  var storeId = layersStore.getId();
+  this.stores[storeId] = layersStore;
   if (!_.isNil(idx)) {
     this.storesArray.splice(idx,0, storeId);
   } else {

@@ -31,6 +31,8 @@ proto.run = function(inputs, context) {
     try {
       // metto lo stato dello step a running
       this.state.running = true;
+      // al metodo run del task gli viene passato sia
+      // gli inputs che il context
       this._task.run(inputs, context)
         .then(function(outups) {
           d.resolve(outups);

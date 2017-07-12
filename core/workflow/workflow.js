@@ -9,7 +9,12 @@ function Workflow() {
   base(this);
 
   this._inputs = null;
+  //oggetto che determina il contesto in cui
+  // opera il workflow
   this._context = null;
+  // flow oggetto che mi permette di stabilile come
+  // mi devo muovere all'interno del worflow
+  this._flow = null;
   this._steps = [];
 }
 
@@ -23,6 +28,14 @@ proto.getInputs = function() {
 
 proto.getContext = function() {
   return this._context;
+};
+
+proto.getFlow = function() {
+  return this._flow;
+};
+
+proto.setFlow = function(flow) {
+  this._flow = flow;
 };
 
 proto.addStep = function(step) {
@@ -49,19 +62,28 @@ proto.getLastStep = function() {
   return null;
 };
 
-// metodo che permette di avviare il workflow
+// metodo principale al lancio del workflow
 proto.start = function(inputs, context, flow) {
   var d = $.Deferred();
   this._inputs = inputs;
+  //oggetto che mi server per operare su
+  // elementi utili
   this._context = context;
-  var flow = flow || Flow();
-  flow.start(this). //ritorna una promessa
+  this._flow = flow || new Flow();
+  this._flow.start(this). //ritorna una promessa
     then(function(outputs) {
       d.resolve(outputs);
     }).
     fail(function(error){
       d.reject(error);
-    })
+    });
+  return d.promise();
+};
+
+// metodo stop utilizzato per eventualmente stoppare
+// il workflow durante il suo flusso
+proto.stop = function() {
+
 };
 
 module.exports = Workflow;

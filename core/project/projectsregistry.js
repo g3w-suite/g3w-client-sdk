@@ -28,9 +28,11 @@ function ProjectsRegistry() {
       self.state.currentProject = project;
       //aggiunto tipo progetto
       self.setProjectType(project.state.type);
+      var projectLayersStore = project.getLayersStore();
       // lo mette sempre in prima posizione mi serve per la mappa
-      CatalogLayersStoresRegistry.addLayersStore(project.getLayersStore(), 0);
-      MapLayersStoresRegistry.addLayersStore(project.getLayersStore(), 0);
+      CatalogLayersStoresRegistry.addLayersStore(projectLayersStore, 0);
+      MapLayersStoresRegistry.addLayersStore(projectLayersStore, 0);
+
     }
   };
   //stato del registro progetti

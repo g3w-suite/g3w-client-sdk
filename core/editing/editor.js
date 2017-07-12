@@ -25,10 +25,18 @@ proto.setLayer = function(layer) {
 
 //funzione che fa partire lo start editing
 proto.start = function() {
+  var d = $.Deferred();
+  // carica le features del layer
   this._layer.getFeatures()
     .then(function(features) {
-      //TODO
+      // le features ono già dentro il featuresstore del layer
+      d.resolve(features);
     })
+    .fail(function(err) {
+      d.reject(err);
+    });
+
+  return d.promise()
 };
 
 module.exports = Editor;

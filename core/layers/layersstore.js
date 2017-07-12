@@ -207,7 +207,6 @@ proto.getLayersDict = function(options) {
     });
     layers = layers.length ? layers : _layers;
   }
-
   return layers;
 };
 
