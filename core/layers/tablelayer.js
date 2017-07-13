@@ -19,6 +19,12 @@ function TableLayer(config) {
     // cancellazione di tutte le features del layer
     clearFeatures: function() {
       this._clearFeatures();
+    },
+    // lo metto come setters in modo che
+    // chi ha bisogno di restare in ascolto delle features
+    // e el vuole gestire 
+    getFeatures: function(options) {
+      this._getFeatures(options);
     }
   };
 
@@ -76,7 +82,7 @@ proto._clearFeatures = function() {
 };
 
 // funzione che recupera i dati da qualsisasi fonte (server, wms, etc..)
-proto.getFeatures = function(options) {
+proto._getFeatures = function(options) {
   var d = $.Deferred();
   this._featuresStore.getFeatures(options)
     .then(function(features) {
