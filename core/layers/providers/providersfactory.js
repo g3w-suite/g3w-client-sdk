@@ -12,44 +12,52 @@ var ProvidersForServerTypes = {
     'postgres': {
       query: Providers.wms,
       filter: Providers.wfs,
-      data: Providers.qgis
+      data: Providers.qgis,
+      search: Providers.qgis
     },
     'spatialite': {
       query: Providers.wms,
       filter: Providers.wfs,
-      data: Providers.qgis
+      data: Providers.qgis,
+      search: Providers.qgis
     },
     'ogr': {
       query: Providers.wms,
       filter: Providers.wfs,
-      data: null
+      data: null,
+      search: Providers.qgis
     },
     'delimitedtext': {
       query: Providers.wms,
       filter: Providers.wfs,
-      data: null
+      data: null,
+      search: null
     },
     'wms': {
       query: Providers.wms,
       filter: Providers.wfs,
-      data: null
+      data: null,
+      search: null
     },
     'wfs': {
       query: Providers.wms,
       filter: Providers.wfs,
-      data: Providers.wfs
+      data: Providers.wfs,
+      search: Providers.qgis
     },
     'gdal': {
       query: Providers.wms,
       filter: null,
-      data: null
+      data: null,
+      search: null
     }
   },
   'OGC': {
     'wms': {
       query: Providers.wms,
       filter: null,
-      data: null
+      data: null,
+      search: null
     }
   }
 };

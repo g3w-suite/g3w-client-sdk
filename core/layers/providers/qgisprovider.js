@@ -8,8 +8,9 @@ function  QGISProvider(options) {
   base(this);
   this._name = 'qgis';
   this._layer = options.layer || null;
-  this._layerName = options.layerName || null;
-  this._infoFormat = options.infoFormat || 'application/vnd.ogc.gml';
+  this._url = this._layer.getQueryUrl();
+  this._layerName = this._layer.getName() || null; // prendo sempre il name del layer di QGIS, perché le query sono proxate e gestite da g3w-server
+  this._infoFormat = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
 }
 
 inherit(QGISProvider, DataProvider);
@@ -17,29 +18,43 @@ inherit(QGISProvider, DataProvider);
 
 var proto = QGISProvider.prototype;
 
+//metodo per le interrogazioni tramite filtri
 proto.query = function(options) {
   var self = this;
   var d = $.Deferred();
   options = options || {};
   var filter = options.filter || null;
   if (filter) {
-    if (filter.bbox) {
-
+    var filterType = filter.getType();
+    var url = this._url;
+      $.get( url, {
+          SERVICE: 'WMS',
+          VERSION: '1.3.0',
+          REQUEST: 'GetFeatureInfo',
+          LAYERS: this._layerName,
+          QUERY_LAYERS: this._layerName,
+          INFO_FORMAT: this._infoFormat,
+          FEATURE_COUNT: 200,
+          FILTER: filter.get()
+          // Temporary fix for https://hub.qgis.org/issues/8656 (fixed in QGIS master)
+          //'BBOX': bbox // QUI CI VA IL BBOX DELLA MAPPA
+        }
+      ).done(function(response) {
+        var featuresForLayers = self.handleQueryResponseFromServer(response, self._infoFormat, self._layerName);
+        var response = {
+          data: featuresForLayers,
+          query: null
+        };
+        d.resolve(response);
+      })
+        .fail(function(){
+          d.reject();
+        });
     }
-    // temporaneo per evitare che possa scoppiare
-    d.resolve({
-      query: '',
-      data: [{
-        features: [],
-        layer: this._layer
-      }]
-    });
-  }
-  return d.promise()
+  return d.promise();
 };
 
 // METODI LOADING EDITING FEATURES //
-
 proto.getFeatures = function(options) {
   var d = $.Deferred();
   options = options || {};

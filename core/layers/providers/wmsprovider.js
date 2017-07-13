@@ -48,10 +48,8 @@ proto._getRequestUrl = function(url, extent, size, pixelRatio, projection, param
 };
 
 // funzione che deve esserere "estratta dal mapservice"
-proto._getGetFeatureInfoUrlForLayer = function(url, coordinates,resolution,params) {
-  var extent = geoutils.getExtentForViewAndSize(
-    coordinates, resolution, 0,
-    GETFEATUREINFO_IMAGE_SIZE);
+proto._getGetFeatureInfoUrlForLayer = function(url, coordinates,resolution, params) {
+  var extent = geoutils.getExtentForViewAndSize(coordinates, resolution, 0, GETFEATUREINFO_IMAGE_SIZE);
 
   var baseParams = {
     'SERVICE': 'WMS',
@@ -138,7 +136,7 @@ proto.doRequestAndParse = function(url) {
   var d = $.Deferred();
   $.get(url)
     .done(function(response) {
-      var featuresForLayers = self.handleQueryResponseFromServer(response, this._infoFormat, this._layerName);
+      var featuresForLayers = self.handleQueryResponseFromServer(response, self._infoFormat, self._layerName);
       d.resolve(featuresForLayers);
     })
     .fail(function(){

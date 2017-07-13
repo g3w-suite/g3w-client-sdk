@@ -38,7 +38,7 @@ var SearchPanelComponet = Vue.extend({
       var expression = new Expression();
       expression.createExpressionFromFilter(this.filterObject.filter, this.queryLayer.getName());
       filter.setExpression(expression.get());
-      this.queryLayer.query({
+      this.queryLayer.search({
         filter: filter
       })
       .then(function(results) {

@@ -91,7 +91,7 @@ proto._doRequest = function(filter) {
       case 'expression':
         var featureRequest = new ol.format.WFS().writeGetFeature({
           featureTypes: [layer],
-          filter: f.equalTo('nome', 'VICCHIO')
+          filter: null
         });
       default:
         break;

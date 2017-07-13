@@ -60,6 +60,9 @@ function Layer(config) {
     filter: ProviderFactory.build('filter', serverType, sourceType, {
       layer: this
     }),
+    search: ProviderFactory.build('search', serverType, sourceType, {
+      layer: this
+    }),
     data: ProviderFactory.build('data', serverType, sourceType, {
       layer: this
     })
@@ -72,13 +75,31 @@ inherit(Layer, G3WObject);
 
 var proto = Layer.prototype;
 
+
+//metodo search
+proto.search = function(options) {
+  options = options || {};
+  var d = $.Deferred();
+  var provider = this.getProvider('search');
+  if (provider) {
+    provider.query(options)
+      .done(function(response) {
+        d.resolve(response);
+      })
+      .fail(function(err) {
+        d.reject(err);
+      });
+  } else {
+    d.reject('Il layer non è searchable');
+  }
+  return d.promise();
+};
+
 // metodo che server a recupere informazioni del layer
 // vinene chiamato solo nei layers che sono interroabili
 proto.query = function(options) {
   options = options || {};
-  var self = this;
   var d = $.Deferred();
-  var type = options.type;
   // prendo come provider di default il provider query
   var provider = this.getProvider('query');
   // nel caso in cui nell'opzioni della query ho passato il parametro filtro
@@ -88,8 +109,8 @@ proto.query = function(options) {
   // solo nel caso in cui sia stato istanziato un provider
   if (provider) {
     provider.query(options)
-      .done(function(features) {
-        d.resolve(features);
+      .done(function(response) {
+        d.resolve(response);
       })
       .fail(function(err) {
         d.reject(err);

@@ -3,6 +3,7 @@ var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
 var resolve = require('core/utils/utils').resolve;
 var reject = require('core/utils/utils').reject;
+var History = require('./history');
 
 // classe Session
 function Session() {
@@ -10,20 +11,13 @@ function Session() {
 
   //attributo che stabilisce se la sessione è partita
   this._started = false;
-  // layers coinvolti nella sessione
-  // esso contene il suo editor
-  this._layers = [];
   // history -- oggetto che contiene gli stati dei layers
-  this._history = {}
+  this._history = new History();
 }
 
 inherit(Session, G3WObject);
 
 var proto = Session.prototype;
-
-this._getUniqueHistoryId = function() {
-  return Date.now();
-};
 
 proto.start = function() {
   this._started = true;
@@ -35,23 +29,26 @@ proto.isStarted = function() {
 
 //vado ad aggiungere il layer alla sessione di editing
 proto.addLayer = function(layer) {
-  this._layers.push(layer);
+  this._history.addLayer(layer);
 };
 
 //vado a rimuove un layer dalla sessione.
 // Può avvenire se per quella sessione dopo una prima fase
 // di salvataggio dell'editing decido di toglierlo dall
 proto.removeLayer = function() {
-
+  this._history.removeLayer(layer);
 };
 
 proto.save = function() {
   console.log("Saving .... ");
+  // andarà a popolare la history
   return resolve()
 };
 
 proto.commit = function() {
   console.log("Committing...");
+  // andà a pesacare dalla history tutte le modifiche effettuare
+  // e si occuperà di di eseguire la richiesta al server di salvataggio dei dati
   return resolve();
 };
 
@@ -67,7 +64,7 @@ proto.stop = function() {
 
 // funzione che fa il cera della history
 proto._clearHistory = function() {
-  this._history = {};
+  this._history.clear();
 };
 
 module.exports = Session;
