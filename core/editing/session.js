@@ -53,8 +53,8 @@ proto.addEditor = function(editor) {
     var layer = editr.getLayer();
     var layerId = layer.getId();
     this._editors.push(editor);
-    editor.onafter('save', function() {
-      self._history.add(layerId, {})
+    editor.onafter('save', function(state, uniqueId) {
+      self._history.add(layerId, state, uniqueId)
     })
   }
 };
