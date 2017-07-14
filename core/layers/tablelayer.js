@@ -25,6 +25,11 @@ function TableLayer(config) {
     // e el vuole gestire 
     getFeatures: function(options) {
       this._getFeatures(options);
+    },
+    // funzione per il salvataggio del layer
+    //da capire che tipo di parametri utilizzare
+    save: function() {
+      this._save()
     }
   };
 
@@ -94,7 +99,7 @@ proto._getFeatures = function(options) {
   return d.promise();
 };
 
-proto.save = function() {
+proto._save = function() {
   console.log('Saving .....');
 };
 

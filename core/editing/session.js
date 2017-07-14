@@ -48,8 +48,14 @@ proto.isStarted = function() {
 };
 
 proto.addEditor = function(editor) {
+  var self = this;
   if (this._editors.indexOf(editor) == -1) {
+    var layer = editr.getLayer();
+    var layerId = layer.getId();
     this._editors.push(editor);
+    editor.onafter('save', function() {
+      self._history.add(layerId, {})
+    })
   }
 };
 

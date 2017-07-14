@@ -5,6 +5,11 @@ var G3WObject = require('core/g3wobject');
 // classe Editor
 function Editor(options) {
   options = options || {};
+  this.setters = {
+    save: function() {
+      this._save();
+    }
+  };
   base(this);
   //deve far riferimento necessariamente ad un layer
   this._layer = options.layer;
@@ -43,9 +48,14 @@ proto.start = function() {
   return d.promise()
 };
 
-
+// stop editor
 proto.stop = function() {
   this._started = false;
+};
+
+//metodo save
+proto._save = function() {
+  this.layer.save();
 };
 
 proto.isStarted = function() {
