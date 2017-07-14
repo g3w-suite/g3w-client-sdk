@@ -63,13 +63,15 @@ proto.getLastStep = function() {
 };
 
 // metodo principale al lancio del workflow
-proto.start = function(inputs, context, flow) {
+proto.start = function(options) {
+  options = options || {};
   var d = $.Deferred();
-  this._inputs = inputs;
+  this._inputs = options.inputs;
   //oggetto che mi server per operare su
   // elementi utili
-  this._context = context;
-  this._flow = flow || new Flow();
+  this._context = options.context;
+  this._flow = options.flow || new Flow();
+  this._steps = options.steps || this._steps;
   this._flow.start(this). //ritorna una promessa
     then(function(outputs) {
       d.resolve(outputs);

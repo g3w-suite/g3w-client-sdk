@@ -6,8 +6,10 @@ var G3WObject = require('core/g3wobject');
 function Editor(options) {
   options = options || {};
   base(this);
-  //deve far riferimento necessariamente aud un layer
+  //deve far riferimento necessariamente ad un layer
   this._layer = options.layer;
+  // attributo che mi dice se l'editor è attivo o no
+  this._started = false;
 }
 
 inherit(Editor, G3WObject);
@@ -31,6 +33,8 @@ proto.start = function() {
     .then(function(features) {
       // le features ono già dentro il featuresstore del layer
       d.resolve(features);
+      // se andato tutto bene setto a true la proprietà started
+      self._started = true;
     })
     .fail(function(err) {
       d.reject(err);
@@ -38,5 +42,15 @@ proto.start = function() {
 
   return d.promise()
 };
+
+
+proto.stop = function() {
+  this._started = false;
+};
+
+proto.isStarted = function() {
+  return this._started;
+};
+
 
 module.exports = Editor;

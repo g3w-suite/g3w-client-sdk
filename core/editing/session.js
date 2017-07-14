@@ -11,6 +11,8 @@ function Session() {
 
   //attributo che stabilisce se la sessione è partita
   this._started = false;
+  // editors
+  this._editors = [];
   // history -- oggetto che contiene gli stati dei layers
   this._history = new History();
 }
@@ -20,11 +22,35 @@ inherit(Session, G3WObject);
 var proto = Session.prototype;
 
 proto.start = function() {
-  this._started = true;
+  var editorPromises = [];
+  var d = $.Deferred();
+  // nel caso di start chiamo il metodo start
+  // di ogni editor il quale andrà a chiedere al provider del
+  // layer associato di recuperare e salvare nel featuresstore
+  // le features richieste
+  _.forEach(this._editors, function(editor) {
+      editorPromises.push(editor.start())
+  });
+  $.when.call(this, editorPromises)
+    .then(function() {
+      d.resolve(true);
+      this._started = true;
+    })
+    .fail(function() {
+      d.reject();
+      this._started = false;
+    });
+  return d.promise();
 };
 
 proto.isStarted = function() {
   return this._started;
+};
+
+proto.addEditor = function(editor) {
+  if (this._editors.indexOf(editor) == -1) {
+    this._editors.push(editor);
+  }
 };
 
 //vado ad aggiungere il layer alla sessione di editing
@@ -47,6 +73,9 @@ proto.save = function() {
 
 proto.commit = function() {
   console.log("Committing...");
+  // prelevo l'ultimo stato dei layers editati per poter
+  // creare l'oggetoo post da passare al server
+  this._history.getLastLayersState();
   // andà a pesacare dalla history tutte le modifiche effettuare
   // e si occuperà di di eseguire la richiesta al server di salvataggio dei dati
   return resolve();
@@ -59,6 +88,7 @@ proto.rollback = function() {
 
 //funzione di stop
 proto.stop = function() {
+  this._started = false;
   console.log('stop..')
 };
 
