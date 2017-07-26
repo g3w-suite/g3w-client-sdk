@@ -17,11 +17,31 @@ function FeaturesStore(options) {
     addFeature: function(feature) {
       self._addFeature(feature);
     },
+    setFeatures: function(features) {
+      self._setFeatures(features);
+    },
     removeFeature: function(feature) {
       self._removeFeature(feature);
     },
-    clearFeatures: function() {
-      self._clearFeatures()
+    clear: function() {
+      self._clearFeatures();
+    },
+    getFeatures: function(options) {
+      options = options || {};
+      var self = this;
+      var d = $.Deferred();
+      // verifico che ci siano opzioni altrimenti vado a recuperare le
+      // features prese
+      if (options) {
+        this._provider.getFeatures(options)
+          .then(function(features) {
+            self.addFeatures(features);
+            d.resolve(features);
+          });
+      } else {
+        d.resolve(this._features);
+      }
+      return d.promise();
     }
   };
 
@@ -32,20 +52,25 @@ inherit(FeaturesStore, G3WObject);
 
 proto = FeaturesStore.prototype;
 
-proto.getFeatures = function(options) {
-  var self = this;
-  var d = $.Deferred();
-  this._provider.getFeatures(options)
-    .then(function(features) {
-      // il provider ritornerà 
-      self.addFeatures(features);
-      d.resolve(self._features);
-    });
-  return d.promise();
+proto.getFeatureById = function(featureId) {
+  var feat;
+  _.forEach(this._features, function(feature) {
+    if (feature.getId() == featureId) {
+      feat = feature;
+      return false;
+    }
+  });
+  return feat;
 };
 
 proto._addFeature = function(feature) {
   this._features.push(feature);
+};
+
+proto._setFeatures = function(features) {
+  if (_.isArray(features)) {
+    this._features = features;
+  }
 };
 
 proto._removeFeature = function(feature) {

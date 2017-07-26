@@ -8,31 +8,45 @@ var FeaturesStore = require('./features/featuresstore');
 function TableLayer(config) {
   // setters
   this.setters = {
-    //funzione che segnala lo start editing
-    startEditing: function() {
-      this._startEditing();
-    },
-    // segnalazione stop editing
-    stopEditing: function() {
-      this._stopEditing();
-    },
     // cancellazione di tutte le features del layer
-    clearFeatures: function() {
+    clearFeatures: function () {
       this._clearFeatures();
     },
-    // lo metto come setters in modo che
-    // chi ha bisogno di restare in ascolto delle features
-    // e el vuole gestire 
-    getFeatures: function(options) {
-      this._getFeatures(options);
+    addFeature: function (feature) {
+      this._addFeature(feature);
     },
-    // funzione per il salvataggio del layer
-    //da capire che tipo di parametri utilizzare
-    save: function() {
-      this._save()
+    deleteFeature: function (feature) {
+      this._deleteFeature(feature);
+    },
+    updateFeature: function (feature) {
+      this._updateFeature(feature);
+    },
+    setFeatures: function (features) {
+      this._setFeatures(features);
+    },
+    // funzione che recupera i dati da qualsisasi fonte (server, wms, etc..)
+    // mediante il provider legato al fetauresstore
+    getFeatures: function (options) {
+      var self = this;
+      options = options || {};
+      options.geometryType = this.getGeometryType();
+      var d = $.Deferred();
+      // qui mi ritorna la promessa del setter (G3WOBJECT)
+      this._featuresStore.getFeatures(options)
+        .then(function (promise) {
+          promise.then(function (features) {
+            self.emit('getFeatures', features);
+            return d.resolve(features);
+          }).fail(function (err) {
+            return d.reject(err);
+          })
+        })
+        .fail(function (err) {
+          d.reject(err);
+        });
+      return d.promise();
     }
   };
-
   // vado a chiamare il Layer di base
   base(this, config);
 
@@ -60,48 +74,50 @@ proto.setEditor = function(editor) {
   this._editor = editor;
 };
 
-proto._startEditing = function() {
-  console.log('start editing');
-};
-
-proto._stopEditing = function() {
-  console.log('stop editing');
-  // this.editor.stop()
-};
-
 proto.getFeaturesStore = function() {
   return this._featuresStore;
 };
 
-// funzione per la lettura dei dati precedentemente acquisiti dal provider
-proto.readFeatures = function() {
-  return this._featuresStore.readFeatures();
+//funzione che va a sostiuire le features al featuresstore del layer
+proto._setFeatures = function(features) {
+  this._featuresStore.setFeatures(features);
 };
 
 proto.addFeatures = function(features) {
-  this._featuresStore.addFeauters(features);
+  var self = this;
+  _.forEach(features, function(feature) {
+    self.addFeature(feature);
+  });
+};
+
+
+//metodo che ha lo scopo di aggiungere la feature all featuresstore del layer
+proto._addFeature = function(feature) {
+  this._featuresStore.addFeature(feature);
+};
+
+proto._deleteFeature = function(feature) {
+  var featureId = feature.getId();
+};
+
+proto._updateFeature = function(feature) {
+
 };
 
 proto._clearFeatures = function() {
   this._featuresStore.clearFeatures();
 };
 
-// funzione che recupera i dati da qualsisasi fonte (server, wms, etc..)
-proto._getFeatures = function(options) {
-  var d = $.Deferred();
-  this._featuresStore.getFeatures(options)
-    .then(function(features) {
-      return d.resolve(features);
-    })
-    .fail(function(err) {
-       d.reject(err);
-    });
-  return d.promise();
+// funzione che ritorna le dipendenze per quel layer
+// relazioni
+proto.getDependencies = function() {
+
 };
 
-proto._save = function() {
-  console.log('Saving .....');
-};
+//funzione che ritorna possibili dipendenze del layer
+proto.hasDependencies = function() {
+  return false;
+}
 
 
 module.exports = TableLayer;

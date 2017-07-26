@@ -91,22 +91,6 @@ proto._onsetter = function(when, setter, listener, async, priority) {
   return listenerKey;
 };
 
-// trasformo un listener sincrono in modo da poter essere usato nella catena di listeners (richiamando next col valore di ritorno del listener)
-/*proto._makeChainable = function(listener){
-  var self = this
-  return function(){
-    var args = Array.prototype.slice.call(arguments);
-    // rimuovo next dai parametri prima di chiamare il listener
-    var next = args.pop();
-    var canSet = listener.apply(self,arguments);
-    var _canSet = true;
-    if (_.isBoolean(canSet)){
-      _canSet = canSet;
-    }
-    next(canSet);
-  }
-};*/
-
 // funzione che viene lanciata se la sottoclasse ha come parametro setters
 proto._setupListenersChain = function(setters) {
   // inizializza tutti i metodi definiti nell'oggetto "setters" della classe figlia.
@@ -143,7 +127,7 @@ proto._setupListenersChain = function(setters) {
       var counter = 0;
       // funzione complete che serve per lanciare la funzione setter dell'istanza
       function complete() {
-        // eseguo la funzione
+        // eseguo la funzione setter
         returnVal = setterFnc.apply(self,args);
         // e risolvo la promessa (eventualmente utilizzata da chi ha invocato il setter)
         deferred.resolve(returnVal);
@@ -153,7 +137,6 @@ proto._setupListenersChain = function(setters) {
           listener.fnc.apply(self, args);
         })
       }
-
       // funzione abort che mi server ad uscire dal ciclo dei listener
       // nel caso si verificasse un problema
       function abort() {
@@ -224,6 +207,8 @@ proto._setupListenersChain = function(setters) {
       // quando viene chiamato la funzione
       // viene lanciato la funzione next
       next();
+      // la nuova funzione (il setter) associato all'ggetto che ne ha dichiarato
+      // la presenza ritorneà una promise
       return deferred.promise();
     }
   })

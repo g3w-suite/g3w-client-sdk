@@ -29,7 +29,7 @@
           </ul>
         </form>
       </div>
-      <layerslegend v-for="_layerstree in state.layerstrees" :layerstree="_layerstree"></layerslegend>
+      <layerslegend v-for="_layerstree in state.layerstrees" :layerstree="_layerstree" :key="_layerstree.id"></layerslegend>
     </div>
   </div>
   <ul id="layer-menu" v-click-outside-layer-menu="closeLayerMenu"  tabindex="-1" v-if="layerMenu.show"  :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }">

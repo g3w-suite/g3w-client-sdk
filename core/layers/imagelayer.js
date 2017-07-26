@@ -53,6 +53,8 @@ proto.getLayerForEditing = function() {
     // vado a clonare la configurazione
     // affinchè non vado a toccare l'originale
     var config = _.cloneDeep(this.config);
+    //vado a modificare l'id aggiungendo il prefisso editing_
+    config.id = 'editing_' +  config.id;
     //ritorno l'istanza del vectorlayer
     return new VectorLayer(config);
   } else {

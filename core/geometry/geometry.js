@@ -17,6 +17,6 @@ Geometry.SupportedGeometryTypes = [
   Geometry.GeometryTypes.MULTILINESTRING,
   Geometry.GeometryTypes.POLYGON,
   Geometry.GeometryTypes.MULTIPOLYGON
-]
+];
 
 module.exports = Geometry;

@@ -5,7 +5,7 @@ var Flow = require('./flow');
 
 //classe che ha lo scopo generico di gestire un flusso
 // ordinato di passi (steps)
-function Workflow() {
+function Workflow(options) {
   base(this);
 
   this._inputs = null;
@@ -15,7 +15,7 @@ function Workflow() {
   // flow oggetto che mi permette di stabilile come
   // mi devo muovere all'interno del worflow
   this._flow = null;
-  this._steps = [];
+  this._steps = options.steps;
 }
 
 inherit(Workflow, G3WObject);
@@ -50,7 +50,7 @@ proto.getSteps = function() {
   return this._steps;
 };
 
-proto.getSteps = function(index) {
+proto.getStep = function(index) {
   return this._steps[index];
 };
 
@@ -64,6 +64,7 @@ proto.getLastStep = function() {
 
 // metodo principale al lancio del workflow
 proto.start = function(options) {
+  console.log('worlflow start');
   options = options || {};
   var d = $.Deferred();
   this._inputs = options.inputs;
@@ -85,7 +86,15 @@ proto.start = function(options) {
 // metodo stop utilizzato per eventualmente stoppare
 // il workflow durante il suo flusso
 proto.stop = function() {
-
+  var d = $.Deferred();
+  this._flow.stop(this)
+    .then(function() {
+      d.resolve()
+    })
+    .fail(function(err) {
+      d.reject(err)
+    });
+  return d.promise();
 };
 
 module.exports = Workflow;

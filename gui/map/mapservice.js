@@ -5,6 +5,7 @@ var GUI = require('gui/gui');
 var ApplicationService = require('core/applicationservice');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var Layer = require('core/layers/layer');
+var Geometry = require('core/geometry/geometry');
 var MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 var LayersStore = require('core/layers/layersstore');
 var Filter = require('core/layers/filter/filter');
@@ -130,7 +131,8 @@ function MapService(options) {
     })
   });
 
-  // vado a registrare gli eventi sui layerstores esistesenti nel registro
+  // vado a registrare gli eventi sui layerstores esistesenti nel registro al momento
+  // dell'istanziamaneto del mapService
   _.forEach(MapLayersStoreRegistry.getLayersStores(), function(layerStore) {
     self._setUpEventsKeysToLayersStore(layerStore);
   });
@@ -139,13 +141,26 @@ function MapService(options) {
   // aggiungere i suoi layers alla mappa
   MapLayersStoreRegistry.onafter('addLayersStore', function(layerStore) {
     self._setUpEventsKeysToLayersStore(layerStore);
+    _.forEach(layerStore.getGeoLayers(), function(layer) {
+      //creo il layer OL
+      var olLayer = self.createOlLayer({
+        id: layer.getId(),
+        geometryType: layer.getGeometryType(),
+        color: layer.getColor()
+      });
+      // lo aggiungo alla mappa
+      self.viewer.map.addLayer(olLayer);
+      // resto in ascolto dell'evento getFeatures sul layer
+      layer.on('getFeatures', function(features) {
+        olLayer.getSource().addFeatures(features);
+      })
+    });
   });
   // sto in ascolto di evantuali aggiunte di layersStore per poter eventualmente
   // aggiungere i suoi layers alla mappa
   MapLayersStoreRegistry.onafter('removeLayersStore', function(layerStore) {
     self._removeEventsKeysToLayersStore(layerStore);
   });
-  
   base(this);
 }
 
@@ -154,8 +169,61 @@ inherit(MapService, G3WObject);
 
 var proto = MapService.prototype;
 
+proto.createOlLayer = function(options) {
+  options = options || {};
+  var id = options.id;
+  var geometryType = options.geometryType;
+  var color = options.color;
+  var style;
+  switch (geometryType) {
+    case 'Point' || 'MultiPoint':
+      style = function() {
+            return [
+              new ol.style.Style({
+                image: new ol.style.Circle({
+                  radius: 5,
+                  fill: new ol.style.Fill({
+                    color: color
+                  })
+                })
+              })
+            ]
+          };
+      break;
+    case 'Line' || 'MultiLine':
+      style = new ol.style.Style({
+            stroke: new ol.style.Stroke({
+              width: 3,
+              color: color
+            })
+          });
+      break;
+    case 'Polygon' || 'MultiPolygon':
+      style =  new ol.style.Style({
+            stroke: new ol.style.Stroke({
+              color:  color,
+              width: 3
+            }),
+            fill: new ol.style.Fill({
+              color: color,
+              opacity: 0.5
+            })
+          })
+  }
+  // vado a creare il layer ol per poter essere aggiunto alla mappa
+  var olSource = new ol.source.Vector({
+    features: new ol.Collection()
+  });
+  var olLayer = new ol.layer.Vector({
+    id: id,
+    source: olSource,
+    style: style
+  });
+  return olLayer;
+};
+
 // rende questo mapservice slave di un altro MapService
-proto.slaveOf = function(mapService, sameLayers){
+proto.slaveOf = function(mapService, sameLayers) {
   // se impostare i layer iniziali uguali a quelli del mapService master
   var sameLayers = sameLayers || false;
 };
@@ -235,6 +303,7 @@ proto.getLayerByName = function(name) {
 
 // ritorna il layer della mappa in base all'id
 proto.getLayerById = function(id) {
+  var layer;
   var map = this.viewer.map;
   map.getLayers().forEach(function(lyr) {
     if (lyr.get('id') == id) {
@@ -881,6 +950,7 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
   var layerStoreId = layerStore.getId();
   if (!this._layersStoresEventKeys[layerStoreId]) {
     this._layersStoresEventKeys[layerStoreId] = [];
+    //evento cambio visibilità al layer
     var layerVisibleKey = layerStore.onafter('setLayersVisible', function (layersIds) {
       var mapLayers = _.map(layersIds, function(layerId) {
         var layer = layerStore.getLayerById(layerId);
@@ -891,11 +961,38 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
     this._layersStoresEventKeys[layerStore.getId()].push({
       setLayersVisible:layerVisibleKey
     });
+
+    //evento aggiunta Layer al layerStore
+    var addLayerKey = layerStore.onafter('addLayer', function (layer) {
+      //creo il layer OL
+      var olLayer = self.createOlLayer({
+        id: layer.getId(),
+        geometryType: layer.getGeometryType(),
+        color: layer.getColor()
+      });
+      // lo aggiungo alla mappa
+      self.viewer.map.addLayer(olLayer);
+      // resto in ascolto dell'evento getFeatures sul layer
+      layer.on('getFeatures', function(features) {
+        olLayer.getSource().addFeatures(features);
+      });
+    });
+
+    this._layersStoresEventKeys[layerStore.getId()].push({
+      addLayer: addLayerKey
+    });
+
+    var removeLayerKery = layerStore.onafter('removeLayer', function (layer) {
+      // TODO
+    });
+
+    this._layersStoresEventKeys[layerStore.getId()].push({
+      removeLayer: removeLayerKery
+    });
   }
 };
 
-proto._setupListeners = function(){
-
+proto._setupListeners = function() {
   this._setBaseLayerListenerKey = this.project.onafter('setBaseLayer',function(){
     self.updateMapLayers(self.mapBaseLayers);
   });
@@ -1254,6 +1351,11 @@ proto.layout = function(width, height) {
 
 proto._reset = function() {
   this._mapLayers = [];
+};
+
+
+proto.getMapBBOX = function() {
+  return this.viewer.getBBOX();
 };
 
 proto._setMapView = function() {

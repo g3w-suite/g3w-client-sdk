@@ -21,6 +21,5 @@ module.exports = {
         break
     }
     return resolution;
-
   }
 };

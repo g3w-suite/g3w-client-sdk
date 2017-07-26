@@ -57,6 +57,7 @@ proto.revert = function() {
   }
 };
 
+//lancio il panic del task
 proto.panic = function() {
   if (this._task && this._task.panic){
     this._task.panic();

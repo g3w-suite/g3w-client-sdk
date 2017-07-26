@@ -23,7 +23,7 @@ g3w.core = {
     MapLayersStoreRegistry: require('core/map/maplayersstoresregistry'),
     layer: {
       WmsLayer: require('core/map/layer/wmslayer'),
-      VectorLayerLoader: require('core/map/layer/loader/vectorloaderlayer'),
+      VectorLayerLoader: require('core/map/layer/loader/vectorloaderlayer')
     }
   },
   catalog: {

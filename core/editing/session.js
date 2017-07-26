@@ -4,36 +4,37 @@ var G3WObject = require('core/g3wobject');
 var resolve = require('core/utils/utils').resolve;
 var reject = require('core/utils/utils').reject;
 var History = require('./history');
+var FeaturesStore = require('core/layers/features/featuresstore');
 
 // classe Session
-function Session() {
+function Session(options) {
+  options = options || {};
   base(this);
-
   //attributo che stabilisce se la sessione è partita
   this._started = false;
-  // editors
-  this._editors = [];
+  // editor
+  this._editor = options.editor || null;
+  // featuresstore che contiene tutte le modifiche che vengono eseguite al layer
+  // è la versione temporanea del features store de singolo editor
+  this._featuresstore = new FeaturesStore();
   // history -- oggetto che contiene gli stati dei layers
   this._history = new History();
+  // contenitore temporaneo che servirà a salvare tutte le modifiche
+  // temporanee che andranno poi salvate nella history e nel featuresstore
+  this._temporarychanges = [];
 }
 
 inherit(Session, G3WObject);
 
 var proto = Session.prototype;
 
-proto.start = function() {
-  var editorPromises = [];
+proto.start = function(options) {
+  var self = this;
   var d = $.Deferred();
-  // nel caso di start chiamo il metodo start
-  // di ogni editor il quale andrà a chiedere al provider del
-  // layer associato di recuperare e salvare nel featuresstore
-  // le features richieste
-  _.forEach(this._editors, function(editor) {
-      editorPromises.push(editor.start())
-  });
-  $.when.call(this, editorPromises)
-    .then(function() {
-      d.resolve(true);
+  this._editor.start(options)
+    .then(function(features) {
+      self._featuresstore.addFeatures(features);
+      d.resolve(features);
       this._started = true;
     })
     .fail(function() {
@@ -47,36 +48,48 @@ proto.isStarted = function() {
   return this._started;
 };
 
-proto.addEditor = function(editor) {
-  var self = this;
-  if (this._editors.indexOf(editor) == -1) {
-    var layer = editr.getLayer();
-    var layerId = layer.getId();
-    this._editors.push(editor);
-    editor.onafter('save', function(state, uniqueId) {
-      self._history.add(layerId, state, uniqueId)
-    })
-  }
+proto.getEditor = function() {
+  return this._editor;
 };
 
-//vado ad aggiungere il layer alla sessione di editing
-proto.addLayer = function(layer) {
-  this._history.addLayer(layer);
+proto.setEditor = function(editor) {
+  this._editor = editor;
 };
 
-//vado a rimuove un layer dalla sessione.
-// Può avvenire se per quella sessione dopo una prima fase
-// di salvataggio dell'editing decido di toglierlo dall
-proto.removeLayer = function() {
-  this._history.removeLayer(layer);
-};
-
+// questa funzione sarà adibita al salvataggio (temporaneo) delle modifiche
+// al layer sia nella history che nel featuresstore
 proto.save = function() {
+  var self = this;
+  var d = $.Deferred();
+  var uniqueId = Date.now();
+  this._history.add(uniqueId, this._temporarychanges)
+    .then(function() {
+      self._temporarychanges = [];
+      d.resolve();
+    });
+  //vado a pololare la history
   console.log("Saving .... ");
   // andarà a popolare la history
-  return resolve()
+  return d.promise();
 };
 
+// metodo che server ad aggiungere features temporanee che poi andranno salvate
+// tramite il metodo save della sessione
+proto.push = function(feature) {
+  this._temporarychanges.push(feature);
+};
+
+// funzione di rollback
+// questa in pratica restituirà tutte le modifche che non saranno salvate nlla sessione
+// ma riapplicate al contrario
+proto.rollback = function() {
+  var d = $.Deferred();
+  console.log('Rollback.....');
+  return d.promise()
+};
+
+// funzione che serializzerà tutto che è stato scritto nella history e passato al server
+// per poterlo salvare nel database
 proto.commit = function() {
   console.log("Committing...");
   // prelevo l'ultimo stato dei layers editati per poter
@@ -87,15 +100,21 @@ proto.commit = function() {
   return resolve();
 };
 
-//funzione di rollback
-proto.rollback = function() {
-  console.log('Rollback.....')
-};
-
 //funzione di stop
 proto.stop = function() {
+  var self = this;
   this._started = false;
-  console.log('stop..')
+  var d = $.Deferred();
+  console.log('stop..');
+  self._featuresstore.clear();
+  d.resolve();
+  return d.promise();
+
+};
+
+//ritorna l'history così che lo chiama può fare direttanmente undo e redo della history
+proto.getHistory = function() {
+  return this._history;
 };
 
 // funzione che fa il cera della history
