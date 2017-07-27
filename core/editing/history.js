@@ -29,26 +29,36 @@ function History() {
   * */
   this._states = [];
   this._current = null;
-  this._historyDependencies = [];
 }
 
 inherit(History, G3WObject);
 
 var proto = History.prototype;
 
-proto.add = function(uniqueId, state) {
-  // l'oggetto state conterrà informazioni sul tipo di
-  // azione fatta e i dati coinvolti ne cambio di stato
-  /*
-  * es {
-  *   type: add,
-  *   data: data
-  * }
-  * */
+proto.add = function(uniqueId, items) {
+  var self = this;
+  //l'oggetto state non è altro che un array contenente feature/features
+  // modificate in quella transazione
   var d = $.Deferred();
+  var currentStateIndex;
+  // prima di inserire un nuovo stato nella storia
+  //verifico che siamo nell'ultimo stao (non è stato fatto nessun undo)
+  // in questo modo non apro strani brach nella storia
+  //Se non siamo all'ultimo, vado a cancellare cosa c'è dopo a quello attuale
+  //e inserisco la nuova storia
+  if (this._states.length && this._current != this.getLastState().id) {
+    _.forEach(this._states, function(state, idx) {
+      if (self._current == state.id) {
+        currentStateIndex = idx;
+        return false;
+      }
+    });
+    //vado a sostiture
+    this._states = this._states.slice(0, currentStateIndex+1);
+  }
   this._states.push({
     id: uniqueId,
-    state: state
+    items: items
   });
   this._current = uniqueId;
   // ritorna la chiave univoca per quella modifica vine restituita dal chiamante
@@ -58,74 +68,55 @@ proto.add = function(uniqueId, state) {
   return d.promise();
 };
 
-
-// funzione redo
+// funzione undo
 proto.undo = function() {
   var self = this;
-  var state;
-  if (this._states.length > 1) {
+  var items;
+  if (this._current == this.getFirstState().id) {
+    // setto a negativo il current il che significa che posso solo andare avanti
+    this._current = null;
+    // restituisco l'unico stata presente
+    items = this._states[0].items;
+  } else {
     _.forEach(this._states, function(state, idx) {
       if (state.id == self._current) {
-        state = self._states[idx-1];
-        self._current = state.id;
+        items = self._states[idx].items;
+        self._current = self._states[idx-1].id;
         return false;
       }
     })
-  } else {
-    // setto a negativo il current il che significa che posso solo andare avanti
-    this._current = null;
   }
-  //this._undoRelatedLayers(oldStateId);
-  return state
+  return items
 };
 
-//funzione undo
+//funzione redo
 proto.redo = function(layerId) {
   var self = this;
-  var state;
+  var items;
   if (!this._current) {
-    state = this._states.state[0];
-    this._current = state.id;
+    items = this._states[0].items;
+    this._current = this._states[0].id;
   } else {
     _.forEach(this._states, function(state, idx) {
       if (self._current == state.id) {
-        state = self._states[idx+1];
-        self._current = state.id;
+        items = self._states[idx+1].items;
+        self._current = self._states[idx+1].id;
         return false;
       }
     })
   }
-  //this._redoRelatedLayers(oldStateId);
-  return state;
+  return items;
 };
 
-// funzione che mi fa il redo su eventuali layers che nanno lo stesso current uninque id
-// cosa che specifica la relazione tra layer
-proto._redoRelatedLayers = function(oldStateId) {
-  var self = this;
-  _.forEach(this.layers, function(layer, layerId) {
-    if (layer.current == oldStateId) {
-      self.redo(layerId);
-    }
-  })
-};
-
-// funzione che mi fa il undo su eventuali layers che nanno lo stesso current uninque id
-// cosa che specifica la relazione tra layer
-proto._undoRelatedLayers = function(oldStateId) {
-  var self = this;
-  _.forEach(this.layers, function(layer, layerId) {
-    if (layer.current == oldStateId) {
-      self.undo(layerId);
-    }
-  })
-};
 
 proto.clear = function() {
   this._states = [];
   this._current = null;
 };
 
+proto.getFirstState = function() {
+  return this._states[0];
+};
 
 // funzione che mi permette di ricavare l'ultimo stato del layer
 proto.getLastState = function() {

@@ -15,13 +15,16 @@ function FeaturesStore(options) {
       })
     },
     addFeature: function(feature) {
-      self._addFeature(feature);
+      this._addFeature(feature);
     },
     setFeatures: function(features) {
-      self._setFeatures(features);
+      this._setFeatures(features);
     },
     removeFeature: function(feature) {
-      self._removeFeature(feature);
+      this._removeFeature(feature);
+    },
+    updateFeature: function(feature) {
+      this._updateFeature(feature);
     },
     clear: function() {
       self._clearFeatures();
@@ -65,6 +68,17 @@ proto.getFeatureById = function(featureId) {
 
 proto._addFeature = function(feature) {
   this._features.push(feature);
+};
+
+//vado ad eseguire in pratica la sostituzione della feature dopo una modifica
+proto._updateFeature = function(feature) {
+  _.forEach(this._features, function(feat, idx) {
+    if (feat.get('gid') == feature.get('gid')) {
+      self._features[idx] = feature;
+      return false;
+    }
+  });
+  return feature;
 };
 
 proto._setFeatures = function(features) {

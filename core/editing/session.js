@@ -5,13 +5,16 @@ var resolve = require('core/utils/utils').resolve;
 var reject = require('core/utils/utils').reject;
 var History = require('./history');
 var FeaturesStore = require('core/layers/features/featuresstore');
+var UndoRedoManager = require('./undoredomanager');
 
 // classe Session
 function Session(options) {
   options = options || {};
   base(this);
   //attributo che stabilisce se la sessione è partita
-  this._started = false;
+  this.state = {
+    started: false
+  };
   // editor
   this._editor = options.editor || null;
   // featuresstore che contiene tutte le modifiche che vengono eseguite al layer
@@ -33,13 +36,15 @@ proto.start = function(options) {
   var d = $.Deferred();
   this._editor.start(options)
     .then(function(features) {
+      // vado a popolare il featuresstore della sessione con le features
+      //che vengono caricate via via dall'editor
       self._featuresstore.addFeatures(features);
+      self.state.started = true;
       d.resolve(features);
-      this._started = true;
     })
-    .fail(function() {
-      d.reject();
-      this._started = false;
+    .fail(function(err) {
+      self.state.started = true;
+      d.reject(err);
     });
   return d.promise();
 };
@@ -62,13 +67,14 @@ proto.save = function() {
   var self = this;
   var d = $.Deferred();
   var uniqueId = Date.now();
+  // vado a d aggiungere tutte le modifiche temporanee
   this._history.add(uniqueId, this._temporarychanges)
     .then(function() {
       self._temporarychanges = [];
       d.resolve();
     });
   //vado a pololare la history
-  console.log("Saving .... ");
+  console.log("Session Saving .... ");
   // andarà a popolare la history
   return d.promise();
 };
@@ -80,18 +86,20 @@ proto.push = function(feature) {
 };
 
 // funzione di rollback
-// questa in pratica restituirà tutte le modifche che non saranno salvate nlla sessione
-// ma riapplicate al contrario
+// questa in pratica restituirà tutte le modifche che non saranno salvate nella history
+// e nel featuresstore della sessione ma riapplicate al contrario
 proto.rollback = function() {
   var d = $.Deferred();
-  console.log('Rollback.....');
+  //vado a afre il rollback del feature store
+  UndoRedoManager.execute(this._featuresstore, this._temporarychanges);
+  console.log('Session Rollback.....');
   return d.promise()
 };
 
 // funzione che serializzerà tutto che è stato scritto nella history e passato al server
 // per poterlo salvare nel database
 proto.commit = function() {
-  console.log("Committing...");
+  console.log("Sessione Committing...");
   // prelevo l'ultimo stato dei layers editati per poter
   // creare l'oggetoo post da passare al server
   this._history.getLastLayersState();
@@ -100,13 +108,16 @@ proto.commit = function() {
   return resolve();
 };
 
-//funzione di stop
+//funzione di stop della sessione
 proto.stop = function() {
   var self = this;
-  this._started = false;
+  this.state.started = false;
   var d = $.Deferred();
-  console.log('stop..');
-  self._featuresstore.clear();
+  console.log('Sessione stopping ..');
+  // vado a ripulire tutto il featureststore
+  this._featuresstore.clear();
+  // vado a ripulire la storia
+  this._clearHistory();
   d.resolve();
   return d.promise();
 

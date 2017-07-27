@@ -9,7 +9,8 @@ g3w.core = {
   i18n: require('core/i18n/i18n.service'),
   editing: {
     Session: require('core/editing/session'),
-    Editor: require('core/editing/editor')
+    Editor: require('core/editing/editor'),
+    UndoRedoManager: require('core/editing/undoredomanager')
   },
   geometry: {
     Geom: require('core/geometry/geom'),

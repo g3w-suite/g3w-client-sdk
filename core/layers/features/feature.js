@@ -9,7 +9,7 @@ var Feature = function(options) {
   var feature = options.feature;
   //verificare come utilizzare clone
   if (feature) {
-    //DA CAMBIARE
+    //DA CAMBIARE HARDCODED
     var id = feature.get('gid');
     this.setId(id);
     this.setProperties(feature.getProperties());
@@ -27,9 +27,9 @@ var Feature = function(options) {
   this.state = {
     state: null /*stato dela feature
                      originale : null
-                     nuovo: 0
-                     aggiornato: 1,
-                     cancellato: 2
+                     add: 0
+                     update: 1,
+                     delete: 2
                 */
   };
 };
@@ -40,29 +40,33 @@ proto = Feature.prototype;
 
 // setta la feature a state 2 delete
 proto.delete = function() {
-  this.state = 2;
+  this.state = 'delete';
 };
 
 //setta lo stato a feature aggiornata
 proto.update = function() {
-  this.state = 1;
+  this.state = 'update';
 };
 
 // setta lo stato a nuovo 0
 proto.add = function() {
-  this.state = 0;
+  this.state = 'add';
 };
 
 proto.isNew = function() {
-  return this.state.state == 0;
+  return this.state.state == 'add';
 };
 
 proto.isUpdated = function() {
-  return this.state.state == 1;
+  return this.state.state == 'update';
 };
 
 proto.isDeleted = function() {
-  return this.state.state == 2;
+  return this.state.state == 'delete';
+};
+
+proto.getState = function() {
+  return this.state;
 };
 
 
