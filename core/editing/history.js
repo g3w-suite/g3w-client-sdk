@@ -27,6 +27,9 @@ function History() {
   *
   * },
   * */
+  // qui setto la massima lunghezza del "buffer history" per undo redo
+  // al momento non utilizzata
+  this._maxLength = 10;
   this._states = [];
   this._current = null;
 }
@@ -42,7 +45,7 @@ proto.add = function(uniqueId, items) {
   var d = $.Deferred();
   var currentStateIndex;
   // prima di inserire un nuovo stato nella storia
-  //verifico che siamo nell'ultimo stao (non è stato fatto nessun undo)
+  //verifico che siamo nell'ultimo stato (non è stato fatto nessun undo)
   // in questo modo non apro strani brach nella storia
   //Se non siamo all'ultimo, vado a cancellare cosa c'è dopo a quello attuale
   //e inserisco la nuova storia
@@ -70,6 +73,7 @@ proto.add = function(uniqueId, items) {
 
 // funzione undo
 proto.undo = function() {
+  var d = $.Deferred();
   var self = this;
   var items;
   if (this._current == this.getFirstState().id) {
@@ -86,11 +90,13 @@ proto.undo = function() {
       }
     })
   }
-  return items
+  d.resolve(items);
+  return d.promise();
 };
 
 //funzione redo
 proto.redo = function(layerId) {
+  var d = $.Deferred();
   var self = this;
   var items;
   if (!this._current) {
@@ -105,24 +111,40 @@ proto.redo = function(layerId) {
       }
     })
   }
-  return items;
+  d.resolve(items);
+  return d.promise();
 };
 
-
+// riplusce tutta la storia
 proto.clear = function() {
   this._states = [];
   this._current = null;
 };
 
 proto.getFirstState = function() {
-  return this._states[0];
+  return this._states.length ? this._states[0] : null;
 };
 
-// funzione che mi permette di ricavare l'ultimo stato del layer
+//restituisce l'ultimo state registrato (che non è detto sia quello corrente)
 proto.getLastState = function() {
-  if (this._states.length)
-    return this._states[this._states.length - 1];
-  return null;
+  var length = this._states.length;
+  return length ? this._states[length -1] : null;
+};
+
+// funzione che mi permette di ricavare stato corrente del layer
+// attualmente nella storia
+proto.getCurrentState = function() {
+  var self = this;
+  var lastState;
+  if (this._states.length) {
+    _.forEach(this._states, function (state) {
+        if (self._current == state.id) {
+          lastState = state;
+          return false
+        }
+    });
+  }
+  return lastState;
 };
 
 //funzione che mi dice se posso fare l'undo sulla history
@@ -133,6 +155,39 @@ proto.canUndo = function() {
 // funzione che mi dice se posso fare il redo sulla history
 proto.canRedo = function() {
   return (_.isNull(this._current) && this._states.length > 0) || (this.getLastState() && this.getLastState().id != this._current);
+};
+
+//funzione che restituisce tutte le modifche uniche da applicare (mandare al server)
+proto.commit = function() {
+  var self = this;
+  // contegono oggetti aventi lo stato di una feature unica
+  var commitItems = [];
+  var add = true;
+  // qui ricavo solo la parte degli state che mi servono per ricostruire la storia
+  _.forEach(this._states.reverse(), function(state, idx) {
+    if (self.getCurrentState() == state) {
+      self._states = self._states.slice(idx, self._states.length);
+      return false;
+    }
+  });
+  _.forEach(this._states, function (state) {
+    _.forEach(state.items, function(item) {
+      _.forEach(commitItems, function(commitItem) {
+        //verifico se presente uno stesso item
+        if (commitItem.getId() == item.getId()) {
+          add = false;
+          return false;
+        }
+      });
+      if (add)
+        if (item.getId() > 0 && item.getState() != 'add')
+          commitItems.push(item);
+      // risetto a true
+      add = true;
+    });
+  });
+  console.log(commitItems);
+  return commitItems;
 };
 
 module.exports = History;

@@ -40,17 +40,17 @@ proto = Feature.prototype;
 
 // setta la feature a state 2 delete
 proto.delete = function() {
-  this.state = 'delete';
+  this.state.state = 'delete';
 };
 
 //setta lo stato a feature aggiornata
 proto.update = function() {
-  this.state = 'update';
+  this.state.state = 'update';
 };
 
 // setta lo stato a nuovo 0
 proto.add = function() {
-  this.state = 'add';
+  this.state.state = 'add';
 };
 
 proto.isNew = function() {
@@ -66,7 +66,7 @@ proto.isDeleted = function() {
 };
 
 proto.getState = function() {
-  return this.state;
+  return this.state.state;
 };
 
 

@@ -72,13 +72,13 @@ proto._addFeature = function(feature) {
 
 //vado ad eseguire in pratica la sostituzione della feature dopo una modifica
 proto._updateFeature = function(feature) {
+  var self = this;
   _.forEach(this._features, function(feat, idx) {
-    if (feat.get('gid') == feature.get('gid')) {
+    if (feat.getId() == feature.getId()) {
       self._features[idx] = feature;
       return false;
     }
   });
-  return feature;
 };
 
 proto._setFeatures = function(features) {
@@ -88,7 +88,13 @@ proto._setFeatures = function(features) {
 };
 
 proto._removeFeature = function(feature) {
-  this._features.push(feature);
+  var self = this;
+  _.forEach(this._features, function(feat, idx) {
+    if (feature.getId() == feat.getId()) {
+      self._features.splice(idx, 1);
+      return false
+    }
+  })
 };
 
 proto._clearFeatures = function() {

@@ -5,6 +5,7 @@ var GUI = require('gui/gui');
 var ApplicationService = require('core/applicationservice');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var Layer = require('core/layers/layer');
+var olVectorLayer = require('core/layers/olVectorLayer');
 var Geometry = require('core/geometry/geometry');
 var MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 var LayersStore = require('core/layers/layersstore');
@@ -214,7 +215,7 @@ proto.createOlLayer = function(options) {
   var olSource = new ol.source.Vector({
     features: new ol.Collection()
   });
-  var olLayer = new ol.layer.Vector({
+  var olLayer = new olVectorLayer({
     id: id,
     source: olSource,
     style: style

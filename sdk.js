@@ -10,7 +10,7 @@ g3w.core = {
   editing: {
     Session: require('core/editing/session'),
     Editor: require('core/editing/editor'),
-    UndoRedoManager: require('core/editing/undoredomanager')
+    ChangesManager: require('core/editing/changesmanager')
   },
   geometry: {
     Geom: require('core/geometry/geom'),

@@ -1,11 +1,8 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
-var resolve = require('core/utils/utils').resolve;
-var reject = require('core/utils/utils').reject;
 var History = require('./history');
 var FeaturesStore = require('core/layers/features/featuresstore');
-var UndoRedoManager = require('./undoredomanager');
 
 // classe Session
 function Session(options) {
@@ -61,20 +58,31 @@ proto.setEditor = function(editor) {
   this._editor = editor;
 };
 
+//restituisce il feature store della sessione
+proto.getFeaturesStore = function() {
+  return this._featuresstore;
+};
+
 // questa funzione sarà adibita al salvataggio (temporaneo) delle modifiche
 // al layer sia nella history che nel featuresstore
-proto.save = function() {
-  var self = this;
-  var d = $.Deferred();
-  var uniqueId = Date.now();
-  // vado a d aggiungere tutte le modifiche temporanee
-  this._history.add(uniqueId, this._temporarychanges)
-    .then(function() {
-      self._temporarychanges = [];
-      d.resolve();
-    });
+proto.save = function(options) {
   //vado a pololare la history
   console.log("Session Saving .... ");
+  var self = this;
+  options = options || {};
+  var changes;
+  var d = $.Deferred();
+  // vado a prevedere che ne save venga passato un id che lega quella transazione(modifica) con
+  // quella di un altra sessione
+  var uniqueId = options.id || Date.now();
+  // vado a d aggiungere tutte le modifiche temporanee alla history
+  // rendendole parte della sessione
+  this._history.add(uniqueId, this._temporarychanges)
+    .then(function() {
+      changes = self._temporarychanges;
+      self._temporarychanges = [];
+      d.resolve(changes);
+    });
   // andarà a popolare la history
   return d.promise();
 };
@@ -90,22 +98,41 @@ proto.push = function(feature) {
 // e nel featuresstore della sessione ma riapplicate al contrario
 proto.rollback = function() {
   var d = $.Deferred();
-  //vado a afre il rollback del feature store
-  UndoRedoManager.execute(this._featuresstore, this._temporarychanges);
+  //vado a after il rollback dellle feature temporanee salvate in sessione
   console.log('Session Rollback.....');
+  d.resolve(this._temporarychanges);
+  this._temporarychanges = [];
   return d.promise()
+};
+
+// funzione di undo che chiede alla history di farlo
+proto.undo = function() {
+  return this._history.undo();
+};
+
+// funzione di undo che chiede alla history di farlo
+proto.redo = function() {
+  return this._history.redo();
+};
+
+//funzione che prende tutte le modifche dalla storia e le
+//serializza in modo da poterle inviare tramite posto al server
+proto._serializeCommit = function() {
+
 };
 
 // funzione che serializzerà tutto che è stato scritto nella history e passato al server
 // per poterlo salvare nel database
 proto.commit = function() {
+  var d = $.Deferred();
   console.log("Sessione Committing...");
-  // prelevo l'ultimo stato dei layers editati per poter
-  // creare l'oggetoo post da passare al server
-  this._history.getLastLayersState();
   // andà a pesacare dalla history tutte le modifiche effettuare
   // e si occuperà di di eseguire la richiesta al server di salvataggio dei dati
-  return resolve();
+  this._history.commit();
+
+  d.resolve();
+  this._history.clear();
+  return d.promise();
 };
 
 //funzione di stop della sessione

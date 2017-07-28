@@ -7,7 +7,6 @@ var GeoLayerMixin = require('./geolayermixin');
 
 function VectorLayer(config) {
   base(this, config);
-
   var self = this;
   this.type = Layer.LayerTypes.VECTOR;
   this._color = VectorLayer.COLORS.splice(0,1).pop();
