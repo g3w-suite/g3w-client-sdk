@@ -17,9 +17,6 @@ function FeaturesStore(options) {
     addFeature: function(feature) {
       this._addFeature(feature);
     },
-    setFeatures: function(features) {
-      this._setFeatures(features);
-    },
     removeFeature: function(feature) {
       this._removeFeature(feature);
     },
@@ -35,7 +32,7 @@ function FeaturesStore(options) {
       var d = $.Deferred();
       // verifico che ci siano opzioni altrimenti vado a recuperare le
       // features prese
-      if (options) {
+      if (options && this._provider) {
         this._provider.getFeatures(options)
           .then(function(features) {
             self.addFeatures(features);
@@ -81,17 +78,16 @@ proto._updateFeature = function(feature) {
   });
 };
 
-proto._setFeatures = function(features) {
-  if (_.isArray(features)) {
-    this._features = features;
-  }
+proto.setFeatures = function(features) {
+  this._features = features;
 };
 
 proto._removeFeature = function(feature) {
   var self = this;
-  _.forEach(this._features, function(feat, idx) {
+  _.forEach(this._features.getArray(), function(feat, idx) {
+    console.log(feat);
     if (feature.getId() == feat.getId()) {
-      self._features.splice(idx, 1);
+      self._features.removeAt(idx);
       return false
     }
   })

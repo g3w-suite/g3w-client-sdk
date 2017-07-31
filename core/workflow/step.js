@@ -26,6 +26,7 @@ var proto = Step.prototype;
 
 // metodo chiamato per far partire il task
 proto.run = function(inputs, context) {
+  var self = this;
   var d = $.Deferred();
   if (this._task) {
     try {
@@ -35,6 +36,10 @@ proto.run = function(inputs, context) {
       // gli inputs che il context
       this._task.run(inputs, context)
         .then(function(outups) {
+          //vado a chiamare lo stop del task
+          // al fine di ripulire l'applicazione
+          //ad esempio da interactions aggiunte alla mappa
+          self._task.stop();
           d.resolve(outups);
         })
         .fail(function(err) {
@@ -48,6 +53,12 @@ proto.run = function(inputs, context) {
     }
   }
   return d.promise();
+};
+
+//funzione che mi va  a fare lo spo dello step e in particolare del
+//task associato
+proto.stop = function() {
+  this._task.stop();
 };
 
 // faccio il revert del task

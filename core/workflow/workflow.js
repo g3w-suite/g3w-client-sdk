@@ -86,6 +86,7 @@ proto.start = function(options) {
 // metodo stop utilizzato per eventualmente stoppare
 // il workflow durante il suo flusso
 proto.stop = function() {
+  console.log('Workflow stopping .... ')
   var d = $.Deferred();
   this._flow.stop(this)
     .then(function() {

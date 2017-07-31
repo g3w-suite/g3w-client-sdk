@@ -38,6 +38,8 @@ ol.inherits(Feature, ol.Feature);
 
 proto = Feature.prototype;
 
+proto.constructor = 'Feature';
+
 // setta la feature a state 2 delete
 proto.delete = function() {
   this.state.state = 'delete';

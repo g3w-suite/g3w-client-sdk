@@ -44,7 +44,8 @@ g3w.core = {
     },
     features: {
       Feature: require('core/layers/features/feature'),
-      FeaturesStore: require('core/layers/features/featuresstore')
+      FeaturesStore: require('core/layers/features/featuresstore'),
+      OlFeaturesStore: require('core/layers/features/olfeaturesstore')
     },
     MapLayer: require('core/map/layer/maplayer')
   },

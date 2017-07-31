@@ -3,6 +3,7 @@ var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
 var History = require('./history');
 var FeaturesStore = require('core/layers/features/featuresstore');
+var ChangesManager = require('./changesmanager');
 
 // classe Session
 function Session(options) {
@@ -16,7 +17,7 @@ function Session(options) {
   this._editor = options.editor || null;
   // featuresstore che contiene tutte le modifiche che vengono eseguite al layer
   // è la versione temporanea del features store de singolo editor
-  this._featuresstore = new FeaturesStore();
+  this._featuresstore = options.featuresstore || new FeaturesStore();
   // history -- oggetto che contiene gli stati dei layers
   this._history = new History();
   // contenitore temporaneo che servirà a salvare tutte le modifiche
@@ -70,7 +71,6 @@ proto.save = function(options) {
   console.log("Session Saving .... ");
   var self = this;
   options = options || {};
-  var changes;
   var d = $.Deferred();
   // vado a prevedere che ne save venga passato un id che lega quella transazione(modifica) con
   // quella di un altra sessione
@@ -79,9 +79,9 @@ proto.save = function(options) {
   // rendendole parte della sessione
   this._history.add(uniqueId, this._temporarychanges)
     .then(function() {
-      changes = self._temporarychanges;
+      // vado a fare il clear dei cambiamenti temporanei
       self._temporarychanges = [];
-      d.resolve(changes);
+      d.resolve();
     });
   // andarà a popolare la history
   return d.promise();
@@ -90,6 +90,8 @@ proto.save = function(options) {
 // metodo che server ad aggiungere features temporanee che poi andranno salvate
 // tramite il metodo save della sessione
 proto.push = function(feature) {
+  //applico i cambiamenti al featuresstore;
+  ChangesManager.execute(this._featuresstore, [feature]);
   this._temporarychanges.push(feature);
 };
 
@@ -100,19 +102,29 @@ proto.rollback = function() {
   var d = $.Deferred();
   //vado a after il rollback dellle feature temporanee salvate in sessione
   console.log('Session Rollback.....');
-  d.resolve(this._temporarychanges);
+  // vado a modificare il featurestore facendo il rollback dei cambiamenti temporanei
+  ChangesManager.execute(this._featuresstore, this._temporarychanges, true);
   this._temporarychanges = [];
+  d.resolve();
   return d.promise()
 };
 
 // funzione di undo che chiede alla history di farlo
 proto.undo = function() {
-  return this._history.undo();
+  var self = this;
+  this._history.undo()
+    .then(function(items) {
+      ChangesManager.execute(self._featuresstore, items, true);
+    })
 };
 
 // funzione di undo che chiede alla history di farlo
 proto.redo = function() {
-  return this._history.redo();
+  var self = this;
+  this._history.redo()
+    .then(function(items) {
+      ChangesManager.execute(self._featuresstore, items, true);
+    })
 };
 
 //funzione che prende tutte le modifche dalla storia e le

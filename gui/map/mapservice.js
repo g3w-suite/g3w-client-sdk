@@ -5,7 +5,6 @@ var GUI = require('gui/gui');
 var ApplicationService = require('core/applicationservice');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var Layer = require('core/layers/layer');
-var olVectorLayer = require('core/layers/olVectorLayer');
 var Geometry = require('core/geometry/geometry');
 var MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 var LayersStore = require('core/layers/layersstore');
@@ -151,10 +150,6 @@ function MapService(options) {
       });
       // lo aggiungo alla mappa
       self.viewer.map.addLayer(olLayer);
-      // resto in ascolto dell'evento getFeatures sul layer
-      layer.on('getFeatures', function(features) {
-        olLayer.getSource().addFeatures(features);
-      })
     });
   });
   // sto in ascolto di evantuali aggiunte di layersStore per poter eventualmente
@@ -215,7 +210,7 @@ proto.createOlLayer = function(options) {
   var olSource = new ol.source.Vector({
     features: new ol.Collection()
   });
-  var olLayer = new olVectorLayer({
+  var olLayer = new ol.layer.Vector({
     id: id,
     source: olSource,
     style: style
@@ -973,10 +968,6 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
       });
       // lo aggiungo alla mappa
       self.viewer.map.addLayer(olLayer);
-      // resto in ascolto dell'evento getFeatures sul layer
-      layer.on('getFeatures', function(features) {
-        olLayer.getSource().addFeatures(features);
-      });
     });
 
     this._layersStoresEventKeys[layerStore.getId()].push({

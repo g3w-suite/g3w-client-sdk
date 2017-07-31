@@ -11,13 +11,15 @@ function Flow() {
   var inputs;
   var counter = 0;
   var context = null;
-  
+  var workflow;
 
+  //metodo start del workflow
   this.start = function(workflow) {
     if (counter > 0) {
       console.log("reset workflow before restarting");
       onerror('workflow not reset');
     }
+    workflow = workflow;
     //prendo gli inputs passati al workflow
     inputs = workflow.getInputs();
     // prendo il contex su cui agisce il workflow
@@ -45,7 +47,7 @@ function Flow() {
         self.onError(error);
       });
   };
-  
+
   //funzione che verifica se siamo arrivati alla fine degli steps
   // se si risolve
   this.onDone = function(outputs) {
@@ -54,6 +56,8 @@ function Flow() {
     counter++;
     if (counter == steps.length) {
       console.log('sono arrivato in fondo agli steps senza errori');
+      // faccio lo stop del flusso
+      counter = 0;
       d.resolve(outputs);
       return;
     }
@@ -62,13 +66,24 @@ function Flow() {
 
   this.onError = function(error) {
     console.log('step error');
+    steps[counter].stop();
+    counter = 0;
     d.reject(error);
   };
 
+  // stop flow
   this.stop = function() {
     var d = $.Deferred();
-    console.log('stop flow ...');
-    d.resolve(true);
+    console.log('Flow stopping ...');
+    //verifico a che punto è il counter se all'inizio
+    if (counter == 0) {
+      steps[0].stop();
+      d.resolve();
+    } else {
+      // altrimenti faccio un reject che mi porterà
+      //a fare un rollback della sessione
+      d.reject();
+    }
     return d.promise();
   };
 

@@ -56,8 +56,10 @@ proto.add = function(uniqueId, items) {
         return false;
       }
     });
-    //vado a sostiture
+    //vado a sostiture il nuovo states array (una nuova storia da quel momento inizia)
+    console.log('sono qui a riscrivere la storia');
     this._states = this._states.slice(0, currentStateIndex+1);
+    console.log(this._states);
   }
   this._states.push({
     id: uniqueId,
