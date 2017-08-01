@@ -62,6 +62,7 @@ g3w.core = {
     PluginService: require('core/plugin/pluginservice')
   },
   workflow: {
+    Task: require('core/workflow/task'),
     Step: require('core/workflow/step'),
     Flow: require('core/workflow/flow'),
     Workflow: require('core/workflow/workflow')

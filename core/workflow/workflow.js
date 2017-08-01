@@ -83,6 +83,12 @@ proto.start = function(options) {
   return d.promise();
 };
 
+// funzione adibita alla gestione degli errori che si
+// possono verificare durante l'itero flusso
+proto.panic = function() {
+
+};
+
 // metodo stop utilizzato per eventualmente stoppare
 // il workflow durante il suo flusso
 proto.stop = function() {

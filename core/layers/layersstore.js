@@ -17,6 +17,7 @@ function LayersStore(config) {
   };
 
   this.state = {
+    //questo attributo mi server per popolare eventualmente l'abero del catalogo
     layerstree: []
   };
 

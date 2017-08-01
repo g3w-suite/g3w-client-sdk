@@ -78,6 +78,14 @@ proto.getFeaturesStore = function() {
   return this._featuresStore;
 };
 
+proto.setFeaturesStore = function(featuresstore) {
+  this._featuresStore = featuresstore;
+};
+
+proto.setSource = function(source) {
+  this.setFeaturesStore(source);
+};
+
 //funzione che va a sostiuire le features al featuresstore del layer
 proto._setFeatures = function(features) {
   this._featuresStore.setFeatures(features);
@@ -89,7 +97,6 @@ proto.addFeatures = function(features) {
     self.addFeature(feature);
   });
 };
-
 
 //metodo che ha lo scopo di aggiungere la feature all featuresstore del layer
 proto._addFeature = function(feature) {
@@ -117,7 +124,7 @@ proto.getDependencies = function() {
 //funzione che ritorna possibili dipendenze del layer
 proto.hasDependencies = function() {
   return false;
-}
+};
 
 
 module.exports = TableLayer;

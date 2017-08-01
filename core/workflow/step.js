@@ -10,6 +10,7 @@ function Step(options) {
   this._task = options.task || null;
   this._outputs = options.outputs || null;
 
+  //stato dinamico dello step
   this.state = {
     id: options.id || null,
     name: options.name || null,
@@ -36,10 +37,9 @@ proto.run = function(inputs, context) {
       // gli inputs che il context
       this._task.run(inputs, context)
         .then(function(outups) {
-          //vado a chiamare lo stop del task
-          // al fine di ripulire l'applicazione
-          //ad esempio da interactions aggiunte alla mappa
-          self._task.stop();
+          // se il task è andato a buon fine chiamo il metodo stop
+          // così che posso fare "pulizia di cose appese"
+          self.stop();
           d.resolve(outups);
         })
         .fail(function(err) {
@@ -47,8 +47,9 @@ proto.run = function(inputs, context) {
         })
     }
     catch(err) {
-      this.state.running = false;
       this.state.error = err;
+      this.state.error = 'Si è verificato un problema ..';
+      this.stop();
       d.reject(err);
     }
   }
@@ -59,11 +60,13 @@ proto.run = function(inputs, context) {
 //task associato
 proto.stop = function() {
   this._task.stop();
+  this.state.running = false;
+
 };
 
 // faccio il revert del task
 proto.revert = function() {
-  if (this._task && this._task.revert){
+  if (this._task && this._task.revert) {
    this._task.revert();
   }
 };
@@ -75,6 +78,7 @@ proto.panic = function() {
   }
 };
 
+// id dello step
 proto.getId = function() {
   return this.state.id;
 };

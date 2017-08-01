@@ -8,7 +8,16 @@ var ChangesManager = require('./changesmanager');
 // classe Session
 function Session(options) {
   options = options || {};
-  base(this);
+  this.setters = {
+    // setter per start
+    start: function(options) {
+      this._start(options);
+    },
+    stop: function() {
+      this._stop();
+    }
+  };
+  base(this, options);
   //attributo che stabilisce se la sessione è partita
   this.state = {
     started: false
@@ -29,7 +38,7 @@ inherit(Session, G3WObject);
 
 var proto = Session.prototype;
 
-proto.start = function(options) {
+proto._start = function(options) {
   var self = this;
   var d = $.Deferred();
   this._editor.start(options)
@@ -48,7 +57,7 @@ proto.start = function(options) {
 };
 
 proto.isStarted = function() {
-  return this._started;
+  return this.state.started;
 };
 
 proto.getEditor = function() {
@@ -81,7 +90,8 @@ proto.save = function(options) {
     .then(function() {
       // vado a fare il clear dei cambiamenti temporanei
       self._temporarychanges = [];
-      d.resolve();
+      // risolvo ritornando l'id unico
+      d.resolve(uniqueId);
     });
   // andarà a popolare la history
   return d.promise();
@@ -141,25 +151,29 @@ proto.commit = function() {
   // andà a pesacare dalla history tutte le modifiche effettuare
   // e si occuperà di di eseguire la richiesta al server di salvataggio dei dati
   this._history.commit();
-
   d.resolve();
   this._history.clear();
   return d.promise();
 };
 
 //funzione di stop della sessione
-proto.stop = function() {
+proto._stop = function() {
   var self = this;
   this.state.started = false;
   var d = $.Deferred();
   console.log('Sessione stopping ..');
+  this.clear();
+  d.resolve();
+  return d.promise();
+
+};
+
+// clear di tutte le cose associate alla sessione
+proto.clear = function() {
   // vado a ripulire tutto il featureststore
   this._featuresstore.clear();
   // vado a ripulire la storia
   this._clearHistory();
-  d.resolve();
-  return d.promise();
-
 };
 
 //ritorna l'history così che lo chiama può fare direttanmente undo e redo della history

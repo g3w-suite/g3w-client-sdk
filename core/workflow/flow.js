@@ -38,7 +38,7 @@ function Flow() {
   };
 
   //funzione che fa il rloun dello step
-  this.runStep = function(step, inputs, context) {
+  this.runStep = function(step, inputs) {
     step.run(inputs, context)
       .then(function(outputs) {
         self.onDone(outputs);

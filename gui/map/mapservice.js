@@ -141,16 +141,6 @@ function MapService(options) {
   // aggiungere i suoi layers alla mappa
   MapLayersStoreRegistry.onafter('addLayersStore', function(layerStore) {
     self._setUpEventsKeysToLayersStore(layerStore);
-    _.forEach(layerStore.getGeoLayers(), function(layer) {
-      //creo il layer OL
-      var olLayer = self.createOlLayer({
-        id: layer.getId(),
-        geometryType: layer.getGeometryType(),
-        color: layer.getColor()
-      });
-      // lo aggiungo alla mappa
-      self.viewer.map.addLayer(olLayer);
-    });
   });
   // sto in ascolto di evantuali aggiunte di layersStore per poter eventualmente
   // aggiungere i suoi layers alla mappa
@@ -212,7 +202,7 @@ proto.createOlLayer = function(options) {
   });
   var olLayer = new ol.layer.Vector({
     id: id,
-    source: olSource,
+    //source: olSource,
     style: style
   });
   return olLayer;
@@ -959,27 +949,35 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
     });
 
     //evento aggiunta Layer al layerStore
-    var addLayerKey = layerStore.onafter('addLayer', function (layer) {
-      //creo il layer OL
-      var olLayer = self.createOlLayer({
-        id: layer.getId(),
-        geometryType: layer.getGeometryType(),
-        color: layer.getColor()
-      });
-      // lo aggiungo alla mappa
-      self.viewer.map.addLayer(olLayer);
+    var addLayerKey = layerStore.onafter('addLayer', function(layer) {
+      if (layer.getType() == 'vector') {
+        //creo il layer OL
+        var olLayer = self.createOlLayer({
+          id: layer.getId(),
+          geometryType: layer.getGeometryType(),
+          color: layer.getColor()
+        });
+        // lo aggiungo alla mappa
+        self.viewer.map.addLayer(olLayer);
+      }
     });
 
     this._layersStoresEventKeys[layerStore.getId()].push({
       addLayer: addLayerKey
     });
 
-    var removeLayerKery = layerStore.onafter('removeLayer', function (layer) {
-      // TODO
+    //evento aggiunta Layer al layerStore
+    var removeLayerKey = layerStore.onafter('removeLayer', function (layer) {
+      if (layer.getType() == 'vector') {
+        var layerId = layer.getId();
+        var olLayer = self.getLayerById(layerId);
+        // lo aggiungo alla mappa
+        self.viewer.map.removeLayer(olLayer);
+      }
     });
 
     this._layersStoresEventKeys[layerStore.getId()].push({
-      removeLayer: removeLayerKery
+      removeLayer: removeLayerKey
     });
   }
 };

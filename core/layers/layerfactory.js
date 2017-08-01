@@ -22,9 +22,12 @@ function LayerFactory() {
     if (serverType == 'QGIS') {
       // imposto subito a ImageLayer
       LayerClass = ImageLayer;
+      // poi vado a verificare
       if (config.source && config.geometrytype) {
         if ([Layer.SourceTypes.POSTGIS, Layer.SourceTypes.SPATIALITE, Layer.SourceTypes.CSV].indexOf(config.source.type) > -1) {
           if (config.geometrytype && config.geometrytype == undefined) {
+            // se non è stato definito il tipo geometrico allora assesgno classe
+            // TableLayer
             LayerClass = TableLayer;
           }
         }
