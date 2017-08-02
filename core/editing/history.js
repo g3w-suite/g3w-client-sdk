@@ -162,8 +162,11 @@ proto.canRedo = function() {
 //funzione che restituisce tutte le modifche uniche da applicare (mandare al server)
 proto.commit = function() {
   var self = this;
-  // contegono oggetti aventi lo stato di una feature unica
-  var commitItems = [];
+  // contegono oggetti aventi lo stato di una feature unica e il relativo id
+  var commitItems = {
+    id:[], // gli id unicimi serivranno per capire le dipendenze
+    items:[] // le features modificate
+  };
   var add = true;
   // qui ricavo solo la parte degli state che mi servono per ricostruire la storia
   _.forEach(this._states.reverse(), function(state, idx) {
@@ -174,21 +177,24 @@ proto.commit = function() {
   });
   _.forEach(this._states, function (state) {
     _.forEach(state.items, function(item) {
-      _.forEach(commitItems, function(commitItem) {
+      _.forEach(commitItems.items, function(commitItem) {
         //verifico se presente uno stesso item
         if (commitItem.getId() == item.getId()) {
           add = false;
           return false;
         }
       });
+      // se true sinifica che lo devo aggiungere
       if (add)
-        if (item.getId() > 0 && item.getState() != 'add')
-          commitItems.push(item);
+        // vado a verificare che non sia stato cancellato un aggiunto nuovo o che sia stato riaggiunto un essistente (undo/redo)
+        if (item.getId() > 0 && item.getState() != 'add' || item.getState() == 'delete' && item.getId().indexOf('__new__') == -1) {
+          commitItems.id.push(state.id);
+          commitItems.items.push(item)
+        }
       // risetto a true
       add = true;
     });
   });
-  console.log(commitItems);
   return commitItems;
 };
 

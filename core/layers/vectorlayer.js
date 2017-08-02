@@ -25,8 +25,6 @@ var proto = VectorLayer.prototype;
 proto.getLayerForEditing = function() {
   // nel caso fosse già un vector layer ritorna se stesso
   var editingLayer = _.cloneDeep(this);
-  editingLayer.setId('editing_' + this.getId());
-  editingLayer.getId();
   return this;
 };
 

@@ -138,7 +138,6 @@ function PrintComponentService() {
         }
         // setto un padding
         width = width - parseInt(width/10);
-
         height = width / rapportoMappaTemplate; // numero di pixel raggio altezza
       } else {
         height = this.state.size[1] / 2; // numero di pixel raggio larghezza

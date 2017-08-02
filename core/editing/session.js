@@ -13,6 +13,9 @@ function Session(options) {
     start: function(options) {
       this._start(options);
     },
+    getFeatures: function(options) {
+      this._getFeatures(options);
+    },
     stop: function() {
       this._stop();
     }
@@ -20,6 +23,7 @@ function Session(options) {
   base(this, options);
   //attributo che stabilisce se la sessione è partita
   this.state = {
+    id: options.id, // id della sessione che fa riferimento all'id del layer editato
     started: false
   };
   // editor
@@ -32,11 +36,18 @@ function Session(options) {
   // contenitore temporaneo che servirà a salvare tutte le modifiche
   // temporanee che andranno poi salvate nella history e nel featuresstore
   this._temporarychanges = [];
+  //dependencies
+  this._dependencies = [];
+
 }
 
 inherit(Session, G3WObject);
 
 var proto = Session.prototype;
+
+proto.getId = function() {
+  return state.id;
+};
 
 proto._start = function(options) {
   var self = this;
@@ -51,6 +62,22 @@ proto._start = function(options) {
     })
     .fail(function(err) {
       self.state.started = true;
+      d.reject(err);
+    });
+  return d.promise();
+};
+
+//funzione che server per recuperare le features
+//dal server o dalla fonte delle features
+proto._getFeatures = function(options) {
+  var self = this;
+  var d = $.Deferred();
+  this._editor.getFeatures(options)
+    .then(function(features) {
+      self._featuresstore.addFeatures(features);
+      d.resolve(features);
+    })
+    .fail(function(err) {
       d.reject(err);
     });
   return d.promise();
@@ -83,6 +110,9 @@ proto.save = function(options) {
   var d = $.Deferred();
   // vado a prevedere che ne save venga passato un id che lega quella transazione(modifica) con
   // quella di un altra sessione
+  if (options.id) {
+    this._dependencies.push(options.id);
+  }
   var uniqueId = options.id || Date.now();
   // vado a d aggiungere tutte le modifiche temporanee alla history
   // rendendole parte della sessione
@@ -143,6 +173,12 @@ proto._serializeCommit = function() {
 
 };
 
+// funzione che mi server per ricavare quali saranno 
+// gli items da committare
+proto.getCommitItems = function() {
+  return this._history.commit();
+};
+
 // funzione che serializzerà tutto che è stato scritto nella history e passato al server
 // per poterlo salvare nel database
 proto.commit = function() {
@@ -150,7 +186,7 @@ proto.commit = function() {
   console.log("Sessione Committing...");
   // andà a pesacare dalla history tutte le modifiche effettuare
   // e si occuperà di di eseguire la richiesta al server di salvataggio dei dati
-  this._history.commit();
+  var commitItems = this._history.commit();
   d.resolve();
   this._history.clear();
   return d.promise();
