@@ -1,6 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
+var Feature = require('core/layers/features/feature');
 
 function History() {
   base(this);
@@ -57,20 +58,35 @@ proto.add = function(uniqueId, items) {
       }
     });
     //vado a sostiture il nuovo states array (una nuova storia da quel momento inizia)
-    console.log('sono qui a riscrivere la storia');
     this._states = this._states.slice(0, currentStateIndex+1);
-    console.log(this._states);
   }
-  this._states.push({
+    this._states.push({
     id: uniqueId,
     items: items
+  });
+  _.forEach(this._states,function(state) {
+       console.log(state.items[0][0].getGeometry().getExtent(),state.items[0][1].getGeometry().getExtent())
   });
   this._current = uniqueId;
   // ritorna la chiave univoca per quella modifica vine restituita dal chiamante
   // che potrà essere utilizzata ad esempio nel salvataggio dello stato della relazione
   // settandone la staessa chiave del layer padre
-  d.resolve();
+  d.resolve(uniqueId);
   return d.promise();
+};
+
+//funzione che verifica se c'è stato un update (gli update sono formati da un array di due valori , il vecchio e il nuovo)
+proto._checkUpdateItems = function(items, action) {
+  var newItems = [];
+  var self = this;
+  _.forEach(items, function(item, idx) {
+    if (_.isArray(item)) {
+      newItems.push(item[action]);
+    } else {
+      newItems.push(item)
+    }
+  });
+  return newItems;
 };
 
 // funzione undo
@@ -92,27 +108,30 @@ proto.undo = function() {
       }
     })
   }
+  items = this._checkUpdateItems(items, 0);
   d.resolve(items);
   return d.promise();
 };
 
 //funzione redo
-proto.redo = function(layerId) {
+proto.redo = function() {
   var d = $.Deferred();
   var self = this;
   var items;
   if (!this._current) {
     items = this._states[0].items;
     this._current = this._states[0].id;
+    stateIdx = 1;
   } else {
     _.forEach(this._states, function(state, idx) {
       if (self._current == state.id) {
-        items = self._states[idx+1].items;
         self._current = self._states[idx+1].id;
+        items = self._states[idx+1].items;
         return false;
       }
     })
   }
+  items = this._checkUpdateItems(items, 1);
   d.resolve(items);
   return d.promise();
 };

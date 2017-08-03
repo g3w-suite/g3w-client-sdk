@@ -6,15 +6,16 @@ var G3WObject = require('core/g3wobject');
 // passando trai i vari steps
 function Flow() {
   var self = this;
-  var d = $.Deferred();
   var steps = [];
   var inputs;
   var counter = 0;
   var context = null;
   var workflow;
+  var d;
 
   //metodo start del workflow
   this.start = function(workflow) {
+    d = $.Deferred();
     if (counter > 0) {
       console.log("reset workflow before restarting");
       onerror('workflow not reset');
@@ -77,7 +78,9 @@ function Flow() {
     console.log('Flow stopping ...');
     //verifico a che punto è il counter se all'inizio
     if (counter == 0) {
-      steps[0].stop();
+      console.log(steps);
+      if (steps && steps.length)
+        steps[0].stop();
       d.resolve();
     } else {
       // altrimenti faccio un reject che mi porterà

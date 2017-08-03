@@ -7,14 +7,13 @@ var Flow = require('./flow');
 // ordinato di passi (steps)
 function Workflow(options) {
   base(this);
-
   this._inputs = null;
   //oggetto che determina il contesto in cui
   // opera il workflow
   this._context = null;
   // flow oggetto che mi permette di stabilile come
   // mi devo muovere all'interno del worflow
-  this._flow = null;
+  this._flow = new Flow();
   this._steps = options.steps;
 }
 
@@ -71,7 +70,7 @@ proto.start = function(options) {
   //oggetto che mi server per operare su
   // elementi utili
   this._context = options.context;
-  this._flow = options.flow || new Flow();
+  this._flow = options.flow || this._flow;
   this._steps = options.steps || this._steps;
   this._flow.start(this). //ritorna una promessa
     then(function(outputs) {

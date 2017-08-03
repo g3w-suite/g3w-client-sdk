@@ -3,7 +3,6 @@
 // Allo stesso modo può essere un oggetto non vettoriale non settando la geometria
 // ma solo le proprièta
 var Feature = function(options) {
-
   ol.Feature.call(this);
   options = options || {};
   var feature = options.feature;

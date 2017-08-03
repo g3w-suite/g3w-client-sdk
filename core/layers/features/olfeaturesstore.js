@@ -26,9 +26,11 @@ proto.getFeatureById = function(featureId) {
 
 //vado ad eseguire in pratica la sostituzione della feature dopo una modifica
 proto._updateFeature = function(feature) {
+  console.log('update');
   var self = this;
   _.forEach(this._features.getArray(), function(feat, idx) {
     if (feat.getId() == feature.getId()) {
+      self._features.removeAt(idx);
       self._features.insertAt(idx,feature);
       return false;
     }
@@ -38,6 +40,7 @@ proto._updateFeature = function(feature) {
 proto._removeFeature = function(feature) {
   var self = this;
   _.forEach(this._features.getArray(), function(feat, idx) {
+    console.log(feature.getId(), feat.getId());
     if (feature.getId() == feat.getId()) {
       self._features.removeAt(idx);
       return false
