@@ -82,6 +82,9 @@ proto.setFeaturesStore = function(featuresstore) {
   this._featuresStore = featuresstore;
 };
 
+// la funzione che permette di settare il source delle features
+// di default è il featuresstore che istanzia al momento in cui
+// viene creato il layer
 proto.setSource = function(source) {
   this.setFeaturesStore(source);
 };

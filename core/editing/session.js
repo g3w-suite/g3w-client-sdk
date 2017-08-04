@@ -116,7 +116,6 @@ proto.save = function(options) {
   var uniqueId = options.id || Date.now();
   // vado a d aggiungere tutte le modifiche temporanee alla history
   // rendendole parte della sessione
-  console.log(this._temporarychanges);
   this._history.add(uniqueId, this._temporarychanges)
     .then(function() {
       // vado a fare il clear dei cambiamenti temporanei
@@ -124,6 +123,7 @@ proto.save = function(options) {
       // risolvo ritornando l'id unico
       d.resolve(uniqueId);
     });
+  this._featuresstore.getFeatures().then(function(promise){promise.then(function(features) {console.log(features)})});
   // andarà a popolare la history
   return d.promise();
 };
@@ -131,12 +131,8 @@ proto.save = function(options) {
 // metodo che server ad aggiungere features temporanee che poi andranno salvate
 // tramite il metodo save della sessione
 proto.push = function(newFeature, oldFeature) {
-  //applico i cambiamenti al featuresstore;
-  ChangesManager.execute(this._featuresstore, [newFeature]);
   // verifico se è stata passata anche l'olfFeature
   var feature = oldFeature? [oldFeature, newFeature]: newFeature;
-  pippo = this._history;
-
   this._temporarychanges.push(feature);
 };
 

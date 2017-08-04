@@ -1,10 +1,10 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var FeaturesStore = require('./featuresstore');
+var Feature = require('./feature');
 
 // Storage delle features di un layer vettoriale
 function OlFeaturesStore(options) {
-  var self = this;
   base(this, options);
   this._features = new ol.Collection([]);
 }
@@ -26,12 +26,10 @@ proto.getFeatureById = function(featureId) {
 
 //vado ad eseguire in pratica la sostituzione della feature dopo una modifica
 proto._updateFeature = function(feature) {
-  console.log('update');
   var self = this;
   _.forEach(this._features.getArray(), function(feat, idx) {
     if (feat.getId() == feature.getId()) {
-      self._features.removeAt(idx);
-      self._features.insertAt(idx,feature);
+      self._features.setAt(idx, feature);
       return false;
     }
   });
@@ -40,7 +38,6 @@ proto._updateFeature = function(feature) {
 proto._removeFeature = function(feature) {
   var self = this;
   _.forEach(this._features.getArray(), function(feat, idx) {
-    console.log(feature.getId(), feat.getId());
     if (feature.getId() == feat.getId()) {
       self._features.removeAt(idx);
       return false

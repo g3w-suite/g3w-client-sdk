@@ -37,6 +37,16 @@ ol.inherits(Feature, ol.Feature);
 
 proto = Feature.prototype;
 
+proto.clone = function() {
+  var feature = ol.Feature.prototype.clone.call(this);
+  var clone =  new Feature({
+    feature: feature
+  });
+  clone.setId(this.getId());
+  clone.setState(this.getState());
+  return clone;
+};
+
 proto.constructor = 'Feature';
 
 // setta la feature a state 2 delete
@@ -68,6 +78,10 @@ proto.isDeleted = function() {
 
 proto.getState = function() {
   return this.state.state;
+};
+
+proto.setState = function(state) {
+  this.state.state = state;
 };
 
 

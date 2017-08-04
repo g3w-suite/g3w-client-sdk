@@ -64,9 +64,6 @@ proto.add = function(uniqueId, items) {
     id: uniqueId,
     items: items
   });
-  _.forEach(this._states,function(state) {
-       console.log(state.items[0][0].getGeometry().getExtent(),state.items[0][1].getGeometry().getExtent())
-  });
   this._current = uniqueId;
   // ritorna la chiave univoca per quella modifica vine restituita dal chiamante
   // che potrà essere utilizzata ad esempio nel salvataggio dello stato della relazione

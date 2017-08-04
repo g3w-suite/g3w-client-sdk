@@ -2,6 +2,8 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
 
+// manager delle sessioni. Il suo scopo è di verificare al commit
+// di una sessione se questa ha altre dipendenze e se si committare tutto in una volta
 function SessionsManager() {
   base(this);
   this._sessions = {};

@@ -9,7 +9,7 @@ var DeleteInteraction = function(options) {
     handleDownEvent: DeleteInteraction.handleDownEvent_,
     handleMoveEvent: DeleteInteraction.handleMoveEvent_,
     handleUpEvent: DeleteInteraction.handleUpEvent_,
-    handleEvent: DeleteInteraction.handleEvent_,
+    handleEvent: DeleteInteraction.handleEvent_
   });
 
   this.previousCursor_ = undefined;
