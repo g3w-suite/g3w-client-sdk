@@ -75,7 +75,6 @@ proto.add = function(uniqueId, items) {
 //funzione che verifica se c'è stato un update (gli update sono formati da un array di due valori , il vecchio e il nuovo)
 proto._checkUpdateItems = function(items, action) {
   var newItems = [];
-  var self = this;
   _.forEach(items, function(item, idx) {
     if (_.isArray(item)) {
       newItems.push(item[action]);

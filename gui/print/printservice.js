@@ -123,53 +123,36 @@ function PrintComponentService() {
     })
   };
 
-  this._calculateInternalPrintExtent = function(resolution) {
-    // rapporto tra largheza e altezza della mappa nel template
-    var rapportoMappaTemplate = this.state.width/this.state.height;
-    // rapporto larghezza e altezza della mappa nel client (viewport)
-    var rapportoMappaClient = this.state.size[0]/this.state.size[1];
-    var width, height;
-    if (rapportoMappaClient > 1) { // mappa orizzontale
-      if (rapportoMappaTemplate > 1) {
-        if (rapportoMappaTemplate > rapportoMappaClient) {
-          width = this.state.size[0] / 2; // numero di pixel raggio larghezza
-        } else {
-          width = (this.state.size[0] * (rapportoMappaTemplate/rapportoMappaClient))/2;
-        }
-        // setto un padding
-        width = width - parseInt(width/10);
-        height = width / rapportoMappaTemplate; // numero di pixel raggio altezza
-      } else {
-        height = this.state.size[1] / 2; // numero di pixel raggio larghezza
-        // setto un padding
-        height = height - parseInt(height/10);
-        width = height * rapportoMappaTemplate ; // numero di pixel raggio altezza
-      }
-    } else { // mappa verticale
-      if (rapportoMappaTemplate > 1) {
-        width = this.state.size[0] / 2; // numero di pixel raggio larghezza
-        // setto un padding
-        width = width - parseInt(width/10);
+  this._calculateInternalPrintExtent = function() {
+    // vado a calcolare la risoluzione della mappa
+    var resolution = this._map.getView().getResolution();
+    // trasformo la scala in float
+    var scala = parseFloat(this.state.scala);
+    // vado a calcolarmi la larghezza in pixel da rappresentare sullo schermo
+    // la formula uguale per quanto riguarda l'altezza è:
+    // LARGHEZZA DELLA MAPPA SUL TEMPLATE (IN MM) LA DIVIDO PER 1000 OTTENEDO IL VALORE IN METRI
+    // DELLA MAPPA SUL TEMPLATE. a QUESTO PUNTO VADO A MOLTIPLICARE PER LA SCALA OTTENEDO IL VALORE TOTALE
+    // DELLA DISTANZA IN UNITÀ DI MAPPA (METRI) CHE COPRE LA LARGHEZZA DELLA MAPPA
+    // UNA VOLTA SAPUTO QUANTO IN LARGHEZZA (IN METRI) LA MAPPA COPRE LA DIVIDO PER LA RISOLUZIONE DELLA MAPPA
+    // OTTENEDO COSÌ IL NUMERO DEI PIXEL SULLA MAPPA CHE COPRONO TALE DISTANZA
+    var w = this.state.width / 1000.0 * scala / resolution * ol.has.DEVICE_PIXEL_RATIO;
+    var h = this.state.height  / 1000.0 * scala / resolution * ol.has.DEVICE_PIXEL_RATIO;
+    var center = [this.state.size[0] * ol.has.DEVICE_PIXEL_RATIO / 2 , this.state.size[1] * ol.has.DEVICE_PIXEL_RATIO / 2];
 
-        height = width / rapportoMappaTemplate; // numero di pixel raggio altezza
-      } else {
-        if (rapportoMappaTemplate < rapportoMappaClient) {
-          height = this.state.size[1] / 2; // numero di pixel raggio larghezza
-        } else {
-          height = (this.state.size[1] * (rapportoMappaClient/rapportoMappaTemplate))/2;
-        }
-        // setto un padding
-        height = height - parseInt(height/10);
-        width = height * rapportoMappaTemplate ; // numero di pixel raggio altezza
-      }
-    }
+    // in pixel
+    var xmin = center[0] - (w / 2); // indica x min
+    var ymin = center[1] - (h / 2);
+    var xmax = center[0] + (w / 2);
+    var ymax = center[1] + (h / 2);
+
     // vado a calcolare la x_min e x_max
-    x_min = this.state.center[0] - (width*resolution);
-    x_max = this.state.center[0] + (width*resolution);
+    x_min = this._map.getCoordinateFromPixel([xmin, ymax]);
+    x_max = this._map.getCoordinateFromPixel([xmax, ymax]);
     // vado a caloclare la y_min e y_max
-    y_min = this.state.center[1] - (height*resolution);
-    y_max = this.state.center[1] + (height*resolution);
-    this.state.inner =  [x_min, y_min, x_max, y_max];
+    y_min = this._map.getCoordinateFromPixel([xmin, ymin]);
+    y_max = this._map.getCoordinateFromPixel([xmax, ymin]);
+    this.state.inner =  [x_min[0], x_min[1], y_max[0], y_max[1]];
+
   };
 
   // funzione che setta il BBOX della printArea
@@ -179,9 +162,7 @@ function PrintComponentService() {
     this.state.currentScala = resToScale(this._map.getView().getResolution());
     // centro della mappa
     this.state.center = this._map.getView().getCenter();
-    // vado a prendere la risoluzione dell'area
-    var resolution = scaleToRes(this.state.scala);
-    this._calculateInternalPrintExtent(resolution);
+    this._calculateInternalPrintExtent();
     this._mapService.setInnerGreyCoverBBox({
       inner: this.state.inner,
       rotation: this.state.rotation
