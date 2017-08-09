@@ -106,25 +106,28 @@ proto.save = function(options) {
   //vado a pololare la history
   console.log("Session Saving .... ");
   var self = this;
-  options = options || {};
   var d = $.Deferred();
-  // vado a prevedere che ne save venga passato un id che lega quella transazione(modifica) con
-  // quella di un altra sessione
-  if (options.id) {
-    this._dependencies.push(options.id);
-  }
-  var uniqueId = options.id || Date.now();
   // vado a d aggiungere tutte le modifiche temporanee alla history
-  // rendendole parte della sessione
-  this._history.add(uniqueId, this._temporarychanges)
-    .then(function() {
-      // vado a fare il clear dei cambiamenti temporanei
-      self._temporarychanges = [];
-      // risolvo ritornando l'id unico
-      d.resolve(uniqueId);
-    });
-  this._featuresstore.getFeatures().then(function(promise){promise.then(function(features) {console.log(features)})});
-  // andarà a popolare la history
+  // rendendole parte della sessione solo se esisitono
+  if (this._temporarychanges.length) {
+    options = options || {};
+    var uniqueId = options.id || Date.now();
+    // vado a prevedere che ne save venga passato un id che lega quella transazione(modifica) con
+    // quella di un altra sessione
+    if (options.id) {
+      this._dependencies.push(options.id);
+    }
+    this._history.add(uniqueId, this._temporarychanges)
+      .then(function() {
+        // vado a fare il clear dei cambiamenti temporanei
+        self._temporarychanges = [];
+        // risolvo ritornando l'id unico
+        d.resolve(uniqueId);
+      });
+    // andarà a popolare la history
+  } else {
+    d.resolve(null);
+  }
   return d.promise();
 };
 
@@ -157,7 +160,6 @@ proto.undo = function() {
     .then(function(items) {
       ChangesManager.execute(self._featuresstore, items, true);
     })
-
 };
 
 // funzione di undo che chiede alla history di farlo
@@ -171,8 +173,29 @@ proto.redo = function() {
 
 //funzione che prende tutte le modifche dalla storia e le
 //serializza in modo da poterle inviare tramite posto al server
-proto._serializeCommit = function() {
-
+proto._serializeCommit = function(layerId, items) {
+  var commitObj = {};
+  commitObj[layerId] = {
+    add: [],
+    update: [],
+    delete: []
+  };
+  var state;
+  _.forEach(items, function(item) {
+    state = item.getState();
+    var GeoJSONFormat = new ol.format.GeoJSON();
+    switch (state) {
+      case 'delete':
+        if (!item.isNew())
+          commitObj[layerId].delete.push(item.getId());
+        break;
+      default:
+        commitObj[layerId][item.getState()].push(GeoJSONFormat.writeFeatureObject(item));
+        break;
+    }
+  });
+  console.log(commitObj);
+  return commitObj;
 };
 
 // funzione che mi server per ricavare quali saranno 
@@ -183,14 +206,29 @@ proto.getCommitItems = function() {
 
 // funzione che serializzerà tutto che è stato scritto nella history e passato al server
 // per poterlo salvare nel database
-proto.commit = function() {
+proto.commit = function(options) {
   var d = $.Deferred();
+  options = options || {};
+  var commitItems;
   console.log("Sessione Committing...");
-  // andà a pesacare dalla history tutte le modifiche effettuare
-  // e si occuperà di di eseguire la richiesta al server di salvataggio dei dati
-  var commitItems = this._history.commit();
-  d.resolve();
-  this._history.clear();
+  //vado a verificare se nell'opzione del commit
+  // è stato passato gli gli ids degli stati che devono essere committati,
+  //nel caso di non specifica committo tutto
+  var ids = options.ids || null;
+  // vado a leggete l'id dal layer necessario al server
+  var layerId = options.layerId;
+  if (ids) {
+    //TODO
+  } else {
+    // andà a pescare dalla history tutte le modifiche effettuare
+    // e si occuperà di di eseguire la richiesta al server di salvataggio dei dati
+    commitItems = this._history.commit();
+    this._serializeCommit(layerId, commitItems);
+    // poi vado a fare tutto quello che devo fare (server etc..)
+    //vado a vare il clean della history
+    this._history.clear();
+  }
+  d.resolve(commitItems);
   return d.promise();
 };
 

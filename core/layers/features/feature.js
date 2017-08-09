@@ -60,13 +60,17 @@ proto.update = function() {
 };
 
 // setta lo stato a nuovo 0
-proto.add = function() {
+proto.add = function() { 
   this.state.state = 'add';
 };
 
 proto.isNew = function() {
-  return this.state.state == 'add';
+  return !_.isNumber(this.getId()) && this.getId().indexOf('__new__') != -1;
 };
+
+proto.isAdded = function() {
+  return this.state.state == 'add';
+}
 
 proto.isUpdated = function() {
   return this.state.state == 'update';
@@ -83,6 +87,7 @@ proto.getState = function() {
 proto.setState = function(state) {
   this.state.state = state;
 };
+
 
 
 module.exports = Feature;

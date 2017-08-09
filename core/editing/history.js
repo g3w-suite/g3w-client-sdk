@@ -138,6 +138,18 @@ proto.clear = function() {
   this._current = null;
 };
 
+
+proto.getState = function(id) {
+  var state = null;
+  _.forEach(this._states, function(state) {
+    if (state.id == id) {
+      state = state;
+      return false;
+    }
+  });
+  return state;
+};
+
 proto.getFirstState = function() {
   return this._states.length ? this._states[0] : null;
 };
@@ -152,16 +164,45 @@ proto.getLastState = function() {
 // attualmente nella storia
 proto.getCurrentState = function() {
   var self = this;
-  var lastState;
-  if (this._states.length) {
+  var currentState = null;
+  if (this._current && this._states.length) {
     _.forEach(this._states, function (state) {
         if (self._current == state.id) {
-          lastState = state;
+          currentState = state;
           return false
         }
     });
   }
-  return lastState;
+  return currentState;
+};
+
+// funzione che mi dice se ci sono cose da committare
+proto.canCommit = function() {
+  var canCommit = false;
+  var idToIgnore = [];
+  var statesToCommit = this._getStatesToCommit();
+  console.log(statesToCommit);
+  _.forEach(statesToCommit, function(state) {
+    _.forEach(state.items, function(item) {
+      if (_.isArray(item))
+      // vado a prendere il secondo valore che è quello modificato
+        item = item[1];
+     // se esiste un non nuovo vuol dire che
+     // c'è stata fatta una modifica
+     if (item.isNew() && item.isDeleted()) {
+       idToIgnore.push(item.getId());
+     } else {
+       if (!(item.isNew() && idToIgnore.indexOf(item.getId())!= -1) || !idToIgnore.length) {
+         canCommit = true;
+         return false;
+       }
+     }
+    });
+    if (canCommit) {
+      return false;
+    }
+  });
+  return canCommit;
 };
 
 //funzione che mi dice se posso fare l'undo sulla history
@@ -171,41 +212,59 @@ proto.canUndo = function() {
 
 // funzione che mi dice se posso fare il redo sulla history
 proto.canRedo = function() {
-  return (_.isNull(this._current) && this._states.length > 0) || (this.getLastState() && this.getLastState().id != this._current);
+  return this.getLastState() && this.getLastState().id != this._current || _.isNull(this._current) && this._states.length > 0;
+};
+
+proto._getStatesToCommit = function() {
+  var self = this;
+  var statesToCommit = this._current ? _.clone(this._states): [];
+  // qui ricavo solo la parte degli state che mi servono per ricostruire la storia
+  _.forEach(statesToCommit.reverse(), function(state, idx) {
+    if (self.getCurrentState() == state) {
+      // in pratica taglio il pezzo di storia "dopo" il current
+      statesToCommit = statesToCommit.slice(idx, statesToCommit.length);
+      return false;
+    }
+  });
+  return statesToCommit;
 };
 
 //funzione che restituisce tutte le modifche uniche da applicare (mandare al server)
 proto.commit = function() {
   var self = this;
   // contegono oggetti aventi lo stato di una feature unica e il relativo id
-  var commitItems = {
-    id:[], // gli id unicimi serivranno per capire le dipendenze
-    items:[] // le features modificate
-  };
+  var commitItems = [];
   var add = true;
-  // qui ricavo solo la parte degli state che mi servono per ricostruire la storia
-  _.forEach(this._states.reverse(), function(state, idx) {
-    if (self.getCurrentState() == state) {
-      self._states = self._states.slice(idx, self._states.length);
-      return false;
-    }
-  });
-  _.forEach(this._states, function (state) {
+  var statesToCommit = this._getStatesToCommit();
+  // inzioa ascorrere sugli stati della history
+  _.forEach(statesToCommit, function (state) {
+    //ciclo sugli items dello stato
     _.forEach(state.items, function(item) {
-      _.forEach(commitItems.items, function(commitItem) {
+      // nel caso di un array, quindi di fronte ad un update
+      if (_.isArray(item))
+        // vado a prendere il secondo valore che è quello modificato
+        item = item[1];
+      //vado a ciclare sugli evtnuali stati committati cioè aggiunti
+      _.forEach(commitItems, function(commitItem, idx) {
         //verifico se presente uno stesso item
         if (commitItem.getId() == item.getId()) {
+          // verifcio inoltre se è una feature nuova, se non è stata cancellata (già presente nei commitItems) e se aggiunta
+          // perchè allora setto come add
+          if (item.isNew() && !commitItem.isDeleted()  && item.isAdded()) {
+            // allora setto l'ultima versione allo stato add
+            commitItems[idx].add();
+          }
           add = false;
           return false;
         }
       });
-      // se true sinifica che lo devo aggiungere
-      if (add)
-        // vado a verificare che non sia stato cancellato un aggiunto nuovo o che sia stato riaggiunto un essistente (undo/redo)
-        if (item.getId() > 0 && item.getState() != 'add' || item.getState() == 'delete' && item.getId().indexOf('__new__') == -1) {
-          commitItems.id.push(state.id);
-          commitItems.items.push(item)
+      // se true significa che lo devo aggiungere
+      if (add) {
+        // vado a verificar condizioni
+        if (!(item.getId() > 0 && item.isAdded())) {
+          commitItems.push(item);
         }
+      }
       // risetto a true
       add = true;
     });

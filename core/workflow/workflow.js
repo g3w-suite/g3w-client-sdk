@@ -7,6 +7,8 @@ var Flow = require('./flow');
 // ordinato di passi (steps)
 function Workflow(options) {
   base(this);
+  // oggetto che conterrà tutti
+  // i dati necessari a lavorare con l'editing
   this._inputs = null;
   //oggetto che determina il contesto in cui
   // opera il workflow
@@ -14,6 +16,8 @@ function Workflow(options) {
   // flow oggetto che mi permette di stabilile come
   // mi devo muovere all'interno del worflow
   this._flow = new Flow();
+  // sono i vari passi con i relativi task
+  // nei quali l'inpust verranno aggiornati
   this._steps = options.steps;
 }
 
@@ -63,7 +67,6 @@ proto.getLastStep = function() {
 
 // metodo principale al lancio del workflow
 proto.start = function(options) {
-  console.log('worlflow start');
   options = options || {};
   var d = $.Deferred();
   this._inputs = options.inputs;
@@ -74,6 +77,7 @@ proto.start = function(options) {
   this._steps = options.steps || this._steps;
   this._flow.start(this). //ritorna una promessa
     then(function(outputs) {
+      // ritorna l'outputs
       d.resolve(outputs);
     }).
     fail(function(error){
@@ -91,7 +95,7 @@ proto.panic = function() {
 // metodo stop utilizzato per eventualmente stoppare
 // il workflow durante il suo flusso
 proto.stop = function() {
-  console.log('Workflow stopping .... ')
+  console.log('Workflow stopping .... ');
   var d = $.Deferred();
   this._flow.stop(this)
     .then(function() {

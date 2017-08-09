@@ -108,7 +108,7 @@ function FormService() {
     this.state.elementsBoxes = elementsBoxes;
     // qui associo lo state del pannello allo ste del form
     this._setFormTools(this.tools);
-    this.editor.setFormService(this);
+    //this.editor.setFormService(this);
   };
 
   //vado a ripulire lo state del form dopo che è stato effettuaro un commit sul server

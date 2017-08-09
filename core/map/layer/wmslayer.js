@@ -124,19 +124,21 @@ proto._makeOlLayer = function(withLayers){
 };
 
 proto.checkLayerDisabled = function(layer,resolution) {
-  var scale = geo.resToScale(resolution);
   var enabled = true;
-  if (layer.config.maxresolution){
-    enabled = enabled && (layer.config.maxresolution > resolution);
-  }
-  if (layer.config.minresolution){
-    enabled = enabled && (layer.config.minresolution < resolution);
-  }
-  if (layer.config.minscale) {
-    enabled = enabled && (layer.config.minscale > scale);
-  }
-  if (layer.config.maxscale) {
-    enabled = enabled && (layer.config.maxscale < scale);
+  if (layer.config.scalebasedvisibility) {
+    var scale = geo.resToScale(resolution);
+    if (layer.config.maxresolution){
+      enabled = enabled && (layer.config.maxresolution > resolution);
+    }
+    if (layer.config.minresolution){
+      enabled = enabled && (layer.config.minresolution < resolution);
+    }
+    if (layer.config.minscale) {
+      enabled = enabled && (layer.config.minscale > scale);
+    }
+    if (layer.config.maxscale) {
+      enabled = enabled && (layer.config.maxscale < scale);
+    }
   }
   layer.state.disabled = !enabled;
 };
