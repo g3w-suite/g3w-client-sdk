@@ -46,7 +46,7 @@ inherit(Session, G3WObject);
 var proto = Session.prototype;
 
 proto.getId = function() {
-  return state.id;
+  return this.state.id;
 };
 
 proto._start = function(options) {
@@ -133,9 +133,15 @@ proto.save = function(options) {
 
 // metodo che server ad aggiungere features temporanee che poi andranno salvate
 // tramite il metodo save della sessione
-proto.push = function(newFeature, oldFeature) {
+proto.push = function(New, Old) {
+  /*
+  New e Old saranno oggetti contenti {
+      layerId: xxxx,
+      feature: feature
+    }
+   */
   // verifico se è stata passata anche l'olfFeature
-  var feature = oldFeature? [oldFeature, newFeature]: newFeature;
+  var feature = Old? [Old, New]: New;
   this._temporarychanges.push(feature);
 };
 
@@ -173,26 +179,28 @@ proto.redo = function() {
 
 //funzione che prende tutte le modifche dalla storia e le
 //serializza in modo da poterle inviare tramite posto al server
-proto._serializeCommit = function(layerId, items) {
+proto._serializeCommit = function(itemsToCommit) {
   var commitObj = {};
-  commitObj[layerId] = {
-    add: [],
-    update: [],
-    delete: []
-  };
   var state;
-  _.forEach(items, function(item) {
-    state = item.getState();
-    var GeoJSONFormat = new ol.format.GeoJSON();
-    switch (state) {
-      case 'delete':
-        if (!item.isNew())
-          commitObj[layerId].delete.push(item.getId());
-        break;
-      default:
-        commitObj[layerId][item.getState()].push(GeoJSONFormat.writeFeatureObject(item));
-        break;
-    }
+  _.forEach(itemsToCommit, function(items, key) {
+    commitObj[key] = {
+      add: [],
+      update: [],
+      delete: []
+    };
+    _.forEach(items, function(item) {
+      state = item.getState();
+      var GeoJSONFormat = new ol.format.GeoJSON();
+      switch (state) {
+        case 'delete':
+          if (!item.isNew())
+            commitObj[key].delete.push(item.getId());
+          break;
+        default:
+          commitObj[key][item.getState()].push(GeoJSONFormat.writeFeatureObject(item));
+          break;
+      }
+    })
   });
   console.log(commitObj);
   return commitObj;
@@ -216,14 +224,14 @@ proto.commit = function(options) {
   //nel caso di non specifica committo tutto
   var ids = options.ids || null;
   // vado a leggete l'id dal layer necessario al server
-  var layerId = options.layerId;
   if (ids) {
-    //TODO
+    commitItems = this._history.commit(ids);
+    this._history.clear(ids);
   } else {
     // andà a pescare dalla history tutte le modifiche effettuare
     // e si occuperà di di eseguire la richiesta al server di salvataggio dei dati
     commitItems = this._history.commit();
-    this._serializeCommit(layerId, commitItems);
+    this._serializeCommit(commitItems);
     // poi vado a fare tutto quello che devo fare (server etc..)
     //vado a vare il clean della history
     this._history.clear();

@@ -8,6 +8,7 @@ g3w.core = {
   Router: require('core/router'),
   i18n: require('core/i18n/i18n.service'),
   editing: {
+    SessionsManager: require('core/editing/sessionsmanager'),
     Session: require('core/editing/session'),
     Editor: require('core/editing/editor'),
     ChangesManager: require('core/editing/changesmanager')

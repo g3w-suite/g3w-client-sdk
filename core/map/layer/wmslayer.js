@@ -17,7 +17,7 @@ function WMSLayer(options,extraParams){
   base(this,options);
 }
 
-inherit(WMSLayer,MapLayer);
+inherit(WMSLayer, MapLayer);
 
 var proto = WMSLayer.prototype;
 

@@ -13,18 +13,28 @@ inherit(SessionsManager, G3WObject);
 
 var proto = SessionsManager.prototype;
 
-proto.add = function(session) {
-  var id = session.getId();
-  if (!this._sessions[id])
-    this._sessions[id] = session;
+proto.add = function(options) {
+  options = options || {};
+  var session = options.session;
+  var dependencies = options.dependencies || [];
+  var id = session ? session.getId() : null;
+  if(id && !this._sessions[id]) {
+    this._sessions[id] = {
+      session: session,
+      dependencies: dependencies
+    };
+  }
 };
 
 proto.remove = function(session) {
-  _.forEach(this._sessions, function(session) {
-    //TODO
-  })
+  var id = session ? session.getId() : null;
+  delete this._sessions[id];
 };
 
+//questo metodo permette di fare un deep commit
+// nel sensop che creerà un commitObj contenente in commit del session padre
+// passato come parametro e di tutti i commi dei delle sessioni figli
+// di qualsiasi grado di innestamento
 proto.commit = function(session) {
   var dependencies = null;
   var sessionCommitItemsId;
@@ -43,4 +53,4 @@ proto.commit = function(session) {
 };
 
 
-module.exports = SessionsManager;
+module.exports = new SessionsManager;

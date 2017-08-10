@@ -225,4 +225,15 @@ proto.un = function(listenerKey) {
   })
 };
 
+//metodo get
+proto.get = function(key) {
+  var value = this[key] && !(this[key] instanceof Function) ? this[key] : null;
+  return value;
+};
+
+//metodo set
+proto.set = function(key, value) {
+  this[key] = value;
+};
+
 module.exports = G3WObject;

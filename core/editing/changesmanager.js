@@ -3,14 +3,16 @@
 function ChangesManager() {
   this.execute = function(object, items, reverse) {
     var fnc;
+    var feature;
     _.forEach(items, function(item) {
+      feature = item.feature;
       if (reverse) {
         // cambio lo stato dell'item al suo opposto
-        item[ChangesManager.Actions[item.getState()].opposite]();
+        feature[ChangesManager.Actions[feature.getState()].opposite]();
       }
       // estraggo il comnado / metogo da eseguire sull'oggetto
-      fnc = ChangesManager.Actions[item.getState()].fnc;
-      object[fnc](item);
+      fnc = ChangesManager.Actions[feature.getState()].fnc;
+      object[fnc](feature);
     })
   }
 }

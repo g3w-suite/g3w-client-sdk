@@ -5,12 +5,11 @@ var Feature = require('core/layers/features/feature');
 
 function History() {
   base(this);
-
   // vengono registrati tutte le modifiche
   // che sono coinvolti
-  /*{
-  *
-  * states: [
+  /*
+  *{
+  * _states: [
   *     {
   *       id: chiaveunica
   *       state: [state] // esempio history che contiene come state la/le features
@@ -23,10 +22,10 @@ function History() {
   *     },
   *   ]
   *     ....
-  *  },
-  *  current: chiaveunica // questo mi server per undo/redo per spostarmi nel tempo
   *
-  * },
+  *  _current: chiaveunica // questo mi server per undo/redo per spostarmi nel tempo
+  *
+  *
   * */
   // qui setto la massima lunghezza del "buffer history" per undo redo
   // al momento non utilizzata
@@ -74,6 +73,10 @@ proto.add = function(uniqueId, items) {
 
 //funzione che verifica se c'è stato un update (gli update sono formati da un array di due valori , il vecchio e il nuovo)
 proto._checkUpdateItems = function(items, action) {
+  /**
+   * action: 0 per uno; 1: redo si riferiscono all'indice dell'array dell'item
+   */
+
   var newItems = [];
   _.forEach(items, function(item, idx) {
     if (_.isArray(item)) {
@@ -132,13 +135,26 @@ proto.redo = function() {
   return d.promise();
 };
 
-// riplusce tutta la storia
-proto.clear = function() {
-  this._states = [];
-  this._current = null;
+// ripulisce tutta la storia se non è stato specificato nessun ids
+// ids: array di id
+proto.clear = function(ids) {
+  var self = this;
+  if (ids) {
+    _.forEach(this._states, function(state, idx) {
+      if (ids.indexOf(state.id) != -1) {
+        if (self._current && self._current == state.id())
+          //faccio un undo
+          self.undo();
+        self._states.splice(idx, 1);
+      }
+    })
+  } else {
+    this._states = [];
+    this._current = null;
+  }
 };
 
-
+// ritorna lo stato a seconda dell'id
 proto.getState = function(id) {
   var state = null;
   _.forEach(this._states, function(state) {
@@ -181,12 +197,11 @@ proto.canCommit = function() {
   var canCommit = false;
   var idToIgnore = [];
   var statesToCommit = this._getStatesToCommit();
-  console.log(statesToCommit);
   _.forEach(statesToCommit, function(state) {
     _.forEach(state.items, function(item) {
       if (_.isArray(item))
       // vado a prendere il secondo valore che è quello modificato
-        item = item[1];
+        item = item[1].feature;
      // se esiste un non nuovo vuol dire che
      // c'è stata fatta una modifica
      if (item.isNew() && item.isDeleted()) {
@@ -217,6 +232,7 @@ proto.canRedo = function() {
 
 proto._getStatesToCommit = function() {
   var self = this;
+  // devo clonare lo states altrimenti ho problem con il reverse per undo e redo
   var statesToCommit = this._current ? _.clone(this._states): [];
   // qui ricavo solo la parte degli state che mi servono per ricostruire la storia
   _.forEach(statesToCommit.reverse(), function(state, idx) {
@@ -233,7 +249,9 @@ proto._getStatesToCommit = function() {
 proto.commit = function() {
   var self = this;
   // contegono oggetti aventi lo stato di una feature unica e il relativo id
-  var commitItems = [];
+  var commitItems = {};
+  var feature;
+  var layerId;
   var add = true;
   var statesToCommit = this._getStatesToCommit();
   // inzioa ascorrere sugli stati della history
@@ -245,12 +263,12 @@ proto.commit = function() {
         // vado a prendere il secondo valore che è quello modificato
         item = item[1];
       //vado a ciclare sugli evtnuali stati committati cioè aggiunti
-      _.forEach(commitItems, function(commitItem, idx) {
-        //verifico se presente uno stesso item
-        if (commitItem.getId() == item.getId()) {
+      _.forEach(commitItems[item.layerId], function(commitItem, idx) {
+        //verifico se presente uno stesso ite
+        if (commitItem.getId() == item.feature.getId()) {
           // verifcio inoltre se è una feature nuova, se non è stata cancellata (già presente nei commitItems) e se aggiunta
           // perchè allora setto come add
-          if (item.isNew() && !commitItem.isDeleted()  && item.isAdded()) {
+          if (item.feature.isNew() && !commitItem.isDeleted()  && item.feature.isAdded()) {
             // allora setto l'ultima versione allo stato add
             commitItems[idx].add();
           }
@@ -260,9 +278,13 @@ proto.commit = function() {
       });
       // se true significa che lo devo aggiungere
       if (add) {
+        feature = item.feature;
+        layerId = item.layerId;
         // vado a verificar condizioni
-        if (!(item.getId() > 0 && item.isAdded())) {
-          commitItems.push(item);
+        if (!(feature.getId() > 0 && feature.isAdded())) {
+          if (!commitItems[layerId])
+            commitItems[layerId] = [];
+          commitItems[layerId].push(feature);
         }
       }
       // risetto a true

@@ -78,7 +78,6 @@ function Flow() {
     console.log('Flow stopping ...');
     //verifico a che punto è il counter se all'inizio
     if (counter == 0) {
-      console.log(steps);
       if (steps && steps.length)
         steps[0].stop();
       d.resolve();

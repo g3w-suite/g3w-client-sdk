@@ -4,7 +4,6 @@ var G3WObject = require('core/g3wobject');
 
 function Step(options) {
   base(this);
-
   options = options || {};
   this._inputs = options.inputs || null;
   this._task = options.task || null;
@@ -17,7 +16,7 @@ function Step(options) {
     help: options.help || null, // help che verrà visualizzato per descrivere a cosa serve
     running: false, // se è in fase di lavorazione
     error: null, // riporta se c'è stato un errore
-    message: null // eventuale messaggio da presentare all'utente
+    message: options.message || null // eventuale messaggio da presentare all'utente
   }
 }
 
@@ -99,6 +98,10 @@ proto.getMessage = function() {
   return this.state.message;
 };
 
+proto.isRunning = function() {
+  return this.state.running;
+};
+
 proto.setInputs = function(inputs) {
   this._inputs = inputs;
 };
@@ -122,5 +125,6 @@ proto.setOutputs = function(outputs) {
 proto.getOutputs = function() {
   return this._outputs;
 };
+
 
 module.exports = Step;

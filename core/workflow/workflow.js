@@ -65,6 +65,16 @@ proto.getLastStep = function() {
   return null;
 };
 
+proto.getRunningStep = function() {
+  var runningStep = null;
+  _.forEach(this._steps, function(step) {
+    if (step.isRunning()) {
+      runningStep = step;
+    }
+  });
+  return runningStep;
+};
+
 // metodo principale al lancio del workflow
 proto.start = function(options) {
   options = options || {};
