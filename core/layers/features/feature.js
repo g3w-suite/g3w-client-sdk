@@ -70,7 +70,7 @@ proto.isNew = function() {
 
 proto.isAdded = function() {
   return this.state.state == 'add';
-}
+};
 
 proto.isUpdated = function() {
   return this.state.state == 'update';

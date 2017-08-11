@@ -201,13 +201,13 @@ proto.canCommit = function() {
     _.forEach(state.items, function(item) {
       if (_.isArray(item))
       // vado a prendere il secondo valore che è quello modificato
-        item = item[1].feature;
+        item = item[1];
      // se esiste un non nuovo vuol dire che
      // c'è stata fatta una modifica
-     if (item.isNew() && item.isDeleted()) {
-       idToIgnore.push(item.getId());
+     if (item.feature.isNew() && item.feature.isDeleted()) {
+       idToIgnore.push(item.feature.getId());
      } else {
-       if (!(item.isNew() && idToIgnore.indexOf(item.getId())!= -1) || !idToIgnore.length) {
+       if (!(item.feature.isNew() && idToIgnore.indexOf(item.feature.getId())!= -1) || !idToIgnore.length) {
          canCommit = true;
          return false;
        }

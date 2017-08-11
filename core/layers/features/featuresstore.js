@@ -103,4 +103,10 @@ proto.getDataProvider = function() {
   return this._dataprovider;
 };
 
+// metodo che a differenza del getFeatures prevede di fare
+// la lettura delle features attualmente sul featuressotre
+proto.readFeatures = function() {
+  return this._features;
+};
+
 module.exports = FeaturesStore;

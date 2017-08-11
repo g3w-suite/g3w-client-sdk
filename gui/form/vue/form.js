@@ -52,10 +52,6 @@ var vueComponentOptions = {
     exec: function(cbk) {
       var relations = this.state.relations || null;
       cbk(this.state.fields, relations);
-      // if (this.state.editor.getPickedFeature()) {
-      //   this.state.editor.cleanUpPickedFeature();
-      // }
-      GUI.closeForm();
     },
     btnEnabled: function(button) {
       return button.type != 'save' || (button.type == 'save' && this.isValidForm());

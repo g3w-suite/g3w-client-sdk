@@ -107,6 +107,7 @@ proto.panic = function() {
 proto.stop = function() {
   console.log('Workflow stopping .... ');
   var d = $.Deferred();
+  // vado a chiamare lo stop del flow
   this._flow.stop(this)
     .then(function() {
       d.resolve()

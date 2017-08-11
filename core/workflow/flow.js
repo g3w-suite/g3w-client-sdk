@@ -18,7 +18,6 @@ function Flow() {
     d = $.Deferred();
     if (counter > 0) {
       console.log("reset workflow before restarting");
-      onerror('workflow not reset');
     }
     workflow = workflow;
     //prendo gli inputs passati al workflow
@@ -40,10 +39,16 @@ function Flow() {
 
   //funzione che fa il rloun dello step
   this.runStep = function(step, inputs) {
+    // faccio partire il run dello step 
+    // che non fa altro che far partire il run del task e ritorna una promise
     step.run(inputs, context)
+      // se andato tutto a buon fine lo step o meglio il task
+      // è stato risolto chiamo la funzione
+      // ondone che deciderà se chiamare altro step (se esiste) o risolverà il flusso
       .then(function(outputs) {
         self.onDone(outputs);
       })
+      // c'è stato un erore (task rigettato)
       .fail(function(error) {
         self.onError(error);
       });
@@ -57,34 +62,38 @@ function Flow() {
     counter++;
     if (counter == steps.length) {
       console.log('sono arrivato in fondo agli steps senza errori');
-      // faccio lo stop del flusso
+      // setto di nuovo il counter a 0
       counter = 0;
+      // risolvo con il valore degli outputs
       d.resolve(outputs);
       return;
     }
     this.runStep(steps[counter], outputs);
   };
 
-  this.onError = function(error) {
-    console.log('step error');
-    steps[counter].stop();
+  this.onError = function(err) {
+    // nel caso di errore di uno step
+    console.log('step error: ', err);
+    // risetto il counter a 0
     counter = 0;
-    d.reject(error);
+    d.reject(err);
   };
 
   // stop flow
   this.stop = function() {
     var d = $.Deferred();
     console.log('Flow stopping ...');
+    console.log('Counter : ', counter);
     //verifico a che punto è il counter se all'inizio
-    if (counter == 0) {
-      if (steps && steps.length)
-        steps[0].stop();
-      d.resolve();
+    steps[counter].stop();
+    if (counter > 0) {
+      counter = 0;
+      // faccio un reject dell flow
+      d.reject();
     } else {
       // altrimenti faccio un reject che mi porterà
       //a fare un rollback della sessione
-      d.reject();
+      d.resolve();
     }
     return d.promise();
   };

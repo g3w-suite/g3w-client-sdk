@@ -362,8 +362,8 @@ Layer.SourceTypes = {
 // Caratteristiche del layer
 Layer.CAPABILITIES = {
   QUERYABLE: 1,
-  FILTERABLE: 3,
-  EDITABLE: 5
+  FILTERABLE: 2,
+  EDITABLE: 4
 };
 
 //Tipi di editing sul layer

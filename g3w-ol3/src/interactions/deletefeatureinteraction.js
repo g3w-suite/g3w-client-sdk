@@ -23,10 +23,10 @@ DeleteInteraction.handleEvent_ = function(mapBrowserEvent) {
   if (mapBrowserEvent.type == 'keydown'){
     if(this.features_.getArray().length && mapBrowserEvent.originalEvent.keyCode == 46) {
       // un evento può essere una stringa o un oggetto con un attributo type
-      // this.dispatchEvent(
-      //     new DeleteInteractionEvent(
-      //         'deleteend', this.features_,
-      //         event.coordinate));
+      this.dispatchEvent(
+          new DeleteInteractionEvent(
+              'deleteend', this.features_,
+              event.coordinate));
       return true;
     }
   }

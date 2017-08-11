@@ -36,13 +36,15 @@ proto.run = function(inputs, context) {
       // gli inputs che il context
       this._task.run(inputs, context)
         .then(function(outups) {
-          // se il task è andato a buon fine chiamo il metodo stop
-          // così che posso fare "pulizia di cose appese"
-          self.stop();
           d.resolve(outups);
         })
         .fail(function(err) {
           d.reject(err);
+        })
+        .always(function() {
+          // chaimo sempre il metodo stop dello step
+          // così che posso fare "pulizia di cose appese"
+          self.stop();
         })
     }
     catch(err) {
@@ -58,9 +60,9 @@ proto.run = function(inputs, context) {
 //funzione che mi va  a fare lo spo dello step e in particolare del
 //task associato
 proto.stop = function() {
+  // chiamo lo stop del task così mi pulisce tutte le cose legate al task
   this._task.stop();
   this.state.running = false;
-
 };
 
 // faccio il revert del task
