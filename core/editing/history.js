@@ -3,7 +3,9 @@ var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
 var Feature = require('core/layers/features/feature');
 
-function History() {
+function History(options) {
+  options = options || {};
+  this.id = options.id;
   base(this);
   // vengono registrati tutte le modifiche
   // che sono coinvolti
@@ -72,17 +74,25 @@ proto.add = function(uniqueId, items) {
 };
 
 //funzione che verifica se c'è stato un update (gli update sono formati da un array di due valori , il vecchio e il nuovo)
-proto._checkUpdateItems = function(items, action) {
+proto._checkItems = function(items, action) {
   /**
    * action: 0 per uno; 1: redo si riferiscono all'indice dell'array dell'item
    */
-
-  var newItems = [];
-  _.forEach(items, function(item, idx) {
-    if (_.isArray(item)) {
-      newItems.push(item[action]);
+  var self = this;
+  var newItems = {
+    own: [], //array di modifiche da applicare al layer della sessione
+    dependencies: {} // qui vengono raccolte le dependencies
+  };
+  _.forEach(items, function(item) {
+    if (_.isArray(item))
+      item = item[action];
+    // vado a verificare se appartiene alla sessione
+    if (self.id == item.layerId) {
+      newItems.own.push(item)
     } else {
-      newItems.push(item)
+      if (!newItems.dependencies[item.layerId])
+        newItems.dependencies[item.layerId] = [];
+      newItems.dependencies[item.layerId].push(item);
     }
   });
   return newItems;
@@ -90,7 +100,6 @@ proto._checkUpdateItems = function(items, action) {
 
 // funzione undo
 proto.undo = function() {
-  var d = $.Deferred();
   var self = this;
   var items;
   if (this._current == this.getFirstState().id) {
@@ -107,14 +116,13 @@ proto.undo = function() {
       }
     })
   }
-  items = this._checkUpdateItems(items, 0);
-  d.resolve(items);
-  return d.promise();
+  items = this._checkItems(items, 0);
+  return items;
+  
 };
 
 //funzione redo
 proto.redo = function() {
-  var d = $.Deferred();
   var self = this;
   var items;
   if (!this._current) {
@@ -130,9 +138,8 @@ proto.redo = function() {
       }
     })
   }
-  items = this._checkUpdateItems(items, 1);
-  d.resolve(items);
-  return d.promise();
+  items = this._checkItems(items, 1);
+  return items;
 };
 
 // ripulisce tutta la storia se non è stato specificato nessun ids
@@ -270,7 +277,7 @@ proto.commit = function() {
           // perchè allora setto come add
           if (item.feature.isNew() && !commitItem.isDeleted()  && item.feature.isAdded()) {
             // allora setto l'ultima versione allo stato add
-            commitItems[idx].add();
+            commitItem.add();
           }
           add = false;
           return false;

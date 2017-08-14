@@ -4,6 +4,7 @@ function ChangesManager() {
   this.execute = function(object, items, reverse) {
     var fnc;
     var feature;
+    // ciclo sugli items da applicare all'oggetto o featuresstore
     _.forEach(items, function(item) {
       feature = item.feature;
       if (reverse) {

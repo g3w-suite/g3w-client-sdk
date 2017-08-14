@@ -32,7 +32,9 @@ function Session(options) {
   // è la versione temporanea del features store de singolo editor
   this._featuresstore = options.featuresstore || new FeaturesStore();
   // history -- oggetto che contiene gli stati dei layers
-  this._history = new History();
+  this._history = new History({
+    id: this.state.id
+  });
   // contenitore temporaneo che servirà a salvare tutte le modifiche
   // temporanee che andranno poi salvate nella history e nel featuresstore
   this._temporarychanges = [];
@@ -145,36 +147,35 @@ proto.push = function(New, Old) {
   this._temporarychanges.push(feature);
 };
 
+proto.applyChanges = function(items, reverse) {
+  reverse = reverse || true;
+  ChangesManager.execute(this._featuresstore, items, reverse);
+};
+
 // funzione di rollback
 // questa in pratica restituirà tutte le modifche che non saranno salvate nella history
 // e nel featuresstore della sessione ma riapplicate al contrario
 proto.rollback = function() {
-  var d = $.Deferred();
   //vado a after il rollback dellle feature temporanee salvate in sessione
   console.log('Session Rollback.....');
   // vado a modificare il featurestore facendo il rollback dei cambiamenti temporanei
-  ChangesManager.execute(this._featuresstore, this._temporarychanges, true);
+  this.applyChanges(this._temporarychanges, true);
   this._temporarychanges = [];
-  d.resolve();
-  return d.promise()
+  return // qui vado a restituire le dipendenze
 };
 
 // funzione di undo che chiede alla history di farlo
 proto.undo = function() {
-  var self = this;
-  this._history.undo()
-    .then(function(items) {
-      ChangesManager.execute(self._featuresstore, items, true);
-    })
+  var items = this._history.undo();
+  this.applyChanges(items.own, true);
+  return items.dependencies;
 };
 
 // funzione di undo che chiede alla history di farlo
 proto.redo = function() {
-  var self = this;
-  this._history.redo()
-    .then(function(items) {
-      ChangesManager.execute(self._featuresstore, items, true);
-    })
+  var items = this._history.redo();
+  this.applyChanges(items.own, true);
+  return items.dependencies;
 };
 
 //funzione che prende tutte le modifche dalla storia e le
