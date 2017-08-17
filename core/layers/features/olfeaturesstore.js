@@ -6,7 +6,7 @@ var Feature = require('./feature');
 // Storage delle features di un layer vettoriale
 function OlFeaturesStore(options) {
   base(this, options);
-  this._features = new ol.Collection([]);
+  this._features = new ol.Collection();
 }
 
 inherit(OlFeaturesStore, FeaturesStore);
@@ -26,23 +26,22 @@ proto.getFeatureById = function(featureId) {
 
 //vado ad eseguire in pratica la sostituzione della feature dopo una modifica
 proto._updateFeature = function(feature) {
-  var self = this;
-  _.forEach(this._features.getArray(), function(feat, idx) {
+  this._features.forEach(function(feat, idx, array) {
     if (feat.getId() == feature.getId()) {
-      self._features.setAt(idx, feature);
+      this.setAt(idx, feature);
       return false;
     }
-  });
+  }, this._features);
 };
 
+// funzione che va a rimuovere la feature
 proto._removeFeature = function(feature) {
-  var self = this;
-  _.forEach(this._features.getArray(), function(feat, idx) {
+  this._features.forEach(function(feat, idx, array) {
     if (feature.getId() == feat.getId()) {
-      self._features.removeAt(idx);
+      this.removeAt(idx);
       return false
     }
-  })
+  }, this._features)
 };
 
 proto._clearFeatures = function() {

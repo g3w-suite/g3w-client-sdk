@@ -209,10 +209,10 @@ proto.isQueryable = function() {
 //verifica se il il Layer è filtrabile
 proto.isFilterable = function() {
   // useremo Layer.CAPABILITIES.FILTERABLE
-  // return this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.FILTERABLE);
+  return this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.FILTERABLE);
 
   // per ora facciamo così
-  return this.providers.filter != undefined;
+  //return this.providers.filter != undefined;
 };
 
 proto.isEditable = function() {
