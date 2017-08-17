@@ -3,13 +3,18 @@ var base = require('core/utils/utils').base;
 var DataProvider = require('core/layers/providers/provider');
 var Feature = require('core/layers/features/feature');
 
-function  QGISProvider(options) {
+function QGISProvider(options) {
   options = options || {};
   base(this);
   this._name = 'qgis';
   this._layer = options.layer || null;
-  this._url = this._layer.getQueryUrl();
-  this._layerName = this._layer.getName() || null; // prendo sempre il name del layer di QGIS, perché le query sono proxate e gestite da g3w-server
+  // url riferito alle query
+  this._queryUrl = this._layer.getQueryUrl();
+  // url riferito ai dati;
+  this._dataUrl = this._layer.getDataUrl();
+  // url per prendere la configurazione del layer dal server
+  this._configUrl = this._layer.getConfigUrl();
+  this._layerName = this._layer.getName() || null; // prendo sempre il name del layer di QGIS, perché le query sono proxate e gestiteda g3w-server
   this._infoFormat = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
 }
 
@@ -26,7 +31,7 @@ proto.query = function(options) {
   var filter = options.filter || null;
   if (filter) {
     var filterType = filter.getType();
-    var url = this._url;
+    var url = this._queryUrl;
       $.get( url, {
           SERVICE: 'WMS',
           VERSION: '1.3.0',
@@ -54,6 +59,12 @@ proto.query = function(options) {
   return d.promise();
 };
 
+// ci vuole un metodo per prendere la configurazione dal server
+// del layer
+proto.getConfig = function(options) {
+
+};
+
 // METODI LOADING EDITING FEATURES //
 proto.getFeatures = function(options) {
   var d = $.Deferred();
@@ -66,7 +77,7 @@ proto.getFeatures = function(options) {
   // simulo attesa dal server
   setTimeout(function() {
     d.resolve(features);
-  }, 1000);
+  }, 100);
   _.forEach(this._parseLayerGeoJSON(featuresGeoJson), function(feature) {
     features.push(new Feature({
       feature: feature

@@ -47,14 +47,18 @@ function TableLayer(config) {
       return d.promise();
     }
   };
-  // vado a chiamare il Layer di base
-  base(this, config);
-
+  // estendo con il dataurl per raccogliere i dati grezzi dal server
+  _.extend({
+    dataurl: null,
+    configurl: null
+  }, config);
   this.type = Layer.LayerTypes.TABLE;
   // istanzia un editor alla sua creazione
   this._editor = new Editor({
     layer: this
   });
+  // vado a chiamare il Layer di base
+  base(this, config);
   // viene istanziato un featuresstore e gli viene associato
   // il data provider
   this._featuresStore = new FeaturesStore({
@@ -65,6 +69,24 @@ function TableLayer(config) {
 inherit(TableLayer, Layer);
 
 var proto = TableLayer.prototype;
+
+// funzione che server per settare il data url
+proto.setDataUrl = function(url) {
+  this.config.dataurl = url;
+};
+
+proto.getDataUrl = function() {
+  return this.config.dataurl;
+};
+
+// url dedicato a ricevere la struttura del layer
+proto.getConfigUrl = function() {
+  return this.config.configurl;
+};
+
+proto.setConfigUrl = function(url) {
+  this.config.configurl = url;
+};
 
 proto.getEditor = function() {
   return this._editor;
