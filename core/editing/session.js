@@ -75,12 +75,14 @@ proto._getFeatures = function(options) {
   var self = this;
   var d = $.Deferred();
   this._editor.getFeatures(options)
-    .then(function(features) {
-      self._featuresstore.addFeatures(features);
-      d.resolve(features);
-    })
-    .fail(function(err) {
-      d.reject(err);
+    .then(function(promise) {
+      promise.then(function(features) {
+        self._featuresstore.addFeatures(features);
+        d.resolve(features);
+      })
+      .fail(function (err) {
+        d.reject(err);
+      });
     });
   return d.promise();
 };
