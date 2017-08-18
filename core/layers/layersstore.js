@@ -18,7 +18,8 @@ function LayersStore(config) {
 
   this.state = {
     //questo attributo mi server per popolare eventualmente l'abero del catalogo
-    layerstree: []
+    layerstree: [],
+    layersrelationstree: null // mi servirà a costruire il tree delle relazioni paddri figlio
   };
 
   this._layers = this.config.layers || {};
@@ -309,6 +310,11 @@ proto.setLayersTree = function(layerstree,name) {
     expanded: true,
     nodes: layerstree
   });
+};
+
+// funzione che serve a costruire l'albero delle relazioni tra layer di quel layerstore
+proto.createLayersRealtionsTree = function(relationConfig) {
+  this.state.layersrelationstree = [];
 };
 
 // funzione che posso sfruttare dai plugin per costruire un

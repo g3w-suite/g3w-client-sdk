@@ -101,7 +101,9 @@ function PluginsRegistry() {
 
   //funzione che permette il caricamento dello script del plugin
   this._setup = function(name, pluginConfig) {
-    if (pluginConfig) {
+    // verifico che il plugin config la configurazione del
+    // plugin non sia nulla per caricare il plugin
+    if (!_.isNull(pluginConfig)) {
       var url = this.pluginsBaseUrl+name+'/js/plugin.js?'+Date.now();
       $script(url);
       // vado ad aggiunguere il plugin all'array dei plugin caricati

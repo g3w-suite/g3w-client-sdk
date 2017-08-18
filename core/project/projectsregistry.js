@@ -145,6 +145,7 @@ proto.getListableProjects = function() {
   })
 };
 
+//recupera il progetto corrente
 proto.getCurrentProject = function(){
   return this.state.currentProject;
 };

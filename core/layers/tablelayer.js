@@ -6,6 +6,13 @@ var FeaturesStore = require('./features/featuresstore');
 
 // Layer di base su cui si possono fare operazioni di editing
 function TableLayer(config) {
+  //////// al momento lo metto qui ////////////////////////////
+  var ProjectRegistry = require('core/project/projectsregistry');
+  var currentProjectConfig = ProjectRegistry.getCurrentProject();
+  var projectType = currentProjectConfig.getType();
+  var projectId = currentProjectConfig.getId();
+  var vectorUrl = initConfig.vectorurl;
+  ///////////////////////////////////////////////////
   // setters
   this.setters = {
     // cancellazione di tutte le features del layer
@@ -47,16 +54,24 @@ function TableLayer(config) {
       return d.promise();
     }
   };
-  // estendo con il dataurl per raccogliere i dati grezzi dal server
-  _.extend({
-    dataurl: null,
-    configurl: null
-  }, config);
+  /*
+     * composizione url editing api
+     * la chimata /api/vector/<tipo di richiesta: data/editing/config>/<project_type>/<project_id>/<layer_id>
+     * esempio /api/vector/config/qdjango/10/punti273849503023
+     *
+     */
+  
   this.type = Layer.LayerTypes.TABLE;
   // istanzia un editor alla sua creazione
   this._editor = new Editor({
     layer: this
   });
+  // vado a settare urls che mi servono
+  config.urls = {
+    editing: vectorUrl + 'editing/' + projectType + '/' + projectId + '/' + config.id + '/',
+    data: vectorUrl + 'data/' + projectType + '/' + projectId + '/' + config.id + '/',
+    config: vectorUrl + 'config/' + projectType + '/' + projectId + '/' + config.id + '/'
+  };
   // vado a chiamare il Layer di base
   base(this, config);
   // viene istanziato un featuresstore e gli viene associato
@@ -69,6 +84,12 @@ function TableLayer(config) {
 inherit(TableLayer, Layer);
 
 var proto = TableLayer.prototype;
+
+proto.getEditingConfig = function() {
+  var provider = this.getProvider('data');
+  // ritorno la promise del provider
+  return provider.getConfig();
+};
 
 // funzione che server per settare il data url
 proto.setDataUrl = function(url) {

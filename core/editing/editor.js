@@ -24,19 +24,7 @@ function Editor(options) {
       this._setFeatures(features);
     },
     getFeatures: function (options) {
-      var d = $.Deferred();
-      this._layer.getFeatures(options)
-        .then(function (promise) {
-          promise.then(function (features) {
-            return d.resolve(features);
-          }).fail(function (err) {
-            return d.reject(err);
-          })
-        })
-        .fail(function (err) {
-          d.reject(err);
-        });
-      return d.promise();
+      return this._getFeatures(options);
     }
   };
   base(this);
@@ -57,6 +45,23 @@ proto.getLayer = function() {
 proto.setLayer = function(layer) {
   this._layer = layer;
   return this._layer;
+};
+
+// funzione per il recupero delle get features
+proto._getFeatures = function(options) {
+  var d = $.Deferred();
+  this._layer.getFeatures(options)
+    .then(function (promise) {
+      promise.then(function (features) {
+        return d.resolve(features);
+      }).fail(function (err) {
+        return d.reject(err);
+      })
+    })
+    .fail(function (err) {
+      d.reject(err);
+    });
+  return d.promise();
 };
 
 //funzione che fa partire lo start editing

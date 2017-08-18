@@ -11,10 +11,10 @@ function Session(options) {
   this.setters = {
     // setter per start
     start: function(options) {
-      this._start(options);
+      return this._start(options);
     },
     getFeatures: function(options) {
-      this._getFeatures(options);
+      return this._getFeatures(options);
     },
     stop: function() {
       this._stop();
@@ -58,6 +58,7 @@ proto._start = function(options) {
     .then(function(features) {
       // vado a popolare il featuresstore della sessione con le features
       //che vengono caricate via via dall'editor
+      console.log(features);
       self._featuresstore.addFeatures(features);
       self.state.started = true;
       d.resolve(features);
@@ -169,6 +170,7 @@ proto.rollback = function() {
 // funzione di undo che chiede alla history di farlo
 proto.undo = function() {
   var items = this._history.undo();
+  console.log(this._featuresstore);
   this.applyChanges(items.own, true);
   return items.dependencies;
 };
@@ -245,7 +247,6 @@ proto.commit = function(options) {
 
 //funzione di stop della sessione
 proto._stop = function() {
-  var self = this;
   this.state.started = false;
   var d = $.Deferred();
   console.log('Sessione stopping ..');

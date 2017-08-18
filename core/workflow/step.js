@@ -36,15 +36,12 @@ proto.run = function(inputs, context) {
       // gli inputs che il context
       this._task.run(inputs, context)
         .then(function(outups) {
+          self.stop(); //ripetuto ma non mi piace
           d.resolve(outups);
         })
         .fail(function(err) {
+          self.stop();//ripetuto ma non mi piace
           d.reject(err);
-        })
-        .always(function() {
-          // chaimo sempre il metodo stop dello step
-          // così che posso fare "pulizia di cose appese"
-          self.stop();
         })
     }
     catch(err) {

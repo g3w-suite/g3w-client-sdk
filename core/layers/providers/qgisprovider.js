@@ -9,11 +9,14 @@ function QGISProvider(options) {
   this._name = 'qgis';
   this._layer = options.layer || null;
   // url riferito alle query
-  this._queryUrl = this._layer.getQueryUrl();
+  this._queryUrl = this._layer.getUrls().query;
+  // editing url api
+  this._editingUrl = this._layer.getUrls().editing;
   // url riferito ai dati;
-  this._dataUrl = this._layer.getDataUrl();
+  this._dataUrl = this._layer.getUrls().data;
   // url per prendere la configurazione del layer dal server
-  this._configUrl = this._layer.getConfigUrl();
+  this._configUrl = this._layer.getUrls().config;
+  // layer name
   this._layerName = this._layer.getName() || null; // prendo sempre il name del layer di QGIS, perché le query sono proxate e gestiteda g3w-server
   this._infoFormat = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
 }
@@ -61,14 +64,23 @@ proto.query = function(options) {
 
 // ci vuole un metodo per prendere la configurazione dal server
 // del layer
-proto.getConfig = function(options) {
-
+proto.getConfig = function() {
+  var d = $.Deferred();
+  var config = {
+    configurazione: 'dati configurazione del layer'
+  };
+  setTimeout(function() {
+    d.resolve(config);
+  }, 100);
+  return d.promise();
 };
 
-// METODI LOADING EDITING FEATURES //
+// METODI LOADING EDITING FEATURES E STABILISCE SE IN LETTURA O SCRITTURA/LETTURA //
 proto.getFeatures = function(options) {
   var d = $.Deferred();
   options = options || {};
+  //qui vado a vedere se devo chiamare i dati in lettura o in scriuttura in base all'opzione
+  var url = options.editing ? this._editingUrl: this._dataUrl;
   var features = [];
   if (options.geometryType == 'Line')
     var featuresGeoJson = FERROVIA ;

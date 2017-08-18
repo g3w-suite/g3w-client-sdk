@@ -27,7 +27,7 @@ var ApplicationService = function() {
   // chiama il costruttore di G3WObject (che in questo momento non fa niente)
   base(this);
   // funzione inizializzazione che prende la configurazione dal server
-  this.init = function(config, acquirePostBoostrap){
+  this.init = function(config, acquirePostBoostrap) {
     this._config = config;
     if (acquirePostBoostrap) {
       this._acquirePostBoostrap = true;

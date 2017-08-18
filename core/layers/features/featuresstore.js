@@ -27,21 +27,7 @@ function FeaturesStore(options) {
       self._clearFeatures();
     },
     getFeatures: function(options) {
-      options = options || {};
-      var self = this;
-      var d = $.Deferred();
-      // verifico che ci siano opzioni altrimenti vado a recuperare le
-      // features prese
-      if (options && this._provider) {
-        this._provider.getFeatures(options)
-          .then(function(features) {
-            self.addFeatures(features);
-            d.resolve(features);
-          });
-      } else {
-        d.resolve(this._features);
-      }
-      return d.promise();
+      return this._getFeatures(options);
     }
   };
 
@@ -51,6 +37,25 @@ function FeaturesStore(options) {
 inherit(FeaturesStore, G3WObject);
 
 proto = FeaturesStore.prototype;
+
+// funzione che recupera le features o dal server o dall'attributo _features
+proto._getFeatures = function(options) {
+  options = options || {};
+  var self = this;
+  var d = $.Deferred();
+  // verifico che ci siano opzioni altrimenti vado a recuperare le
+  // features prese
+  if (options && this._provider) {
+    this._provider.getFeatures(options)
+      .then(function(features) {
+        self.addFeatures(features);
+        d.resolve(features);
+      });
+  } else {
+    d.resolve(this._features);
+  }
+  return d.promise();
+};
 
 proto.getFeatureById = function(featureId) {
   var feat;

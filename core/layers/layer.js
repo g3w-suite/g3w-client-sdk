@@ -5,10 +5,10 @@ var ProviderFactory = require('core/layers/providers/providersfactory');
 
 // classe padre di tutti i Layer
 function Layer(config) {
-  var self = this;
   config = config || {};
   // contiene la configurazione statica del layer
-  this.config = _.extend({
+  // messo merge perchè deve eventualmente mergiare attributi in comune
+  this.config = _.merge({
     id: config.id || 'Layer' ,
     title: config.title  || null,
     name: config.name || null,
@@ -16,11 +16,13 @@ function Layer(config) {
     capabilities: config.capabilities || null,
     editops: config.editops || null,
     infoformat: config.infoformat || null,
-    infourl: config.infourl || null,
     servertype: config.servertype || null,
     source: config.source || null,
-    geolayer: false
-  },config);
+    geolayer: false,
+    urls: {
+      query: config.infourl && config.infour != '' || config.wmsUrl
+    }
+  }, config);
 
   // contiene la parte dinamica del layer
   //this.state = config; // questo fa in modo che il catalog reagisca al mutamento
@@ -35,14 +37,15 @@ function Layer(config) {
     modified: false,
     hidden: config.hidden || false
   };
-
+  // tipo di layer
   this.type = null;
-
+  // campi
   this.fields = config.fields;
   // relations
   this.relations = config.relations || null; // da vedere com gestirle
-
+  // tipo di server
   var serverType = this.config.servertype;
+  // tipo di sorgente del layer
   var sourceType = this.config.source.type;
   /*
     questi sono i providers che il layer ha per
@@ -223,19 +226,17 @@ proto.isEditable = function() {
   return this.config.servertype == 'QGIS' && [Layer.SourceTypes.POSTGIS, Layer.SourceTypes.SPATIALITE].indexOf(this.config.source.type) > -1;
 };
 
+// funzione generica che ritorna il valore urls del config
+proto.getUrls = function() {
+  return this.config.urls;
+};
+
 proto.getQueryUrl = function() {
-  var infoUrl;
-  if (this.config.infourl && this.config.infourl != '') {
-    infoUrl = this.config.infourl;
-  }
-  else {
-    infoUrl = this.config.wmsUrl;
-  }
-  return infoUrl;
+  return this.config.urls.query;
 };
 
 proto.setQueryUrl = function(queryUrl) {
-  this.config.inforurl = queryUrl;
+  this.config.urls.query = queryUrl;
 };
 
 proto.getQueryLayerName = function() {

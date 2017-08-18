@@ -51,7 +51,8 @@ function Flow() {
       // c'è stato un erore (task rigettato)
       .fail(function(error) {
         self.onError(error);
-      });
+      })
+
   };
 
   //funzione che verifica se siamo arrivati alla fine degli steps
