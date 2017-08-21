@@ -1,6 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
+var Relations = require('core/relations/relations');
 
 // Interfaccia per registare i layers
 function LayersStore(config) {
@@ -19,7 +20,7 @@ function LayersStore(config) {
   this.state = {
     //questo attributo mi server per popolare eventualmente l'abero del catalogo
     layerstree: [],
-    layersrelationstree: null // mi servirà a costruire il tree delle relazioni paddri figlio
+    relations: null // mi servirà a costruire il tree delle relazioni paddri figlio
   };
 
   this._layers = this.config.layers || {};
@@ -66,6 +67,8 @@ proto.getId = function() {
 
 proto._addLayer = function(layer) {
   this._layers[layer.getId()] = layer;
+  // inoltre vado a settare il layersstore del layer
+  layer.setLayersStore(this);
 };
 
 proto.addLayers = function(layers) {
@@ -313,8 +316,25 @@ proto.setLayersTree = function(layerstree,name) {
 };
 
 // funzione che serve a costruire l'albero delle relazioni tra layer di quel layerstore
-proto.createLayersRealtionsTree = function(relationConfig) {
-  this.state.layersrelationstree = [];
+// in pratica partendo dai figli
+proto.createRelations = function(relations) {
+  // costruisce l'istanza relazioni
+  this.state.relations = new Relations({
+   relations: relations
+  });
+};
+
+// funzione che ritorna le relazioni di quel layersstore
+proto.getRelations = function() {
+  return this.state.relations;
+};
+
+proto.getChildrens = function(layerId) {
+  return this.state.relations.getChildrens(layerId);
+};
+
+proto.getFathers = function(layerId) {
+  return this.state.relations.getFathers(layerId);
 };
 
 // funzione che posso sfruttare dai plugin per costruire un
@@ -365,8 +385,12 @@ proto.removeLayersTree = function(id) {
   this.state.layerstree.splice(0,this.state.layerstree.length);
 };
 
-proto.getLayersTree = function(id) {
+proto.getLayersTree = function() {
   return this.state.layerstree;
+};
+
+proto.getRelationsTree = function() {
+  this.state.relationstree;
 };
 
 module.exports = LayersStore;

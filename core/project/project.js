@@ -26,9 +26,8 @@ function Project(projectConfig) {
   }
   */
   this.state = projectConfig;
-
   this._processLayers();
-
+  // recupero la
   this._projection = Projections.get(this.state.crs,this.state.proj4);
   this._layersStore = this._buildLayersStore();
 
@@ -47,8 +46,15 @@ inherit(Project, G3WObject);
 
 var proto = Project.prototype;
 
+proto.getRelations = function() {
+  return this.state.relations;
+};
+
+// funzione che processa i layers di progetto
 proto._processLayers = function() {
   var self = this;
+  // attraverso il tree dei layers (layerstree)
+  // e aggiungo informazioni utili ad esempio al catalogo
   function traverse(obj) {
     _.forIn(obj, function (layer, key) {
       //verifica che il nodo sia un layer e non un folder
@@ -93,6 +99,7 @@ proto._processLayers = function() {
 // lo istanzia  crea il layersstree
 proto._buildLayersStore = function() {
   var self = this;
+  // creo il layersStore
   var layersStore = new LayersStore();
   var overviewprojectgid = this.state.overviewprojectgid ? this.state.overviewprojectgid.gid : null;
   layersStore.setOptions({
@@ -113,9 +120,12 @@ proto._buildLayersStore = function() {
     layersStore.addLayer(layer);
   });
 
+  // funzione che crea il layerstree del layersstore
   layersStore.createLayersTree(this.state.name, {
     layerstree: this.state.layerstree
   });
+  // vado a creare le relazioni per quanto rigurada i layer di quel layersstore
+  layersStore.createRelations(this.state.relations);
 
   return layersStore;
 };

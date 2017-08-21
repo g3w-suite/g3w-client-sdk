@@ -58,7 +58,6 @@ proto._start = function(options) {
     .then(function(features) {
       // vado a popolare il featuresstore della sessione con le features
       //che vengono caricate via via dall'editor
-      console.log(features);
       self._featuresstore.addFeatures(features);
       self.state.started = true;
       d.resolve(features);

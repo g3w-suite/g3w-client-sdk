@@ -47,6 +47,8 @@ function Layer(config) {
   var serverType = this.config.servertype;
   // tipo di sorgente del layer
   var sourceType = this.config.source.type;
+  // vado a fare riferimento al suo contenitore (layersstore);
+  this._layersstore = config.layersstore || null;
   /*
     questi sono i providers che il layer ha per
     la gestione di una query semplice, query che utilizza filtri e recupero dei
@@ -197,7 +199,7 @@ proto.isVisible = function() {
 // verifica se il layer è interrogabile
 proto.isQueryable = function() {
   var queryEnabled = false;
-  var queryableForCababilities = this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.QUERYABLE);
+  var queryableForCababilities = !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.QUERYABLE));
   // se è interrogabile verifico che il suo stato sia visibile e non disabilitato
   if (queryableForCababilities) {
     // è interrogabile se visibile e non disabilitato (per scala) oppure se interrogabile comunque (forzato dalla proprietà infowhennotvisible)
@@ -211,19 +213,11 @@ proto.isQueryable = function() {
 
 //verifica se il il Layer è filtrabile
 proto.isFilterable = function() {
-  // useremo Layer.CAPABILITIES.FILTERABLE
-  return this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.FILTERABLE);
-
-  // per ora facciamo così
-  //return this.providers.filter != undefined;
+  return !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.FILTERABLE));
 };
 
 proto.isEditable = function() {
-  // useremo Layer.CAPABILITIES.EDITABLE appena il server l'avrà implementato
-  //return this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.EDITABLE);
-
-  // per ora facciamo così
-  return this.config.servertype == 'QGIS' && [Layer.SourceTypes.POSTGIS, Layer.SourceTypes.SPATIALITE].indexOf(this.config.source.type) > -1;
+  return !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.EDITABLE));
 };
 
 // funzione generica che ritorna il valore urls del config
@@ -330,6 +324,41 @@ proto.getProvider = function(type) {
 proto.getProviders = function() {
   return this.providers;
 };
+
+proto.getLayersStore = function() {
+  return this._layersstore;
+};
+
+proto.setLayersStore = function(layerstore) {
+  this._layersstore = layerstore;
+};
+
+// metodo che restituisce true o false se il layer è figlio
+proto.isChildren = function() {
+  return false;
+};
+
+// metodo che restituisce true o false se il layer è padre
+proto.isFather = function() {
+  var relations = this._layersstore.getRelations();
+  return relations.isFather(this.getId());
+};
+
+// ritorna i figli sono dopo che è stato verificato che è un padre
+proto.getChildrens = function() {
+  if (!this.isFather())
+    return [];
+  return this._layersstore.getChildrens(this.getId());
+  
+};
+
+// ritorna i padri dopo aver verificato che è un figlio
+proto.getFathers = function() {
+  if (!this.isChildren())
+      return [];
+  return this._layersstore.getFathers(this.getId());
+};
+
 
 ///PROPRIETÀ DEL LAYER
 
