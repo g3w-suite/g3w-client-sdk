@@ -124,8 +124,6 @@ proto._buildLayersStore = function() {
   layersStore.createLayersTree(this.state.name, {
     layerstree: this.state.layerstree
   });
-  // vado a creare le relazioni per quanto rigurada i layer di quel layersstore
-  layersStore.createRelations(this.state.relations);
 
   return layersStore;
 };

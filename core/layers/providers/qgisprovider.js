@@ -71,7 +71,7 @@ proto.getConfig = function() {
   };
   setTimeout(function() {
     d.resolve(config);
-  }, 100);
+  }, 2000);
   return d.promise();
 };
 

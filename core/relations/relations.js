@@ -11,9 +11,9 @@ function Relations(options) {
   this._relations = {};
   // qui mi serve per costruire tutte le relazioni tra i layers
   this._relationsInfo = {
-    childrens: {}, // contiene larry dei figli (id unici)
+    children: {}, // contiene l'array dei figli (id unici)
     fathers: {}, // contiene l'array dei padri (unici)
-    father_children: {} // contiene oggetti informazione padre figlio relazione
+    father_child: {} // contiene oggetti informazione padre figlio relazione
   };
   var relation;
   //vado a polpolare le relazioni
@@ -34,25 +34,27 @@ var proto = Relations.prototype;
 proto._createRelationsInfo = function() {
   var self = this;
   var father;
-  var children;
+  var child;
   _.forEach(this._relations, function(relation, relationKey) {
+    // scooro tra le relazioni create e vado ad aggiunfere informazioni
+    // per velocizzare le richieste
     father = relation.getFather();
-    children = relation.getChildren();
-    self._relationsInfo.father_children[father+children] = relationKey;
+    child = relation.getChild();
+    self._relationsInfo.father_child[father+child] = relationKey;
     if (!self._relationsInfo.fathers[father]) {
       self._relationsInfo.fathers[father] = [];
     }
-    if (!self._relationsInfo.childrens[children]) {
-      self._relationsInfo.childrens[children] = [];
+    if (!self._relationsInfo.children[child]) {
+      self._relationsInfo.children[child] = [];
     }
-    self._relationsInfo.fathers[father].push(children);
-    self._relationsInfo.childrens[children].push(father);
+    self._relationsInfo.fathers[father].push(child);
+    self._relationsInfo.children[child].push(father);
   });
 };
 
 proto._clearRelationsInfo = function() {
   this._relationsInfo = {
-    childrens: {},
+    children: {},
     fathers: {},
     father_children: {}
   };
@@ -63,6 +65,7 @@ proto._reloadRelationsInfo = function() {
   this._createRelationsInfo();
 };
 
+// retituisce tutte le relazini create
 proto.getRelations = function() {
   return this._relations;
 };
@@ -75,8 +78,8 @@ proto.getRelationById = function(id) {
   return this._relations[id];
 };
 
-proto.getRelationByFatherChildren = function(father, children) {
-  var relationId = this._relationsTree.father_children[father+children];
+proto.getRelationByFatherChildren = function(father, child) {
+  var relationId = this._relationsTree.father_child[father+child];
   return this.getRelationById(relationId);
 };
 
@@ -97,28 +100,24 @@ proto.removeRelation = function(relation) {
 };
 
 // vado a recuperare i figli a seconda se passato il parametro fatherId o no
-proto.getChildrens = function(fatherId) {
+proto.getChildren = function(fatherId) {
   if (!this.isFather(fatherId)) {
     return null;
   }
-  if (!fatherId)
-    return this._relationsInfo.childrens;
   return this._relationsInfo.fathers[fatherId];
 };
 
 // vado a recuperare i figli a seconda se passato il parametro childrenId o no
-proto.getFathers = function(childrenId) {
-  if (!this.isChildren(childrenId)) {
+proto.getFathers = function(childId) {
+  if (!this.isChild(childId)) {
     return null;
   }
-  if (!childrenId)
-    return this._relationsInfo.childrens;
-  return this._relationsInfo.childrens[childrenId];
+  return this._relationsInfo.children[childId];
 };
 
 // verifico se è un figlio o no
-proto.isChildren = function(id) {
-  return !!this._relationsInfo.childrens[id];
+proto.isChild = function(id) {
+  return !!this._relationsInfo.children[id];
 };
 
 // verifico se è un padre o no

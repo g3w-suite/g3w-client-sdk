@@ -9,9 +9,9 @@ function Relation(config) {
     id: config.id || 'id_' + uniqueSuffix ,
     name: config.name || 'name_' + uniqueSuffix,
     father: config.referencedLayer,
-    children: config.referencingLayer,
+    child: config.referencingLayer,
     fatherField: config.fieldRef.referencedField,
-    childrenField: config.fieldRef.referencingField,
+    childField: config.fieldRef.referencingField,
     type: config.type
   };
   base(this);
@@ -37,8 +37,8 @@ proto.setName = function(name) {
   this.state.name = name;
 };
 
-proto.getChildren = function() {
-  return this.state.children;
+proto.getChild = function() {
+  return this.state.child;
 };
 
 proto.getFather = function() {
@@ -47,6 +47,10 @@ proto.getFather = function() {
 
 proto.getState = function() {
   return this.state;
+};
+
+proto.getType = function() {
+  return this.state.type;
 };
 
 

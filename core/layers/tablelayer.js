@@ -3,15 +3,14 @@ var base = require('core/utils//utils').base;
 var Layer = require('./layer');
 var Editor = require('core/editing/editor');
 var FeaturesStore = require('./features/featuresstore');
+var Relations = require('core/relations/relations');
 
 // Layer di base su cui si possono fare operazioni di editing
 function TableLayer(config) {
+  var self = this;
   //////// al momento lo metto qui ////////////////////////////
   var ProjectRegistry = require('core/project/projectsregistry');
-  var currentProjectConfig = ProjectRegistry.getCurrentProject();
-  var projectType = currentProjectConfig.getType();
-  var projectId = currentProjectConfig.getId();
-  var vectorUrl = initConfig.vectorurl;
+  var currentProject= ProjectRegistry.getCurrentProject();
   ///////////////////////////////////////////////////
   // setters
   this.setters = {
@@ -60,13 +59,18 @@ function TableLayer(config) {
      * esempio /api/vector/config/qdjango/10/punti273849503023
      *
      */
-  
   this.type = Layer.LayerTypes.TABLE;
   // istanzia un editor alla sua creazione
   this._editor = new Editor({
     layer: this
   });
+  // relations of the layer
+  var projectRelations = currentProject.getRelations();
+  this._relations = null;
   // vado a settare urls che mi servono
+  var projectType = currentProject.getType();
+  var projectId = currentProject.getId();
+  var vectorUrl = initConfig.vectorurl;
   config.urls = {
     editing: vectorUrl + 'editing/' + projectType + '/' + projectId + '/' + config.id + '/',
     data: vectorUrl + 'data/' + projectType + '/' + projectId + '/' + config.id + '/',
@@ -74,6 +78,13 @@ function TableLayer(config) {
   };
   // vado a chiamare il Layer di base
   base(this, config);
+  // vado a creare le relazioni
+  this._createRelations(projectRelations);
+  // vado a recuperare la configurazione dal server
+  this.getEditingConfig()
+    .then(function(config) {
+        self.emit('config:ready', config);
+      });
   // viene istanziato un featuresstore e gli viene associato
   // il data provider
   this._featuresStore = new FeaturesStore({
@@ -84,6 +95,7 @@ function TableLayer(config) {
 inherit(TableLayer, Layer);
 
 var proto = TableLayer.prototype;
+
 
 proto.getEditingConfig = function() {
   var provider = this.getProvider('data');
@@ -161,15 +173,69 @@ proto._clearFeatures = function() {
   this._featuresStore.clearFeatures();
 };
 
-// funzione che ritorna le dipendenze per quel layer
-// relazioni
-proto.getDependencies = function() {
-
+//Metodi legati alle relazioni
+proto._createRelations = function(projectRelations) {
+  var relations = [];
+  var layerId = this.getId();
+  _.forEach(projectRelations, function(relation) {
+    if ([relation.referencedLayer, relation.referencingLayer].indexOf(layerId) != -1)
+      relations.push(relation);
+  });
+  if (!!relations.length) {
+    this._relations = new Relations({
+      relations: relations
+    });
+  }
 };
 
-//funzione che ritorna possibili dipendenze del layer
-proto.hasDependencies = function() {
-  return false;
+// restituisce tutte le relazioni legati a quel layer
+proto.getRelations = function() {
+  return this._relations
+};
+
+//restituisce gli attributi fields di una deterninata relazione
+proto.getRelationAttributes = function(relationName) {
+  var fields = [];
+  _.forEach(this._relations, function(relation) {
+    if (relation.name == relationName) {
+      fields = relation.fields;
+      return false
+    }
+  });
+  return fields;
+};
+
+// retituisce un oggetto contenente nome relazione e fileds(attributi) associati
+proto.getRelationsAttributes = function() {
+  var fields = {};
+  _.forEach(this.state.relations, function(relation) {
+    fields[relation.name] = relation.fields;
+  });
+  return fields;
+};
+
+// metodo che restituisce true o false se il layer è figlio
+proto.isChild = function() {
+  return this._relations.isChild(this.getId());
+};
+
+// metodo che restituisce true o false se il layer è padre
+proto.isFather = function() {
+  return this._relations.isFather(this.getId());
+};
+
+// ritorna i figli sono dopo che è stato verificato che è un padre
+proto.getChildren = function() {
+  if (!this.isFather())
+    return [];
+  return this._relations.getChildren(this.getId());
+};
+
+// ritorna i padri dopo aver verificato che è un figlio
+proto.getFathers = function() {
+  if (!this.isChild())
+    return [];
+  return this._relations.getFathers(this.getId());
 };
 
 

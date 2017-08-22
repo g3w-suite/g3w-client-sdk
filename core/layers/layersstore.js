@@ -1,7 +1,6 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
-var Relations = require('core/relations/relations');
 
 // Interfaccia per registare i layers
 function LayersStore(config) {
@@ -67,8 +66,6 @@ proto.getId = function() {
 
 proto._addLayer = function(layer) {
   this._layers[layer.getId()] = layer;
-  // inoltre vado a settare il layersstore del layer
-  layer.setLayersStore(this);
 };
 
 proto.addLayers = function(layers) {
@@ -315,28 +312,6 @@ proto.setLayersTree = function(layerstree,name) {
   });
 };
 
-// funzione che serve a costruire l'albero delle relazioni tra layer di quel layerstore
-// in pratica partendo dai figli
-proto.createRelations = function(relations) {
-  // costruisce l'istanza relazioni
-  this.state.relations = new Relations({
-   relations: relations
-  });
-};
-
-// funzione che ritorna le relazioni di quel layersstore
-proto.getRelations = function() {
-  return this.state.relations;
-};
-
-proto.getChildrens = function(layerId) {
-  return this.state.relations.getChildrens(layerId);
-};
-
-proto.getFathers = function(layerId) {
-  return this.state.relations.getFathers(layerId);
-};
-
 // funzione che posso sfruttare dai plugin per costruire un
 // layerstree senza tanto stare acreare  e ricordarmi come creare un layerstrree
 // naturalmente è ad una dimanesione altrimenti c'è da studiare
@@ -389,8 +364,5 @@ proto.getLayersTree = function() {
   return this.state.layerstree;
 };
 
-proto.getRelationsTree = function() {
-  this.state.relationstree;
-};
 
 module.exports = LayersStore;

@@ -41,8 +41,6 @@ function Layer(config) {
   this.type = null;
   // campi
   this.fields = config.fields;
-  // relations
-  this.relations = config.relations || null; // da vedere com gestirle
   // tipo di server
   var serverType = this.config.servertype;
   // tipo di sorgente del layer
@@ -291,32 +289,6 @@ proto.getAttributeLabel = function(name) {
   return label;
 };
 
-// restituisce tutte le relazioni legati a quel layer
-proto.getRelations = function() {
-  return this._relations
-};
-
-//restituisce gli attributi fields di una deterninata relazione
-proto.getRelationAttributes = function(relationName) {
-  var fields = [];
-  _.forEach(this._relations, function(relation) {
-    if (relation.name == relationName) {
-      fields = relation.fields;
-      return false
-    }
-  });
-  return fields;
-};
-
-// retituisce un oggetto contenente nome relazione e fileds(attributi) associati
-proto.getRelationsAttributes = function() {
-  var fields = {};
-  _.forEach(this.state.relations, function(relation) {
-    fields[relation.name] = relation.fields;
-  });
-  return fields;
-};
-
 proto.getProvider = function(type) {
   return this.providers[type];
 };
@@ -332,33 +304,6 @@ proto.getLayersStore = function() {
 proto.setLayersStore = function(layerstore) {
   this._layersstore = layerstore;
 };
-
-// metodo che restituisce true o false se il layer è figlio
-proto.isChildren = function() {
-  return false;
-};
-
-// metodo che restituisce true o false se il layer è padre
-proto.isFather = function() {
-  var relations = this._layersstore.getRelations();
-  return relations.isFather(this.getId());
-};
-
-// ritorna i figli sono dopo che è stato verificato che è un padre
-proto.getChildrens = function() {
-  if (!this.isFather())
-    return [];
-  return this._layersstore.getChildrens(this.getId());
-  
-};
-
-// ritorna i padri dopo aver verificato che è un figlio
-proto.getFathers = function() {
-  if (!this.isChildren())
-      return [];
-  return this._layersstore.getFathers(this.getId());
-};
-
 
 ///PROPRIETÀ DEL LAYER
 
