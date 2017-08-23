@@ -80,7 +80,7 @@ proto.getConfig = function() {
     d.resolve({
       fields: fields
     });
-  }, 5000);
+  }, Math.random() * 10000);
   return d.promise();
 };
 
@@ -98,7 +98,7 @@ proto.getFeatures = function(options) {
   // simulo attesa dal server
   setTimeout(function() {
     d.resolve(features);
-  }, 100);
+  }, Math.random() * 10000);
   _.forEach(this._parseLayerGeoJSON(featuresGeoJson), function(feature) {
     features.push(new Feature({
       feature: feature
