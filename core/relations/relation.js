@@ -53,5 +53,21 @@ proto.getType = function() {
   return this.state.type;
 };
 
+proto.getFields = function() {
+  var fields = {
+    father: this.state.fatherField,
+    child: this.state.childField
+  };
+  return fields;
+};
+
+proto.getFatherField = function() {
+  return this.state.fatherField;
+};
+
+proto.getChildField = function() {
+  return this.state.childField;
+};
+
 
 module.exports = Relation;

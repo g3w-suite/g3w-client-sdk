@@ -54,11 +54,11 @@ function TableLayer(config) {
     }
   };
   /*
-     * composizione url editing api
-     * la chimata /api/vector/<tipo di richiesta: data/editing/config>/<project_type>/<project_id>/<layer_id>
-     * esempio /api/vector/config/qdjango/10/punti273849503023
-     *
-     */
+   * composizione url editing api
+   * la chimata /api/vector/<tipo di richiesta: data/editing/config>/<project_type>/<project_id>/<layer_id>
+   * esempio /api/vector/config/qdjango/10/punti273849503023
+   *
+  */
   this.type = Layer.LayerTypes.TABLE;
   // istanzia un editor alla sua creazione
   this._editor = new Editor({
@@ -78,13 +78,27 @@ function TableLayer(config) {
   };
   // vado a chiamare il Layer di base
   base(this, config);
+  // aggiungo nformazioni allo state che sono solo necessarie a layer
+  // di possibile editing
+  this.state = _.merge({
+    editing: {
+      start: false,
+      modified: false,
+      config:{
+        fields: []
+      }
+    }
+  }, this.state);
   // vado a creare le relazioni
   this._createRelations(projectRelations);
   // vado a recuperare la configurazione dal server
   this.getEditingConfig()
     .then(function(config) {
-        self.emit('config:ready', config);
-      });
+      // vado a settare aggiungere i fileds per l'editing
+      _.forEach(config.fields, function(field) {
+        self.state.editing.config.fields.push(field);
+      })
+    });
   // viene istanziato un featuresstore e gli viene associato
   // il data provider
   this._featuresStore = new FeaturesStore({
@@ -96,12 +110,23 @@ inherit(TableLayer, Layer);
 
 var proto = TableLayer.prototype;
 
+// funzione che restituisce i campi del layer
+proto.getFields = function() {
+  return this.config.editing.config.fields;
+};
 
+// funzione che restituisce l'array (configurazione) dei campi utlizzati per l'editing
+proto.getEditingFields = function() {
+  return this.state.editing.config.fields;
+};
+
+// funzione che recuprera la configurazione di editing del layer
 proto.getEditingConfig = function() {
   var provider = this.getProvider('data');
   // ritorno la promise del provider
   return provider.getConfig();
 };
+
 
 // funzione che server per settare il data url
 proto.setDataUrl = function(url) {

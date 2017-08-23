@@ -19,6 +19,7 @@ function Layer(config) {
     servertype: config.servertype || null,
     source: config.source || null,
     geolayer: false,
+    fields: config.fields || {},
     urls: {
       query: config.infourl && config.infour != '' || config.wmsUrl
     }
@@ -33,14 +34,10 @@ function Layer(config) {
     visible: config.visible,
     selected: config.selected | false,
     disabled: config.disabled | false,
-    editing: false,
-    modified: false,
     hidden: config.hidden || false
   };
   // tipo di layer
   this.type = null;
-  // campi
-  this.fields = config.fields;
   // tipo di server
   var serverType = this.config.servertype;
   // tipo di sorgente del layer

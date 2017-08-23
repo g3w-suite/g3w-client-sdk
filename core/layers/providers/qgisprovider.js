@@ -66,12 +66,21 @@ proto.query = function(options) {
 // del layer
 proto.getConfig = function() {
   var d = $.Deferred();
-  var config = {
-    configurazione: 'dati configurazione del layer'
-  };
+  var fields = [
+    {
+      editable: true,
+      input:{type: "text", options: {}},
+      label: "gid",
+      name: "gid",
+      type: "integer",
+      validate: {}
+    }
+  ];
   setTimeout(function() {
-    d.resolve(config);
-  }, 2000);
+    d.resolve({
+      fields: fields
+    });
+  }, 5000);
   return d.promise();
 };
 
