@@ -241,11 +241,15 @@ proto.getRelationsAttributes = function() {
 
 // metodo che restituisce true o false se il layer è figlio
 proto.isChild = function() {
+  if (!this.getRelations())
+    return false;
   return this._relations.isChild(this.getId());
 };
 
 // metodo che restituisce true o false se il layer è padre
 proto.isFather = function() {
+  if (!this.getRelations())
+    return false;
   return this._relations.isFather(this.getId());
 };
 

@@ -13,6 +13,10 @@ inherit(OlFeaturesStore, FeaturesStore);
 
 proto = OlFeaturesStore.prototype;
 
+proto.getFeaturesCollection = function() {
+  return this._features;
+};
+
 proto.getFeatureById = function(featureId) {
   var feat;
   _.forEach(this._features.getArray(), function(feature) {

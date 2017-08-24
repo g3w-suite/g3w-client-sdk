@@ -31,7 +31,7 @@ function History(options) {
   * */
   // qui setto la massima lunghezza del "buffer history" per undo redo
   // al momento non utilizzata
-  this._maxLength = 10;
+  this._maxSteps = 100;
   this._states = [];
   this._current = null;
 }
@@ -199,6 +199,21 @@ proto.getCurrentState = function() {
   return currentState;
 };
 
+// funzione che mi permette di ricavarel'indice dello stato corrente
+proto.getCurrentStateIndex = function() {
+  var self = this;
+  var currentStateIndex = null;
+  if (this._current && this._states.length) {
+    _.forEach(this._states, function (state, idx) {
+      if (self._current == state.id) {
+        currentStateIndex = idx;
+        return false
+      }
+    });
+  }
+  return currentStateIndex;
+};
+
 // funzione che mi dice se ci sono cose da committare
 proto.canCommit = function() {
   var canCommit = false;
@@ -229,7 +244,8 @@ proto.canCommit = function() {
 
 //funzione che mi dice se posso fare l'undo sulla history
 proto.canUndo = function() {
-  return !_.isNull(this._current);
+  var steps = (this._states.length - 1) - this.getCurrentStateIndex();
+  return !_.isNull(this._current) && (this._maxSteps > steps);
 };
 
 // funzione che mi dice se posso fare il redo sulla history

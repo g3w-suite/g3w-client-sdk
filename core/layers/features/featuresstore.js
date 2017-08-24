@@ -43,8 +43,8 @@ proto._getFeatures = function(options) {
   options = options || {};
   var self = this;
   var d = $.Deferred();
-  // verifico che ci siano opzioni altrimenti vado a recuperare le
-  // features prese
+  // verifico che ci siano opzioni e un provider altrimenti vado a recuperare le
+  // features direttamente nel featuresstore
   if (options && this._provider) {
     this._provider.getFeatures(options)
       .then(function(features) {

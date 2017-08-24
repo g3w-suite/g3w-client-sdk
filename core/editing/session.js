@@ -169,7 +169,6 @@ proto.rollback = function() {
 // funzione di undo che chiede alla history di farlo
 proto.undo = function() {
   var items = this._history.undo();
-  console.log(this._featuresstore);
   this.applyChanges(items.own, true);
   return items.dependencies;
 };
@@ -184,24 +183,38 @@ proto.redo = function() {
 //funzione che prende tutte le modifche dalla storia e le
 //serializza in modo da poterle inviare tramite posto al server
 proto._serializeCommit = function(itemsToCommit) {
-  var commitObj = {};
+  var id = this.getId();
   var state;
+  var layer;
+  var commitObj = {
+    add: [],
+    update: [],
+    delete: [],
+    relations: {}
+  };
   _.forEach(itemsToCommit, function(items, key) {
-    commitObj[key] = {
-      add: [],
-      update: [],
-      delete: []
-    };
+    if (key != id) {
+      // vado a creare una nuova chiave nelle relazioni
+      layer = commitObj.relations[key];
+      // e assegno struttura per il commit
+      layer = {
+        add: [],
+        update: [],
+        delete: []
+      };
+    } else {
+      layer = commitObj
+    }
     _.forEach(items, function(item) {
       state = item.getState();
       var GeoJSONFormat = new ol.format.GeoJSON();
       switch (state) {
         case 'delete':
           if (!item.isNew())
-            commitObj[key].delete.push(item.getId());
+            layer.delete.push(item.getId());
           break;
         default:
-          commitObj[key][item.getState()].push(GeoJSONFormat.writeFeatureObject(item));
+          layer[item.getState()].push(GeoJSONFormat.writeFeatureObject(item));
           break;
       }
     })
@@ -257,6 +270,7 @@ proto._stop = function() {
 
 // clear di tutte le cose associate alla sessione
 proto.clear = function() {
+  console.log(this._featuresstore._features.getLength());
   // vado a ripulire tutto il featureststore
   this._featuresstore.clear();
   // vado a ripulire la storia
