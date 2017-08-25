@@ -5,12 +5,12 @@
 var Feature = function(options) {
   ol.Feature.call(this);
   options = options || {};
+  this._newPrefix = '__new__';
+  // mi serve per capire quale è la pk della feature
+  this._pk = options.pk || "id";
   var feature = options.feature;
   //verificare come utilizzare clone
   if (feature) {
-    //DA CAMBIARE HARDCODED
-    var id = feature.get('gid');
-    this.setId(id);
     this.setProperties(feature.getProperties());
     this.setGeometryName(feature.getGeometryName());
     var geometry = feature.getGeometry();
@@ -24,12 +24,7 @@ var Feature = function(options) {
   }
   // necessario per poter interagire reattivamente con l'esterno
   this.state = {
-    state: null /*stato dela feature
-                     originale : null
-                     add: 0
-                     update: 1,
-                     delete: 2
-                */
+    state: null
   };
 };
 
@@ -37,17 +32,33 @@ ol.inherits(Feature, ol.Feature);
 
 proto = Feature.prototype;
 
+// vado a cambiare il costruttore
+proto.constructor = 'Feature';
+
 proto.clone = function() {
   var feature = ol.Feature.prototype.clone.call(this);
   var clone =  new Feature({
-    feature: feature
+    feature: feature,
+    pk: this._pk
   });
-  clone.setId(this.getId());
   clone.setState(this.getState());
   return clone;
 };
 
-proto.constructor = 'Feature';
+proto.createNewPk = function() {
+  var newValue = this._newPrefix + Date.now();
+  this.set(this._pk, newValue);
+};
+
+// funzione che restituisce il valore della primary key
+proto.getPk = function() {
+  console.log(this._pk);
+  return this.get(this._pk);
+};
+
+proto.setPk = function(value) {
+  this.set(this._pk, value);
+};
 
 // setta la feature a state 2 delete
 proto.delete = function() {
@@ -65,7 +76,7 @@ proto.add = function() {
 };
 
 proto.isNew = function() {
-  return !_.isNumber(this.getId()) && this.getId().indexOf('__new__') != -1;
+  return !_.isNumber(this.getPk()) && this.getPk().indexOf(this._newPrefix) != -1;
 };
 
 proto.isAdded = function() {

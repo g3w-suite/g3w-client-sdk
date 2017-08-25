@@ -126,14 +126,14 @@ proto.addLockId = function(lockId) {
 
 // funzione che serve ad aggiornare o settare gli attibuti ad una feature
 // viene sfruttatat al momento del salvataggio in editing di una feature
-proto.setFeatureData = function(oldfid,fid,geometry,attributes) {
+proto.setFeatureData = function(oldpk, pk, geometry, attributes) {
   var self = this;
   // vado a prende il vecchio fid (id temporaneo _new_...) oppure prendo una feature già esistente
-  var feature = this.getFeatureById(oldfid) || this.getFeatureById(fid);
+  var feature = this.getFeatureByPk(oldfid) || this.getFeatureByPk(fid);
   // se la feature esiste vuol dire che simao nel caso di una nuoav feature
-  if (feature) {
-    if (oldfid && oldfid != fid) {
-      feature.setId(fid);
+  if (kfeature) {
+    if (oldpk && okdpk != pk) {
+      feature.setPk(pk);
     }
     if(geometry) {
       feature.setGeometry(geometry);

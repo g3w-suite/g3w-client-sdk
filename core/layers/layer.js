@@ -215,6 +215,11 @@ proto.isEditable = function() {
   return !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.EDITABLE));
 };
 
+// funzione che permette di ricavare un tipo di url del layer passandofli il tio (esempio data, editing..etc..)
+proto.getUrl = function(type) {
+  return this.config.urls[type];
+};
+
 // funzione generica che ritorna il valore urls del config
 proto.getUrls = function() {
   return this.config.urls;

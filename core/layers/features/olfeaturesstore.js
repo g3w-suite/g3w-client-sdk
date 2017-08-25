@@ -17,10 +17,10 @@ proto.getFeaturesCollection = function() {
   return this._features;
 };
 
-proto.getFeatureById = function(featureId) {
+proto.getFeatureByPk = function(featurePk) {
   var feat;
   _.forEach(this._features.getArray(), function(feature) {
-    if (feature.getId() == featureId) {
+    if (feature.getPk() == featurePk) {
       feat = feature;
       return false;
     }
@@ -30,8 +30,9 @@ proto.getFeatureById = function(featureId) {
 
 //vado ad eseguire in pratica la sostituzione della feature dopo una modifica
 proto._updateFeature = function(feature) {
+  console.log(feature);
   this._features.forEach(function(feat, idx, array) {
-    if (feat.getId() == feature.getId()) {
+    if (feat.getPk() == feature.getPk()) {
       this.setAt(idx, feature);
       return false;
     }
@@ -41,7 +42,7 @@ proto._updateFeature = function(feature) {
 // funzione che va a rimuovere la feature
 proto._removeFeature = function(feature) {
   this._features.forEach(function(feat, idx, array) {
-    if (feature.getId() == feat.getId()) {
+    if (feature.getPk() == feat.getPk()) {
       this.removeAt(idx);
       return false
     }

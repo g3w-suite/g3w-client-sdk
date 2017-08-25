@@ -35,7 +35,10 @@ function TableLayer(config) {
     getFeatures: function (options) {
       var self = this;
       options = options || {};
-      options.geometryType = this.getGeometryType();
+      // aggiunta temporanea
+      options.id = this.getId();
+      // passo la pk del layer per poter settare Id della feature
+      options.pk = this.state.editing.config.pk;
       var d = $.Deferred();
       // qui mi ritorna la promessa del setter (G3WOBJECT)
       this._featuresStore.getFeatures(options)
@@ -84,7 +87,8 @@ function TableLayer(config) {
     editing: {
       start: false,
       modified: false,
-      config:{
+      config: {
+        pk: null,
         fields: []
       }
     }
@@ -92,10 +96,15 @@ function TableLayer(config) {
   // vado a creare le relazioni
   this._createRelations(projectRelations);
   // vado a recuperare la configurazione dal server
-  this.getEditingConfig()
+
+  this.getEditingConfig({
+    id: this.getId() // aggiunto al momento per utilizzare dato fake
+  })
     .then(function(config) {
+      var fields = config.vector.fields;
+      self.state.editing.config.pk = config.vector.pk;
       // vado a settare aggiungere i fileds per l'editing
-      _.forEach(config.fields, function(field) {
+      _.forEach(fields, function(field) {
         self.state.editing.config.fields.push(field);
       })
     });
@@ -115,35 +124,47 @@ proto.getFields = function() {
   return this.config.editing.config.fields;
 };
 
+proto.getPk = function() {
+  return this.state.editing.config.pk;
+};
+
 // funzione che restituisce l'array (configurazione) dei campi utlizzati per l'editing
 proto.getEditingFields = function() {
   return this.state.editing.config.fields;
 };
 
 // funzione che recuprera la configurazione di editing del layer
-proto.getEditingConfig = function() {
+proto.getEditingConfig = function(options) {
+  options = options || {};
   var provider = this.getProvider('data');
   // ritorno la promise del provider
-  return provider.getConfig();
+  return provider.getConfig(options);
 };
 
+proto.getEditingUrl = function() {
+  return this.config.urls.editing;
+};
+
+proto.setEditingUrl = function(url) {
+  this.config.urls.editing = url;
+};
 
 // funzione che server per settare il data url
 proto.setDataUrl = function(url) {
-  this.config.dataurl = url;
+  this.config.urls.data = url;
 };
 
 proto.getDataUrl = function() {
-  return this.config.dataurl;
+  return this.config.urls.data;
 };
 
 // url dedicato a ricevere la struttura del layer
 proto.getConfigUrl = function() {
-  return this.config.configurl;
+  return this.config.urls.config;
 };
 
 proto.setConfigUrl = function(url) {
-  this.config.configurl = url;
+  this.config.urls.config = url;
 };
 
 proto.getEditor = function() {

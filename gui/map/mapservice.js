@@ -202,7 +202,7 @@ proto.createOlLayer = function(options) {
   });
   var olLayer = new ol.layer.Vector({
     id: id,
-    //source: olSource,
+    source: olSource,
     style: style
   });
   return olLayer;
