@@ -267,5 +267,21 @@ proto.getFathers = function() {
   return this._relations.getFathers(this.getId());
 };
 
+proto.hasChildren = function() {
+  if (!this.hasRelations())
+    return false;
+  return this._relations.hasChildren(this.getId());
+};
+
+proto.hasFathers = function() {
+  if (!this.hasRelations())
+    return false;
+  return this._relations.hasFathers(this.getId());
+};
+
+proto.hasRelations = function() {
+  return !!this._relations;
+};
+
 
 module.exports = TableLayer;

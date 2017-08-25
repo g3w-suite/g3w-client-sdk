@@ -99,6 +99,16 @@ proto.removeRelation = function(relation) {
   }
 };
 
+proto.hasChildren = function(childId) {
+  var children = this.getChildren(childId);
+  return  children ? !!children.length: false;
+};
+
+proto.hasFathers = function(fatherId) {
+  var fathers = this.getFathers(fatherId);
+  return fathers ? !!fathers.length : false;
+};
+
 // vado a recuperare i figli a seconda se passato il parametro fatherId o no
 proto.getChildren = function(fatherId) {
   if (!this.isFather(fatherId)) {

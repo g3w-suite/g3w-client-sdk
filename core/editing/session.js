@@ -270,7 +270,6 @@ proto._stop = function() {
 
 // clear di tutte le cose associate alla sessione
 proto.clear = function() {
-  console.log(this._featuresstore._features.getLength());
   // vado a ripulire tutto il featureststore
   this._featuresstore.clear();
   // vado a ripulire la storia
