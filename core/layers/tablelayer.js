@@ -39,7 +39,7 @@ function TableLayer(config) {
       // aggiunta temporanea
       options.id = this.getId();
       // passo la pk del layer per poter settare Id della feature
-      options.pk = this.state.editing.config.pk;
+      options.pk = this.config.editing.pk;
       var d = $.Deferred();
       // qui mi ritorna la promessa del setter (G3WOBJECT)
       this._featuresStore.getFeatures(options)
@@ -75,10 +75,16 @@ function TableLayer(config) {
   var projectType = currentProject.getType();
   var projectId = currentProject.getId();
   var vectorUrl = initConfig.vectorurl;
+  // vado ad aggiungere gli url che mi servono
   config.urls = {
     editing: vectorUrl + 'editing/' + projectType + '/' + projectId + '/' + config.id + '/',
     data: vectorUrl + 'data/' + projectType + '/' + projectId + '/' + config.id + '/',
     config: vectorUrl + 'config/' + projectType + '/' + projectId + '/' + config.id + '/'
+  };
+  // aggiungo alla configurazione la parte di editing
+  config.editing = {
+    pk: null, // campo primary kaey
+    fields: [] // campi utili all'editing
   };
   // vado a chiamare il Layer di base
   base(this, config);
@@ -87,11 +93,7 @@ function TableLayer(config) {
   this.state = _.merge({
     editing: {
       start: false,
-      modified: false,
-      config: {
-        pk: null,
-        fields: []
-      }
+      modified: false
     }
   }, this.state);
   // vado a creare le relazioni
@@ -103,10 +105,10 @@ function TableLayer(config) {
   })
     .then(function(config) {
       var fields = config.vector.fields;
-      self.state.editing.config.pk = config.vector.pk;
+      self.config.editing.pk = config.vector.pk;
       // vado a settare aggiungere i fileds per l'editing
       _.forEach(fields, function(field) {
-        self.state.editing.config.fields.push(field);
+        self.config.editing.fields.push(field);
       })
     });
   // viene istanziato un featuresstore e gli viene associato
@@ -122,16 +124,16 @@ var proto = TableLayer.prototype;
 
 // funzione che restituisce i campi del layer
 proto.getFields = function() {
-  return this.state.editing.config.fields;
+  return this.config.editing.fields;
 };
 
 proto.getPk = function() {
-  return this.state.editing.config.pk;
+  return this.config.editing.pk;
 };
 
 // funzione che restituisce l'array (configurazione) dei campi utlizzati per l'editing
 proto.getEditingFields = function() {
-  return this.state.editing.config.fields;
+  return this.config.editing.fields;
 };
 
 // funzione che recuprera la configurazione di editing del layer
@@ -224,7 +226,7 @@ proto._clearFeatures = function() {
 proto.getFieldsWithValues = function(obj) {
   var self = this;
   // clono i fields in quanto non voglio modificare i valori originali
-  var fields = _.cloneDeep(this.state.editing.config.fields);
+  var fields = _.cloneDeep(this.getFields());
   var feature, attributes;
   // il metodo accetta sia feature che fid
   if (obj instanceof Feature){
@@ -239,8 +241,8 @@ proto.getFieldsWithValues = function(obj) {
   }
   _.forEach(fields, function(field){
     if (feature){
-      if (!this._PKinAttributes && field.name == self.pk) {
-        if (self.isNewFeature(feature.getPk())) {
+      if (!this._PKinAttributes && field.name == self.config.editing.pk) {
+        if (feature.isNew()) {
           field.value = null;
         } else {
           field.value = feature.getPk();
