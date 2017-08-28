@@ -219,6 +219,43 @@ proto._clearFeatures = function() {
   this._featuresStore.clearFeatures();
 };
 
+proto.getFieldsWithValues = function(obj) {
+  var self = this;
+  // clono i fields in quanto non voglio modificare i valori originali
+  var fields = _.cloneDeep(this.state.editing.config.fields);
+  var feature, attributes;
+  // il metodo accetta sia feature che fid
+  if (obj instanceof ol.Feature){
+    feature = obj;
+  }
+  else if (obj){
+    feature = this.getFeatureById(obj);
+  }
+  // se c'è una feature ne prendo le proprietà
+  if (feature) {
+    attributes = feature.getProperties();
+  }
+  _.forEach(fields, function(field){
+    if (feature){
+      if (!this._PKinAttributes && field.name == self.pk) {
+        if (self.isNewFeature(feature.getId())) {
+          field.value = null;
+        } else {
+          field.value = feature.getId();
+        }
+      } else {
+
+        field.value = attributes[field.name];
+      }
+    }
+    else{
+      field.value = null;
+    }
+  });
+
+  return fields;
+};
+
 //Metodi legati alle relazioni
 proto._createRelations = function(projectRelations) {
   var relations = [];
