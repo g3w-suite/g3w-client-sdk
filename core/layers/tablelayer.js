@@ -3,6 +3,7 @@ var base = require('core/utils//utils').base;
 var Layer = require('./layer');
 var Editor = require('core/editing/editor');
 var FeaturesStore = require('./features/featuresstore');
+var Feature = require('./features/feature');
 var Relations = require('core/relations/relations');
 
 // Layer di base su cui si possono fare operazioni di editing
@@ -219,13 +220,14 @@ proto._clearFeatures = function() {
   this._featuresStore.clearFeatures();
 };
 
+// funzione che server per associare
 proto.getFieldsWithValues = function(obj) {
   var self = this;
   // clono i fields in quanto non voglio modificare i valori originali
   var fields = _.cloneDeep(this.state.editing.config.fields);
   var feature, attributes;
   // il metodo accetta sia feature che fid
-  if (obj instanceof ol.Feature){
+  if (obj instanceof Feature){
     feature = obj;
   }
   else if (obj){
@@ -238,10 +240,10 @@ proto.getFieldsWithValues = function(obj) {
   _.forEach(fields, function(field){
     if (feature){
       if (!this._PKinAttributes && field.name == self.pk) {
-        if (self.isNewFeature(feature.getId())) {
+        if (self.isNewFeature(feature.getPk())) {
           field.value = null;
         } else {
-          field.value = feature.getId();
+          field.value = feature.getPk();
         }
       } else {
 
