@@ -52,7 +52,6 @@ proto.createNewPk = function() {
 
 // funzione che restituisce il valore della primary key
 proto.getPk = function() {
-  console.log(this._pk);
   return this.get(this._pk);
 };
 

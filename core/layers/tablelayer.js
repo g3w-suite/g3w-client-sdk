@@ -121,7 +121,7 @@ var proto = TableLayer.prototype;
 
 // funzione che restituisce i campi del layer
 proto.getFields = function() {
-  return this.config.editing.config.fields;
+  return this.state.editing.config.fields;
 };
 
 proto.getPk = function() {
