@@ -30,7 +30,6 @@ proto.getFeatureByPk = function(featurePk) {
 
 //vado ad eseguire in pratica la sostituzione della feature dopo una modifica
 proto._updateFeature = function(feature) {
-  console.log(feature);
   this._features.forEach(function(feat, idx, array) {
     if (feat.getPk() == feature.getPk()) {
       this.setAt(idx, feature);

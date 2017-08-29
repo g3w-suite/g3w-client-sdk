@@ -31,8 +31,14 @@ function History(options) {
   * */
   // qui setto la massima lunghezza del "buffer history" per undo redo
   // al momento non utilizzata
-  this._maxSteps = 100;
+  this._maxSteps = 10;
   this._states = [];
+  // lo state (reattivo della history)
+  this.state = {
+    commit: false,
+    undo:false,
+    redo: false
+  };
   this._current = null;
 }
 
@@ -66,11 +72,20 @@ proto.add = function(uniqueId, items) {
     items: items
   });
   this._current = uniqueId;
+  this._setState();
   // ritorna la chiave univoca per quella modifica vine restituita dal chiamante
   // che potrà essere utilizzata ad esempio nel salvataggio dello stato della relazione
   // settandone la staessa chiave del layer padre
   d.resolve(uniqueId);
   return d.promise();
+};
+
+// funzione interna che viene sfruttatat per cambiare lo state della history quando si
+// verifica una chiamata ad una funzione che modifica lo stato della history
+proto._setState = function() {
+  this.canUndo();
+  this.canCommit();
+  this.canRedo();
 };
 
 //funzione che verifica se c'è stato un update (gli update sono formati da un array di due valori , il vecchio e il nuovo)
@@ -117,6 +132,7 @@ proto.undo = function() {
     })
   }
   items = this._checkItems(items, 0);
+  this._setState();
   return items;
   
 };
@@ -139,6 +155,7 @@ proto.redo = function() {
     })
   }
   items = this._checkItems(items, 1);
+  this._setState();
   return items;
 };
 
@@ -239,18 +256,18 @@ proto.canCommit = function() {
       return false;
     }
   });
-  return canCommit;
+  this.state.commit = canCommit;
 };
 
 //funzione che mi dice se posso fare l'undo sulla history
 proto.canUndo = function() {
   var steps = (this._states.length - 1) - this.getCurrentStateIndex();
-  return !_.isNull(this._current) && (this._maxSteps > steps);
+  this.state.undo = !_.isNull(this._current) && (this._maxSteps > steps);
 };
 
 // funzione che mi dice se posso fare il redo sulla history
 proto.canRedo = function() {
-  return this.getLastState() && this.getLastState().id != this._current || _.isNull(this._current) && this._states.length > 0;
+  this.state.redo = this.getLastState() && this.getLastState().id != this._current || _.isNull(this._current) && this._states.length > 0;
 };
 
 proto._getStatesToCommit = function() {

@@ -50,6 +50,10 @@ proto.createNewPk = function() {
   this.set(this._pk, newValue);
 };
 
+proto.getPkFieldName = function() {
+  return this._pk;
+};
+
 // funzione che restituisce il valore della primary key
 proto.getPk = function() {
   return this.get(this._pk);

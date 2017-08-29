@@ -92,8 +92,9 @@ function TableLayer(config) {
   // di possibile editing
   this.state = _.merge({
     editing: {
-      start: false,
-      modified: false
+      started: false,
+      modified: false,
+      ready: false
     }
   }, this.state);
   // vado a creare le relazioni
@@ -106,10 +107,11 @@ function TableLayer(config) {
     .then(function(config) {
       var fields = config.vector.fields;
       self.config.editing.pk = config.vector.pk;
-      // vado a settare aggiungere i fileds per l'editing
-      _.forEach(fields, function(field) {
-        self.config.editing.fields.push(field);
-      })
+      self.config.editing.fields = fields;
+      self.setReady(true);
+    })
+    .fail(function(err) {
+      self.setReady(false);
     });
   // viene istanziato un featuresstore e gli viene associato
   // il data provider
@@ -134,6 +136,14 @@ proto.getPk = function() {
 // funzione che restituisce l'array (configurazione) dei campi utlizzati per l'editing
 proto.getEditingFields = function() {
   return this.config.editing.fields;
+};
+
+proto.isReady = function() {
+  return this.state.editing.ready;
+};
+
+proto.setReady = function(bool) {
+  this.state.editing.ready = _.isBoolean(bool) ? bool : false;
 };
 
 // funzione che recuprera la configurazione di editing del layer
