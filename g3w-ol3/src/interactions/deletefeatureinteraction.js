@@ -1,4 +1,4 @@
-var DeleteInteractionEvent = function(type, features, coordinate) {
+var DeleteInteractionEvent = function(type, layer, features, coordinate) {
   this.type = type;
   this.features = features;
   this.coordinate = coordinate;
@@ -15,6 +15,7 @@ var DeleteInteraction = function(options) {
   this.previousCursor_ = undefined;
   this.lastCoordinate_ = null;
   this.features_ = options.features !== undefined ? options.features : null;
+  this.layer_ = options.layer !== undefined ? options.layer : null;
 };
 
 ol.inherits(DeleteInteraction, ol.interaction.Pointer);
@@ -25,7 +26,9 @@ DeleteInteraction.handleEvent_ = function(mapBrowserEvent) {
       // un evento può essere una stringa o un oggetto con un attributo type
       this.dispatchEvent(
           new DeleteInteractionEvent(
-              'deleteend', this.features_,
+              'deleteend',
+              this.layer_,
+              this.features_,
               event.coordinate));
       return true;
     }
@@ -49,12 +52,14 @@ DeleteInteraction.handleDownEvent_ = function(event) {
 };
 
 DeleteInteraction.handleMoveEvent_ = function(event) {
+  var self = this;
   var elem = event.map.getTargetElement();
   var intersectingFeature = event.map.forEachFeatureAtPixel(event.pixel,
-      function(feature) {
+      function(feature, layer) {
+        // vado a verificare che il layer sia quello in editing in quel momento
+        feature = (layer == self.layer_) ? feature : null;
         return feature;
       });
-
   if (intersectingFeature) {
     this.previousCursor_ = elem.style.cursor;
 
