@@ -12,6 +12,9 @@ var Feature = function(options) {
   //verificare come utilizzare clone
   if (feature) {
     this.setProperties(feature.getProperties());
+    // aggiungo il campo e il valore pk se non presente
+    if (!this.get(this._pk))
+      this.set(this._pk, feature.getId());
     this.setGeometryName(feature.getGeometryName());
     var geometry = feature.getGeometry();
     if (geometry) {

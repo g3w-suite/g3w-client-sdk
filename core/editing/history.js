@@ -252,9 +252,9 @@ proto.canCommit = function() {
      // se esiste un non nuovo vuol dire che
      // c'è stata fatta una modifica
      if (item.feature.isNew() && item.feature.isDeleted()) {
-       idToIgnore.push(item.feature.getId());
+       idToIgnore.push(item.feature.getPk());
      } else {
-       if (!(item.feature.isNew() && idToIgnore.indexOf(item.feature.getId())!= -1) || !idToIgnore.length) {
+       if (!(item.feature.isNew() && idToIgnore.indexOf(item.feature.getPk())!= -1) || !idToIgnore.length) {
          canCommit = true;
          return false;
        }

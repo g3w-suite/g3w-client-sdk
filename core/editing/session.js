@@ -213,7 +213,7 @@ proto._serializeCommit = function(itemsToCommit) {
       switch (state) {
         case 'delete':
           if (!item.isNew())
-            layer.delete.push(item.getId());
+            layer.delete.push(item.getPk());
           break;
         default:
           layer[item.getState()].push(GeoJSONFormat.writeFeatureObject(item));

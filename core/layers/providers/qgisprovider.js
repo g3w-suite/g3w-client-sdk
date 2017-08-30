@@ -105,6 +105,7 @@ proto.getFeatures = function(options) {
   })
     .then(function(response) {
       var data = response.vector.data;
+      pippo = data;
       _.forEach(self._parseLayerGeoJSON(data), function(feature) {
         features.push(new Feature({
           feature: feature,
