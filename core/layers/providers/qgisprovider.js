@@ -89,7 +89,8 @@ proto.getFeatures = function(options) {
   options = options || {};
   // verifico nel passaggio di opaioni se è stato richiesto editing o meno;
   var url = options.editing ? this._editingUrl : this._dataUrl;
-  var filter = options.filter;
+  var bbox = options.filter.bbox;
+  var filter = {in_bbox: bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3]};
   var pk = this._layer.getPk();
   if (!url) {
     d.reject('Url non valido');

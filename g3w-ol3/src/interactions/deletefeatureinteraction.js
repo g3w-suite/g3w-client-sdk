@@ -60,7 +60,6 @@ DeleteInteraction.handleMoveEvent_ = function(event) {
   this.map_ = event.map;
   var elem = this.map_.getTargetElement();
   if (this.startCursor_ === undefined) {
-    console.log(elem.style.cursor);
     this.startCursor_ = elem.style.cursor;
   }
   var intersectingFeature = this.map_.forEachFeatureAtPixel(event.pixel,

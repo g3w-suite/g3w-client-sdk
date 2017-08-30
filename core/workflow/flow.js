@@ -48,7 +48,7 @@ function Flow() {
       .then(function(outputs) {
         self.onDone(outputs);
       })
-      // c'è stato un erore (task rigettato)
+      // c'è stato un erore (task rigettato) per errore o voluto
       .fail(function(error) {
         self.onError(error);
       })
@@ -72,9 +72,12 @@ function Flow() {
     this.runStep(steps[counter], outputs);
   };
 
+  // funzione che viene chaima in caso di errore
   this.onError = function(err) {
     // nel caso di errore di uno step
     console.log('step error: ', err);
+    // stoppo lo step che mi ha dato problemi
+    steps[counter].stop();
     // risetto il counter a 0
     counter = 0;
     d.reject(err);
@@ -84,7 +87,6 @@ function Flow() {
   this.stop = function() {
     var d = $.Deferred();
     console.log('Flow stopping ...');
-    console.log('Counter : ', counter);
     //verifico a che punto è il counter se all'inizio
     steps[counter].stop();
     if (counter > 0) {

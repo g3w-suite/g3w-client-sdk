@@ -108,7 +108,7 @@ proto.stop = function() {
   console.log('Workflow stopping .... ');
   var d = $.Deferred();
   // vado a chiamare lo stop del flow
-  this._flow.stop(this)
+  this._flow.stop(this) // ritorna una promessa
     .then(function() {
       d.resolve()
     })
