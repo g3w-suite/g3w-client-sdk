@@ -158,12 +158,14 @@ proto.applyChanges = function(items, reverse) {
 // questa in pratica restituirà tutte le modifche che non saranno salvate nella history
 // e nel featuresstore della sessione ma riapplicate al contrario
 proto.rollback = function() {
+  var d = $.Deferred();
   //vado a after il rollback dellle feature temporanee salvate in sessione
   console.log('Session Rollback.....');
   // vado a modificare il featurestore facendo il rollback dei cambiamenti temporanei
   this.applyChanges(this._temporarychanges, true);
   this._temporarychanges = [];
-  return // qui vado a restituire le dipendenze
+  d.resolve();
+  return d.promise()// qui vado a restituire le dipendenze
 };
 
 // funzione di undo che chiede alla history di farlo
