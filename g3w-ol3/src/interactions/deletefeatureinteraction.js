@@ -13,9 +13,11 @@ var DeleteInteraction = function(options) {
   });
 
   this.previousCursor_ = undefined;
+  this.startCursor_ = undefined;
   this.lastCoordinate_ = null;
   this.features_ = options.features !== undefined ? options.features : null;
   this.layer_ = options.layer !== undefined ? options.layer : null;
+  this.map_ = null;
 };
 
 ol.inherits(DeleteInteraction, ol.interaction.Pointer);
@@ -44,7 +46,9 @@ DeleteInteraction.handleDownEvent_ = function(event) {
     DeleteInteraction.handleMoveEvent_.call(this, event);
     this.dispatchEvent(
             new DeleteInteractionEvent(
-                'deleteend', this.features_,
+                'deleteend',
+                this.layer_,
+                this.features_,
                 event.coordinate));
     return true;
   }
@@ -53,8 +57,13 @@ DeleteInteraction.handleDownEvent_ = function(event) {
 
 DeleteInteraction.handleMoveEvent_ = function(event) {
   var self = this;
-  var elem = event.map.getTargetElement();
-  var intersectingFeature = event.map.forEachFeatureAtPixel(event.pixel,
+  this.map_ = event.map;
+  var elem = this.map_.getTargetElement();
+  if (this.startCursor_ === undefined) {
+    console.log(elem.style.cursor);
+    this.startCursor_ = elem.style.cursor;
+  }
+  var intersectingFeature = this.map_.forEachFeatureAtPixel(event.pixel,
       function(feature, layer) {
         // vado a verificare che il layer sia quello in editing in quel momento
         feature = (layer == self.layer_) ? feature : null;
@@ -62,7 +71,6 @@ DeleteInteraction.handleMoveEvent_ = function(event) {
       });
   if (intersectingFeature) {
     this.previousCursor_ = elem.style.cursor;
-
     elem.style.cursor =  'pointer';
 
   } else {
@@ -74,18 +82,25 @@ DeleteInteraction.handleMoveEvent_ = function(event) {
 
 DeleteInteraction.prototype.featuresAtPixel_ = function(pixel, map) {
   var found = null;
-
   var intersectingFeature = map.forEachFeatureAtPixel(pixel,
       function(feature) {
         return feature;
       });
-
   if (this.features_ &&
      _.includes(this.features_.getArray(), intersectingFeature)) {
     found = intersectingFeature;
   }
-
   return found;
 };
+
+
+DeleteInteraction.prototype.clear = function() {
+  var elem;
+  if (this.map_) {
+    elem = this.map_.getTargetElement();
+    elem.style.cursor = this.startCursor_;
+  }
+};
+
 
 module.exports = DeleteInteraction;
