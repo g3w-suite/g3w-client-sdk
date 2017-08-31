@@ -12,6 +12,7 @@ function QGISProvider(options) {
   this._queryUrl = this._layer.getUrl('query');
   // editing url api
   this._editingUrl = this._layer.getUrl('editing');
+  this._commitUrl = this._layer.getUrl('commit');
   // url riferito ai dati;
   this._dataUrl = this._layer.getUrls('data');
   // url per prendere la configurazione del layer dal server
@@ -22,7 +23,6 @@ function QGISProvider(options) {
 }
 
 inherit(QGISProvider, DataProvider);
-
 
 var proto = QGISProvider.prototype;
 
@@ -82,12 +82,32 @@ proto.getConfig = function(options) {
   return d.promise();
 };
 
+// funzione commit
+proto.commit = function(commitItems) {
+  var d = $.Deferred();
+  // verifico nel passaggio di opzioni se è stato richiesto editing o meno;
+  var url = this._commitUrl;
+  var jsonCommits = JSON.stringify(commitItems);
+  $.post({
+    url: url,
+    data: jsonCommits,
+    contentType: "application/json"
+  })
+    .then(function(response) {
+      d.resolve(response);
+    })
+    .fail(function(err) {
+      d.reject(err);
+    });
+  return d.promise();
+};
+
 // METODI LOADING EDITING FEATURES E STABILISCE SE IN LETTURA O SCRITTURA/LETTURA //
 proto.getFeatures = function(options) {
   var self = this;
   var d = $.Deferred();
   options = options || {};
-  // verifico nel passaggio di opaioni se è stato richiesto editing o meno;
+  // verifico nel passaggio di veridico se i dati sono richiesti in editing o sola lettura;
   var url = options.editing ? this._editingUrl : this._dataUrl;
   var bbox = options.filter.bbox;
   var filter = {in_bbox: bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3]};
@@ -104,21 +124,24 @@ proto.getFeatures = function(options) {
     contentType: "application/json"
   })
     .then(function(response) {
-      var data = response.vector.data;
-      pippo = data;
+      var vector = response.vector;
+      var featurelocks = response.featurelocks;
+      var data = vector.data;
       _.forEach(self._parseLayerGeoJSON(data), function(feature) {
         features.push(new Feature({
           feature: feature,
           pk: pk
         }))
       });
-      d.resolve(features);
+      // risolvo passando le features loccate e le features caricate
+      d.resolve({
+        features: features,
+        featurelocks: featurelocks
+      });
     })
     .fail(function(err) {
       d.reject(err);
     });
-
-
   return d.promise();
 };
 

@@ -250,12 +250,20 @@ proto.commit = function(options) {
     // andà a pescare dalla history tutte le modifiche effettuare
     // e si occuperà di di eseguire la richiesta al server di salvataggio dei dati
     commitItems = this._history.commit();
-    this._serializeCommit(commitItems);
-    // poi vado a fare tutto quello che devo fare (server etc..)
-    //vado a vare il clean della history
-    this._history.clear();
+    // le serializzo
+    commitItems = this._serializeCommit(commitItems);
+    this._editor.commit(commitItems)
+      .then(function(response) {
+        // poi vado a fare tutto quello che devo fare (server etc..)
+        //vado a vare il clean della history
+        this._history.clear();
+        d.resolve(response)
+      })
+      .fail(function(err) {
+        d.reject(err);
+      });
   }
-  d.resolve(commitItems);
+
   return d.promise();
 };
 
@@ -272,10 +280,12 @@ proto._stop = function() {
 
 // clear di tutte le cose associate alla sessione
 proto.clear = function() {
-  // vado a ripulire tutto il featureststore
-  this._featuresstore.clear();
+  //vado a cancellare anche le features dal layer riginale
+  this._editor.clear();
   // vado a ripulire la storia
   this._clearHistory();
+  // vado a ripulire tutto il featureststore
+  this._featuresstore.clear();
 };
 
 //ritorna l'history così che lo chiama può fare direttanmente undo e redo della history

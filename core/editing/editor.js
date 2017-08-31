@@ -64,6 +64,26 @@ proto._getFeatures = function(options) {
   return d.promise();
 };
 
+// funzione che viene lanciata dopo che è stato salvato
+// il nuovo stato del layer definitivamente sul server
+proto.commit = function(commitItems) {
+  var d = $.Deferred();
+  this._layer.commit(commitItems)
+    .then(function (promise) {
+      promise
+        .then(function (response) {
+          return d.resolve(response);
+        })
+        .fail(function (err) {
+        return d.reject(err);
+      })
+    })
+    .fail(function (err) {
+      d.reject(err);
+    });
+  return d.promise();
+};
+
 //funzione che fa partire lo start editing
 proto.start = function(options) {
   var self = this;
@@ -122,9 +142,9 @@ proto.isStarted = function() {
   return this._started;
 };
 
-// funzione che viene lanciata dopo che è stato salvato
-// il nuono stato del layer definitivamente sul server
-proto.commit = function() {
+proto.clear = function() {
+  this._layer.getFeaturesStore().clear();
 };
+
 
 module.exports = Editor;

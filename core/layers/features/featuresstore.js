@@ -8,6 +8,8 @@ function FeaturesStore(options) {
   options = options || {};
   this._features = [];
   this._provider = options.provider || null;
+  this._loadedPks = []; // contiene gli id loccati (che alla fine sono gli stessi delle feature caricate)
+  this._lockIds = []; // contiene le features loccate
   this.setters = {
     addFeatures: function(features) {
       _.forEach(features, function(feature) {
@@ -24,10 +26,15 @@ function FeaturesStore(options) {
       this._updateFeature(feature);
     },
     clear: function() {
-      self._clearFeatures();
+      this._clearFeatures();
+      this._lockIds = [];
+      this._loadedPks = [];
     },
     getFeatures: function(options) {
       return this._getFeatures(options);
+    },
+    commit: function(commitItems) {
+      return this._commit(commitItems);
     }
   };
 
@@ -43,16 +50,67 @@ proto._getFeatures = function(options) {
   options = options || {};
   var self = this;
   var d = $.Deferred();
+  var features;
   // verifico che ci siano opzioni e un provider altrimenti vado a recuperare le
   // features direttamente nel featuresstore
   if (options && this._provider) {
     this._provider.getFeatures(options)
-      .then(function(features) {
+      .then(function(options) {
+        features = self._filterFeaturesResponse(options);
         self.addFeatures(features);
         d.resolve(features);
-      });
+      })
+      .fail(function(err) {
+        d.reject(err)
+      })
   } else {
     d.resolve(this._features);
+  }
+  return d.promise();
+};
+
+//funzione che in base alle features caricate filtra
+// escludendo quelle già inserite
+proto._filterFeaturesResponse = function(options) {
+  var self = this;
+  var added = false;
+  options = options || {};
+  var features = options.features || [];
+  var featurelocks = options.featurelocks || [];
+  var featuresToAdd = _.filter(features, function(feature) {
+    added = _.includes(self._loadedPks, feature.getPk());
+    if (!added)
+      self._loadedPks.push(feature.getPk());
+    return !added
+  });
+  self._filterLockIds(featurelocks);
+  return featuresToAdd;
+};
+
+// funzione che mi dice le feature loccate
+proto._filterLockIds = function(featurelocks) {
+  var self = this;
+  _.forEach(featurelocks, function(featurelock) {
+    if (!_.includes(self._lockIds, featurelock.featureid))
+      self._lockIds.push(featurelock);
+  });
+};
+
+proto._commit = function(commitItems) {
+  var d = $.Deferred();
+  // verifico che ci siano opzioni e un provider altrimenti vado a recuperare le
+  // features direttamente nel featuresstore
+  if (commitItems && this._provider) {
+    commitItems.lockids = this._lockIds;
+    this._provider.commit(commitItems)
+      .then(function(response) {
+        d.resolve(response);
+      })
+      .fail(function(err) {
+        d.reject(err);
+      })
+  } else {
+    d.reject();
   }
   return d.promise();
 };

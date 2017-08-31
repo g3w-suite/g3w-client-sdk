@@ -5,7 +5,7 @@
 var Feature = function(options) {
   ol.Feature.call(this);
   options = options || {};
-  this._newPrefix = '__new__';
+  this._newPrefix = '_new_';
   // mi serve per capire quale è la pk della feature
   this._pk = options.pk || "id";
   var feature = options.feature;
