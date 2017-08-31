@@ -12,6 +12,8 @@ var Feature = function(options) {
   //verificare come utilizzare clone
   if (feature) {
     this.setProperties(feature.getProperties());
+    //vado a scrivere l'id univoco (corrispondente alla chiave primaria
+    this.setId(feature.getId());
     // aggiungo il campo e il valore pk se non presente
     if (!this.get(this._pk))
       this.set(this._pk, feature.getId());
@@ -39,11 +41,14 @@ proto = Feature.prototype;
 proto.constructor = 'Feature';
 
 proto.clone = function() {
+  // clono la feature
   var feature = ol.Feature.prototype.clone.call(this);
+  feature.setId(this.getId());
   var clone =  new Feature({
     feature: feature,
     pk: this._pk
   });
+  // aggiungo lo state
   clone.setState(this.getState());
   return clone;
 };
@@ -51,6 +56,8 @@ proto.clone = function() {
 proto.createNewPk = function() {
   var newValue = this._newPrefix + Date.now();
   this.set(this._pk, newValue);
+  // vado a settarla come id della feature
+  this.setId(this.getPk());
 };
 
 proto.getPkFieldName = function() {
@@ -64,6 +71,10 @@ proto.getPk = function() {
 
 proto.setPk = function(value) {
   this.set(this._pk, value);
+};
+
+proto.unsetPk = function() {
+  this.unset(this._pk);
 };
 
 // setta la feature a state 2 delete
