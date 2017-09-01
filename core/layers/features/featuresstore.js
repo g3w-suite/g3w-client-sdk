@@ -89,11 +89,8 @@ proto._filterFeaturesResponse = function(options) {
 
 // funzione che mi dice le feature loccate
 proto._filterLockIds = function(featurelocks) {
-  var self = this;
-  _.forEach(featurelocks, function(featurelock) {
-    if (!_.includes(self._lockIds, featurelock.featureid))
-      self._lockIds.push(featurelock);
-  });
+  var toAddLockId = _.differenceBy(featurelocks, this._lockIds, 'featureid');
+  this._lockIds = _.union(this._lockIds, toAddLockId);
 };
 
 proto._commit = function(commitItems) {

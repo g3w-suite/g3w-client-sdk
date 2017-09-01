@@ -235,8 +235,9 @@ proto.getCommitItems = function() {
 // funzione che serializzerà tutto che è stato scritto nella history e passato al server
 // per poterlo salvare nel database
 proto.commit = function(options) {
-  var d = $.Deferred();
   options = options || {};
+  var self = this;
+  var d = $.Deferred();
   var commitItems;
   console.log("Sessione Committing...");
   //vado a verificare se nell'opzione del commit
@@ -257,7 +258,7 @@ proto.commit = function(options) {
       .then(function(response) {
         // poi vado a fare tutto quello che devo fare (server etc..)
         //vado a vare il clean della history
-        this._history.clear();
+        self._history.clear();
         d.resolve(response)
       })
       .fail(function(err) {

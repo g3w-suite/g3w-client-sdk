@@ -93,7 +93,7 @@ function QueryResultsService() {
       // verifico che tipo ti vector layer ci sono
       if (layer instanceof Layer) {
         layerAttributes = layer.getAttributes();
-        layerRelationsAttributes = layer.getRelationsAttributes();
+        layerRelationsAttributes = [];//layer.getRelationsAttributes();
         layerTitle = layer.getTitle();
         layerId = layer.getId();
       }
