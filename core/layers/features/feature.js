@@ -15,7 +15,7 @@ var Feature = function(options) {
     //vado a scrivere l'id univoco (corrispondente alla chiave primaria
     this.setId(feature.getId());
     // aggiungo il campo e il valore pk se non presente
-    if (!this.get(this._pk))
+    if (!_.isNull(this.get(this._pk)))
       this.set(this._pk, feature.getId());
     this.setGeometryName(feature.getGeometryName());
     var geometry = feature.getGeometry();
@@ -29,7 +29,7 @@ var Feature = function(options) {
   }
   // necessario per poter interagire reattivamente con l'esterno
   this.state = {
-    state: null
+    new: false
   };
 };
 
@@ -53,11 +53,17 @@ proto.clone = function() {
   return clone;
 };
 
-proto.createNewPk = function() {
+proto.setNewPkValue = function() {
   var newValue = this._newPrefix + Date.now();
   this.set(this._pk, newValue);
-  // vado a settarla come id della feature
   this.setId(this.getPk());
+  // vado a settarla come id della feature
+  this.setNew();
+};
+
+proto.setNew = function() {
+
+  this.state.new = true;
 };
 
 proto.getPkFieldName = function() {
@@ -93,7 +99,7 @@ proto.add = function() {
 };
 
 proto.isNew = function() {
-  return !_.isNumber(this.getPk()) && this.getPk().indexOf(this._newPrefix) != -1;
+  return this.state.new;
 };
 
 proto.isAdded = function() {

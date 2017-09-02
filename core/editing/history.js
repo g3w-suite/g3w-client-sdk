@@ -298,7 +298,6 @@ proto._getStatesToCommit = function() {
 
 //funzione che restituisce tutte le modifche uniche da applicare (mandare al server)
 proto.commit = function() {
-  var self = this;
   // contegono oggetti aventi lo stato di una feature unica e il relativo id
   var commitItems = {};
   var feature;
@@ -309,6 +308,7 @@ proto.commit = function() {
   _.forEach(statesToCommit, function (state) {
     //ciclo sugli items dello stato
     _.forEach(state.items, function(item) {
+      console.log(item);
       // nel caso di un array, quindi di fronte ad un update
       if (_.isArray(item))
         // vado a prendere il secondo valore che è quello modificato
@@ -332,7 +332,7 @@ proto.commit = function() {
         feature = item.feature;
         layerId = item.layerId;
         // vado a verificar condizioni
-        if (!(feature.getId() > 0 && feature.isAdded())) {
+        if (!(!feature.isNew() && feature.isAdded())) {
           if (!commitItems[layerId])
             commitItems[layerId] = [];
           commitItems[layerId].push(feature);

@@ -112,7 +112,8 @@ function TableLayer(config) {
     editing: {
       started: false,
       modified: false,
-      ready: false
+      ready: false,
+      ispkeditable: false
     }
   }, this.state);
   // vado a creare le relazioni
@@ -122,15 +123,16 @@ function TableLayer(config) {
   this.getEditingConfig({
     id: this.getId() // aggiunto al momento per utilizzare dato fake
   })
-    .then(function(config) {
-      var fields = config.vector.fields;
-      self.config.editing.pk = config.vector.pk;
-      self.config.editing.fields = fields;
-      self.setReady(true);
-    })
-    .fail(function(err) {
-      self.setReady(false);
-    });
+  .then(function(config) {
+    var fields = config.vector.fields;
+    self.config.editing.pk = config.vector.pk;
+    self.config.editing.fields = fields;
+    self.setReady(true);
+    self._setPkEditable(fields);
+  })
+  .fail(function(err) {
+    self.setReady(false);
+  });
   // viene istanziato un featuresstore e gli viene associato
   // il data provider
   this._featuresStore = new FeaturesStore({
@@ -142,57 +144,6 @@ inherit(TableLayer, Layer);
 
 var proto = TableLayer.prototype;
 
-proto.setData = function(featuresData) {
-  var self = this;
-  var Ids = [];
-  var features;
-  if (this.format) {
-    switch (this.format){
-      case "GeoJSON":
-        var geojson = new ol.format.GeoJSON({
-          geometryName: "geometry"
-        });
-        features = geojson.readFeatures(featuresData, {
-          dataProjection: self.crsLayer,
-          featureProjection: self.crs
-        });
-        break;
-    }
-    if (this._editingMode && this._featureLocks) {
-      features = _.filter(features, function(feature) {
-        var hasFeatureLock = false;
-        _.forEach(self._featureLocks,function(featureLock){
-          if (featureLock.featureid == feature.getId()) {
-            hasFeatureLock = true;
-            Ids.push(feature.getId());
-          }
-        });
-        return hasFeatureLock;
-      })
-    }
-
-    if (features && features.length) {
-      if (!_.isNull(this._featuresFilter)){
-        features = _.map(features,function(feature){
-          return self._featuresFilter(feature);
-        });
-      }
-      var featuresToLoad = _.filter(features,function(feature) {
-        return !_.includes(self._loadedIds,feature.getId());
-      });
-
-      this._olSource.addFeatures(featuresToLoad);
-      // verifico, prendendo la prima feature, se la PK è presente o meno tra gli attributi
-      var attributes = this.getSource().getFeatures()[0].getProperties();
-      this._PKinAttributes = _.get(attributes,this.pk) ? true : false;
-      this._loadedIds = _.union(this._loadedIds, Ids);
-    }
-  }
-  else {
-    console.log("VectorLayer format not defined");
-  }
-};
-
 // funzione che restituisce i campi del layer
 proto.getFields = function() {
   return this.config.editing.fields;
@@ -200,6 +151,16 @@ proto.getFields = function() {
 
 proto.getPk = function() {
   return this.config.editing.pk;
+};
+
+proto._setPkEditable = function(fields) {
+  var self = this;
+  _.forEach(fields, function(field) {
+    if (field.name == self.getPk()) {
+      self.state.editing.ispkeditable = field.editable;
+      return false;
+    }
+  })
 };
 
 // funzione che restituisce l'array (configurazione) dei campi utlizzati per l'editing
@@ -215,12 +176,24 @@ proto.setReady = function(bool) {
   this.state.editing.ready = _.isBoolean(bool) ? bool : false;
 };
 
+proto.isPkEditable = function() {
+  return this.state.editing.ispkeditable;
+};
+
 // funzione che recuprera la configurazione di editing del layer
 proto.getEditingConfig = function(options) {
+  var d = $.Deferred();
   options = options || {};
   var provider = this.getProvider('data');
   // ritorno la promise del provider
-  return provider.getConfig(options);
+  provider.getConfig(options)
+    .then(function(config) {
+      d.resolve(config);
+    })
+    .fail(function(err) {
+      d.reject()
+    });
+  return d.promise()
 };
 
 proto.getCommitUrl = function() {
@@ -309,7 +282,7 @@ proto._clearFeatures = function() {
   this._featuresStore.clearFeatures();
 };
 
-// funzione che server per associare
+// funzione che server per associare campi a valori
 proto.getFieldsWithValues = function(obj) {
   var self = this;
   // clono i fields in quanto non voglio modificare i valori originali

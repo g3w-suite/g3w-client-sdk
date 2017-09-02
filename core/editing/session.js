@@ -217,7 +217,7 @@ proto._serializeCommit = function(itemsToCommit) {
           break;
         default:
           // rimouvo la pk campo dalle proprierties
-          item.unsetPk();
+          //item.unsetPk();
           layer[item.getState()].push(GeoJSONFormat.writeFeatureObject(item));
           break;
       }

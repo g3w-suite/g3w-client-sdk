@@ -17,7 +17,7 @@
             </div>
           </div>
           <div class="box-body">
-            <template v-for="field in fields">
+            <template v-for="field in state.fields">
               <div v-if="isVisible(field)" class="form-group has-feedback">
                 <label :for="field.name" class="col-sm-4 control-label">{{ field.label }}<span v-if="field.validate && field.validate.required">*</span></label>
                 <div class="col-sm-8">

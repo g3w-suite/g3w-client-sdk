@@ -272,7 +272,7 @@ function FormService() {
   };
   // funzione che verifa se il campo è obbligatorio o no
   this._hasFieldsRequired = function() {
-    var someFieldsRequired = _.some(this.state.fields, function(field){
+    var someFieldsRequired = _.some(this.state.fields, function(field) {
       return field.validate && field.validate.required;
     });
     var someRelationsRequired = _.some(this.state.relations,function(relation){
@@ -285,7 +285,7 @@ function FormService() {
 
   // funzione che restituisce true/false a seconda se il campo è visibile o no
   this._isVisible = function(field) {
-    return !(!field.editable && (field.value == "" || _.isNull(field.value))) && field.name !=this.pk;
+    return !(!field.editable && (field.value == "" || _.isNull(field.value)));
   };
   //verifica se il campo è editabile o no
   this._isEditable = function(field) {
@@ -453,7 +453,7 @@ function FormService() {
     var self = this;
     var fields = _.filter(this.state.fields,function(field){
       // tutti i campi eccetto la PK (se non nulla)
-      if (self.pk && field.value==null){
+      if (self.pk && field.value==null && !field.editable ){
         return ((field.name != self.pk));
       }
       return true;
@@ -461,7 +461,7 @@ function FormService() {
     _.forEach(fields,function(field){
       if(_.isNil(field.value)){
         var defaultValue = self._getDefaultValue(field);
-        if (defaultValue){
+        if (defaultValue) {
           field.value = defaultValue;
         }
       }

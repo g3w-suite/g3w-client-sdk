@@ -51,6 +51,7 @@ var vueComponentOptions = {
   methods: {
     exec: function(cbk) {
       var relations = this.state.relations || null;
+      console.log(this.fields);
       cbk(this.state.fields, relations);
     },
     btnEnabled: function(button) {
@@ -302,6 +303,7 @@ var vueComponentOptions = {
     hasRelations: function() {
       return this.state.relations.length;
     },
+    // campo fields
     fields: function() {
       return this.state.fields;
     }
@@ -360,6 +362,7 @@ function FormComponent(options) {
     // associo lo state del componente interno a quello del service
     // perchè le funzioni che maipolano lo stato del componente sono delegate al service nella
     // maggior parte dei casi
+    pippo = this.getService().state;
     this.internalComponent.state = this.getService().state;
   };
   // Sovrascrivo il metodo mount padre. Viene richiamato dalla toolbar quando
