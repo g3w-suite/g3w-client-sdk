@@ -123,60 +123,6 @@ proto.addLockId = function(lockId) {
   this._featureLocks.push(lockId);
 };
 
-// funzione che serve ad aggiornare o settare gli attibuti ad una feature
-// viene sfruttatat al momento del salvataggio in editing di una feature
-proto.setFeatureData = function(oldpk, pk, geometry, attributes) {
-  var self = this;
-  // vado a prende il vecchio fid (id temporaneo _new_...) oppure prendo una feature già esistente
-  var feature = this.getFeatureByPk(oldfid) || this.getFeatureByPk(fid);
-  // se la feature esiste vuol dire che simao nel caso di una nuoav feature
-  if (kfeature) {
-    if (oldpk && okdpk != pk) {
-      feature.setPk(pk);
-    }
-    if(geometry) {
-      feature.setGeometry(geometry);
-    }
-    if (attributes) {
-      var oldAttributes = feature.getProperties();
-      var newAttributes = _.assign(oldAttributes, attributes);
-      feature.setProperties(newAttributes);
-    }
-  }
-  // vado a cambiare modificarele relazioni esistenti
-  // in base alle relationi nuove Cambio id etc..)
-  // NON È DETTO CHE SIA LEGATO AD UN CAMBIO DI FEATURE
-  if (attributes && attributes.relations) {
-    this.addRelationElements(attributes.relations);
-  }
-
-  return feature;
-};
-
-// funzione che va ada modificare la relaione/relazioni aggiunte della feature esistetnte
-// si ha nel caso di un inserimento di una nuova relazione)
-proto.addRelationElements = function(relations) {
-  var self = this;
-  var fid = relations.featureid;
-  var feature = this.getFeatureById(fid);
-  // scorro sulle relazioni ritornate dal server dopo un commit (new)
-  // sono oggetto con chiave nome della relazione e valore gli elementi aggiunti
-  _.forEach(relations, function(elements, relationName) {
-    // scorro sulle relazioni di quella feature che sono state aggiunte
-    _.forEach(self._relationsDataLoaded[fid], function(relationLoaded) {
-      if (relationLoaded.name == relationName) {
-        _.forEach(elements, function(element) {
-          _.forEach(relationLoaded.elements, function(ele) {
-            if (ele.id == element.clientid ) {
-              ele.id = element.id;
-            }
-          })
-        })
-      }
-    })
-  })
-};
-
 proto.addFeature = function(feature) {
   this.getSource().addFeature(feature);
 };

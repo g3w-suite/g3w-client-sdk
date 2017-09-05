@@ -40,10 +40,6 @@ function FormService() {
     setInitForm: function(options) {
       this._setInitForm(options);
     },
-    // setter sul cambio dellle relazioni del form
-    setFormRelations: function (relations) {
-      this.state.relations = relations;
-    },
     // setter sul cambio dei campi
     setFormFields: function (fields) {
       this.state.fields = fields;
@@ -51,24 +47,15 @@ function FormService() {
     setupFields: function() {
       this._setupFields();
     },
-    setupRelationsFields: function() {
-      this._setupRelationsFields();
-    },
     // setter sull'inserimento dei dati del form
     setFormData: function(fields, relations) {
       this.setFormFields(fields);
-      this.setFormRelations(relations);
     },
     // setter del singolo field
-    setField: function(field) {
-    },
+    setField: function(field) {},
     // settere dello state
     setState: function(state) {
       this._setState(state);
-    },
-    // setter sull'aggiunta di un'azione sul form
-    addActionsForForm: function (actions) {
-      // un opportunità per i listener per aggiungere azioni a form
     },
     postRender: function (element) {
       // un opportunità per i listener di intervenire sul DOM
@@ -76,19 +63,10 @@ function FormService() {
   };
   // inizializzo il form con l'opzioni passate dall'editor al momento del'apertura del form
   this._setInitForm = function(options) {
-    this.provider = options.provider || null; // è l' editor che lo chiama
     this.formId = options.formId;
     this.name = options.name; // nome del form
-    this.dataid = options.dataid; // "accessi", "giunzioni", ecc.
-    this.editor = options.editor || {};
-    this.relationOne = options.relationOne || null;
-    this.pk = options.pk || null; // eventuale chiave primaria (non tutti i form potrebbero avercela o averne bisogno
-    this.tools = options.tools || [];
-    this.isnew = (!_.isNil(options.isnew) && _.isBoolean(options.isnew)) ? options.isnew : true;
-    this._defaults = options.defaults || Inputs.defaults;
+    this.title = options.title || "Form";
     this.buttons = options.buttons;
-    // clipboard
-    this._clipBoard = ClipBoard;
     //mi server per estrarre il nome del layer dall'id del form
     // in quanto l'id è creato univoco ma riposrta al suo interno
     // il nome del layer
@@ -96,22 +74,12 @@ function FormService() {
     this._pickedPromise = null;
     // setto lo stato
     this.state = {
+      title: this.title,
       fields: null,
-      relations: null,
-      editor: this.editor,
-      isnew: this.isnew,
-      buttons: this.buttons,
-      tools: {},
-      relationOne: this.relationOne,
-      canpaste: _.has(this._clipBoard._data, formLayer)
+      buttons: this.buttons
     };
     //chiamo i setter
     this.setFormFields(options.fields);
-    this.setFormRelations(options.relations);
-    var elementsBoxes = this.getUniqueRelationsElementId();
-    this.state.elementsBoxes = elementsBoxes;
-    // qui associo lo state del pannello allo ste del form
-    this._setFormTools(this.tools);
   };
 
   this.createPickInteraction = function() {

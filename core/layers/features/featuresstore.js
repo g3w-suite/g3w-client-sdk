@@ -33,8 +33,8 @@ function FeaturesStore(options) {
     getFeatures: function(options) {
       return this._getFeatures(options);
     },
-    commit: function(commitItems) {
-      return this._commit(commitItems);
+    commit: function(commitItems, featurestore) {
+      return this._commit(commitItems, featurestore);
     }
   };
 
@@ -51,9 +51,8 @@ proto._getFeatures = function(options) {
   var self = this;
   var d = $.Deferred();
   var features;
-  // verifico che ci siano opzioni e un provider altrimenti vado a recuperare le
-  // features direttamente nel featuresstore
-  if (options && this._provider) {
+  // verifico che ci sia un provider altrimenti vado a recuperare le
+  if (this._provider) {
     this._provider.getFeatures(options)
       .then(function(options) {
         features = self._filterFeaturesResponse(options);
@@ -64,7 +63,7 @@ proto._getFeatures = function(options) {
         d.reject(err)
       })
   } else {
-    d.resolve(this._features);
+    d.resolve(this._readFeatures());
   }
   return d.promise();
 };
@@ -78,9 +77,9 @@ proto._filterFeaturesResponse = function(options) {
   var features = options.features || [];
   var featurelocks = options.featurelocks || [];
   var featuresToAdd = _.filter(features, function(feature) {
-    added = _.includes(self._loadedPks, feature.getPk());
+    added = _.includes(self._loadedPks, feature.getId());
     if (!added)
-      self._loadedPks.push(feature.getPk());
+      self._loadedPks.push(feature.getId());
     return !added
   });
   self._filterLockIds(featurelocks);
@@ -93,7 +92,16 @@ proto._filterLockIds = function(featurelocks) {
   this._lockIds = _.union(this._lockIds, toAddLockId);
 };
 
-proto._commit = function(commitItems) {
+// aggiunge nuovi lock Ids
+proto.addLockIds = function(lockIds) {
+  this._lockIds = _.union(this._lockIds, lockIds);
+};
+
+proto._readFeatures = function() {
+  return this._features;
+};
+
+proto._commit = function(commitItems, featurestore) {
   var d = $.Deferred();
   // verifico che ci siano opzioni e un provider altrimenti vado a recuperare le
   // features direttamente nel featuresstore
@@ -112,6 +120,7 @@ proto._commit = function(commitItems) {
   return d.promise();
 };
 
+// recupera una feature dal suo id
 proto.getFeatureById = function(featureId) {
   var feat;
   _.forEach(this._features, function(feature) {
@@ -138,6 +147,10 @@ proto._updateFeature = function(feature) {
   });
 };
 
+proto.updatePkFeature = function(newValue, oldValue) {
+  var feature
+};
+
 proto.setFeatures = function(features) {
   this._features = features;
 };
@@ -145,7 +158,6 @@ proto.setFeatures = function(features) {
 proto._removeFeature = function(feature) {
   var self = this;
   _.forEach(this._features.getArray(), function(feat, idx) {
-    console.log(feat);
     if (feature.getId() == feat.getId()) {
       self._features.removeAt(idx);
       return false

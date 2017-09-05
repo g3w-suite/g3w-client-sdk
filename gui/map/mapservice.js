@@ -795,7 +795,8 @@ proto._unToggleControls = function() {
     if (controlObj.control.toggle) {
       controlObj.control.toggle(false);
     }
-  })
+  });
+  GUI.closeContent();
 };
 
 proto.addMapLayer = function(mapLayer) {
@@ -1152,7 +1153,9 @@ proto.setTarget = function(elId){
   this.target = elId;
 };
 
+// al momento dell'aggiunta di una iterazione
 proto.addInteraction = function(interaction) {
+  //vado a fare l'untoggle di tutti i control della mappa
   this._unToggleControls();
   this.viewer.map.addInteraction(interaction);
   interaction.setActive(true);
@@ -1169,7 +1172,7 @@ proto._watchInteraction = function(interaction) {
   var self = this;
   interaction.on('change:active',function(e) {
     if ((e.target instanceof ol.interaction.Pointer) && e.target.getActive()) {
-      self.emit('pointerInteractionSet',e.target);
+      self.emit('mapcontrol:active',e.target);
     }
   })
 };

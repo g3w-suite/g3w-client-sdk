@@ -2,8 +2,7 @@ var Layer = require('core/layers/layer');
 var Projections = require('g3w-ol3/src/projection/projections');
 
 
-function GeoLayerMixin(config) {
-}
+function GeoLayerMixin(config) {}
 
 var proto = GeoLayerMixin.prototype;
 

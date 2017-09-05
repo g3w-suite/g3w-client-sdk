@@ -1,7 +1,6 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var FeaturesStore = require('./featuresstore');
-var Feature = require('./feature');
 
 // Storage delle features di un layer vettoriale
 function OlFeaturesStore(options) {
@@ -13,14 +12,19 @@ inherit(OlFeaturesStore, FeaturesStore);
 
 proto = OlFeaturesStore.prototype;
 
+// sovrascrivo
+proto.readFeatures = function() {
+  return this._features.getArray();
+};
+
 proto.getFeaturesCollection = function() {
   return this._features;
 };
 
-proto.getFeatureByPk = function(featurePk) {
+proto.getFeatureById = function(featureId) {
   var feat;
   _.forEach(this._features.getArray(), function(feature) {
-    if (feature.getPk() == featurePk) {
+    if (feature.getId() == featureId) {
       feat = feature;
       return false;
     }
@@ -31,7 +35,7 @@ proto.getFeatureByPk = function(featurePk) {
 //vado ad eseguire in pratica la sostituzione della feature dopo una modifica
 proto._updateFeature = function(feature) {
   this._features.forEach(function(feat, idx, array) {
-    if (feat.getPk() == feature.getPk()) {
+    if (feat.getId() == feature.getId()) {
       this.setAt(idx, feature);
       return false;
     }
@@ -41,7 +45,7 @@ proto._updateFeature = function(feature) {
 // funzione che va a rimuovere la feature
 proto._removeFeature = function(feature) {
   this._features.forEach(function(feat, idx, array) {
-    if (feature.getPk() == feat.getPk()) {
+    if (feature.getId() == feat.getId()) {
       this.removeAt(idx);
       return false
     }

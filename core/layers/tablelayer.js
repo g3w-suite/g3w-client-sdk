@@ -56,12 +56,20 @@ function TableLayer(config) {
         });
       return d.promise();
     },
-    commit: function(commitItems) {
+    commit: function(commitItems, featurestore) {
       var d = $.Deferred();
-      this._featuresStore.commit(commitItems)
+      this._featuresStore.commit(commitItems, featurestore)
         .then(function (promise) {
           promise
             .then(function (response) {
+              // se tutto andato a buon fine il commit
+              if (featurestore)
+                var features = _.clone(featurestore.readFeatures());
+                _.forEach(features, function(feature) {
+                  feature.clearState();
+                });
+                self._featuresStore.setFeatures(features);
+              self._applyCommitResponse(response);
               return d.resolve(response);
             })
             .fail(function (err) {
@@ -102,7 +110,7 @@ function TableLayer(config) {
   // aggiungo alla configurazione la parte di editing
   config.editing = {
     pk: null, // campo primary kaey
-    fields: [] // campi utili all'editing
+    fields: [] // campi utili all'editing,
   };
   // vado a chiamare il Layer di base
   base(this, config);
@@ -120,15 +128,14 @@ function TableLayer(config) {
   this._createRelations(projectRelations);
   // vado a recuperare la configurazione dal server
 
-  this.getEditingConfig({
-    id: this.getId() // aggiunto al momento per utilizzare dato fake
-  })
+  this.getEditingConfig()
   .then(function(config) {
-    var fields = config.vector.fields;
     self.config.editing.pk = config.vector.pk;
-    self.config.editing.fields = fields;
+    self.config.editing.fields = config.vector.fields;
+    self.config.editing.format = config.vector.format;
+    self._setOtherConfigParameters(config);
+    self._setPkEditable(self.config.editing.fields);
     self.setReady(true);
-    self._setPkEditable(fields);
   })
   .fail(function(err) {
     self.setReady(false);
@@ -144,9 +151,35 @@ inherit(TableLayer, Layer);
 
 var proto = TableLayer.prototype;
 
+// funzione che permette di applicare l'eventuale risposta dal server
+// nel caso di inserimento di una nuova feature
+// nel caso di inserimento di una nuova feature
+proto._applyCommitResponse = function(response) {
+  var self = this;
+  var data = response.vector ? response.vector.data : null;
+  if (data) {
+    var feature;
+    var ids = data.response.new;
+    var lockids = data.response.new_lockids;
+    _.forEach(ids, function(idobj) {
+      feature = self._featuresStore.getFeatureById(idobj.clientid);
+      feature.setId(idobj.id);
+    });
+    this._featuresStore.addLockIds(lockids);
+  }
+};
+
+proto._setOtherConfigParameters = function(config) {
+  // questa funzione verrà sovrascritta ad esempio dal vector layer
+};
+
 // funzione che restituisce i campi del layer
 proto.getFields = function() {
   return this.config.editing.fields;
+};
+
+proto.getDataFormat = function() {
+  return this.config.editing.format;
 };
 
 proto.getPk = function() {
@@ -166,6 +199,11 @@ proto._setPkEditable = function(fields) {
 // funzione che restituisce l'array (configurazione) dei campi utlizzati per l'editing
 proto.getEditingFields = function() {
   return this.config.editing.fields;
+};
+
+// funzione che restituisce il formato dei dati grezzi
+proto.getEditingFormat = function() {
+  return this.config.editing.format;
 };
 
 proto.isReady = function() {
@@ -275,11 +313,41 @@ proto._deleteFeature = function(feature) {
 };
 
 proto._updateFeature = function(feature) {
-
+  //
 };
 
 proto._clearFeatures = function() {
   this._featuresStore.clearFeatures();
+};
+
+proto.addLockIds = function(lockIds) {
+  this._featuresStore.addLockIds(lockIds);
+};
+
+// viene chamato quando si preme ad esempio Salva sul Form degli
+// attributi di una feature
+proto._setFieldsWithValues = function(feature, fields, relations) {
+  var attributes = {};
+  var pkValue;
+  _.forEach(fields, function(field) {
+    // vado a verificares se il campo è primary key e se è editable
+    if (feature.getPk() == field.name && field.editable) {
+      pkValue = field.type == "integer" ? 1* field.value : field.value;
+      feature.setId(pkValue);
+    } else {
+      // mi serve nel caso delle select ch devo forzare il valore a 'null'
+      if (field.value == 'null') {
+        field.value = null;
+      }
+      attributes[field.name] = field.value;
+    }
+  });
+  // setto i campi della feature con i valori editati nel form
+  feature.setProperties(attributes);
+  if (relations) {
+    // se ci sono relazioni vado a settare i dai delle relazioni nel layervettoriale originale
+    //this.layer.setRelationsData(feature.getId(), relations);
+  }
 };
 
 // funzione che server per associare campi a valori
@@ -299,16 +367,18 @@ proto.getFieldsWithValues = function(obj) {
   if (feature) {
     attributes = feature.getProperties();
   }
-  _.forEach(fields, function(field){
-    if (feature){
-      if (!this._PKinAttributes && field.name == self.config.editing.pk) {
-        if (feature.isNew()) {
-          field.value = null;
+  // scorro sui campi della feature
+  _.forEach(fields, function(field) {
+    if (feature) {
+      // verifico se è campo pk
+      if (field.name == self.config.editing.pk) {
+        // verifico che
+        if (feature.getId() && self.isPkEditable()) {
+          field.value = feature.getId();
         } else {
-          field.value = feature.getPk();
+          field.value = null;
         }
       } else {
-
         field.value = attributes[field.name];
       }
     }

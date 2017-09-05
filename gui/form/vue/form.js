@@ -51,7 +51,6 @@ var vueComponentOptions = {
   methods: {
     exec: function(cbk) {
       var relations = this.state.relations || null;
-      console.log(this.fields);
       cbk(this.state.fields, relations);
     },
     btnEnabled: function(button) {

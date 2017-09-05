@@ -66,12 +66,14 @@ proto._getFeatures = function(options) {
 
 // funzione che viene lanciata dopo che è stato salvato
 // il nuovo stato del layer definitivamente sul server
-proto.commit = function(commitItems) {
+proto.commit = function(commitItems, featurestore) {
+  var self = this;
   var d = $.Deferred();
-  this._layer.commit(commitItems)
+  this._layer.commit(commitItems, featurestore)
     .then(function (promise) {
       promise
-        .then(function (response) {
+        .then(function(response) {
+          // vado ad aggiornare le features nel caso di nuovi insrimenti
           return d.resolve(response);
         })
         .fail(function (err) {
@@ -108,7 +110,6 @@ proto.start = function(options) {
     });
   return d.promise()
 };
-
 
 //qui sono le azioni che agiscono direttamente sul layer
 

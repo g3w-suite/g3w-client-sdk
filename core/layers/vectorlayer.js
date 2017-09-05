@@ -21,6 +21,14 @@ mixin(VectorLayer, GeoLayerMixin);
 
 var proto = VectorLayer.prototype;
 
+proto._setOtherConfigParameters = function(config) {
+  this.config.editing.geometrytype = config.vector.geometrytype;
+};
+
+proto.getEditingGeometryType = function() {
+  return this.config.editing.geometrytype;
+};
+
 // funzione che restituisce il layer per l'editing
 proto.getLayerForEditing = function() {
   // nel caso fosse già un vector layer ritorna se stesso
@@ -32,6 +40,7 @@ proto.getLayerForEditing = function() {
 proto.getColor = function() {
   return this._color;
 };
+
 
 // qui ci sono i colori che possono essere usati dal layer
 // ad esempio nella visualizzazione

@@ -149,7 +149,7 @@ proto.push = function(New, Old) {
   this._temporarychanges.push(feature);
 };
 
-proto.applyChanges = function(items, reverse) {
+proto._applyChanges = function(items, reverse) {
   reverse = reverse || true;
   ChangesManager.execute(this._featuresstore, items, reverse);
 };
@@ -162,7 +162,7 @@ proto.rollback = function() {
   //vado a after il rollback dellle feature temporanee salvate in sessione
   console.log('Session Rollback.....');
   // vado a modificare il featurestore facendo il rollback dei cambiamenti temporanei
-  this.applyChanges(this._temporarychanges, true);
+  this._applyChanges(this._temporarychanges, true);
   this._temporarychanges = [];
   d.resolve();
   return d.promise()// qui vado a restituire le dipendenze
@@ -171,23 +171,25 @@ proto.rollback = function() {
 // funzione di undo che chiede alla history di farlo
 proto.undo = function() {
   var items = this._history.undo();
-  this.applyChanges(items.own, true);
+  this._applyChanges(items.own, true);
   return items.dependencies;
 };
 
 // funzione di undo che chiede alla history di farlo
 proto.redo = function() {
   var items = this._history.redo();
-  this.applyChanges(items.own, true);
+  this._applyChanges(items.own, true);
   return items.dependencies;
 };
 
 //funzione che prende tutte le modifche dalla storia e le
 //serializza in modo da poterle inviare tramite posto al server
 proto._serializeCommit = function(itemsToCommit) {
+  // id del layer legato alla sessione
   var id = this.getId();
   var state;
   var layer;
+  var pkValue;
   var commitObj = {
     add: [],
     update: [],
@@ -213,11 +215,9 @@ proto._serializeCommit = function(itemsToCommit) {
       switch (state) {
         case 'delete':
           if (!item.isNew())
-            layer.delete.push(item.getPk());
+            layer.delete.push(item.getId());
           break;
         default:
-          // rimouvo la pk campo dalle proprierties
-          //item.unsetPk();
           layer[item.getState()].push(GeoJSONFormat.writeFeatureObject(item));
           break;
       }
@@ -254,7 +254,8 @@ proto.commit = function(options) {
     commitItems = this._history.commit();
     // le serializzo
     commitItems = this._serializeCommit(commitItems);
-    this._editor.commit(commitItems)
+    // passo all'editor un secondo parametro.
+    this._editor.commit(commitItems, this._featuresstore)
       .then(function(response) {
         // poi vado a fare tutto quello che devo fare (server etc..)
         //vado a vare il clean della history
@@ -282,11 +283,10 @@ proto._stop = function() {
 
 // clear di tutte le cose associate alla sessione
 proto.clear = function() {
-  //vado a cancellare anche le features dal layer riginale
   this._editor.clear();
   // vado a ripulire la storia
   this._clearHistory();
-  // vado a ripulire tutto il featureststore
+  // risetto il featurestore a nuovo
   this._featuresstore.clear();
 };
 

@@ -13,7 +13,7 @@ var Control = function(options) {
   $(options.element).addClass("ol-control-"+this.positionCode);
   var buttonClickHandler = options.buttonClickHandler || Control.prototype._handleClick.bind(this);
   $(options.element).on('click',buttonClickHandler);
-  ol.control.Control.call(this,options);
+  ol.control.Control.call(this, options);
   this._postRender();
 
 };

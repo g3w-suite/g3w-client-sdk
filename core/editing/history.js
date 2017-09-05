@@ -308,7 +308,6 @@ proto.commit = function() {
   _.forEach(statesToCommit, function (state) {
     //ciclo sugli items dello stato
     _.forEach(state.items, function(item) {
-      console.log(item);
       // nel caso di un array, quindi di fronte ad un update
       if (_.isArray(item))
         // vado a prendere il secondo valore che è quello modificato

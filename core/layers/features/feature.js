@@ -14,9 +14,6 @@ var Feature = function(options) {
     this.setProperties(feature.getProperties());
     //vado a scrivere l'id univoco (corrispondente alla chiave primaria
     this.setId(feature.getId());
-    // aggiungo il campo e il valore pk se non presente
-    if (!_.isNull(this.get(this._pk)))
-      this.set(this._pk, feature.getId());
     this.setGeometryName(feature.getGeometryName());
     var geometry = feature.getGeometry();
     if (geometry) {
@@ -29,7 +26,8 @@ var Feature = function(options) {
   }
   // necessario per poter interagire reattivamente con l'esterno
   this.state = {
-    new: false
+    new: false,
+    state: null
   };
 };
 
@@ -53,34 +51,18 @@ proto.clone = function() {
   return clone;
 };
 
-proto.setNewPkValue = function() {
+proto.setTemporaryId = function() {
   var newValue = this._newPrefix + Date.now();
-  this.set(this._pk, newValue);
-  this.setId(this.getPk());
-  // vado a settarla come id della feature
+  this.setId(newValue);
   this.setNew();
 };
 
 proto.setNew = function() {
-
   this.state.new = true;
 };
 
-proto.getPkFieldName = function() {
-  return this._pk;
-};
-
-// funzione che restituisce il valore della primary key
 proto.getPk = function() {
-  return this.get(this._pk);
-};
-
-proto.setPk = function(value) {
-  this.set(this._pk, value);
-};
-
-proto.unsetPk = function() {
-  this.unset(this._pk);
+  return this._pk;
 };
 
 // setta la feature a state 2 delete
@@ -122,6 +104,11 @@ proto.setState = function(state) {
   this.state.state = state;
 };
 
+// vado a fare il clena dello state della feature
+proto.clearState = function() {
+  this.state.state = null;
+  this.state.new = false;
+};
 
 
 module.exports = Feature;
