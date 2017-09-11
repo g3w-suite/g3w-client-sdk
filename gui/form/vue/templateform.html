@@ -1,15 +1,8 @@
 <div>
   <div class="g3w-form-component_header">
-    <div class="quick-actions-menu">
-      <div v-if="state.tools.copypaste" class="pull-right">
-        <button v-if='state.isnew' class="btn btn-default glyphicon glyphicon-screenshot" data-placement="bottom" @click="pickLayerToClipBoard"  data-i18n="[title]copy_form_data_from_feature"></button>
-        <button v-if='!state.isnew' class="btn btn-default glyphicon glyphicon-copy" data-placement="bottom" @click="copyToClipBoard"  data-i18n="[title]copy_form_data"></button>
-        <button v-if='state.isnew' class="btn btn-default glyphicon glyphicon-paste" data-placement="bottom" @click="pasteClipBoardToForm" v-disabled="!state.canpaste" data-i18n="[title]paste_form_data"></button>
-      </div>
-    </div>
   </div>
   <div class="g3w-form-component_body nano">
-    <form name="validation" novalidate class="form-horizontal g3w-form nano-content">
+    <form class="form-horizontal g3w-form nano-content">
         <div class="box box-primary">
           <div class="box-header with-border">
             <h3 class="box-title">Attributi elemento</h3>

@@ -1,0 +1,17 @@
+<div class="form-group has-feedback">
+  <label :for="state.name" class="col-sm-4 control-label">{{ state.label }}
+    <span v-if="state.validate && state.validate.required">*</span>
+  </label>
+  <div class="col-sm-8">
+    <input
+      @keyup="change()"
+      v-disabled="!isEditable()"
+      :field="state.name"
+      class="form-control"
+      v-model="state.value"
+      :class="{'input-error-validation' : !state.validate.valid}"
+      :id="state.name"
+      :placeholder="state.input.label">
+    <p class="error-input-message" v-if="!state.validate.valid">{{ state.validate.message }}</p>
+  </div>
+</div>

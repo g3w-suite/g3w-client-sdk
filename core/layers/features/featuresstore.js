@@ -45,6 +45,11 @@ inherit(FeaturesStore, G3WObject);
 
 proto = FeaturesStore.prototype;
 
+// funzione per l'unlock delle features
+proto.unlock = function() {
+  return this._provider.unlock();
+};
+
 // funzione che recupera le features o dal server o dall'attributo _features
 proto._getFeatures = function(options) {
   options = options || {};

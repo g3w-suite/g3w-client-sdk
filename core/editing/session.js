@@ -272,11 +272,19 @@ proto.commit = function(options) {
 
 //funzione di stop della sessione
 proto._stop = function() {
-  this.state.started = false;
+  var self = this;
   var d = $.Deferred();
   console.log('Sessione stopping ..');
-  this.clear();
-  d.resolve();
+  this._editor.stop()
+    .then(function() {
+      self.state.started = false;
+      self.clear();
+      d.resolve();
+    })
+    .fail(function(err) {
+      console.log(err);
+      d.reject(err);
+    });
   return d.promise();
 
 };

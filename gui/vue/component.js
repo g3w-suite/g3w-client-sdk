@@ -11,6 +11,7 @@ inherit(Component, BaseComponent);
 
 //prototype
 var proto = Component.prototype;
+
 // viene richiamato dalla toolbar o da qualsiasi parte per montare il componente vue su un particolare elemento dom padre
 // quando il plugin chiede di mostrare un proprio pannello nella GUI (GUI.showPanel)
 proto.mount = function(parent, append) {
@@ -54,9 +55,8 @@ proto.ismount = function() {
   return this.internalComponent && this.internalComponent.$el;
 };
 
+// funzione layout
 proto.layout = function(width,height) {
-  if (this.internalComponent) {
-    //this.internalComponent.$broadcast('layout');
-  }
+  if (this.internalComponent) {}
 };
 module.exports = Component;

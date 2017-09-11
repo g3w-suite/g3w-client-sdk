@@ -100,12 +100,14 @@ function TableLayer(config) {
   var projectType = currentProject.getType();
   var projectId = currentProject.getId();
   var vectorUrl = initConfig.vectorurl;
+  var suffixUrl = projectType + '/' + projectId + '/' + config.id + '/';
   // vado ad aggiungere gli url che mi servono
   config.urls = {
-    editing: vectorUrl + 'editing/' + projectType + '/' + projectId + '/' + config.id + '/',
-    commit:vectorUrl + 'commit/' + projectType + '/' + projectId + '/' + config.id + '/',
-    data: vectorUrl + 'data/' + projectType + '/' + projectId + '/' + config.id + '/',
-    config: vectorUrl + 'config/' + projectType + '/' + projectId + '/' + config.id + '/'
+    editing: vectorUrl + 'editing/' + suffixUrl ,
+    commit:vectorUrl + 'commit/' + suffixUrl ,
+    data: vectorUrl + 'data/' + suffixUrl ,
+    config: vectorUrl + 'config/' + suffixUrl,
+    unlock: vectorUrl + 'unlock/' + suffixUrl
   };
   // aggiungo alla configurazione la parte di editing
   config.editing = {
@@ -167,6 +169,19 @@ proto._applyCommitResponse = function(response) {
     });
     this._featuresStore.addLockIds(lockids);
   }
+};
+
+// unlock editng features
+proto.unlock = function() {
+  var d = $.Deferred();
+  this._featuresStore.unlock()
+    .then(function() {
+      d.resolve()
+    })
+    .fail(function(err) {
+      d.reject(err);
+    });
+  return d.promise();
 };
 
 proto._setOtherConfigParameters = function(config) {
@@ -248,6 +263,14 @@ proto.getEditingUrl = function() {
 
 proto.setEditingUrl = function(url) {
   this.config.urls.editing = url;
+};
+
+proto.getUnlockUrl = function() {
+  this.config.url.unlock;
+};
+
+proto.setUnlockUrl = function(url) {
+  this.config.urls.unlock = url;
 };
 
 // funzione che server per settare il data url

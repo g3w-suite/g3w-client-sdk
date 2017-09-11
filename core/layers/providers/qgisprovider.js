@@ -8,6 +8,7 @@ function QGISProvider(options) {
   base(this);
   this._name = 'qgis';
   this._layer = options.layer || null;
+  this._unlockUrl = this._layer.getUrl('unlock');
   // url riferito alle query
   this._queryUrl = this._layer.getUrl('query');
   // editing url api
@@ -80,6 +81,19 @@ proto.getConfig = function(options) {
       d.reject(err);
     });
   return d.promise();
+};
+
+// unlock feature
+proto.unlock = function() {
+  var d = $.Deferred();
+  $.post(this._unlockUrl)
+    .then(function(response) {
+      d.resolve(response);
+    })
+    .fail(function(err) {
+      d.reject(err);
+    });
+  return d.promise()
 };
 
 // funzione commit

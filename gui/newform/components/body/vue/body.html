@@ -1,0 +1,22 @@
+<div>
+  <div class="box-header with-border g3w-form-component_title" style="background-color: #ffffff;">
+    <h3 class="box-title">{{ state.title }}</h3>
+    <div class="box-tools pull-right">
+    </div>
+  </div>
+  <div class="g3w-form-component_body nano">
+    <form class="form-horizontal g3w-form nano-content">
+      <div class="box box-primary">
+        <div class="box-body">
+          <component
+            @changeinput="validateInputs"
+            @addinput="addToValidate"
+            :state="field"
+            :is="field.type+'_input'"
+            v-for="field in state.fields">
+          </component>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

@@ -131,7 +131,18 @@ proto._setFeatures = function(features) {
 
 // stop editor
 proto.stop = function() {
-  this._started = false;
+  var d = $.Deferred();
+  var self = this;
+  this._layer.unlock()
+    .then(function(response) {
+      self._started = false;
+      d.resolve(response);
+    })
+    .fail(function(err) {
+      console.log(err);
+      d.reject(err);
+    });
+  return d.promise();
 };
 
 //metodo save che non fa altro che lanciare il save del layer

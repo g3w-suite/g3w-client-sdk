@@ -1,0 +1,10 @@
+<div>
+  <component
+    @addinput="registerInput"
+    @unregisterinput="unregisterInput"
+    @addtovalidate="addToValidate"
+    @validateform="isValid"
+    :state="state"
+    :is="component" v-for="component in state.components">
+  </component>
+</div>

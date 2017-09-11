@@ -82,7 +82,14 @@ g3w.gui = {
     MapComponent: require('gui/map/vue/map'),
     ToolsComponent: require('gui/tools/vue/tools'),
     QueryResultsComponent : require('gui/queryresults/vue/queryresults'),
-    FormComponent: require('gui/form/vue/form')
+    // componente Form Principale
+    FormComponent: require('gui/newform/vue/form'),
+    // componenti Form
+    FormComponents: {
+      Body: require('gui/newform/components/body/vue/body'),
+      Footer: require('gui/newform/components/footer/vue/footer')
+    },
+    InputsComponents: require('gui/inputs/inputs')
   }
 };
 

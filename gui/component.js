@@ -4,15 +4,20 @@ var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var VUECOMPONENTSATTRIBUTES = ['methods', 'computed', 'data', 'components'];
 
+// Classe componente base
 var Component = function(options) {
-
   options = options || {};
+  // compontente interno vue
   this.internalComponent = null;
+  // componenti che faranno parte del template
+  this._components = [];
   this.id = options.id || Math.random() * 1000;
+  // titolo
   this.title = options.title || '';
+  // stato del componente
   this.state = {
-    visible: options.visible || true,
-    open: options.open || false
+    visible: options.visible || true, // visibile
+    open: options.open || false // open
   };
   //setters
   this.setters = {
@@ -27,6 +32,34 @@ var Component = function(options) {
     reload: function() {
       this._reload();
     }
+  };
+  // funzione che automatizza l'inizializzazione del componente
+  // altimenti ognuno deve ridefinire tutto il flusso ogni volta
+  this.init = function(options) {
+    options = options || {};
+    // lo devo fare per problemi con compoents
+    this.vueComponent = this.createVueComponent(options.vueComponentObject);
+    this._components = options.components || [];
+    // vado a settasre il service
+    this.setService(options.service);
+    // inizializzo il servizio
+    this._service.init ? this._service.init(options): null;
+    // setto il template interno
+    this.setInternalComponentTemplate(options.template);
+    // funzione che permette di settare il componente interno
+    this.setInternalComponent = function() {
+      var InternalComponent = Vue.extend(this.vueComponent);
+      this.internalComponent = new InternalComponent({
+        service: this._service,
+        template: this.getInternalTemplate()
+      });
+      // associo lo state del componente interno a quello del service
+      // perchè le funzioni che maipolano lo stato del componente sono delegate al service nella
+      // maggior parte dei casi
+      this.internalComponent.state = this.getService().state;
+      this.internalComponent.state.components = this._components;
+    };
+    this.setInternalComponent();
   };
   base(this);
 };
@@ -75,6 +108,40 @@ proto.setService = function(service) {
   this._service = service;
 };
 
+proto.insertComponentAt = function(index, Component) {
+  this._components.splice(index, 0, Component);
+};
+
+proto.removeCompomentAt = function(index) {
+  this._components.splice(index, 1);
+};
+
+proto.addComponent = function(Component) {
+  this._components.push(Component);
+};
+
+proto.popComponent = function() {
+  return this._components.pop();
+};
+
+
+proto.removeComponent = function(Component) {
+  var self = this;
+  _.forEach(this._components, function(component, index) {
+    if (component == Component) {
+      self.splice(index, 1);
+      return false;
+    }
+  })
+};
+
+proto.setComponents = function(components) {
+  this._components = _.isArray(components) ? components: [];
+};
+
+proto.exendComponents = function(components) {
+  _.merge(this._components, components);
+};
 // restituisce il componente vue interno
 proto.getInternalComponent = function() {
   return this.internalComponent;
@@ -91,6 +158,7 @@ proto.setInternalComponent = function(internalComponent) {
   }
 };
 
+// fa un clone deep di un oggetto atto ad essere utilizzato
 proto.createVueComponent = function (vueObjOptions) {
   return _.cloneDeep(vueObjOptions);
 };
@@ -126,6 +194,7 @@ proto.extendInternalComponent = function(internalComponentOptions) {
   if (this.vueComponent) {
     // faccio il clone altrimenti ho problem con i components
     _.forEach(internalComponentOptions, function(value, key) {
+      // verifico che ci sia uno chiame appartenete agli attributi previsti dal compoennte vue
       if (VUECOMPONENTSATTRIBUTES.indexOf(key) > -1) {
         switch (key) {
           case 'methods':
@@ -148,6 +217,18 @@ proto.extendInternalComponent = function(internalComponentOptions) {
 proto.extendInternalComponentComponents = function(components) {
   if (components) {
     merge(this.vueComponent.components, components);
+  }
+};
+
+// funzione che fa quello che fa sopra ma chiamata in modo più appropriato
+proto.extendComponents = function(components) {
+  this.extendInternalComponentComponents(components);
+};
+
+//funzione che estende l'attributo components dell'oggetto vue Component
+proto.addComponent = function(component) {
+  if (component) {
+    this.vueComponent.components[component.key] = component.value;
   }
 };
 
@@ -186,6 +267,7 @@ proto.setInternalComponentTemplate = function(template) {
   }
 };
 
+// resituisce il template
 proto.getInternalTemplate = function() {
   return this.vueComponent.template;
 };
@@ -210,6 +292,7 @@ proto.ismount = function() {
 };
 
 // se si vuole usare il componete lo deve ridefinire
+// è un hook per eventuali chiamate post pre open
 proto._setOpen = function() {
 };
 
@@ -220,7 +303,6 @@ proto._setVisible = function() {};
 
 //funzione che dovrà essere sovrascritta dai singoli componenti
 proto._reload = function() {
-
 };
 
 /*
