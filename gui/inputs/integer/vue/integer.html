@@ -1,2 +1,9 @@
-
-
+<baseinput :state="state">
+  <input
+    @change="change"
+    style="width:100%"
+    v-model="state.value"
+    slot="inputelement"
+    type="number"
+    min="0">
+</baseinput>

@@ -12,6 +12,14 @@ inherit(OlFeaturesStore, FeaturesStore);
 
 proto = OlFeaturesStore.prototype;
 
+//sovrascrivo
+proto.setFeatures = function(features) {
+  var self = this;
+  this._features.clear();
+  _.forEach(features, function(feature) {
+    self._features.push(feature);
+  })
+};
 // sovrascrivo
 proto.readFeatures = function() {
   return this._features.getArray();

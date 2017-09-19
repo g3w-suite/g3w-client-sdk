@@ -4,6 +4,7 @@ var Component = require('gui/vue/component');
 var Service = require('../formservice');
 var base = require('core/utils/utils').base;
 var Template = require('./form.html');
+var HeaderFormComponent = require('../components/header/vue/header');
 var BodyFormComponent = require('../components/body/vue/body');
 var FooterFormComponent = require('../components/footer/vue/footer');
 
@@ -16,27 +17,59 @@ var vueComponentObject = {
       state: null
     }
   },
-  components: {},
   transitions: {'addremovetransition': 'showhide'},
   methods: {
     isValid: function() {
       return this.$options.service.isValid();
     },
-    registerInput: function (input) {
-      // registra lo stato di validazione, oggetto, dell'input appena inserito
-      this.$options.service.unregisterInput(input);
-    },
-    unregisterInput: function (input) {
-      this.$options.service.unregisterInput(input);
-    },
     addToValidate: function(validate) {
       this.$options.service.addToValidate(validate);
+    },
+    // funzione che fa il reload del layout
+    reloadLayout: function() {
+      var height = $(this.$el).height();
+      // verifico altezza altrimenti esco
+      if (!height)
+        return;
+      var isHeader = false; // verifco elemento is header
+      var isFooter = false; // verifico elemento is footer
+      var formElement = $(this.$el).find("div[class*=\"g3w-form-component\"]");
+      var externalElement = [];
+      var centralElements = [];
+      var notBodyElementHeight = 0;
+      var centralElementsNumber = 0;
+      formElement.each(function() {
+        isFooter = $(this).hasClass('g3w-form-component_footer');
+        if (!isHeader || isFooter) {
+          externalElement.push($(this));
+          notBodyElementHeight += $(this).height();
+        }
+        else {
+          if (!$(this).hasClass('g3w-form-component_body'))
+            centralElements.push($(this));
+          centralElementsNumber += 1;
+        }
+        isHeader = !isHeader ? $(this).hasClass('g3w-form-component_header') : true;
+      });
+      // vado a calcolare la possibile altezza del body
+      var centralHeight = height - (notBodyElementHeight); // altezza dedidcata alla parte centrale del form
+      var heightToAppy = (centralHeight/ centralElementsNumber) - 15; // altezza che possono essere assegnate alle varie parti
+      // verifico l'altezza del bosy (se settata
+      var bodyElementHeight = $(this.$el).find(".g3w-form-component_body .box-primary").outerHeight() + 20; // prendo l'altezza del bosy
+      bodyElementHeight =  bodyElementHeight > heightToAppy ? heightToAppy: bodyElementHeight ; // verifico se è maggiore dell'altezza prevsta
+      $(this.$el).find(".g3w-form-component_body").height(bodyElementHeight);
+      centralHeight = centralHeight - bodyElementHeight; // ricalcolo l'altezza che devo assegnare alle altre parti in base all'altezza del body
+      centralElementsNumber-=1; // tolgo un elemento
+      heightToAppy = (centralHeight/ centralElementsNumber) - 15;
+      _.forEach(centralElements, function(element) {
+        element.height(heightToAppy)
+      });
+      $(".nano").nanoScroller();
     }
-  },  
-  computed: {
   },
   mounted: function() {
     var self = this;
+    this.element = this.$el;
     this.$nextTick(function() {
       self.$options.service.postRender();
     });
@@ -57,16 +90,16 @@ function FormComponent(options) {
   options.vueComponentObject = options.vueComponentObject  || vueComponentObject;
   options.template = options.template || Template;
   // qui vado a settare i componenti del form altrimenti setto quelli standard
-  options.components = options.components || [BodyFormComponent, FooterFormComponent];
+  options.components = options.components || [HeaderFormComponent, BodyFormComponent, FooterFormComponent];
   // lancio l'inizializzazione del componente
   this.init(options);
 
   this.addComponentBeforeBody = function(Component) {
-    this.insertComponentAt(0, Component);
+    this.insertComponentAt(1, Component);
   };
 
   this.addComponentAfterBody = function(Component) {
-    this.insertComponentAt(1, Component)
+    this.insertComponentAt(2, Component)
   };
 
   this.addComponentBeforeFooter = function() {
@@ -95,16 +128,6 @@ function FormComponent(options) {
   };
   // funzione che viene chiamata ad ogni ridimensionamento dell'elelemnto padre
   this.layout = function(width,height) {
-    var notBodyElement = $(this.internalComponent.$el).find("div[class*=\"g3w-form-component\"]");
-    var notBodyElementHeight = 0;
-    notBodyElement.each(function() {
-      notBodyElementHeight +=  $(this).height();
-    });
-    var bodyHeight = height - (notBodyElementHeight + 10);
-    var bodyElementHeight = $(this.internalComponent.$el).find(".g3w-form-component_body").height();
-    bodyHeight = (!bodyElementHeight || bodyElementHeight > bodyHeight) ? bodyHeight: bodyElementHeight +10;
-    $(this.internalComponent.$el).find(".g3w-form-component_body").css({'max-height': bodyHeight});
-    $(".nano").nanoScroller();
   }
 }
 

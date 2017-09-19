@@ -170,7 +170,7 @@ proto.getLayersDict = function(options) {
   }
 
   if (typeof filterBaseLayer == 'boolean') {
-    layers = _.filter(layers,function(layer){
+    layers = _.filter(layers, function(layer){
       return filterBaseLayer == layer.isBaseLayer();
     });
   }
@@ -301,7 +301,6 @@ proto.setLayersTree = function(layerstree,name) {
     });
   }
   traverse(layerstree);
-
   // questo server per raggruppare ogni albero dei layer
   // al proprio gruppo che sia un progetto, un plugin o altro
   // quando viene creato il layersstore

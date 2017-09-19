@@ -52,12 +52,11 @@ proto.unlock = function() {
 
 // funzione che recupera le features o dal server o dall'attributo _features
 proto._getFeatures = function(options) {
-  options = options || {};
   var self = this;
   var d = $.Deferred();
   var features;
   // verifico che ci sia un provider altrimenti vado a recuperare le
-  if (this._provider) {
+  if (this._provider && options) {
     this._provider.getFeatures(options)
       .then(function(options) {
         features = self._filterFeaturesResponse(options);

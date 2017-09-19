@@ -17,7 +17,6 @@ function PluginsRegistry() {
       }
     }
   };
-
   base(this);
 
   // funzione di inizializzazione dei plugin

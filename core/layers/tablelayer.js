@@ -35,11 +35,6 @@ function TableLayer(config) {
     // mediante il provider legato al fetauresstore
     getFeatures: function (options) {
       var self = this;
-      options = options || {};
-      // aggiunta temporanea
-      options.id = this.getId();
-      // passo la pk del layer per poter settare Id della feature
-      options.pk = this.config.editing.pk;
       var d = $.Deferred();
       // qui mi ritorna la promessa del setter (G3WOBJECT)
       this._featuresStore.getFeatures(options)
@@ -432,6 +427,7 @@ proto._createRelations = function(projectRelations) {
 proto.getRelations = function() {
   return this._relations
 };
+
 
 //restituisce gli attributi fields di una deterninata relazione
 proto.getRelationAttributes = function(relationName) {

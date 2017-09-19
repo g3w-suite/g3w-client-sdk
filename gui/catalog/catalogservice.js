@@ -55,7 +55,13 @@ function CatalogService() {
         return false;
       }
     });
-
+  });
+  //registro l'eventuale rimozione di tuuti i layersStores dal LayersRegistryStore
+  CatalogLayersStoresRegistry.onafter('removeLayersStores', function() {
+    _.forEach(self.state.layerstrees, function(layersTree, idx) {
+      self.state.layerstrees.splice(idx, 1);
+      return false;
+    });
   });
 }
 

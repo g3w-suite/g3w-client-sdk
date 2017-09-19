@@ -43,53 +43,54 @@ proto.getName = function() {
   return this._name;
 };
 
+proto.extractGML=  function (response) {
+  if (response.substr(0,2) != '--') {
+    return response;
+  }
+  var gmlTag1 = new RegExp("<([^ ]*)FeatureCollection");
+  var gmlTag2 = new RegExp("<([^ ]*)msGMLOutput");
+  var boundary = '\r\n--';
+  var parts = response.split(new RegExp(boundary));
+
+  for (var i=0; i<parts.length; i++) {
+    var part = parts[i];
+    var isGmlPart = false;
+    isGmlPart = part.search(gmlTag1) > -1 ? true : part.search(gmlTag2) > -1 ? true : false;
+    if (isGmlPart) {
+      var gml = part.substr(part.indexOf("<?xml"));
+      return gml;
+    }
+  }
+};
+
+
+
 // Messo qui generale la funzione che si prende cura della trasformazione dell'xml di risposta
 // dal server così da avere una risposta coerente in termini di formato risultati da presentare
 // nel componente QueryResults
 proto.handleQueryResponseFromServer = function(response, ogcservice) {
   var self = this;
-  var jsonresponse;
-  var parser, data, features, error;
+  var format = new ol.format.WMSGetFeatureInfo(({
+    layers: [this._layer.getId()]
+  }));
+  var features = format.readFeatures(response);
+  return [{
+    layer: this._layer,
+    features: features
+  }];
   switch (this._layer.getInfoFormat()) {
     case 'json':
       parser = this._parseLayerGeoJSON;
       data = response.vector.data;
+      features = parser.call(self, data, ogcservice);
       break;
     default:
-      // caso gml
-      var x2js = new X2JS();
-      try {
-        if (_.isString(response)) {
-          jsonresponse = x2js.xml_str2json(response);
-        } else {
-          jsonresponse = x2js.xml2json(response);
-        }
-      }
-      catch (e) {
-        return;
-      }
-      var rootNode = _.keys(jsonresponse)[0];
-      switch (rootNode) {
-        case 'FeatureCollection':
-          parser = this._parseLayerFeatureCollection;
-          data = jsonresponse;
-          break;
-        case "msGMLOutput":
-          parser = this._parseLayermsGMLOutput;
-          data = response;
-          break;
-        case "ServiceExceptionReport":
-          error = 'an error occured while querying the layer';
-          if (jsonresponse.ServiceExceptionReport.ServiceException)  {
-            error = jsonresponse.ServiceExceptionReport.ServiceException.toString();
-          }
-        
-      }
+      response = this.extractGML(response);
+      var format = new ol.format.WMSGetFeatureInfo(({
+          layers: [this._layer.getId()]
+        }));
+      features = format.readFeatures(response);
   }
-  if (parser) {
-    features = parser.call(self, data, ogcservice);
-  }
-
   return [{
     layer: this._layer,
     features: features,

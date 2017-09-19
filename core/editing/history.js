@@ -177,13 +177,14 @@ proto.clear = function(ids) {
   }
 };
 
-// funzione che pulisce tutto states e state
+// funzione che pulisce tutto states 
 proto._clearAll =  function() {
   this._states = [];
   this._current = null;
   this.state.commit = false;
   this.state.redo = false;
   this.state.undo = false;
+  
 };
 
 // ritorna lo stato a seconda dell'id

@@ -3,12 +3,14 @@ var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
 var Relation = require('./relation');
 
+// clase Relations
 function Relations(options) {
   var self = this;
   options = options || {};
   var relations = options.relations;
   // qui conservo tutte le relazioni
   this._relations = {};
+  this._length = relations ? relations.length: 0;
   // qui mi serve per costruire tutte le relazioni tra i layers
   this._relationsInfo = {
     children: {}, // contiene l'array dei figli (id unici)
@@ -65,9 +67,23 @@ proto._reloadRelationsInfo = function() {
   this._createRelationsInfo();
 };
 
+// restituisce il numero di relazioni
+proto.getLength = function() {
+  return this._length
+};
+
 // retituisce tutte le relazini create
 proto.getRelations = function() {
   return this._relations;
+};
+
+// funzione che restituisce array delle relazioni
+proto.getArray = function() {
+  var relations = [];
+  _.forEach(this._relations, function(relation) {
+    relations.push(relation);
+  });
+  return relations;
 };
 
 proto.setRelations = function(relations) {
@@ -79,7 +95,7 @@ proto.getRelationById = function(id) {
 };
 
 proto.getRelationByFatherChildren = function(father, child) {
-  var relationId = this._relationsTree.father_child[father+child];
+  var relationId = this._relationsInfo.father_child[father+child];
   return this.getRelationById(relationId);
 };
 
@@ -134,5 +150,6 @@ proto.isChild = function(id) {
 proto.isFather = function(id) {
   return !!this._relationsInfo.fathers[id];
 };
+
 
 module.exports = Relations;

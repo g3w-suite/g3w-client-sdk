@@ -2,31 +2,6 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 
-var Inputs = {};
-Inputs.STRING = 'string';
-Inputs.INTEGER = 'integer';
-Inputs.FLOAT = 'float';
-Inputs.BOOLEAN = 'boolean';
-Inputs.RANGE = 'range';
-Inputs.CHECK = 'check';
-Inputs.DATAPICKER = 'datetimepicker';
-Inputs.UNIQUE = 'unique';
-
-Inputs.defaults = {};
-Inputs.defaults[Inputs.STRING] = "";
-Inputs.defaults[Inputs.INTEGER] = 0;
-Inputs.defaults[Inputs.FLOAT] = 0.0;
-Inputs.simpleFieldTypes = [Inputs.STRING,Inputs.INTEGER,Inputs.FLOAT];
-
-Inputs.TEXTAREA = 'textarea';
-Inputs.SELECT = 'select';
-Inputs.RADIO = 'radio';
-Inputs.CHECKBOX = 'checkbox';
-Inputs.LAYERPICKER = 'layerpicker';
-Inputs.IMAGE = 'image';
-
-Inputs.specialInputs = [Inputs.TEXTAREA, Inputs.SELECT, Inputs.RADIO, Inputs.CHECKBOX, Inputs.LAYERPICKER, Inputs.IMAGE];
-
 function FormService() {
   this.state = null;
   this.setters = {
@@ -85,7 +60,6 @@ function FormService() {
   this.isValid = function() {
     var bool = true;
     _.forEach(this.state.tovalidate, function(tovalidate) {
-      console.log(tovalidate);
       if (!tovalidate.valid) {
         bool = false;
         return false;
@@ -94,11 +68,9 @@ function FormService() {
     this.state.valid = bool;
   };
   this.addToValidate = function(validate) {
-    console.log(validate);
     this.state.tovalidate.push(validate);
   };
-
-
+  
   this.getState = function () {
     return this.state;
   };
@@ -127,8 +99,7 @@ function FormService() {
   this.init = function(options) {
     this._setInitForm(options);
   };
-
-
+  
   base(this);
 }
 

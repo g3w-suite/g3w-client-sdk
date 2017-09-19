@@ -40,7 +40,6 @@ function Session(options) {
   this._temporarychanges = [];
   //dependencies
   this._dependencies = [];
-
 }
 
 inherit(Session, G3WObject);
@@ -56,6 +55,7 @@ proto._start = function(options) {
   var d = $.Deferred();
   this._editor.start(options)
     .then(function(features) {
+      features = self._cloneFeatures(features);
       // vado a popolare il featuresstore della sessione con le features
       //che vengono caricate via via dall'editor
       self._featuresstore.addFeatures(features);
@@ -77,6 +77,7 @@ proto._getFeatures = function(options) {
   this._editor.getFeatures(options)
     .then(function(promise) {
       promise.then(function(features) {
+        features = self._cloneFeatures(features);
         self._featuresstore.addFeatures(features);
         d.resolve(features);
       })
@@ -85,6 +86,14 @@ proto._getFeatures = function(options) {
       });
     });
   return d.promise();
+};
+
+// funzione che permette di clonerae le feature che vengono reperite tramite editor
+proto._cloneFeatures = function(features) {
+  var cloneFeatures = [];_.forEach(features, function(feature) {
+    cloneFeatures.push(feature.clone())
+  });
+  return cloneFeatures;
 };
 
 proto.isStarted = function() {
@@ -152,6 +161,20 @@ proto.push = function(New, Old) {
 proto._applyChanges = function(items, reverse) {
   reverse = reverse || true;
   ChangesManager.execute(this._featuresstore, items, reverse);
+};
+
+
+// funzione che permetterà di cancellare tutte le modifiche salvate nella history
+// e quindi ripulire la sessione
+proto.revert = function() {
+  var self = this;
+  this._editor.getFeatures().then(function(promise) {
+    promise.then(function(features) {
+      features =  self._cloneFeatures(features);
+      self.getFeaturesStore().setFeatures(features)
+    })
+  });
+  this._history.clear();
 };
 
 // funzione di rollback

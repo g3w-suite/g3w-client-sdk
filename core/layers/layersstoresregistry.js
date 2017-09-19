@@ -15,6 +15,9 @@ function LayersStoresRegistry() {
     },
     removeLayersStore: function(layerStore) {
       this._removeLayersStore(layerStore);
+    },
+    removeLayersStores: function() {
+      this._removeLayersStores();
     }
   };
 
@@ -61,7 +64,6 @@ proto._addLayersStore = function(layersStore, idx) {
 };
 
 proto._removeLayersStore = function(layerStore) {
-
   if (layerStore) {
     var storeId = layerStore.getId();
     var idx = this.storesArray.indexOf(storeId);
@@ -69,5 +71,13 @@ proto._removeLayersStore = function(layerStore) {
     this.storesArray.splice(idx, 1);
   }
 };
+
+// rimuove tutti i layersstore salvati
+proto._removeLayersStores = function() {
+  var length = this.storesArray.length;
+  this.storesArray.splice(0, length);
+  this.stores = {};
+};
+
 
 module.exports = LayersStoresRegistry;

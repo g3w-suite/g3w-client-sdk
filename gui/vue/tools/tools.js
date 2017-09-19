@@ -9,7 +9,7 @@ Vue.component('g3w-tools',{
       }
     },
     methods: {
-      fireAction: function(actionid){
+      fireAction: function(actionid) {
         ToolsService.fireAction(actionid);
       }
     }

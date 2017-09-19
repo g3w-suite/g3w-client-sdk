@@ -12,6 +12,12 @@ var BodyFormComponent = Vue.extend({
     },
     validateInputs: function() {
       this.$emit('validateform');
+    },
+    reloadLayout: function(index) {
+      if (index == this.state.fields.length - 1) {
+        this.$emit('reloadlayout');
+      }
+      return true
     }
   }
 });

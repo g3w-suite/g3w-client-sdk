@@ -23,7 +23,8 @@ function ProjectsRegistry() {
   this.setters = {
     setCurrentProject: function(project) {
       if (this.state.currentProject) {
-        LayersStoresRegistry.removeLayersStore(this.state.currentProject.getLayersStore());
+        CatalogLayersStoresRegistry.removeLayersStores();
+        MapLayersStoresRegistry.removeLayersStores();
       }
       self.state.currentProject = project;
       //aggiunto tipo progetto
@@ -33,7 +34,6 @@ function ProjectsRegistry() {
       CatalogLayersStoresRegistry.addLayersStore(projectLayersStore, 0);
       // lo mette sempre in prima posizione mi serve per la mappa
       MapLayersStoresRegistry.addLayersStore(projectLayersStore, 0);
-
     }
   };
   //stato del registro progetti

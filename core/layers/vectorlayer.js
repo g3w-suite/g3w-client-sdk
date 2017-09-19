@@ -7,9 +7,8 @@ var GeoLayerMixin = require('./geolayermixin');
 
 function VectorLayer(config) {
   base(this, config);
-  var self = this;
   this.type = Layer.LayerTypes.VECTOR;
-  this._color = VectorLayer.COLORS.splice(0,1).pop();
+  this._color = null;
   // mi server un layer ol per la visualizzazionei
   // vado a modificare lo state aggiungendo il bbox e l'informazione geolayer
   this.setup(config);
@@ -37,25 +36,11 @@ proto.getLayerForEditing = function() {
   return editingLayer;
 };
 
+proto.setColor = function(color) {
+  this._color = color;
+};
+
 proto.getColor = function() {
   return this._color;
 };
-
-
-// qui ci sono i colori che possono essere usati dal layer
-// ad esempio nella visualizzazione
-VectorLayer.COLORS = [
-  '#ff790d',
-  '#62bdff',
-  '#7aff54',
-  '#00ffbf',
-  '#00bfff',
-  '#0040ff',
-  '#8000ff',
-  '#ff00ff',
-  '#331909',
-  '#234d20',
-  '#7f3e16'
-];
-
 module.exports = VectorLayer;

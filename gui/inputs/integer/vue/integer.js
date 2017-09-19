@@ -10,7 +10,8 @@ var IntegerInput = Vue.extend({
         state: this.state
       })
     }
-  }
+  },
+  template: require('./integer.html')
 });
 
 module.exports = IntegerInput;
