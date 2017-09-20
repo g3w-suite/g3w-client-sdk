@@ -305,6 +305,7 @@ proto.commit = function() {
   var layerId;
   var add = true;
   var statesToCommit = this._getStatesToCommit();
+  console.log(statesToCommit);
   // inzioa ascorrere sugli stati della history
   _.forEach(statesToCommit, function (state) {
     //ciclo sugli items dello stato

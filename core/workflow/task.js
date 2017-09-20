@@ -37,6 +37,10 @@ proto.run = function() {
   console.log('Se appare quasto messaggio significa che non è stato sovrascritto il metodo run() dalla sottoclasse');
 };
 
+proto.setRoot = function(task) {
+  this.state.root = task;
+};
+
 
 
 module.exports = Task;

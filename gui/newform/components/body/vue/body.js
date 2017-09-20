@@ -1,5 +1,4 @@
 var BodyTemplate = require('./body.html');
-var Service = require('../service');
 var Inputs = require('gui/inputs/inputs');
 
 var BodyFormComponent = Vue.extend({

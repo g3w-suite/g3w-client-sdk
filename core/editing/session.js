@@ -38,8 +38,6 @@ function Session(options) {
   // contenitore temporaneo che servirà a salvare tutte le modifiche
   // temporanee che andranno poi salvate nella history e nel featuresstore
   this._temporarychanges = [];
-  //dependencies
-  this._dependencies = [];
 }
 
 inherit(Session, G3WObject);
@@ -125,11 +123,6 @@ proto.save = function(options) {
   if (this._temporarychanges.length) {
     options = options || {};
     var uniqueId = options.id || Date.now();
-    // vado a prevedere che ne save venga passato un id che lega quella transazione(modifica) con
-    // quella di un altra sessione
-    if (options.id) {
-      this._dependencies.push(options.id);
-    }
     this._history.add(uniqueId, this._temporarychanges)
       .then(function() {
         // vado a fare il clear dei cambiamenti temporanei
@@ -212,7 +205,6 @@ proto._serializeCommit = function(itemsToCommit) {
   var id = this.getId();
   var state;
   var layer;
-  var pkValue;
   var commitObj = {
     add: [],
     update: [],
@@ -222,13 +214,13 @@ proto._serializeCommit = function(itemsToCommit) {
   _.forEach(itemsToCommit, function(items, key) {
     if (key != id) {
       // vado a creare una nuova chiave nelle relazioni
-      layer = commitObj.relations[key];
-      // e assegno struttura per il commit
-      layer = {
+      commitObj.relations[key] = {
         add: [],
         update: [],
         delete: []
       };
+      layer = commitObj.relations[key];
+      // e assegno struttura per il commit
     } else {
       layer = commitObj
     }
@@ -244,7 +236,8 @@ proto._serializeCommit = function(itemsToCommit) {
           layer[item.getState()].push(GeoJSONFormat.writeFeatureObject(item));
           break;
       }
-    })
+    });
+
   });
   return commitObj;
 };

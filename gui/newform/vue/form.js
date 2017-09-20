@@ -28,6 +28,7 @@ var vueComponentObject = {
     // funzione che fa il reload del layout
     reloadLayout: function() {
       var height = $(this.$el).height();
+      var width = $(this.$el).width();
       // verifico altezza altrimenti esco
       if (!height)
         return;
@@ -121,14 +122,8 @@ function FormComponent(options) {
       GUI.setModal(true);
       //vado a validare subito il form
       self.getService().isValid();
-      // lacio il layout
-      self.layout();
     });
-
   };
-  // funzione che viene chiamata ad ogni ridimensionamento dell'elelemnto padre
-  this.layout = function(width,height) {
-  }
 }
 
 inherit(FormComponent, Component);

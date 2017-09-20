@@ -791,12 +791,14 @@ proto._removeControls = function() {
 };
 
 proto._unToggleControls = function() {
-  _.forEach(this._mapControls,function(controlObj){
-    if (controlObj.control.toggle) {
+  _.forEach(this._mapControls,function(controlObj) {
+    // verifico che sia un controllo con la funzione is Toggled e se questo è stata settata a true
+    if (controlObj.control.isToggled && controlObj.control.isToggled()) {
       controlObj.control.toggle(false);
+      GUI.closeContent();
     }
   });
-  GUI.closeContent();
+
 };
 
 proto.addMapLayer = function(mapLayer) {
