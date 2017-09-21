@@ -106,8 +106,11 @@ proto._checkItems = function(items, action) {
       newItems.own.push(item)
     } else {
       if (!newItems.dependencies[item.layerId])
-        newItems.dependencies[item.layerId] = [];
-      newItems.dependencies[item.layerId].push(item);
+        newItems.dependencies[item.layerId] = {
+          own: [],
+          dependencies: {}
+        };
+      newItems.dependencies[item.layerId].own.push(item);
     }
   });
   return newItems;
@@ -305,7 +308,6 @@ proto.commit = function() {
   var layerId;
   var add = true;
   var statesToCommit = this._getStatesToCommit();
-  console.log(statesToCommit);
   // inzioa ascorrere sugli stati della history
   _.forEach(statesToCommit, function (state) {
     //ciclo sugli items dello stato

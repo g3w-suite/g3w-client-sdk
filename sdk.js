@@ -89,7 +89,10 @@ g3w.gui = {
       Body: require('gui/newform/components/body/vue/body'),
       Footer: require('gui/newform/components/footer/vue/footer')
     },
-    InputsComponents: require('gui/inputs/inputs')
+    inputs: {
+      InputsComponents: require('gui/inputs/inputs'),
+      InputsEventBus:  require('gui/inputs/inputseventbus')
+    }
   }
 };
 

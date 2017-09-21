@@ -160,14 +160,21 @@ proto._applyChanges = function(items, reverse) {
 // funzione che permetterà di cancellare tutte le modifiche salvate nella history
 // e quindi ripulire la sessione
 proto.revert = function() {
+  var d = $.Deferred();
   var self = this;
   this._editor.getFeatures().then(function(promise) {
-    promise.then(function(features) {
-      features =  self._cloneFeatures(features);
-      self.getFeaturesStore().setFeatures(features)
-    })
+    promise
+      .then(function(features) {
+        features =  self._cloneFeatures(features);
+        self.getFeaturesStore().setFeatures(features);
+        self._history.clear();
+        d.resolve();
+      })
+      .fail(function(err) {
+        d.reject(err);
+      })
   });
-  this._history.clear();
+  return d.promise();
 };
 
 // funzione di rollback
@@ -185,16 +192,16 @@ proto.rollback = function() {
 };
 
 // funzione di undo che chiede alla history di farlo
-proto.undo = function() {
-  var items = this._history.undo();
+proto.undo = function(items) {
+  var items = items || this._history.undo();
   this._applyChanges(items.own, true);
   return items.dependencies;
 };
 
 // funzione di undo che chiede alla history di farlo
-proto.redo = function() {
-  var items = this._history.redo();
-  this._applyChanges(items.own, true);
+proto.redo = function(items) {
+  var items = items || this._history.redo().own;
+  this._applyChanges(items, true);
   return items.dependencies;
 };
 
