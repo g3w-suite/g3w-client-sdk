@@ -65,7 +65,8 @@ g3w.core = {
     Task: require('core/workflow/task'),
     Step: require('core/workflow/step'),
     Flow: require('core/workflow/flow'),
-    Workflow: require('core/workflow/workflow')
+    Workflow: require('core/workflow/workflow'),
+    WorkflowsStack: require('core/workflow/workflowsstack')
   }
 };
 
@@ -83,15 +84,14 @@ g3w.gui = {
     ToolsComponent: require('gui/tools/vue/tools'),
     QueryResultsComponent : require('gui/queryresults/vue/queryresults'),
     // componente Form Principale
-    FormComponent: require('gui/newform/vue/form'),
+    FormComponent: require('gui/form/vue/form'),
     // componenti Form
     FormComponents: {
-      Body: require('gui/newform/components/body/vue/body'),
-      Footer: require('gui/newform/components/footer/vue/footer')
+      Body: require('gui/form/components/body/vue/body'),
+      Footer: require('gui/form/components/footer/vue/footer')
     },
     inputs: {
-      InputsComponents: require('gui/inputs/inputs'),
-      InputsEventBus:  require('gui/inputs/inputseventbus')
+      InputsComponents: require('gui/inputs/inputs')
     }
   }
 };

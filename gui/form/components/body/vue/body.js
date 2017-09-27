@@ -6,11 +6,12 @@ var BodyFormComponent = Vue.extend({
   props: ['state'],
   components: Inputs,
   methods: {
-    addToValidate: function(validate) {
-      this.$emit('addtovalidate', validate)
+    addToValidate: function(input) {
+      // aggiunge l'input da validare
+      this.$emit('addtovalidate', input.validate);
     },
-    validateInputs: function() {
-      this.$emit('validateform');
+    changeInput: function(input) {
+      this.$emit('changeinput', input);
     },
     reloadLayout: function(index) {
       if (index == this.state.fields.length - 1) {

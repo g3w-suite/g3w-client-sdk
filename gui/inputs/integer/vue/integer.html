@@ -2,6 +2,7 @@
   <input
     @change="change"
     style="width:100%"
+    v-disabled="!isEditable()"
     v-model="state.value"
     slot="inputelement"
     type="number"

@@ -5,6 +5,7 @@ var G3WObject = require('core/g3wobject');
 function Relation(config) {
   config = config || {};
   var uniqueSuffix = Date.now();
+  // config per le pari statiche
   this.state = {
     id: config.id || 'id_' + uniqueSuffix ,
     name: config.name || 'name_' + uniqueSuffix,
@@ -14,6 +15,7 @@ function Relation(config) {
     childField: config.fieldRef.referencingField,
     type: config.type
   };
+  
   base(this);
 }
 
@@ -68,6 +70,7 @@ proto.getFatherField = function() {
 proto.getChildField = function() {
   return this.state.childField;
 };
+
 
 
 module.exports = Relation;

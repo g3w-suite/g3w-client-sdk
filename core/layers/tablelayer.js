@@ -344,7 +344,7 @@ proto.addLockIds = function(lockIds) {
 
 // viene chamato quando si preme ad esempio Salva sul Form degli
 // attributi di una feature
-proto._setFieldsWithValues = function(feature, fields, relations) {
+proto.setFieldsWithValues = function(feature, fields) {
   var attributes = {};
   var pkValue;
   _.forEach(fields, function(field) {
@@ -362,15 +362,14 @@ proto._setFieldsWithValues = function(feature, fields, relations) {
   });
   // setto i campi della feature con i valori editati nel form
   feature.setProperties(attributes);
-  if (relations) {
-    // se ci sono relazioni vado a settare i dai delle relazioni nel layervettoriale originale
-    //this.layer.setRelationsData(feature.getId(), relations);
-  }
+
 };
 
 // funzione che server per associare campi a valori
-proto.getFieldsWithValues = function(obj) {
+proto.getFieldsWithValues = function(obj, options) {
   var self = this;
+  options = options || {};
+  var exclude = options.exclude || [];
   // clono i fields in quanto non voglio modificare i valori originali
   var fields = _.cloneDeep(this.getFields());
   var feature, attributes;
@@ -385,6 +384,9 @@ proto.getFieldsWithValues = function(obj) {
   if (feature) {
     attributes = feature.getProperties();
   }
+  fields = _.filter(fields, function(field) {
+    return exclude.indexOf(field.name) == -1;
+  });
   // scorro sui campi della feature
   _.forEach(fields, function(field) {
     if (feature) {

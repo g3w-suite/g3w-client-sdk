@@ -1,6 +1,5 @@
 // oggetto base per che definisce i metodi comuni per tutti gli inputs
 var Service = require('./service');
-var InputsEventsBus = require('./inputseventbus');
 //Definisco un baseInput object per permetterere all'input di ereditare
 // metododi etc .. da questo
 var BaseInput = {
@@ -20,8 +19,7 @@ var BaseInput = {
       //vado a validare il valore
       this.service.validate();
       // emette il segnale che è cambiato un input
-      this.$emit('changeinput');
-      InputsEventsBus.$emit('changeinput', this.state);
+      this.$emit('changeinput', this.state);
     },
     isEditable: function() {
       return this.service.isEditable();
@@ -39,7 +37,7 @@ var BaseInput = {
     this.change();
     this.$nextTick(function() {
       // emetto il segnale di aggiunta input e passo l'oggetto validate
-      self.$emit('addinput', this.state.validate);
+      self.$emit('addinput', this.state);
     })
   }
 };

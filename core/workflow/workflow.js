@@ -3,44 +3,65 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
 var Flow = require('./flow');
-
+var WorkflowsStack = require('./workflowsstack');
 //classe che ha lo scopo generico di gestire un flusso
 // ordinato di passi (steps)
 function Workflow(options) {
   base(this);
+  options = options || {};
   // oggetto che conterrà tutti
   // i dati necessari a lavorare con l'editing
-  this._inputs = null;
+  this._inputs = options.inputs || null;
   //oggetto che determina il contesto in cui
   // opera il workflow
-  this._context = null;
+  this._context = options.context || null;
   // flow oggetto che mi permette di stabilile come
   // mi devo muovere all'interno del worflow
-  this._flow = new Flow();
+  this._flow = options.flow || new Flow();
   // sono i vari passi con i relativi task
   // nei quali l'inpust verranno aggiornati
-  this._steps = options.steps;
-  // qui viene messo il child del workflow  worfkow children del main
+  this._steps = options.steps || [];
+  // qui viene messo il child del workflow
   this._child = null;
+  // indice dello stack dei workflow
+  this._stackIndex = null;
 }
 
 inherit(Workflow, G3WObject);
 
 var proto = Workflow.prototype;
 
+proto.getStackIndex = function() {
+  return this._stackIndex;
+};
+
 proto.addChild = function(workflow) {
   if (this._child)
     this._child.addChild(workflow);
-  else
+  else {
     this._child = workflow;
+  }
 };
 
 proto.removeChild = function() {
+  if (this._child) {
+    var index = this._child.getStackIndex();
+    WorkflowsStack.removeAt(index);
+  }
+
   this._child = null;
+};
+
+proto._setInputs = function(inputs) {
+ this._inputs = inputs;
 };
 
 proto.getInputs = function() {
   return this._inputs;
+};
+
+proto.setContext = function(context) {
+ this._context = context;
 };
 
 proto.getContext = function() {
@@ -99,16 +120,13 @@ proto.start = function(options) {
   options = options || {};
   var d = $.Deferred();
   this._inputs = options.inputs;
-  //oggetto che mi server per operare su
-  // elementi utili
+  //oggetto che mi server per operare su elementi utili
   this._context = options.context || {};
-  // aggiungo al contesto il workflow principale da permettere ai figli di aggiungersi
-  if (this._context.root && this._context.root!= this)
-    this._context.root.addChild(this);
-  else {
-    this._context.root = this;
-    this._context.root.removeChild();
-  }
+  // verifico se ci sono workflow già presenti in corso
+  if (WorkflowsStack.getLength() && WorkflowsStack.getLast() != this)
+    WorkflowsStack.getLast().addChild(this);
+  WorkflowsStack.push(this);
+  this._stackIndex = WorkflowsStack.push(this);
   this._flow = options.flow || this._flow;
   this._steps = options.steps || this._steps;
   this._flow.start(this)
@@ -122,28 +140,25 @@ proto.start = function(options) {
   return d.promise();
 };
 
-// funzione adibita alla gestione degli errori che si
-// possono verificare durante l'itero flusso
-proto.panic = function() {
-
-};
-
 // metodo stop utilizzato per eventualmente stoppare
 // il workflow durante il suo flusso
 proto.stop = function() {
   var self = this;
   ////console.log('Workflow stopping .... ');
   var d = $.Deferred();
-  // chiamo lo stop di tutti i workflowchildren
+  // chiamo lo stop del child workflow che arà una sua vita  indipendente dal padre
   this._stopChild()
-    .then(function() {
+    // in ogni caso faccio il removechild
+    .always(function() {
       self.removeChild();
+      WorkflowsStack.removeAt(self.getStackIndex());
       // vado a chiamare lo stop del flow
-      self._flow.stop(this) // ritorna una promessa
+      self._flow.stop() // ritorna una promessa
         .then(function() {
           d.resolve()
         })
         .fail(function(err) {
+          // mi serve per capire cosa fare
           d.reject(err)
         });
   });

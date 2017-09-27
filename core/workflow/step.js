@@ -59,6 +59,7 @@ proto.run = function(inputs, context) {
 proto.stop = function() {
   // chiamo lo stop del task così mi pulisce tutte le cose legate al task
   this._task.stop();
+  // setta lo step a runninf false
   this.state.running = false;
 };
 

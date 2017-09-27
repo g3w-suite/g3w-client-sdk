@@ -177,17 +177,44 @@ proto.revert = function() {
   return d.promise();
 };
 
+// organizza i cambiamenti temporanei in base al layer coinvolto
+proto._filterChanges = function() {
+  var id = this.getId();
+  var changes = {
+    own:[],
+    dependencies: {}
+  };
+  var change;
+  _.forEach(this._temporarychanges, function(temporarychange) {
+    change = _.isArray(temporarychange) ? temporarychange[0] : temporarychange;
+    if (change.layerId == id)
+      changes.own.push(change);
+    else {
+      if (!changes.dependencies[change.layerId])
+        changes.dependencies[change.layerId] = [];
+      changes.dependencies[change.layerId].push(change);
+    }
+  });
+  return changes;
+};
+
 // funzione di rollback
 // questa in pratica restituirà tutte le modifche che non saranno salvate nella history
 // e nel featuresstore della sessione ma riapplicate al contrario
-proto.rollback = function() {
-  var d = $.Deferred();
+proto.rollback = function(changes) {
   //vado a after il rollback dellle feature temporanee salvate in sessione
   console.log('Session Rollback.....');
-  // vado a modificare il featurestore facendo il rollback dei cambiamenti temporanei
-  this._applyChanges(this._temporarychanges, true);
-  this._temporarychanges = [];
-  d.resolve();
+  var d = $.Deferred();
+  if (changes) {
+    this._applyChanges(changes, true);
+    d.resolve();
+  }  else {
+    changes = this._filterChanges();
+    // vado a modificare il featurestore facendo il rollback dei cambiamenti temporanei
+    this._applyChanges(changes.own, true);
+    this._temporarychanges = [];
+    d.resolve(changes.dependencies);
+  }
   return d.promise()// qui vado a restituire le dipendenze
 };
 

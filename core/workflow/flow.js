@@ -76,8 +76,6 @@ function Flow() {
   this.onError = function(err) {
     // nel caso di errore di uno step
     console.log('step error: ', err);
-    // stoppo lo step che mi ha dato problemi
-    steps[counter].stop();
     // risetto il counter a 0
     counter = 0;
     d.reject(err);
@@ -88,8 +86,9 @@ function Flow() {
     var d = $.Deferred();
     console.log('Flow stopping ...');
     //verifico a che punto è il counter se all'inizio
-    steps[counter].stop();
+    steps[counter].isRunning() ? steps[counter].stop() : null;
     if (counter > 0) {
+      // setto il counter a 0
       counter = 0;
       // faccio un reject dell flow
       d.reject();

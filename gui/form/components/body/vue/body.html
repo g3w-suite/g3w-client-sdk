@@ -4,7 +4,7 @@
       <div class="box-body">
         <template v-for="(field, index) in state.fields" v-if="reloadLayout(index)">
           <component
-            @changeinput="validateInputs"
+            @changeinput="changeInput"
             @addinput="addToValidate"
             :state="field"
             :is="field.type+'_input'">
