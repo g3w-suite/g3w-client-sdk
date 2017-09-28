@@ -137,6 +137,37 @@ proto.save = function(options) {
   return d.promise();
 };
 
+proto.pushAdd = function(layerId, feature) {
+  this.push({
+    layerId: layerId,
+    feature: feature.add()
+  })
+};
+
+
+// metodo per aggiungere la cancellazione di una feature temporaneamente
+proto.pushDelete = function(layerId, feature) {
+  this.push({
+    layerId: layerId,
+    feature: feature.delete()
+  })
+};
+
+// metodo per aggiungere temporaneamente la modifica di una feature
+proto.pushUpdate = function(layerId, newFeature, oldFeature) {
+
+  this.push(
+    {
+      layerId: layerId,
+      feature: newFeature.update()
+    },
+    {
+      layerId: layerId,
+      feature: oldFeature.update()
+      
+    })
+};
+
 // metodo che server ad aggiungere features temporanee che poi andranno salvate
 // tramite il metodo save della sessione
 proto.push = function(New, Old) {
@@ -192,7 +223,8 @@ proto._filterChanges = function() {
     else {
       if (!changes.dependencies[change.layerId])
         changes.dependencies[change.layerId] = [];
-      changes.dependencies[change.layerId].push(change);
+      // le vado a posizionare dal più recente al più lontano in ordine inverso FILO
+      changes.dependencies[change.layerId].unshift(change);
     }
   });
   return changes;
@@ -203,7 +235,7 @@ proto._filterChanges = function() {
 // e nel featuresstore della sessione ma riapplicate al contrario
 proto.rollback = function(changes) {
   //vado a after il rollback dellle feature temporanee salvate in sessione
-  console.log('Session Rollback.....');
+  console.log('Session Rollback.....', changes);
   var d = $.Deferred();
   if (changes) {
     this._applyChanges(changes, true);

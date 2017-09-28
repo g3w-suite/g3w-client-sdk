@@ -68,16 +68,19 @@ proto.getPk = function() {
 // setta la feature a state 2 delete
 proto.delete = function() {
   this.state.state = 'delete';
+  return this;
 };
 
 //setta lo stato a feature aggiornata
 proto.update = function() {
   this.state.state = 'update';
+  return this;
 };
 
 // setta lo stato a nuovo 0
 proto.add = function() { 
   this.state.state = 'add';
+  return this;
 };
 
 proto.isNew = function() {
