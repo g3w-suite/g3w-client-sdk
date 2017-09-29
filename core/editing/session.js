@@ -4,6 +4,7 @@ var G3WObject = require('core/g3wobject');
 var History = require('./history');
 var FeaturesStore = require('core/layers/features/featuresstore');
 var ChangesManager = require('./changesmanager');
+var SessionsRegistry = require('./sessionsregistry');
 
 // classe Session
 function Session(options) {
@@ -51,6 +52,8 @@ proto.getId = function() {
 proto._start = function(options) {
   var self = this;
   var d = $.Deferred();
+  // vado a registrare la sessione
+  SessionsRegistry.register(this);
   this._editor.start(options)
     .then(function(features) {
       features = self._cloneFeatures(features);
@@ -279,8 +282,11 @@ proto._serializeCommit = function(itemsToCommit) {
   };
   _.forEach(itemsToCommit, function(items, key) {
     if (key != id) {
+      // vado a recuperare i lockId del layer relaione
+      var lockids = SessionsRegistry.getSession(key).getEditor().getLayer().getFeaturesStore().getLockIds();
       // vado a creare una nuova chiave nelle relazioni
       commitObj.relations[key] = {
+        lockids:lockids,
         add: [],
         update: [],
         delete: []
@@ -356,6 +362,8 @@ proto.commit = function(options) {
 proto._stop = function() {
   var self = this;
   var d = $.Deferred();
+  // vado a unregistrare la sessione
+  SessionsRegistry.unregister(this.getId());
   console.log('Sessione stopping ..');
   this._editor.stop()
     .then(function() {

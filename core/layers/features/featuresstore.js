@@ -96,6 +96,10 @@ proto._filterLockIds = function(featurelocks) {
   this._lockIds = _.union(this._lockIds, toAddLockId);
 };
 
+proto.getLockIds = function() {
+  return this._lockIds;
+};
+
 // aggiunge nuovi lock Ids
 proto.addLockIds = function(lockIds) {
   this._lockIds = _.union(this._lockIds, lockIds);

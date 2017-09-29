@@ -127,6 +127,9 @@ function FormComponent(options) {
       self.getService().isValid();
     });
   };
+  this.layout = function() {
+    this.internalComponent.reloadLayout();
+  }
 }
 
 inherit(FormComponent, Component);

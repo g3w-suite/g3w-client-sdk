@@ -127,6 +127,7 @@ function TableLayer(config) {
 
   this.getEditingConfig()
   .then(function(config) {
+    console.log(config);
     self.config.editing.pk = config.vector.pk;
     self.config.editing.fields = config.vector.fields;
     self.config.editing.format = config.vector.format;
@@ -147,6 +148,17 @@ function TableLayer(config) {
 inherit(TableLayer, Layer);
 
 var proto = TableLayer.prototype;
+
+proto.isFieldRequired = function(fieldName) {
+  var required = false;
+  _.forEach(this.getFields(), function(field) {
+    if (fieldName == field.name) {
+      required = !!field.validate.required;
+      return false;
+    }
+  });
+  return required;
+};
 
 // funzione che permette di applicare l'eventuale risposta dal server
 // nel caso di inserimento di una nuova feature
