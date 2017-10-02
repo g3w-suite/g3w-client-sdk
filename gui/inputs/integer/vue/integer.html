@@ -3,6 +3,7 @@
     @change="change"
     style="width:100%"
     v-disabled="!isEditable()"
+    :class="{'input-error-validation' : !state.validate.valid}"
     v-model="state.value"
     slot="inputelement"
     type="number"

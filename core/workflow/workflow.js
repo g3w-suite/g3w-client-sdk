@@ -125,7 +125,6 @@ proto.start = function(options) {
   // verifico se ci sono workflow già presenti in corso
   if (WorkflowsStack.getLength() && WorkflowsStack.getLast() != this)
     WorkflowsStack.getLast().addChild(this);
-  WorkflowsStack.push(this);
   this._stackIndex = WorkflowsStack.push(this);
   this._flow = options.flow || this._flow;
   this._steps = options.steps || this._steps;

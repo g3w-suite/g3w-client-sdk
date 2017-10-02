@@ -5,7 +5,7 @@ var WorkFlowsStack = function() {
   this._workflows = [];
   this.push = function(workflow) {
     if (this._workflows.indexOf(workflow) == -1)
-      return this._workflows.push(workflow);
+      return this._workflows.push(workflow) - 1;
     return this._workflows.indexOf(workflow);
   };
 

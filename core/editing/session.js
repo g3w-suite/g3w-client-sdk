@@ -262,8 +262,8 @@ proto.undo = function(items) {
 
 // funzione di undo che chiede alla history di farlo
 proto.redo = function(items) {
-  var items = items || this._history.redo().own;
-  this._applyChanges(items, true);
+  var items = items || this._history.redo();
+  this._applyChanges(items.own, true);
   return items.dependencies;
 };
 

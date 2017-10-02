@@ -127,7 +127,6 @@ function TableLayer(config) {
 
   this.getEditingConfig()
   .then(function(config) {
-    console.log(config);
     self.config.editing.pk = config.vector.pk;
     self.config.editing.fields = config.vector.fields;
     self.config.editing.format = config.vector.format;
