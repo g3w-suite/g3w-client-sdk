@@ -163,18 +163,14 @@ proto.createOlLayer = function(options) {
   var style;
   switch (geometryType) {
     case 'Point' || 'MultiPoint':
-      style = function() {
-            return [
-              new ol.style.Style({
+      style = new ol.style.Style({
                 image: new ol.style.Circle({
                   radius: 5,
                   fill: new ol.style.Fill({
                     color: color
                   })
                 })
-              })
-            ]
-          };
+              });
       break;
     case 'Line' || 'MultiLine':
       style = new ol.style.Style({
@@ -202,9 +198,10 @@ proto.createOlLayer = function(options) {
   });
   var olLayer = new ol.layer.Vector({
     id: id,
-    source: olSource,
-    style: style
+    source: olSource
   });
+
+  olLayer.setStyle(style);
   return olLayer;
 };
 

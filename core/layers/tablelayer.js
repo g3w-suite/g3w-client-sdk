@@ -417,7 +417,6 @@ proto.getFieldsWithValues = function(obj, options) {
       field.value = null;
     }
   });
-
   return fields;
 };
 
