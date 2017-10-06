@@ -36,8 +36,6 @@ function Layer(config) {
     disabled: config.disabled | false,
     hidden: config.hidden || false
   };
-  // tipo di layer
-  this.type = null;
   // tipo di server
   var serverType = this.config.servertype;
   // tipo di sorgente del layer

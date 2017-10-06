@@ -161,6 +161,14 @@ proto.createOlLayer = function(options) {
   var geometryType = options.geometryType;
   var color = options.color;
   var style;
+  // vado a creare il layer ol per poter essere aggiunto alla mappa
+  var olSource = new ol.source.Vector({
+    features: new ol.Collection()
+  });
+  var olLayer = new ol.layer.Vector({
+    id: id,
+    source: olSource
+  });
   switch (geometryType) {
     case 'Point' || 'MultiPoint':
       style = new ol.style.Style({
@@ -187,20 +195,11 @@ proto.createOlLayer = function(options) {
               width: 3
             }),
             fill: new ol.style.Fill({
-              color: color,
-              opacity: 0.5
+              color: color
             })
-          })
+          });
+      olLayer.setOpacity(0.6);
   }
-  // vado a creare il layer ol per poter essere aggiunto alla mappa
-  var olSource = new ol.source.Vector({
-    features: new ol.Collection()
-  });
-  var olLayer = new ol.layer.Vector({
-    id: id,
-    source: olSource
-  });
-
   olLayer.setStyle(style);
   return olLayer;
 };

@@ -6,13 +6,12 @@ var FeaturesStore = require('./features/featuresstore');
 var Feature = require('./features/feature');
 var Relations = require('core/relations/relations');
 
+
 // Layer di base su cui si possono fare operazioni di editing
-function TableLayer(config) {
+function TableLayer(config, options) {
+  options = options || {}; // queste mi servono per aggiungere altre infoemazioni oltra alla configurazione del layer setsso
+  var ProjectsRegistry = require('core/project/projectsregistry');
   var self = this;
-  //////// al momento lo metto qui ////////////////////////////
-  var ProjectRegistry = require('core/project/projectsregistry');
-  var currentProject= ProjectRegistry.getCurrentProject();
-  ///////////////////////////////////////////////////
   // setters
   this.setters = {
     // cancellazione di tutte le features del layer
@@ -88,9 +87,9 @@ function TableLayer(config) {
   this._editor = new Editor({
     layer: this
   });
-  // relations of the layer
-  var projectRelations = currentProject.getRelations();
-  this._relations = null;
+  // colore
+  this._color = null;
+  var currentProject = options.project || ProjectsRegistry.getCurrentProject();
   // vado a settare urls che mi servono
   var projectType = currentProject.getType();
   var projectId = currentProject.getId();
@@ -104,6 +103,7 @@ function TableLayer(config) {
     config: vectorUrl + 'config/' + suffixUrl,
     unlock: vectorUrl + 'unlock/' + suffixUrl
   };
+
   // aggiungo alla configurazione la parte di editing
   config.editing = {
     pk: null, // campo primary kaey
@@ -111,6 +111,10 @@ function TableLayer(config) {
   };
   // vado a chiamare il Layer di base
   base(this, config);
+  var projectRelations = currentProject.getRelations();
+  // vado a creare le relazioni
+  this._relations = null;
+  this._createRelations(projectRelations);
   // aggiungo nformazioni allo state che sono solo necessarie a layer
   // di possibile editing
   this.state = _.merge({
@@ -121,8 +125,6 @@ function TableLayer(config) {
       ispkeditable: false
     }
   }, this.state);
-  // vado a creare le relazioni
-  this._createRelations(projectRelations);
   // vado a recuperare la configurazione dal server
 
   this.getEditingConfig()
@@ -147,6 +149,22 @@ function TableLayer(config) {
 inherit(TableLayer, Layer);
 
 var proto = TableLayer.prototype;
+
+proto.setColor = function(color) {
+  this._color = color;
+};
+
+proto.getColor = function() {
+  return this._color;
+};
+
+// funzione che restituisce il layer per l'editing
+proto.getLayerForEditing = function() {
+  // nel caso fosse già un vector layer ritorna se stesso
+  var editingLayer = _.cloneDeep(this);
+  //editingLayer.config.capabilities = null;
+  return editingLayer;
+};
 
 proto.isFieldRequired = function(fieldName) {
   var required = false;
@@ -197,6 +215,14 @@ proto._setOtherConfigParameters = function(config) {
 // funzione che restituisce i campi del layer
 proto.getFields = function() {
   return this.config.editing.fields;
+};
+
+proto.getFieldsLabel = function() {
+  var labels = [];
+  _.forEach(this.getFields(), function(field) {
+    labels.push(field.label)
+  });
+  return labels;
 };
 
 proto.getDataFormat = function() {
@@ -320,6 +346,10 @@ proto.setSource = function(source) {
   this.setFeaturesStore(source);
 };
 
+proto.getSource = function() {
+  return this._featuresStore;
+};
+
 //funzione che va a sostiuire le features al featuresstore del layer
 proto._setFeatures = function(features) {
   this._featuresStore.setFeatures(features);
@@ -433,6 +463,21 @@ proto._createRelations = function(projectRelations) {
       relations: relations
     });
   }
+};
+
+proto.createNewFeature = function() {
+  var feature = new ol.Feature();
+  var properties = {};
+  _.forEach(this.getFields(), function(field) {
+    properties[field.name] = null;
+  });
+  feature.setProperties(properties);
+  feature = new Feature({
+    feature : feature,
+    pk: this.getPk()
+  });
+  feature.setNew();
+  return feature;
 };
 
 // restituisce tutte le relazioni legati a quel layer

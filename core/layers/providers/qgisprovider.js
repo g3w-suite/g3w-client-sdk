@@ -2,6 +2,7 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var DataProvider = require('core/layers/providers/provider');
 var Feature = require('core/layers/features/feature');
+var Parsers = require('core/parsers/parsers');
 
 function QGISProvider(options) {
   options = options || {};
@@ -45,8 +46,6 @@ proto.query = function(options) {
           INFO_FORMAT: this._infoFormat,
           FEATURE_COUNT: 200,
           FILTER: filter.get()
-          // Temporary fix for https://hub.qgis.org/issues/8656 (fixed in QGIS master)
-          //'BBOX': bbox // QUI CI VA IL BBOX DELLA MAPPA
         }
       ).done(function(response) {
         var featuresForLayers = self.handleQueryResponseFromServer(response, self._infoFormat, self._layerName);
@@ -121,10 +120,14 @@ proto.getFeatures = function(options) {
   var self = this;
   var d = $.Deferred();
   options = options || {};
+  var layerType = options.type || 'vector'; //tipo di layer
   // verifico nel passaggio di veridico se i dati sono richiesti in editing o sola lettura;
   var url = options.editing ? this._editingUrl : this._dataUrl;
-  var bbox = options.filter.bbox;
-  var filter = {in_bbox: bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3]};
+  var filter = options.filter || null;
+  if (filter) {
+    var bbox = filter.bbox;
+    filter = {in_bbox: bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3]};
+  }
   var pk = this._layer.getPk();
   if (!url) {
     d.reject('Url non valido');
@@ -141,7 +144,16 @@ proto.getFeatures = function(options) {
       var vector = response.vector;
       var featurelocks = response.featurelocks;
       var data = vector.data;
-      _.forEach(self._parseLayerGeoJSON(data), function(feature) {
+      var geometrytype = vector.geometrytype;
+      var parser = Parsers[layerType].get({
+        type: 'json',
+        pk: pk
+      });
+      if (geometrytype != 'No geometry')
+        var options = {
+          crs: self._layer.getCrs()
+        }
+      _.forEach(parser(data, options), function(feature) {
         features.push(new Feature({
           feature: feature,
           pk: pk

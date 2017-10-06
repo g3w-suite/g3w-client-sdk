@@ -3,6 +3,7 @@ var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var Feature = require('core/layers/features/feature');
 
+
 function Provider(options) {
   options = options || {};
   this._isReady = false;
@@ -129,7 +130,6 @@ proto._parseLayermsGMLOutput = function(data) {
 
 
 proto._parseLayerGeoJSON = function(data) {
-
   var geojson = new ol.format.GeoJSON({
     defaultDataProjection: this.crs,
     geometryName: "geometry"

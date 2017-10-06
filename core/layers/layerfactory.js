@@ -6,11 +6,11 @@ var ImageLayer = require('./imagelayer');
 // oggetto che ha il compito di costruire
 // l'istanza Layer a seconda della configurazione
 function LayerFactory() {
-  this.build = function(config) {
+  this.build = function(config, options) {
     // ritorna l'istanza del layer in base alla configurazione
     var layerClass = this.get(config);
     if (layerClass) {
-      return new layerClass(config);
+      return new layerClass(config, options);
     }
     return null;
   };
@@ -25,7 +25,7 @@ function LayerFactory() {
       // poi vado a verificare
       if (config.source && config.geometrytype) {
         if ([Layer.SourceTypes.POSTGIS, Layer.SourceTypes.SPATIALITE, Layer.SourceTypes.CSV].indexOf(config.source.type) > -1) {
-          if (config.geometrytype && config.geometrytype == undefined) {
+          if (config.geometrytype && config.geometrytype == 'No geometry') {
             // se non è stato definito il tipo geometrico allora assesgno classe
             // TableLayer
             LayerClass = TableLayer;
@@ -50,7 +50,6 @@ function LayerFactory() {
     else if (serverType == 'Local') {
       LayerClass = VectorLayer;
     }
-
     return LayerClass;
   };
 }

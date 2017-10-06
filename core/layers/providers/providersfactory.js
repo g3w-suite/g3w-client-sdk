@@ -30,8 +30,8 @@ var ProvidersForServerTypes = {
     'delimitedtext': {
       query: Providers.wms,
       filter: Providers.wfs,
-      data: null,
-      search: null
+      data: Providers.qgis,
+      search: Providers.qgis
     },
     'wms': {
       query: Providers.wms,

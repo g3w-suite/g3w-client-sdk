@@ -116,7 +116,9 @@ proto._buildLayersStore = function() {
   _.forEach(this.getLayers(), function(layerConfig) {
     // aggiungo la proiezione
     layerConfig.projection = self._projection;
-    var layer = LayerFactory.build(layerConfig);
+    var layer = LayerFactory.build(layerConfig, {
+      project: self
+    });
     layersStore.addLayer(layer);
   });
 
