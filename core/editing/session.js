@@ -59,7 +59,7 @@ proto._start = function(options) {
       features = self._cloneFeatures(features);
       // vado a popolare il featuresstore della sessione con le features
       //che vengono caricate via via dall'editor
-      self._featuresstore.addFeatures(features);
+      self._featuresstore.setFeatures(features);
       self.state.started = true;
       d.resolve(features);
     })
@@ -348,7 +348,7 @@ proto.commit = function(options) {
         // poi vado a fare tutto quello che devo fare (server etc..)
         //vado a vare il clean della history
         self._history.clear();
-        d.resolve(response)
+        d.resolve(commitItems, response)
       })
       .fail(function(err) {
         d.reject(err);

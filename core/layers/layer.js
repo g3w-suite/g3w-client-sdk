@@ -177,6 +177,10 @@ proto.getType = function() {
   return this.type;
 };
 
+proto.setType = function(type) {
+  this.type = type;
+};
+
 proto.isSelected = function() {
   return this.state.selected;
 };

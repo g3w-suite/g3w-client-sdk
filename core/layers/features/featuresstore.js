@@ -165,9 +165,9 @@ proto.setFeatures = function(features) {
 
 proto._removeFeature = function(feature) {
   var self = this;
-  _.forEach(this._features.getArray(), function(feat, idx) {
+  _.forEach(this._features, function(feat, idx) {
     if (feature.getId() == feat.getId()) {
-      self._features.removeAt(idx);
+      self._features.splice(idx, 1);
       return false
     }
   })

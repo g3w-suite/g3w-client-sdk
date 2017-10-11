@@ -58,6 +58,7 @@ proto.setTemporaryId = function() {
 };
 
 proto.setNew = function() {
+  console.log(this.getId());
   this.state.new = true;
 };
 

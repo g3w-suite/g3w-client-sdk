@@ -63,7 +63,7 @@ function TableLayer(config, options) {
                   feature.clearState();
                 });
                 self._featuresStore.setFeatures(features);
-              self._applyCommitResponse(response);
+              self.applyCommitResponse(response);
               return d.resolve(response);
             })
             .fail(function (err) {
@@ -158,11 +158,14 @@ proto.getColor = function() {
   return this._color;
 };
 
+proto.readFeatures = function() {
+  return this._featuresStore.readFeatures();
+};
+
 // funzione che restituisce il layer per l'editing
 proto.getLayerForEditing = function() {
   // nel caso fosse già un vector layer ritorna se stesso
-  var editingLayer = _.cloneDeep(this);
-  //editingLayer.config.capabilities = null;
+  var editingLayer = this;
   return editingLayer;
 };
 
@@ -180,9 +183,9 @@ proto.isFieldRequired = function(fieldName) {
 // funzione che permette di applicare l'eventuale risposta dal server
 // nel caso di inserimento di una nuova feature
 // nel caso di inserimento di una nuova feature
-proto._applyCommitResponse = function(response) {
+proto.applyCommitResponse = function(response) {
   var self = this;
-  var data = response.vector ? response.vector.data : null;
+  var data = response;
   if (data) {
     var feature;
     var ids = data.response.new;
@@ -476,7 +479,7 @@ proto.createNewFeature = function() {
     feature : feature,
     pk: this.getPk()
   });
-  feature.setNew();
+  feature.setTemporaryId();
   return feature;
 };
 
