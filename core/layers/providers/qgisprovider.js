@@ -150,14 +150,12 @@ proto.getFeatures = function(options) {
         pk: pk
       });
       if (geometrytype != 'No geometry')
-        var options = {
-          crs: self._layer.getCrs()
-        }
-      _.forEach(parser(data, options), function(feature) {
+        var parser_options = { crs: self._layer.getCrs() };
+      _.forEach(parser(data, parser_options), function(feature) {
         features.push(new Feature({
           feature: feature,
           pk: pk
-        }))
+        }));
       });
       // risolvo passando le features loccate e le features caricate
       d.resolve({

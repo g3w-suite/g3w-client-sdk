@@ -414,6 +414,7 @@ proto.getFieldsWithValues = function(obj, options) {
   var self = this;
   options = options || {};
   var exclude = options.exclude || [];
+  var pkeditable = _.isBoolean(options.pkeditable) ? options.pkeditable : true;
   // clono i fields in quanto non voglio modificare i valori originali
   var fields = _.cloneDeep(this.getFields());
   var feature, attributes;
@@ -439,6 +440,7 @@ proto.getFieldsWithValues = function(obj, options) {
         // verifico che
         if (feature.getId() && self.isPkEditable()) {
           field.value = feature.getId();
+          field.editable = pkeditable;
         } else {
           field.value = null;
         }
