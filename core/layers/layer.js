@@ -39,7 +39,7 @@ function Layer(config) {
   // tipo di server
   var serverType = this.config.servertype;
   // tipo di sorgente del layer
-  var sourceType = this.config.source.type;
+  var sourceType = this.config.source ? this.config.source.type : null ;
   // vado a fare riferimento al suo contenitore (layersstore);
   this._layersstore = config.layersstore || null;
   /*
@@ -51,20 +51,21 @@ function Layer(config) {
       2 - filter
       3 - data -- utilizzato quando dobbiamo recupeare i dati grezzi del layer (esempio editing)
    */
-  this.providers = {
-    query: ProviderFactory.build('query', serverType, sourceType, {
-      layer: this
-    }),
-    filter: ProviderFactory.build('filter', serverType, sourceType, {
-      layer: this
-    }),
-    search: ProviderFactory.build('search', serverType, sourceType, {
-      layer: this
-    }),
-    data: ProviderFactory.build('data', serverType, sourceType, {
-      layer: this
-    })
-  };
+  if (serverType && sourceType)
+    this.providers = {
+      query: ProviderFactory.build('query', serverType, sourceType, {
+        layer: this
+      }),
+      filter: ProviderFactory.build('filter', serverType, sourceType, {
+        layer: this
+      }),
+      search: ProviderFactory.build('search', serverType, sourceType, {
+        layer: this
+      }),
+      data: ProviderFactory.build('data', serverType, sourceType, {
+        layer: this
+      })
+    };
 
   base(this);
 }
@@ -193,6 +194,9 @@ proto.isVisible = function() {
   return this.state.visible;
 };
 
+proto.setVisible = function(bool) {
+  this.state.visible = bool;
+};
 // verifica se il layer è interrogabile
 proto.isQueryable = function() {
   var queryEnabled = false;

@@ -7,6 +7,11 @@ g3w.core = {
   ApiService: require('core/apiservice'),
   Router: require('core/router'),
   i18n: require('core/i18n/i18n.service'),
+  errors: {
+    parsers: {
+      Server: require('core/errors/parser/servererrorparser')
+    }
+  },
   editing: {
     Session: require('core/editing/session'),
     Editor: require('core/editing/editor'),

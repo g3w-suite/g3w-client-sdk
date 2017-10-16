@@ -2,6 +2,7 @@ var Layer = require('./layer');
 var TableLayer = require('./tablelayer');
 var VectorLayer = require('./vectorlayer');
 var ImageLayer = require('./imagelayer');
+var BaseLayers = require('./baselayers/baselayers');
 
 // oggetto che ha il compito di costruire
 // l'istanza Layer a seconda della configurazione
@@ -18,24 +19,21 @@ function LayerFactory() {
   this.get = function(config) {
     var LayerClass;
     var serverType = config.servertype;
-    // server QGIS
-    if (serverType == 'QGIS') {
+    if(serverType == 'QGIS') {
       // imposto subito a ImageLayer
       LayerClass = ImageLayer;
       // poi vado a verificare
-      if (config.source && config.geometrytype) {
-        if ([Layer.SourceTypes.POSTGIS, Layer.SourceTypes.SPATIALITE, Layer.SourceTypes.CSV].indexOf(config.source.type) > -1) {
-          if (config.geometrytype && config.geometrytype == 'No geometry') {
+      if(config.source && config.geometrytype) {
+        if([Layer.SourceTypes.POSTGIS, Layer.SourceTypes.SPATIALITE, Layer.SourceTypes.CSV].indexOf(config.source.type) > -1) {
+          if(config.geometrytype && config.geometrytype == 'No geometry') {
             // se non è stato definito il tipo geometrico allora assesgno classe
             // TableLayer
             LayerClass = TableLayer;
           }
         }
       }
-    }
-    ///server OGC
-    else if (serverType == 'OGC') {
-      if (config.source) {
+    } else if(serverType == 'OGC') {
+      if(config.source) {
         var type = config.source.type;
         switch (type) {
           case 'WMS':
@@ -45,13 +43,13 @@ function LayerFactory() {
             LayerClass = VectorLayer;
         }
       }
-    }
-    //Layer vettoriale caricato localmente
-    else if (serverType == 'Local') {
+    } else if(serverType == 'Local') {
       LayerClass = VectorLayer;
+    } else if(serverType == 'OSM' || serverType == 'BING') {
+      LayerClass = BaseLayers[serverType]
     }
     return LayerClass;
-  };
+  }
 }
 
 module.exports = new LayerFactory();

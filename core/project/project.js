@@ -2,7 +2,6 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
 var LayerFactory = require('core/layers/layerfactory');
-var ImageLayer = require('core/layers/imagelayer');
 var LayersStore = require('core/layers/layersstore');
 var Projections = require('g3w-ol3/src/projection/projections');
 
@@ -33,8 +32,12 @@ function Project(projectConfig) {
 
   this.setters = {
     setBaseLayer: function(id) {
+      var self = this;
       _.forEach(self.state.baselayers, function(baseLayer) {
+        // questo lo setto per il catalog
         baseLayer.visible = (baseLayer.id == id || (baseLayer.fixed === true));
+        // questo mi server per l'effettiva
+        self._layersStore.getLayerById(baseLayer.id).setVisible(baseLayer.visible);
       })
     }
   };

@@ -133,7 +133,7 @@ proto.getProjects = function() {
 
 proto.getListableProjects = function() {
   var currentProjectId = this.getCurrentProject().getId();
-  return _.filter(this.getProjects(), function(project) {
+  return _.sortBy(_.filter(this.getProjects(), function(project) {
     if (!_.isNil(project.listable)) {
       return project.listable;
     }
@@ -142,7 +142,7 @@ proto.getListableProjects = function() {
     if ((project.overviewprojectgid && project.gid != project.overviewprojectgid.gid && project.id != currentProjectId) || (project.id != currentProjectId)) {
       return project;
     }
-  })
+  }), 'title')
 };
 
 //recupera il progetto corrente

@@ -114,6 +114,12 @@ proto.getFeaturesStore = function() {
   return this._featuresstore;
 };
 
+// funzione che server per recuparer il feture store.
+// la sessione può essere utilizzata come layer e quindi necessita di un metodo getSource
+proto.getSource = function() {
+  return this.getFeaturesStore();
+};
+
 // questa funzione sarà adibita al salvataggio (temporaneo) delle modifiche
 // al layer sia nella history che nel featuresstore
 proto.save = function(options) {

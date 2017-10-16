@@ -440,7 +440,7 @@ proto.getFieldsWithValues = function(obj, options) {
         // verifico che
         if (feature.getId() && self.isPkEditable()) {
           field.value = feature.getId();
-          field.editable = pkeditable;
+          field.editable = !field.editable ? field.editable : feature.isNew();
         } else {
           field.value = null;
         }

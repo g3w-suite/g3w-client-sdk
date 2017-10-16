@@ -61,16 +61,29 @@ var vueComponentOptions = {
     title: function() {
       return this.project.state.name;
     },
-    baselayers: function(){
+    baselayers: function() {
       return this.project.state.baselayers;
     },
     hasBaseLayers: function(){
       return this.project.state.baselayers.length>0;
+    },
+    hasBaseLayersVisible: function() {
+      var visible = false;
+      _.forEach(this.baselayers, function(baselayer) {
+        if (baselayer.visible) {
+          visible = true;
+          return false;
+        }
+      });
+      return visible;
     }
   },
   methods: {
     setBaseLayer: function(id) {
       this.project.setBaseLayer(id);
+    },
+    setBaseLayersNotVisible: function() {
+      this.project.setBaseLayer(null);
     },
     zoomToLayer: function() {
       var bbox;

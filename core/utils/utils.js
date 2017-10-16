@@ -114,6 +114,7 @@ var utils = {
     // then one of two things happened:
     // 1) The caller is an instance method.
     // 2) This method was not called by the right caller.
+
     if (me[opt_methodName] === caller) {
       return me.constructor.prototype[opt_methodName].apply(me, args);
     } else {

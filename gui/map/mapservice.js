@@ -4,8 +4,6 @@ var G3WObject = require('core/g3wobject');
 var GUI = require('gui/gui');
 var ApplicationService = require('core/applicationservice');
 var ProjectsRegistry = require('core/project/projectsregistry');
-var Layer = require('core/layers/layer');
-var Geometry = require('core/geometry/geometry');
 var MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 var LayersStore = require('core/layers/layersstore');
 var Filter = require('core/layers/filter/filter');
@@ -982,7 +980,8 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
 };
 
 proto._setupListeners = function() {
-  this._setBaseLayerListenerKey = this.project.onafter('setBaseLayer',function(){
+  var self = this;
+  this._setBaseLayerListenerKey = this.project.onafter('setBaseLayer',function() {
     self.updateMapLayers(self.mapBaseLayers);
   });
 };
@@ -996,8 +995,7 @@ proto._setupBaseLayers = function(){
     return;
   }
   this.mapBaseLayers = {};
-  _.forEach(baseLayers,function(layer){
-
+  _.forEach(baseLayers,function(layer) {
     if (layer.isWMS()) {
       var config = {
         url: layer.getWmsUrl(),
@@ -1005,25 +1003,9 @@ proto._setupBaseLayers = function(){
         tiled: layer.state.tiled
       };
       var mapLayer = new WMSLayer(config);
+    } else {
+      mapLayer = layer;
     }
-
-    else {
-      switch(layer.getServerType()){
-        case 'OSM':
-          var OSMLayer = require('core/map/layer/osmlayer');
-          var mapLayer = new OSMLayer({
-            id: layer.state.id
-          });
-          break;
-        case 'Bing':
-          var BingLayer = require('core/map/layer/binglayer');
-          var mapLayer = new BingLayer({
-            id: layer.state.id
-          });
-          break;
-      }
-    }
-
     self.addMapLayer(mapLayer);
     self.registerListeners(mapLayer);
     mapLayer.addLayer(layer);

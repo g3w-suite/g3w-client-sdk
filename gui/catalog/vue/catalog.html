@@ -23,7 +23,15 @@
           <ul>
             <li v-if="!baselayer.fixed" v-for="baselayer in baselayers">
               <div class="radio">
-                <label><input type="radio" name="baselayer" v-checked="baselayer.visible" @click="setBaseLayer(baselayer.id)">{{ baselayer.title }}</label>
+                <label>
+                  <input type="radio" name="baselayer" v-checked="baselayer.visible" @click="setBaseLayer(baselayer.id)">
+                  {{ baselayer.title }}
+                </label>
+              </div>
+            </li>
+            <li>
+              <div class="radio">
+                <label><input type="radio" name="baselayer" @click="setBaseLayersNotVisible()" :checked="!hasBaseLayersVisible">Nessuna mappa di base</label>
               </div>
             </li>
           </ul>

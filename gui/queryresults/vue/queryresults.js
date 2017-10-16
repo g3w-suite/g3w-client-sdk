@@ -9,6 +9,7 @@ Fields = {};
 Fields.SIMPLE = 'simple';
 Fields.LINK = 'link';
 Fields.PHOTO = 'photo';
+Fields.PHOTOLINK = "photolink"
 Fields.IMAGE = 'image';
 Fields.POINTLINK = 'pointlink';
 Fields.ROUTE = 'route';
@@ -16,21 +17,23 @@ Fields.ROUTE = 'route';
 function getFieldType(layer, name, value) {
 
   var URLPattern = /^(https?:\/\/[^\s]+)/g;
-  var PhotoPattern = /[^\s]+.(png|jpg|jpeg)$/g;
+  var PhotoPattern = /[^\s]+.(png|jpg|jpeg|gif)$/g;
   if (_.isNil(value)) {
     return Fields.SIMPLE;
   }
   value = value.toString();
 
   var extension = value.split('.').pop();
-  if (value.match(PhotoPattern)) {
+  if (!value.match(URLPattern) && value.match(PhotoPattern)) {
     return Fields.PHOTO;
   }
 
-  if (value.match(URLPattern)) {
+  if (value.match(URLPattern) && !value.match(PhotoPattern)) {
     return Fields.LINK;
   }
-
+  if (value.match(URLPattern) && value.match(PhotoPattern)) {
+    return Fields.PHOTOLINK;
+  }
   return Fields.SIMPLE;
 }
 
