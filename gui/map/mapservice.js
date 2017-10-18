@@ -766,6 +766,10 @@ proto._layoutControls = function() {
   })
 };
 
+proto.getMapControls = function() {
+  return this._mapControls;
+};
+
 proto.removeControl = function(type) {
   var self = this;
   _.forEach(this._mapControls,function(controlObj, ctrlIdx) {

@@ -20,7 +20,10 @@
         </thead>
         <tbody>
           <tr v-for="row in table.rows">
-            <td v-for="value in row">{{ value }}</td>
+            <td v-for="value in row">
+              <p v-if="is('simple',value)"> {{ value }}</p>
+              <a v-else="is('link',value)" :href="value"  style="display: block; width: 100%;  white-space: nowrap;  overflow: hidden;  text-overflow: ellipsis" target="_blank"> {{ value }} </a>
+            </td>
           </tr>
         </tbody>
         </table>

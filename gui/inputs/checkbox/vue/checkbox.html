@@ -1,0 +1,14 @@
+<baseinput :state="state">
+  <div style="height: 20px; margin-top:8px;" slot="inputelement">
+    <input
+      @change="change"
+      style="width:100%"
+      v-disabled="!isEditable()"
+      :class="{'input-error-validation' : !state.validate.valid}"
+      class="magic-checkbox"
+      v-model="state.value"
+      type="checkbox"
+      id="1">
+    <label for="1">{{ label }}</label>
+  </div>
+</baseinput>

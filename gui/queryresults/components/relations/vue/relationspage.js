@@ -40,6 +40,30 @@ var relationComponent = {
   methods: {
     back: function() {
       this.$parent.setRelationsList();
+    },
+    getFieldType: function (value) {
+      var Fields = {};
+      Fields.SIMPLE = 'simple';
+      Fields.LINK = 'link';
+
+      var URLPattern = /^(https?:\/\/[^\s]+)/g;
+      if (_.isNil(value)) {
+        return Fields.SIMPLE;
+      }
+      value = value.toString();
+
+      if (value.match(URLPattern)) {
+        return Fields.LINK;
+      }
+
+      return Fields.SIMPLE;
+    },
+    fieldIs: function(type, value) {
+      var fieldType = this.getFieldType(value);
+      return fieldType === type;
+    },
+    is: function(type,value) {
+      return this.fieldIs(type, value);
     }
   }
 };

@@ -125,20 +125,21 @@ function TableLayer(config, options) {
       ispkeditable: false
     }
   }, this.state);
-  // vado a recuperare la configurazione dal server
-
-  this.getEditingConfig()
-  .then(function(config) {
-    self.config.editing.pk = config.vector.pk;
-    self.config.editing.fields = config.vector.fields;
-    self.config.editing.format = config.vector.format;
-    self._setOtherConfigParameters(config);
-    self._setPkEditable(self.config.editing.fields);
-    self.setReady(true);
-  })
-  .fail(function(err) {
-    self.setReady(false);
-  });
+  // vado a recuperare la configurazione dal server se è editabile
+  if (this.isEditable()) {
+    this.getEditingConfig()
+      .then(function(config) {
+        self.config.editing.pk = config.vector.pk;
+        self.config.editing.fields = config.vector.fields;
+        self.config.editing.format = config.vector.format;
+        self._setOtherConfigParameters(config);
+        self._setPkEditable(self.config.editing.fields);
+        self.setReady(true);
+      })
+      .fail(function(err) {
+        self.setReady(false);
+      });
+  }
   // viene istanziato un featuresstore e gli viene associato
   // il data provider
   this._featuresStore = new FeaturesStore({
@@ -400,6 +401,13 @@ proto.setFieldsWithValues = function(feature, fields) {
       // mi serve nel caso delle select ch devo forzare il valore a 'null'
       if (field.value == 'null') {
         field.value = null;
+      }
+      // caso checbox // da vedere
+      if (field.input.type == "check") {
+        _.forEach(field.input.options, function(option) {
+          if (field.value === option.checked)
+            field.value = option.value;
+        })
       }
       attributes[field.name] = field.value;
     }

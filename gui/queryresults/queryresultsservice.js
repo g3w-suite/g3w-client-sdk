@@ -75,6 +75,41 @@ function QueryResultsService() {
   this.reset = function() {
     this.clearState();
   };
+
+  this.getFieldType = function (layer, name, value) {
+    var Fields = {};
+    Fields.SIMPLE = 'simple';
+    Fields.LINK = 'link';
+    Fields.PHOTO = 'photo';
+    Fields.PHOTOLINK = "photolink";
+    Fields.IMAGE = 'image';
+    Fields.POINTLINK = 'pointlink';
+    Fields.ROUTE = 'route';
+
+    var URLPattern = /^(https?:\/\/[^\s]+)/g;
+    var PhotoPattern = /[^\s]+.(png|jpg|jpeg|gif)$/g;
+    if (_.isNil(value)) {
+      return Fields.SIMPLE;
+    }
+    value = value.toString();
+
+    var extension = value.split('.').pop();
+    if (!value.match(URLPattern) && value.match(PhotoPattern)) {
+      return Fields.PHOTO;
+    }
+
+    if (value.match(URLPattern) && !value.match(PhotoPattern)) {
+      return Fields.LINK;
+    }
+    if (value.match(URLPattern) && value.match(PhotoPattern)) {
+      return Fields.PHOTOLINK;
+    }
+    return Fields.SIMPLE;
+  };
+  this.fieldIs = function(TYPE,layer,attributeName,attributeValue) {
+    var fieldType = this.getFieldType(layer,attributeName,attributeValue);
+    return fieldType === TYPE;
+  };
   // funzione che serve a far digerire i risultati delle features
   this._digestFeaturesForLayers = function(featuresForLayers) {
     
@@ -215,9 +250,9 @@ function QueryResultsService() {
               hint: 'Visualizza Relazioni',
               cbk: QueryResultsService.showQueryRelations,
               relations: relations
-            })
+            });
+            return false;
           }
-          return false;
         })
       }
     });

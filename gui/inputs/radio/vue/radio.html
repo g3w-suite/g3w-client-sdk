@@ -1,0 +1,11 @@
+<baseinput :state="state">
+  <input
+    @change="change"
+    style="width:100%"
+    v-disabled="!isEditable()"
+    :class="{'input-error-validation' : !state.validate.valid}"
+    class="magic-radio"
+    v-model="state.value"
+    slot="inputelement"
+    type="radio">
+</baseinput>

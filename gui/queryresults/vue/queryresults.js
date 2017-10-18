@@ -5,43 +5,6 @@ var Component = require('gui/vue/component');
 var QueryResultsService = require('gui/queryresults/queryresultsservice');
 var ProjectsRegistry = require('core/project/projectsregistry');
 
-Fields = {};
-Fields.SIMPLE = 'simple';
-Fields.LINK = 'link';
-Fields.PHOTO = 'photo';
-Fields.PHOTOLINK = "photolink"
-Fields.IMAGE = 'image';
-Fields.POINTLINK = 'pointlink';
-Fields.ROUTE = 'route';
-
-function getFieldType(layer, name, value) {
-
-  var URLPattern = /^(https?:\/\/[^\s]+)/g;
-  var PhotoPattern = /[^\s]+.(png|jpg|jpeg|gif)$/g;
-  if (_.isNil(value)) {
-    return Fields.SIMPLE;
-  }
-  value = value.toString();
-
-  var extension = value.split('.').pop();
-  if (!value.match(URLPattern) && value.match(PhotoPattern)) {
-    return Fields.PHOTO;
-  }
-
-  if (value.match(URLPattern) && !value.match(PhotoPattern)) {
-    return Fields.LINK;
-  }
-  if (value.match(URLPattern) && value.match(PhotoPattern)) {
-    return Fields.PHOTOLINK;
-  }
-  return Fields.SIMPLE;
-}
-
-function fieldIs(TYPE,layer,attributeName,attributeValue) {
-  var fieldType = getFieldType(layer,attributeName,attributeValue);
-  return fieldType === TYPE;
-}
-
 var maxSubsetLength = 3;
 var headerExpandActionCellWidth = 10;
 var headerActionsCellWidth = 10;
@@ -61,13 +24,13 @@ var vueComponentOptions = {
       return _.isArray(value);
     },
     isSimple: function(layer,attributeName,attributeValue) {
-      return !this.isArray(attributeValue) && fieldIs(Fields.SIMPLE,layer,attributeName,attributeValue);
+      return !this.isArray(attributeValue) && this.fieldIs(Fields.SIMPLE,layer,attributeName,attributeValue);
     },
     isLink: function(layer,attributeName,attributeValue) {
-      return fieldIs(Fields.LINK,layer,attributeName,attributeValue);
+      return this.fieldIs(Fields.LINK,layer,attributeName,attributeValue);
     },
     is: function(type,layer,attributeName,attributeValue) {
-      return fieldIs(type,layer,attributeName,attributeValue);
+      return this.fieldIs(type,layer,attributeName,attributeValue);
     },
     checkField: function(type, fieldname, attributes) {
       var isType = false;
@@ -183,7 +146,7 @@ var vueComponentOptions = {
       }
       this.layersFeaturesBoxes[boxid].collapsed = !this.layersFeaturesBoxes[boxid].collapsed;
     },
-    toggleFeatureBoxAndZoom: function(layer, feature, relation_index) {;
+    toggleFeatureBoxAndZoom: function(layer, feature, relation_index) {
       // Disattivo zoom to sul toggle della featurebox. Casomai lo ripristineremo quando sarà gestito tramite qualche setting
       /*if (this.collapsedFeatureBox(layer, feature, relation_index)) {
        this.trigger('gotogeometry',layer,feature)
@@ -195,6 +158,12 @@ var vueComponentOptions = {
     },
     showFullPhoto: function(url) {
       this.$options.queryResultsService.showFullPhoto(url);
+    },
+    getFieldType: function (layer, name, value) {
+      return this.$options.queryResultsService.getFieldType(layer, name, value);
+    },
+    fieldIs: function(TYPE,layer,attributeName,attributeValue) {
+      return this.$options.queryResultsService.fieldIs(TYPE,layer,attributeName,attributeValue);
     }
   },
   watch: {

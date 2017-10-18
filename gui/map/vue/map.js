@@ -126,8 +126,19 @@ var vueComponentOptions = {
   },
   mounted: function() {
     var self = this;
+    var mapWidth;
     var mapService = this.$options.mapService;
     this.crs = mapService.getCrs();
+    this.$on('changelayout', function(width) {
+      mapWidth = width;
+      self.$nextTick(function() {
+          var map = mapService.getMap();
+          // qui dovrei andare a vedere la posizione dei controlli
+          _.forEach(mapService.getMapControls(), function(control) {
+            control.control.changelayout(map);
+          })
+      })
+    });
     this.$nextTick(function() {
       mapService.setTarget(self.$el.id);
     });
@@ -136,6 +147,17 @@ var vueComponentOptions = {
     mapService.onafter('setupViewer',function() {
       mapService.setTarget(self.$el.id);
     });
+  },
+  methods: {
+    showHideControls: function () {
+      _.forEach(this.$options.mapService.getMapControls(), function (control) {
+        if (control.type != "scaleline")
+          control.control.showHide();
+      })
+    },
+    isMobile: function() {
+      return isMobile.any;
+    }
   }
 };
 // registro internamente
@@ -159,13 +181,16 @@ function MapComponent(options) {
 inherit(MapComponent, Component);
 
 var proto = MapComponent.prototype;
+
 // funzione che ne definisce il layout della mappa
 // ed è chamata dall viewport per risettare le size delle due view
 proto.layout = function(width, height) {
   // setto alterzza e larghezza nuove
   $('#'+this.target).height(height);
   $('#'+this.target).width(width);
-  this._service.layout(width,height);
+  this._service.layout(width, height);
+  // vado ad emettere un change layout
+  this.internalComponent.$emit('changelayout', width);
 };
 
 module.exports =  MapComponent;

@@ -108,14 +108,14 @@
                                                 </div>
                                                 <span class="divider"></span>
                                               </div>
-                                              <span v-if="isSimple(layer,relattribute.name, relattribute.value)">{{relattribute.value}}</span>
-                                              <!--<img v-if="is('photo',layer,relattribute.name,feature.attributes[attribute.name])"  class="photo-preview img-responsive img-thumbnail" title="Clicca per allargare"  @click="showFullPhoto(isRelativePath(feature.attributes[attribute.name]))" :src="isRelativePath(feature.attributes[attribute.name])">-->
-                                              <!--<img v-if="relattribute.label == 'image'"  class="photo-preview img-responsive img-thumbnail" title="Clicca per allargare"  @click="showFullPhoto(isRelativePath(relattribute.value))" :src="isRelativePath(relattribute.value)">-->
-                                              <img v-else-if="checkField('image', relattribute.label, layer.relationsattributes[relation.name])"  class="photo-preview img-responsive img-thumbnail" title="Clicca per allargare"  @click="showFullPhoto(isRelativePath(relattribute.value))" :src="isRelativePath(relattribute.value)">
-                                              <img v-else-if="is('photo',layer, relattribute.name, relattribute.value)"  class="photo-preview img-responsive img-thumbnail" title="Clicca per allargare"  @click="showFullPhoto(isRelativePath(relattribute.value))" :src="isRelativePath(relattribute.value)">
-                                              <!--&lt;!&ndash;<span v-if="isRoute(layer,feature,attribute)" class="link dashboardlink" @click="goto(layer,feature.attributes[attribute.name])">{{ feature.attributes[attribute.name] }}</span>&ndash;&gt;-->
-                                              <!--<img v-if="isPhoto(layer,feature,attribute)" v-bind:data-url="getPhotoUrl(feature.attributes[attribute.name])" style="max-width:50px" :src="getPhotoUrl(feature.attributes[attribute.name],thumb)" />-->
-                                              <a v-if="isLink(layer,relattribute.name, relattribute.value)" :href="relattribute.value" target="_blank" class="glyphicon glyphicon-link"></a>
+                                              <span v-if="is('simple',layer,relattribute.name, relattribute.value)"> {{ relattribute.value }}</span>
+                                              <img v-if="is('photo',layer,relattribute.name, relattribute.value)"  class="photo-preview img-responsive img-thumbnail" title="Clicca per allargare"  @click="showFullPhoto(isRelativePath(relattribute.value))" :src="isRelativePath(relattribute.value)">
+                                              <img v-else-if="checkField('image', relattribute.label, relattribute.value)"  class="photo-preview img-responsive img-thumbnail" title="Clicca per allargare"  @click="showFullPhoto(isRelativePath(relattribute.value))" :src="isRelativePath(relattribute.value)">
+                                              <a v-if="is('link',layer, relattribute.name, relattribute.value)" :href="relattribute.value"  style="display: block; width: 100%;  white-space: nowrap;  overflow: hidden;  text-overflow: ellipsis" target="_blank"> {{ relattribute.value }} </a>
+                                              <a v-else-if="is('photolink',layer, relattribute.name, relattribute.value)" :href="relattribute.value" target="_blank">
+                                                <img class=" img-responsive img-thumbnail"
+                                                     :src="relattribute.value">
+                                              </a>
                                             </td>
                                           </tr>
                                         </table>

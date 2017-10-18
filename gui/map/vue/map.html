@@ -2,6 +2,9 @@
   <div style="display: none;">
     <div id="marker"></div>
   </div>
+  <a v-if="isMobile()" href="#" @click="showHideControls" class="controls-toggle">
+    <i class="fa fa-sliders" aria-hidden="true"></i>
+  </a>
   <addlayer :service="service"></addlayer>
 </div>
 

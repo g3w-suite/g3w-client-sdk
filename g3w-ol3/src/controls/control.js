@@ -75,6 +75,54 @@ proto.layout = function(map) {
   }
 };
 
+// funzione che cambia il layout dei controlli
+proto.changelayout = function(map) {
+  var viewPort = map.getViewport();
+  var viewPortWidth = $(viewPort).width();
+  var previusControls = $(viewPort).find('.ol-control-'+this.positionCode+':visible');
+  var firstControl = previusControls.first();
+  var firtsLeft = firstControl.position().left;
+  var firstControlHeightOffset = firstControl[0].offsetHeight;
+  var topPosition = previusControls.first().position().top + firstControlHeightOffset + 6; // 6 margin
+  var nextElement = $(this.element).next('.ol-control-'+this.positionCode+':visible');
+  var prevElement = $(this.element).prev('.ol-control-'+this.positionCode+':visible');
+  // vado a verificare se la posizione left del controllo è maggiore alla dimensione della viewport
+  if ($(this.element).position().left + $(this.element).width() > viewPortWidth) {
+    // se si è verificato la condizione sopra verifico se non sia l'ultimo elemento
+    // e che la posizione del controllo successiovo sia uguale alla topPosition che
+    // equivale all seconda riga di controlli
+    if (nextElement.length && nextElement.position().top  ==  topPosition) {
+      $(this.element).css('left', firtsLeft+'px');
+      var elementWidth = $(this.element)[0].offsetWidth;
+      var hOffset = $(this.element).position().left + elementWidth;
+      nextElement.css('left', hOffset+'px');
+      $(this.element).css('top', topPosition+'px');
+    } else {
+      if (prevElement.position() && (topPosition == prevElement.position().top)) {
+        var elementWidth = prevElement[0].offsetWidth;
+        var hOffset = prevElement.position().left + elementWidth;
+        $(this.element).css('top', topPosition+'px');
+        $(this.element).css('left', hOffset+'px');
+      } else {
+        $(this.element).css('top', topPosition +'px');
+        $(this.element).css('left', firtsLeft+'px');
+      }
+    }
+  } else {
+    // vado a verificare se il controllo successiovo si tova ad un'altezza diversa dal primo controllo
+    if (nextElement.length && nextElement.position().top != previusControls.first().position().top) {
+      nextElement.css('top', $(this.element).position().top +'px');
+      var elementWidth = $(this.element)[0].offsetWidth;
+      var hOffset = $(this.element).position().left  + elementWidth;
+      nextElement.css('left', hOffset+'px');
+    }
+  }
+};
+
+proto.showHide = function() {
+  $(this.element).toggle();
+};
+
 // funzione che viene chiamata al momento che il controllo viene
 // aggiunto alla mappa
 proto.setMap = function(map) {
