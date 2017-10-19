@@ -132,11 +132,15 @@ var vueComponentOptions = {
     this.$on('changelayout', function(width) {
       mapWidth = width;
       self.$nextTick(function() {
-          var map = mapService.getMap();
+        var map = mapService.getMap();
+        var viewPort = map.getViewport();
+        var viewPortWidth = $(viewPort).width();
+        if (viewPortWidth) {
           // qui dovrei andare a vedere la posizione dei controlli
           _.forEach(mapService.getMapControls(), function(control) {
             control.control.changelayout(map);
           })
+        }
       })
     });
     this.$nextTick(function() {

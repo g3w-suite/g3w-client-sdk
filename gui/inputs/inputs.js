@@ -11,7 +11,8 @@ var InputsComponents = {
   'radio_input': require('./radio/vue/radio'),
   'check_input': require('./checkbox/vue/checkbox'),
   'range_input': require('./range/vue/range'),
-  'datetimepicker_input': require('./datetimepicker/vue/datetimepicker')
+  'datetimepicker_input': require('./datetimepicker/vue/datetimepicker'),
+  'unique_input': require('./unique/vue/unique')
 };
 
 module.exports = InputsComponents;

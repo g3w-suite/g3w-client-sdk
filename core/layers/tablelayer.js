@@ -402,13 +402,6 @@ proto.setFieldsWithValues = function(feature, fields) {
       if (field.value == 'null') {
         field.value = null;
       }
-      // caso checbox // da vedere
-      if (field.input.type == "check") {
-        _.forEach(field.input.options, function(option) {
-          if (field.value === option.checked)
-            field.value = option.value;
-        })
-      }
       attributes[field.name] = field.value;
     }
   });

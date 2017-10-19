@@ -3,6 +3,7 @@ var t = require('core/i18n/i18n.service').t;
 function Service(options) {
   options = options || {};
   this.state = options.state || {};
+  this._validatorOptions = options.validatorOptions || {};
   // serve il validatore per verificare se è valido il valore inserito
   this._validator = options.validator || new Validator;
 }
@@ -33,7 +34,7 @@ proto.setValidator = function(validator) {
 // il valore dello state del campo è valido o no
 proto.validate = function() {
   if (!_.isEmpty(_.trim(this.state.value)))
-    this.state.validate.valid = this._validator.validate(this.state.value);
+    this.state.validate.valid = this._validator.validate(this.state.value, this._validatorOptions);
   else
       this.state.validate.valid = !!!this.state.validate.required;
   this.state.validate.message = this.state.validate.valid ? null : t("input_validation_error")  ;

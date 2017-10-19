@@ -4,10 +4,10 @@ var Validator = require('gui/inputs/validator');
 
 function CheckValidator() {
   base(this);
-  this.validate = function(value) {
-    console.log(value);
-    return _.isBoolean(value);
-  } 
+  this.validate = function(value, options) {
+    var values = options.values || [];
+    return values.indexOf(value) != -1;
+  }
 }
 
 inherit(CheckValidator, Validator);

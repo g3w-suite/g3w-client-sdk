@@ -1,14 +1,20 @@
 <baseinput :state="state">
   <div slot="inputelement" >
-    <div class='input-group date' id='datetimepicker'>
-      <input type='text'
-             @change="change"
-             v-disabled="!isEditable()"
-             :class="{'input-error-validation' : !state.validate.valid}"
-             v-model="state.value"
-             class="form-control" />
-      <span class="input-group-addon">
-        <span class="glyphicon glyphicon-calendar"></span>
+    <div style="position:relative"></div>
+    <div class='input-group date' :id='iddatetimepicker'>
+      <input
+        :id="idinputdatetimepiker"
+        :readonly="!isEditable() ? 'readonly' : null"
+        type='text'
+        v-disabled="!isEditable()"
+        :class="{'input-error-validation' : !state.validate.valid}"
+        class="form-control" />
+      <span
+        class="input-group-addon caret">
+        <span
+          class="glyphicon"
+          :class="[timeOnly() ? 'glyphicon-time' : ' glyphicon-calendar']">
+        </span>
       </span>
     </div>
   </div>

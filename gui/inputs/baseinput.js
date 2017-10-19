@@ -15,9 +15,9 @@ var BaseInput = {
   template: require('./baseinput.html'),
   methods: {
     // metodo che viene scaturito quando cambia il valore dell'input
-    change: function() {
+    change: function(options) {
       //vado a validare il valore
-      this.service.validate();
+      this.service.validate(options);
       // emette il segnale che è cambiato un input
       this.$emit('changeinput', this.state);
     },

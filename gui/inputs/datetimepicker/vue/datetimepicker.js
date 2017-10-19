@@ -5,23 +5,59 @@ var Service = require('../service');
 var DateTimePickerInput = Vue.extend({
   mixins: [Input],
   data: function() {
+    var uniqueValue = Date.now();
+    var fielddatetimeformat =  this.state.input.options[0].fieldformat.toUpperCase();
+    var date = moment(this.state.value, fielddatetimeformat, true).isValid() ? moment(this.state.value, fielddatetimeformat).toDate() : null;
     return {
       service: new Service({
-        state: this.state
-      })
+        state: this.state,
+        validatorOptions : {
+          fielddatetimeformat: fielddatetimeformat
+        }
+      }),
+      value: date,
+      iddatetimepicker: 'datetimepicker_'+ uniqueValue,
+      idinputdatetimepiker: 'inputdatetimepicker_'+ uniqueValue
     }
   },
-  computed: {
-  },
   template: require('./datetimepicker.html'),
+  methods: {
+    timeOnly : function() {
+      return !this.state.input.options[0].date;
+    }
+  },
   mounted: function() {
+    var self = this;
     this.$nextTick(function() {
+      var datetimedisplayformat = self.state.input.options[0].displayformat.toUpperCase();
+      var datetimefieldformat = self.state.input.options[0].fieldformat.toUpperCase();
       $(function() {
-        $('#datetimepicker').datetimepicker({
-          format: 'dd/MM/yyyy hh:mm:ss'
+        $('#'+ self.iddatetimepicker).datetimepicker({
+          defaultDate: self.value,
+          format: datetimedisplayformat,
+          toolbarPlacement: 'top',
+          widgetPositioning: {
+            vertical: 'bottom',
+            horizontal: 'left'
+          },
+          showClose: true
         });
       });
-    })
+      $('#'+self.iddatetimepicker).on("dp.change", function (e) {
+        if (_.isEmpty(_.trim($('#'+self.idinputdatetimepiker).val())))
+          self.state.value =  null;
+        else {
+          self.state.value =  moment(e.timeStamp).format(datetimefieldformat);
+        }
+        self.change();
+      });
+      $('#'+self.iddatetimepicker).on("dp.show", function (e) {
+        self.$emit('datetimepickershow');
+      });
+      $('#'+self.iddatetimepicker).on("dp.hide", function (e) {
+        self.$emit('datetimepickershow');
+      });
+    });
   }
 });
 
