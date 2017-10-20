@@ -2,9 +2,9 @@ function init(config) {
   i18next
   .use(i18nextXHRBackend)
   .init({ 
-      lng: 'it',
+      lng: config.lng,
       ns: 'app',
-      fallbackLng: 'it',
+      fallbackLng: 'en',
       resources: config.resources
   });
   

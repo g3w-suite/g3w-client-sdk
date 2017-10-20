@@ -19,6 +19,8 @@ function QGISProvider(options) {
   this._dataUrl = this._layer.getUrls('data');
   // url per prendere la configurazione del layer dal server
   this._configUrl = this._layer.getUrl('config');
+  // url dei widget
+  this._widgetUrls = this._layer.getUrl('widget');
   // layer name
   this._layerName = this._layer.getName() || null; // prendo sempre il name del layer di QGIS, perché le query sono proxate e gestiteda g3w-server
   this._infoFormat = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
@@ -80,6 +82,16 @@ proto.getConfig = function(options) {
       d.reject(err);
     });
   return d.promise();
+};
+
+proto.getWidgetData = function(options) {
+  options = options || {};
+  var type = options.type;
+  var fields = options.fields;
+  var url = this._widgetUrls[type];
+  return $.get(url, {
+    fields: fields
+  });
 };
 
 // unlock feature

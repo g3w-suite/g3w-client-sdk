@@ -53,10 +53,6 @@ proto.getLayerForEditing = function() {
     // vado a clonare la configurazione
     // affinchè non vado a toccare l'originale
     var config = _.cloneDeep(this.config);
-    // faccio in modo che non possono essere di solo editabili
-    //config.capabilities = 5;
-    // TEMPORANEO SETTO A NULL LE CAPABILITIES
-    config.capabilities = null;
     //ritorno l'istanza del vectorlayer
     return new VectorLayer(config);
   } else {

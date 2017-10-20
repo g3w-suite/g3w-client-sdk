@@ -4,9 +4,6 @@ var Validator = require('gui/inputs/validator');
 
 function RadioValidator() {
   base(this);
-  this.validate = function(value) {
-    return true;
-  } 
 }
 
 inherit(RadioValidator, Validator);

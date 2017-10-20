@@ -1,16 +1,16 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var Service = require('gui/inputs/service');
-var IntegerValidator = require('./validator');
+var RadioValidator = require('./validator');
 
-function IntegerService(options) {
+function RadioService(options) {
   options = options || {};
-  options.validator = IntegerValidator;
+  options.validator = RadioValidator;
   base(this, options);
 }
 
-inherit(IntegerService, Service);
+inherit(RadioService, Service);
 
-var proto = IntegerService.prototype;
+var proto = RadioService.prototype;
 
-module.exports = IntegerService;
+module.exports = RadioService;

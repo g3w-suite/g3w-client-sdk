@@ -19,17 +19,7 @@ var BodyFormComponent = Vue.extend({
       }
       return true
     },
-    datetimepickerShow: function() {
-      var element = $(this.$el);
-      var top = element.offset().top;
-      var left = element.offset().left;
-      var width = element.width();
-      $('.bootstrap-datetimepicker-widget').css({
-        'position': 'fixed',
-        'left': left+'px',
-        'top': top+'px',
-        'width': width+'px',
-      });
+    datetimepickerShow: function(fieldName) {
       $(".nano").nanoScroller();
     }
   },

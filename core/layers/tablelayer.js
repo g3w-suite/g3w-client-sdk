@@ -101,9 +101,11 @@ function TableLayer(config, options) {
     commit:vectorUrl + 'commit/' + suffixUrl ,
     data: vectorUrl + 'data/' + suffixUrl ,
     config: vectorUrl + 'config/' + suffixUrl,
-    unlock: vectorUrl + 'unlock/' + suffixUrl
+    unlock: vectorUrl + 'unlock/' + suffixUrl,
+    widget: {
+      unique: vectorUrl + 'widget/unique/data/' + suffixUrl
+    }
   };
-
   // aggiungo alla configurazione la parte di editing
   config.editing = {
     pk: null, // campo primary kaey
@@ -285,6 +287,20 @@ proto.getEditingConfig = function(options) {
   return d.promise()
 };
 
+proto.getWidgetData = function(options) {
+  var provider = this.getProvider('data');
+  var d = $.Deferred();
+  provider.getWidgetData(options)
+    .then(function(response) {
+      d.resolve(response);
+    })
+    .fail(function(err) {
+      d.reject(err)
+    });
+  return d.promise()
+  
+};
+
 proto.getCommitUrl = function() {
   return this.config.urls.commit;
 };
@@ -302,11 +318,15 @@ proto.setEditingUrl = function(url) {
 };
 
 proto.getUnlockUrl = function() {
-  this.config.url.unlock;
+  return this.config.url.unlock;
 };
 
 proto.setUnlockUrl = function(url) {
   this.config.urls.unlock = url;
+};
+
+proto.getWidgetUrl = function() {
+  return this.config.urls.widget;
 };
 
 // funzione che server per settare il data url

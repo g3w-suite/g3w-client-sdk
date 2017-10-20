@@ -1,16 +1,13 @@
 <baseinput :state="state">
-  <div slot="inputelement">
     <input
+      slot="inputelement"
       @change="change"
-      style="width:90%; position:absolute"
+      style="width:100%;"
       v-disabled="!isEditable()"
       :class="{'input-error-validation' : !state.validate.valid}"
-      class="magic-radio"
       v-model="state.value"
-      type="range"
+      type="number"
       :min="min"
       :max="max"
       :step="step">
-    <p style="padding-top: 25px; font-size: 0.8em;">{{ value }}</p>
-  </div>
 </baseinput>

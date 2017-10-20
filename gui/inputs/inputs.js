@@ -12,7 +12,8 @@ var InputsComponents = {
   'check_input': require('./checkbox/vue/checkbox'),
   'range_input': require('./range/vue/range'),
   'datetimepicker_input': require('./datetimepicker/vue/datetimepicker'),
-  'unique_input': require('./unique/vue/unique')
+  'unique_input': require('./unique/vue/unique'),
+  'select_input': require('./select/vue/select')
 };
 
 module.exports = InputsComponents;
