@@ -1,9 +1,10 @@
 // oggetto base utilizzato per i mixins
 var Input = require('gui/inputs/input');
+var selectMixin = require('./selectmixin');
 var Service = require('../service');
 
 var SelectInput = Vue.extend({
-  mixins: [Input],
+  mixins: [Input, selectMixin],
   data: function() {
     return {
       service: new Service({
@@ -11,10 +12,8 @@ var SelectInput = Vue.extend({
       })
     }
   },
-  template: require('./select.html'),
-  mounted: function() {
+  template: require('./select.html')
 
-  }
 });
 
 module.exports = SelectInput;

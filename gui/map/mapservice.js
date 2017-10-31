@@ -11,6 +11,7 @@ var WFSProvider = require('core/layers/providers/wfsprovider');
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 var WMSLayer = require('core/map/layer/wmslayer');
 var XYZLayer = require('core/map/layer/xyzlayer');
+var VectorLayer = require('core/layers/vectorlayer');
 var ControlsFactory = require('gui/map/control/factory');
 var StreetViewService = require('gui/streetview/streetviewservice');
 var ControlsRegistry = require('gui/map/control/registry');
@@ -108,7 +109,8 @@ function MapService(options) {
   };
   
   this.on('cataloglayerselected', function(layer) {
-   if (layer) {
+    // aggiunto condizione querable
+   if (layer && layer.isQueryable()) {
      _.forEach(this._mapControls, function(mapcontrol) {
        if (_.indexOf(_.keysIn(mapcontrol.control), 'onSelectLayer') > -1 && mapcontrol.control.onSelectLayer()) {
          if (mapcontrol.control.getGeometryTypes().indexOf(layer.getGeometryType()) > -1 ) {
@@ -392,7 +394,6 @@ proto.setupControls = function(){
             layers: controlLayers
           });
           if (control) {
-
             var showQueryResults = GUI.showContentFactory('query');
             control.on('picked', function (e) {
               var results = {};
@@ -425,27 +426,28 @@ proto.setupControls = function(){
                   results.data = data;
                   if(results && results.data && results.data.length) {
                     geometry = results.data[0].features[0].getGeometry();
-                    var filter = new Filter();
-                    filter.setGeometry(geometry);
-                    var queryLayers = self.getLayers({
-                      QUERYABLE: true,
-                      ALLNOTSELECTED: true,
-                      FILTERABLE: true
-                    });
-                    _.forEach(queryLayers, function (layer) {
-                      queryPromises.push(layer.query({
-                          filter: filter
-                        })
-                      )
-                    });
-
-                    self.highlightGeometry(geometry);
+                    if (geometry) {
+                      var filter = new Filter();
+                      filter.setGeometry(geometry);
+                      var queryLayers = self.getLayers({
+                        QUERYABLE: true,
+                        ALLNOTSELECTED: true,
+                        FILTERABLE: true
+                      });
+                      _.forEach(queryLayers, function (layer) {
+                        queryPromises.push(layer.query({
+                            filter: filter
+                          })
+                        )
+                      });
+                      self.highlightGeometry(geometry);
+                    }
                     var queryResultsPanel = showQueryResults('interrogazione');
                     $.when.apply(this, queryPromises)
                       .then(function () {
                         layersResults = arguments;
                         var results = {
-                          query: layersResults[0].query,
+                          query: layersResults[0] ? layersResults[0].query: null,
                           data: []
                         };
                         _.forEach(layersResults, function(result) {
@@ -635,9 +637,6 @@ proto.setupControls = function(){
               type: controlType
             });
             control.on('addlayer', function() {
-              if (!control.getLayersStore()) {
-                var layersSore = new LayersStore()
-              }
               self.emit('addexternallayer');
             });
             self.addControl(controlType, control);
@@ -673,7 +672,7 @@ proto.getLayers = function(filter) {
   };
   filter = _.merge(filter, mapFilter);
   var layers = [];
-  _.forEach(MapLayersStoreRegistry.getLayersStores(), function(layerStore) {
+  _.forEach(MapLayersStoreRegistry.getQuerableLayersStores(), function(layerStore) {
     _.merge(layers, layerStore.getLayers(filter));
   });
   return layers;
@@ -820,7 +819,13 @@ proto.getMapLayerForLayer = function(layer) {
 };
 
 proto.getProjectLayer = function(layerId) {
-  return this.layersstore.getLayerById(layerId);
+  var layer = null;
+  _.forEach(MapLayersStoreRegistry.getLayersStores(), function(layerStore) {
+    layer = layerStore.getLayerById(layerId);
+    if (layer)
+      return false
+  });
+  return layer;
 };
 
 proto._resetView = function() {
@@ -1161,6 +1166,12 @@ proto._watchInteraction = function(interaction) {
   })
 };
 
+proto.zoomTo = function(coordinate, zoom) {
+  console.log('zoom')
+  zoom = _.isNumber(zoom) ? zoom : 6;
+  this.viewer.zoomTo(coordinate, zoom);
+};
+
 proto.goTo = function(coordinates,zoom) {
   var options = {
     zoom: zoom || 6
@@ -1481,7 +1492,6 @@ proto.removeExternalLayer = function(name) {
 
 // funzione che aggiunge layer esterni
 proto.addExternalLayer = function(externalLayer) {
-
   //funzione che mippermette di fare il loadind del layer sulla mappa
   function loadExternalLayer(format, data) {
     features = format.readFeatures(data, {
@@ -1510,6 +1520,7 @@ proto.addExternalLayer = function(externalLayer) {
     //vado a registrae il layer vettoriale per la query
     QueryResultService.registerVectorLayer(vectorLayer);
     //vado ad aggiungere il layer esterno
+    //var externalVectorLayer = new VectorLayer(externalLayer);
     catalogService.addExternalLayer(externalLayer);
     map.getView().fit(vectorSource.getExtent());
   }

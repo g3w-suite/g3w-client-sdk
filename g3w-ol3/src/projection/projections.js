@@ -3,15 +3,14 @@ var Projection = require('./projection');
 var STANDARD_PROJECTIONS = [3857,900913,4326];
 
 var Projections = {
-  get: function(crs,proj4,extent) {
+  get: function(crs, proj4, extent) {
     crs = Projections.normalizeCrs(crs);
-    var _proj =  ol.proj.projections? ol.proj.projections : ol.proj;
+    var _proj =  ol.proj.projections ? ol.proj.projections : ol.proj;
     var cachedProjection = _proj.get(crs);
 
     if (cachedProjection) {
       return cachedProjection;
     }
-
     var projection = new Projection({
       crs: crs,
       proj4def: proj4,
@@ -19,7 +18,6 @@ var Projections = {
     });
 
     _proj.add ? _proj.add(crs, projection) : _proj.addProjection(projection);
-
     return projection;
   },
   normalizeCrs: function(crs) {

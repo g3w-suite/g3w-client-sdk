@@ -13,7 +13,7 @@ var _Viewer = function(opts){
     },
     zoom: false,
     attribution: false
-  });//.extend([new ol.control.Zoom()]);
+  });
   
   var interactions = ol.interaction.defaults()
     .extend([
@@ -63,6 +63,12 @@ _Viewer.prototype.getMap = function(){
 
 _Viewer.prototype.setTarget = function(id){
   this.map.setTarget(id);
+};
+
+_Viewer.prototype.zoomTo = function(coordinate, zoom) {
+  var view = this.map.getView();
+  view.setCenter(coordinate);
+  view.setZoom(zoom);
 };
 
 _Viewer.prototype.goTo = function(coordinates, options) {

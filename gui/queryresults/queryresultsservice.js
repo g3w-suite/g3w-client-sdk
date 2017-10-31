@@ -363,7 +363,6 @@ function QueryResultsService() {
               }
             });
             if (feature) {
-              QueryService.convertG3wRelations(feature);
               features.push(feature);
             }
           } else if (coordinates.length == 4) {
@@ -396,9 +395,6 @@ function QueryResultsService() {
               break;
           }
         }
-        _.forEach(features, function(feature) {
-          QueryService.convertG3wRelations(feature);
-        });
         // vado a pushare le features verificando prima se c'è stato un risultato
         queryResponse.data = queryResponse.data ? queryResponse.data : [];
         queryResponse.data.push({

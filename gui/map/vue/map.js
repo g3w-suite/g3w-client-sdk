@@ -171,6 +171,7 @@ Vue.component('g3w-map', vueComponentOptions);
 //componente mappa
 function MapComponent(options) {
   base(this, options);
+  var self = this;
   this.id = "map-component";
   this.title = "Catalogo dati";
   this.target = options.target || 'map';

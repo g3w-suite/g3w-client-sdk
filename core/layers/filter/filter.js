@@ -1,5 +1,3 @@
-var Expression = require('./expression');
-
 // classe Filtro per poter creare filtri
 // chiesti principalmente dai providers per poter
 // effettuare richieste di dati

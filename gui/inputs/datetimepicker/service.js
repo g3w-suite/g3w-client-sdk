@@ -1,5 +1,6 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
+var ApplicationService = require('core/applicationservice');
 var Service = require('gui/inputs/service');
 var DateTimePickerValidator = require('./validator');
 
@@ -12,6 +13,11 @@ function DateTimePickerService(options) {
 inherit(DateTimePickerService, Service);
 
 var proto = DateTimePickerService.prototype;
+
+proto.getLocale = function() {
+  var applicationConfig = ApplicationService.getConfig();
+  return applicationConfig.user.i18n ? applicationConfig.user.i18n : 'en';
+};
 
 proto.convertQGISDateTimeFormatToMoment = function(datetimeformat) {
   var datetimeformat = datetimeformat.replace('yyyy', 'YYYY');

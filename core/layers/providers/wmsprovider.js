@@ -33,9 +33,7 @@ proto._getRequestUrl = function(url, extent, size, pixelRatio, projection, param
   params['DPI'] = 90 * pixelRatio;
   params['WIDTH'] = size[0];
   params['HEIGHT'] = size[1];
-
-  var axisOrientation = projection.getAxisOrientation();
-
+  var axisOrientation = projection.getAxisOrientation ? projection.getAxisOrientation() : "enu";
   var bbox;
   if (axisOrientation.substr(0, 2) == 'ne') {
     bbox = [extent[1], extent[0], extent[3], extent[2]];
@@ -66,7 +64,6 @@ proto._getGetFeatureInfoUrlForLayer = function(url, coordinates,resolution, para
   var y = Math.floor((extent[3] - coordinates[1]) / resolution);
   baseParams[ 'I' ] = x;
   baseParams['J'] = y;
-
   return this._getRequestUrl(
     url, extent, GETFEATUREINFO_IMAGE_SIZE,
     1, this._layer.getProjection(), baseParams);

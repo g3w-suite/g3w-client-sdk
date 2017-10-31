@@ -1,5 +1,6 @@
 var inherit = require('core/utils/utils').inherit;
 var resolve = require('core/utils/utils').resolve;
+var reject = require('core/utils/utils').reject;
 var base = require('core/utils/utils').base;
 var DataProvider = require('core/layers/providers/provider');
 var Filter = require('core/layers/filter/filter');
@@ -25,7 +26,7 @@ proto.query = function(options) {
   var filter = options.filter;
   var d = $.Deferred();
   this._doRequest(filter)
-    .done(function(response) {
+    .then(function(response) {
       var featuresForLayers = self.handleQueryResponseFromServer(response,'wfs');
       d.resolve({
         data: featuresForLayers
@@ -99,6 +100,8 @@ proto._doRequest = function(filter) {
     params.FILTER = featureRequest.children[0].innerHTML;
     request = this._post(url, params);
     return request
+  } else {
+    return reject()
   }
 };
 

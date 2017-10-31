@@ -211,7 +211,7 @@ Vue.component('tristate-tree', {
     storeid: null,
     //eredito il numero di childs dal parent
     checked: false,
-    //highlightlayers: false,
+    highlightlayers: false,
     parentFolder: false,
     externallayers: null
   },
@@ -258,13 +258,15 @@ Vue.component('tristate-tree', {
       return isSelected;
     },
     isHighLight: function() {
-      if (this.layerstree.id) {
-        // da sostituire con una proprietà precalcolata nello state del layer
-        //this.layer = LayersStoresRegistry.getLayersStore().getLayerById(this.layerstree.id);
-        //return this.highlightlayers && layer.isWFS() && layer.getProject() && layer.getProject().getProjection() == layer.getProjection();
-        //
-      }
-      return false;
+      var self = this;
+      // da sostituire con una proprietà precalcolata nello state del layer
+      var layer;
+      _.forEach(CatalogLayersStoresRegistry.getLayers(), function(lyr) {
+        layer = lyr.getId() == self.layerstree.id ? lyr : null;
+        if (layer)
+          return false;
+      });
+      return this.highlightlayers && layer && layer.isFilterable() && layer.getProject() && layer.getProject().getProjection() == layer.getProjection();
     }
 
   },

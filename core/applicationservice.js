@@ -16,7 +16,6 @@ var ApplicationService = function() {
   this.secret = "### G3W Client Application Service ###";
   this.ready = false;
   this.complete = false;
-  this._modalOverlay = null;
   this._acquirePostBoostrap = false;
   // oggetto che tiene tutti i servizi dei vari sidebar etc..
   // utili per il plugin
@@ -55,13 +54,14 @@ var ApplicationService = function() {
       this._initConfigUrl = initConfigUrl;
     }
     var d = $.Deferred();
-    //se esiste un oggetto globale initiConfig
-    //risolvo con quell'oggetto
+    //se esiste un oggetto globale initiConfig che vuol dire che sto facendo girare il client in produzione
+    // in quanto django fronisce la variabile globale initConfig  e vad a risolvere con quell'oggetto
     if (window.initConfig) {
       this._initConfig = window.initConfig;
       return d.resolve(window.initConfig);
     }
-    // altrimenti devo prenderlo dal server usando il percorso indicato in ?project=<percorso>
+    // altrimenti se sono in ambiente development devo fare richiesta 
+    // al server usando initconfigUrl e i parametri fornito dal percorso indicato in ?project=<percorso>
     else {
       var projectPath;
       var queryTuples;

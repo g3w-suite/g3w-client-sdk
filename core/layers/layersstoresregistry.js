@@ -36,6 +36,12 @@ proto.getLayers = function(filter) {
   return layers;
 };
 
+proto.getQuerableLayersStores = function() {
+  return _.filter(this.getLayersStores(), function(layersStore) {
+    return layersStore.isQueryable();
+  })
+};
+
 proto.getLayersStore = function(id) {
   return this.stores[id];
 };

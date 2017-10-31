@@ -29,6 +29,7 @@ var DateTimePickerInput = Vue.extend({
   mounted: function() {
     var self = this;
     this.$nextTick(function() {
+      var locale = self.service.getLocale();
       var datetimedisplayformat = self.service.convertQGISDateTimeFormatToMoment(self.state.input.options[0].displayformat);
       var datetimefieldformat = self.service.convertQGISDateTimeFormatToMoment(self.state.input.options[0].fieldformat);
       $(function() {
@@ -41,7 +42,7 @@ var DateTimePickerInput = Vue.extend({
             horizontal: 'left'
           },
           showClose: true,
-          locale: 'it'
+          locale: locale
         });
       });
       $('#'+self.iddatetimepicker).on("dp.change", function (e) {

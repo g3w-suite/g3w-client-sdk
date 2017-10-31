@@ -22,6 +22,9 @@ function LayersStore(config) {
     relations: null // mi servirà a costruire il tree delle relazioni paddri figlio
   };
 
+  // aggiungo proprietà querable sui layer del layerstore
+  this._isQueryable = _.isBoolean(config.queryable) ? config.queryable : true;
+
   this._layers = this.config.layers || {};
 
   this.setters = {
@@ -51,6 +54,14 @@ function LayersStore(config) {
 inherit(LayersStore, G3WObject);
 
 proto = LayersStore.prototype;
+
+proto.isQueryable = function() {
+  return this._isQueryable;
+};
+
+proto.setQueryable = function(bool) {
+  this._isQueryable = !!bool;
+};
 
 proto.showOnCatalog = function() {
   return this.config.catalog;

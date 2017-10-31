@@ -52,6 +52,10 @@ g3w.core = {
       FeaturesStore: require('core/layers/features/featuresstore'),
       OlFeaturesStore: require('core/layers/features/olfeaturesstore')
     },
+    filter: {
+      Filter: require('core/layers/filter/filter'),
+      Expression: require('core/layers/filter/expression')
+    },
     MapLayer: require('core/map/layer/maplayer')
   },
   query: {

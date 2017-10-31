@@ -48,11 +48,12 @@ var RouterService = function(){
   
   base(this);
 };
-inherit(RouterService,G3WObject);
+inherit(RouterService, G3WObject);
 
 var proto = RouterService.prototype;
 
-proto.init = function(){
+proto.init = function() {
+  //Return the querystring part of a URL
   var query = window.location.search;
   this._setRouteQueryFromLocationQuery(query);
 };
@@ -107,7 +108,7 @@ proto.sliceFirst = function(path){
   return [firstPath,path];
 };
   
-proto.getQueryParams = function(query){
+proto.getQueryParams = function(query) {
   query = query.replace('?','');
   var queryParams = {};
   var queryPairs = [];
