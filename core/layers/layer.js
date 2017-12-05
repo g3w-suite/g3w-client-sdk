@@ -30,7 +30,7 @@ function Layer(config) {
   // delle proprietà dinamiche (select, disable, visible)
   this.state = {
     id: config.id,
-    title: config.name,
+    title: config.title,
     visible: config.visible,
     selected: config.selected | false,
     disabled: config.disabled | false,
@@ -51,7 +51,7 @@ function Layer(config) {
       2 - filter
       3 - data -- utilizzato quando dobbiamo recupeare i dati grezzi del layer (esempio editing)
    */
-  if (serverType && sourceType)
+  if (serverType && sourceType) {
     this.providers = {
       query: ProviderFactory.build('query', serverType, sourceType, {
         layer: this
@@ -66,7 +66,7 @@ function Layer(config) {
         layer: this
       })
     };
-
+  }
   base(this);
 }
 

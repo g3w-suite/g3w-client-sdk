@@ -35,7 +35,6 @@ function ImageLayer(config) {
     wfscapabilities
   }*/
   base(this, config);
-
   this.config.baselayer = config.baselayer || false;
   this.type = Layer.LayerTypes.IMAGE;
   // vado a modificare lo state aggiungendo il bbox e l'informazione geolayer

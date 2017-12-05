@@ -21,6 +21,7 @@ function PluginsRegistry() {
 
   // funzione di inizializzazione dei plugin
   this.init = function(options) {
+    var d = $.Deferred();
     var self = this;
     this.pluginsBaseUrl = options.pluginsBaseUrl;
     // oggetto contenente la configuarzione dei vvari plugins (che sono le chiavi dell'oggetto)
@@ -31,7 +32,9 @@ function PluginsRegistry() {
         //ciclo sull'oggetto plugins per fare il setup dei vari plugin legati al progetto
     _.forEach(this.pluginsConfigs, function(pluginConfig, name) {
       self._setup(name, pluginConfig);
-    })
+    });
+    
+    return d.promise();
   };
 
   this.setOtherPlugins = function() {
@@ -103,13 +106,20 @@ function PluginsRegistry() {
     // verifico che il plugin config la configurazione del
     // plugin non sia nulla per caricare il plugin
     if (!_.isNull(pluginConfig)) {
+      var baseUrl = this.pluginsBaseUrl+name;
+      var scriptUrl = baseUrl + '/js/plugin.js?'+Date.now();
       var url = this.pluginsBaseUrl+name+'/js/plugin.js?'+Date.now();
-      $script(url);
+      //vado ad aggiungere il pluginbas ur alla configurazione del plugin
+      // in questo modo posso utilizzare tale url dal plugin stesso magari caricando dinamicamente
+      // un css associato
+      pluginConfig.baseUrl= this.pluginsBaseUrl;
+      // vado a caricare lo script
+      $script(scriptUrl);
       // vado ad aggiunguere il plugin all'array dei plugin caricati
       this._loadedPluginUrls.push(url);
     }
   };
-  
+
   this.getPluginConfig = function(pluginName) {
     return this.pluginsConfigs[pluginName];
   };
@@ -117,7 +127,7 @@ function PluginsRegistry() {
   this.getPlugins = function() {
     return this._plugins;
   };
-  
+
   this.getPlugin = function(pluginName) {
     return this._plugins[pluginName];
   }

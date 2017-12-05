@@ -1,18 +1,21 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var geo = require('core/utils/geo');
-var MapLayer = require('core/map/layer/maplayer');
-var BasesLayers = require('g3w-ol3/src/layers/bases');
+var MapLayer = require('./maplayer');
+var RasterLayers = require('g3w-ol3/src/layers/rasters');
 
-function OSMLayer(options,extraParams){
+var GENERCI_GRID_EXTENT = [0,0,8388608,8388608];
+var STANDARD_PROJECTIONS = [3857,900913,4326];
+
+function XYZLayer(options,extraParams){
   var self = this;
   base(this,options);
   this.layer = null;
 }
 
-inherit(OSMLayer,MapLayer);
+inherit(XYZLayer,MapLayer);
 
-var proto = OSMLayer.prototype;
+var proto = XYZLayer.prototype;
 
 proto.getOLLayer = function(){
   var olLayer = this._olLayer;
@@ -37,7 +40,7 @@ proto.addLayer = function(layer){
 proto.toggleLayer = function(layer){
   this._updateLayers();
 };
-  
+
 proto.update = function(mapState, extraParams) {
   this._updateLayer(mapState, extraParams);
 };
@@ -48,22 +51,37 @@ proto.isVisible = function(){
 
 proto._makeOlLayer = function(){
   var self = this;
+  
+  var projection = this.projection ? this.projection : this.layer.getProjection();
 
-  
-  var olLayer = BasesLayers.OSM;
-  
+  var layerOptions = {
+    url: this.layer.getCacheUrl()+"/{z}/{x}/{y}.png",
+    maxZoom: 20
+  };
+
+  /*if (STANDARD_PROJECTIONS.indexOf(crs) < 0) {
+    layerOptions.projection = new ol.proj.Projection({
+      code: "EPSG:"+crs,
+      extent: GENERIC_GRID_EXTENT
+    })
+  }*/
+
+  layerOptions.projection = projection;
+
+  var olLayer = RasterLayers.XYZLayer(layerOptions);
+
   olLayer.getSource().on('imageloadstart', function() {
-        self.emit("loadstart");
-      });
-  olLayer.getSource().on('imageloadend', function() {
-      self.emit("loadend");
+    self.emit("loadstart");
   });
-  
+  olLayer.getSource().on('imageloadend', function() {
+    self.emit("loadend");
+  });
+
   return olLayer
 };
 
-proto._updateLayer = function(mapState,extraParams){
+proto._updateLayer = function(mapState, extraParams) {
   this._olLayer.setVisible(this.layer.isVisible());
 };
 
-module.exports = OSMLayer;
+module.exports = XYZLayer;

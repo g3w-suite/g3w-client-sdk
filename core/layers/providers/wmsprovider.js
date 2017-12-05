@@ -13,7 +13,7 @@ function WMSDataProvider(options) {
   base(this, options);
   this._name = 'wms';
   this._url = this._layer.getQueryUrl();
-  this._layerName = this._layer.getName() || null; // prendo sempre il name del layer di QGIS, perché le query sono proxate e gestite da g3w-server
+  this._layerName = this._layer.getName() || null;
   this._infoFormat = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
 }
 
@@ -23,7 +23,6 @@ var proto = WMSDataProvider.prototype;
 
 
 proto._getRequestUrl = function(url, extent, size, pixelRatio, projection, params) {
-
   params['CRS'] = projection.getCode();
 
   if (!('STYLES' in params)) {
@@ -55,7 +54,7 @@ proto._getGetFeatureInfoUrlForLayer = function(url, coordinates,resolution, para
     'REQUEST': 'GetFeatureInfo',
     'FORMAT': 'image/png',
     'TRANSPARENT': true,
-    'QUERY_LAYERS': this._layer.getName()
+    'QUERY_LAYERS': this._layerName
   };
 
   _.merge(baseParams, params);
@@ -132,8 +131,8 @@ proto.doRequestAndParse = function(url) {
   var self = this;
   var d = $.Deferred();
   $.get(url)
-    .done(function(response) {
-      var featuresForLayers = self.handleQueryResponseFromServer(response, self._infoFormat, self._layerName);
+    .then(function(response) {
+      var featuresForLayers = self.handleQueryResponseFromServer(self._layerName, response);
       d.resolve(featuresForLayers);
     })
     .fail(function(){
@@ -141,7 +140,5 @@ proto.doRequestAndParse = function(url) {
     });
   return d;
 };
-
-
 
 module.exports = WMSDataProvider;

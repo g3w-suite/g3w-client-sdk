@@ -1,11 +1,10 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var geo = require('core/utils/geo');
-var MapLayer = require('core/map/layer/maplayer');
+var MapLayer = require('./maplayer');
 var RasterLayers = require('g3w-ol3/src/layers/rasters');
 
-function WMSLayer(options,extraParams){
-  var self = this;
+function WMSLayer(options, extraParams){
   this.LAYERTYPE = {
     LAYER: 'layer',
     MULTILAYER: 'multilayer'
@@ -13,7 +12,7 @@ function WMSLayer(options,extraParams){
 
   this.extraParams = extraParams;
   this.layers = [];
-  
+
   base(this,options);
 }
 
@@ -21,7 +20,7 @@ inherit(WMSLayer, MapLayer);
 
 var proto = WMSLayer.prototype;
 
-proto.getOLLayer = function(withLayers){
+proto.getOLLayer = function(withLayers) {
   var olLayer = this._olLayer;
   if (!olLayer){
     olLayer = this._olLayer = this._makeOlLayer(withLayers);
@@ -29,7 +28,7 @@ proto.getOLLayer = function(withLayers){
   return olLayer;
 };
 
-proto.getSource = function(){
+proto.getSource = function() {
   return this.getOLLayer().getSource();
 };
 
@@ -37,7 +36,7 @@ proto.getInfoFormat = function() {
   return 'application/vnd.ogc.gml';
 };
 
-proto.getGetFeatureInfoUrl = function(coordinate,resolution,epsg,params){
+proto.getGetFeatureInfoUrl = function(coordinate,resolution,epsg,params) {
   return this.getOLLayer().getSource().getGetFeatureInfoUrl(coordinate,resolution,epsg,params);
 };
 
@@ -45,11 +44,11 @@ proto.getLayerConfigs = function(){
   return this.layers;
 };
 
-proto.addLayer = function(layer){
+proto.addLayer = function(layer) {
   this.layers.push(layer);
 };
 
-proto.toggleLayer = function(layer){
+proto.toggleLayer = function(layer) {
   _.forEach(this.layers,function(_layer){
     if (_layer.id == layer.id){
       _layer.visible = layer.visible;
@@ -57,7 +56,7 @@ proto.toggleLayer = function(layer){
   });
   this._updateLayers();
 };
-  
+
 proto.update = function(mapState, extraParams) {
   this._updateLayers(mapState, extraParams);
 };
@@ -66,7 +65,7 @@ proto.isVisible = function(){
   return this._getVisibleLayers().length > 0;
 };
 
-proto.getQueryUrl = function(){
+proto.getQueryUrl = function() {
   var layer = this.layers[0];
   if (layer.infourl && layer.infourl != '') {
     return layer.infourl;
@@ -74,52 +73,61 @@ proto.getQueryUrl = function(){
   return this.config.url;
 };
 
-proto.getQueryableLayers = function(){ 
+proto.getQueryableLayers = function() {
   return _.filter(this.layers,function(layer){
     return layer.isQueryable();
   });
 };
 
-proto._getVisibleLayers = function(mapState){
-  var self = this;
+proto._getVisibleLayers = function(mapState) {
+
+  var scale = geo.resToScale(mapState.resolution);
   var visibleLayers = [];
-  _.forEach(this.layers,function(layer){
-    var resolutionBasedVisibility = layer.state.maxresolution ? (layer.state.maxresolution && layer.state.maxresolution > mapState.resolution) : true;
-    if (layer.state.visible && resolutionBasedVisibility) {
+  var visible;
+  _.forEach(this.layers,function(layer) {
+    visible = true;
+    if (layer.config.minscale) {
+      visible = visible && (layer.config.minscale > scale);
+    }
+    if (layer.config.maxscale) {
+      visible = visible && (layer.config.maxscale < scale);
+    }
+    // var resolutionBasedVisibility = layer.state.maxresolution ? (layer.state.maxresolution && layer.state.maxresolution > mapState.resolution) : true;
+    if (layer.state.visible && visible) {
       visibleLayers.push(layer);
-    }    
+    }
   });
   return visibleLayers;
 };
 
-proto._makeOlLayer = function(withLayers){
+proto._makeOlLayer = function(withLayers) {
   var self = this;
   var wmsConfig = {
     url: this.config.url,
     id: this.config.id
   };
-  
+
   if (withLayers) {
-    wmsConfig.layers = _.map(this.layers,function(layer){
+    wmsConfig.layers = _.map(this.layers,function(layer) {
       return layer.getWMSLayerName();
     });
   }
-  
+
   var representativeLayer = this.layers[0]; //BRUTTO, DEVO PRENDERE UN LAYER A CASO (IL PRIMO) PER VEDERE SE PUNTA AD UN SOURCE DIVERSO (dovrebbe accadere solo per i layer singoli, WMS esterni)
-  
+
   if (representativeLayer.state.source && representativeLayer.state.source.type == 'wms' && representativeLayer.state.source.url){
     wmsConfig.url = representativeLayer.state.source.url;
   }
-  
+
   var olLayer = new RasterLayers.WMSLayer(wmsConfig,this.extraParams);
-  
+
   olLayer.getSource().on('imageloadstart', function() {
         self.emit("loadstart");
       });
   olLayer.getSource().on('imageloadend', function() {
       self.emit("loadend");
   });
-  
+
   return olLayer
 };
 
@@ -127,12 +135,6 @@ proto.checkLayerDisabled = function(layer,resolution) {
   var enabled = true;
   if (layer.config.scalebasedvisibility) {
     var scale = geo.resToScale(resolution);
-    if (layer.config.maxresolution){
-      enabled = enabled && (layer.config.maxresolution > resolution);
-    }
-    if (layer.config.minresolution){
-      enabled = enabled && (layer.config.minresolution < resolution);
-    }
     if (layer.config.minscale) {
       enabled = enabled && (layer.config.minscale > scale);
     }

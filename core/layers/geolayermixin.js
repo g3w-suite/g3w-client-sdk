@@ -6,12 +6,11 @@ function GeoLayerMixin(config) {}
 
 var proto = GeoLayerMixin.prototype;
 
-proto.setup = function(config){
+proto.setup = function(config) {
   if (!this.config) {
     console.log("GeoLayerMixin must be used from a valid (geo) Layer instance");
     return;
   }
-
   this.config.multilayerid = config.multilayer;
 
   // estendo lo stato del layer settando la proprietà
@@ -20,7 +19,6 @@ proto.setup = function(config){
     geolayer: true,
     bbox: config.bbox || null
   });
-
   if (config.projection) {
     this.config.projection = config.projection;
   }
@@ -33,6 +31,8 @@ proto.setup = function(config){
         this.config.projection = config.project.getProjection();
       }
     }
+  } else if (config.attributions) {
+    this.config.attributions = config.attributions;
   }
 };
 

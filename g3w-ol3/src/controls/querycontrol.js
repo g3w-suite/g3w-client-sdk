@@ -20,11 +20,8 @@ var proto = QueryControl.prototype;
 proto.setMap = function(map) {
   var self = this;
   InteractionControl.prototype.setMap.call(this,map);
-  this._interaction.on('boxstart',function(e){
-    self._startCoordinate = e.coordinate;
-  });
 
-  this._interaction.on('picked',function(e){
+  this._interaction.on('picked',function(e) {
     self.dispatchEvent({
       type: 'picked',
       coordinates: e.coordinate

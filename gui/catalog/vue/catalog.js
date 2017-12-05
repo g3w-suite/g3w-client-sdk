@@ -67,6 +67,13 @@ var vueComponentOptions = {
     hasBaseLayers: function(){
       return this.project.state.baselayers.length>0;
     },
+    hasLayers: function() {
+      var layerstresslength = 0;
+      _.forEach(this.state.layerstrees, function(layerstree) {
+        layerstresslength+=layerstree.tree.length;
+      });
+      return this.state.externallayers.length>0 || layerstresslength>0 ;
+    },
     hasBaseLayersVisible: function() {
       var visible = false;
       _.forEach(this.baselayers, function(baselayer) {
@@ -200,10 +207,7 @@ Vue.component('g3w-catalog', vueComponentOptions);
 
 
 /* COMPONENTI FIGLI */
-
 // tree component
-
-
 Vue.component('tristate-tree', {
   template: require('./tristate-tree.html'),
   props: {
@@ -215,7 +219,7 @@ Vue.component('tristate-tree', {
     parentFolder: false,
     externallayers: null
   },
-  data: function () {
+  data: function (){
     return {
       expanded: this.layerstree.expanded,
       parentChecked: !this.checked,
@@ -247,7 +251,7 @@ Vue.component('tristate-tree', {
       var isFolder = this.n_childs ? true : false;
       if (isFolder) {
         this.n_parentChilds = this.n_childs - _visibleChilds;
-      } 
+      }
       return isFolder
     },
     isHidden: function() {

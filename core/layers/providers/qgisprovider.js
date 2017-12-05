@@ -37,7 +37,6 @@ proto.query = function(options) {
   options = options || {};
   var filter = options.filter || null;
   if (filter) {
-    var filterType = filter.getType();
     var url = this._queryUrl;
       $.get( url, {
           SERVICE: 'WMS',
@@ -49,13 +48,9 @@ proto.query = function(options) {
           FEATURE_COUNT: 200,
           FILTER: filter.get()
         }
-      ).done(function(response) {
-        var featuresForLayers = self.handleQueryResponseFromServer(response, self._infoFormat, self._layerName);
-        var response = {
-          data: featuresForLayers,
-          query: null
-        };
-        d.resolve(response);
+      ).then(function(response) {
+        var featuresForLayers = self.handleQueryResponseFromServer(self._layerName, response);
+        d.resolve(featuresForLayers);
       })
         .fail(function(){
           d.reject();

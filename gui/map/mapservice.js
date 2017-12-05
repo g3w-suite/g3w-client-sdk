@@ -5,17 +5,14 @@ var GUI = require('gui/gui');
 var ApplicationService = require('core/applicationservice');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
-var LayersStore = require('core/layers/layersstore');
 var Filter = require('core/layers/filter/filter');
 var WFSProvider = require('core/layers/providers/wfsprovider');
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
-var WMSLayer = require('core/map/layer/wmslayer');
-var XYZLayer = require('core/map/layer/xyzlayer');
-var VectorLayer = require('core/layers/vectorlayer');
+var WMSLayer = require('core/layers/map/wmslayer');
+var XYZLayer = require('core/layers/map/xyzlayer');
 var ControlsFactory = require('gui/map/control/factory');
 var StreetViewService = require('gui/streetview/streetviewservice');
 var ControlsRegistry = require('gui/map/control/registry');
-
 
 function MapService(options) {
   var self = this;
@@ -56,7 +53,7 @@ function MapService(options) {
     }
     this._howManyAreLoading += 1;
   };
-  
+
   this._decrementLoaders = function(){
     this._howManyAreLoading -= 1;
     if (this._howManyAreLoading == 0){
@@ -107,7 +104,7 @@ function MapService(options) {
     },
     controlClick: function() {}
   };
-  
+
   this.on('cataloglayerselected', function(layer) {
     // aggiunto condizione querable
    if (layer && layer.isQueryable()) {
@@ -352,7 +349,8 @@ proto.setupControls = function(){
             // recupero i layers che hanno le caratteristiche di esserere interrogabili
             var layers = self.getLayers({
               QUERYABLE: true,
-              SELECTEDORALL: true
+              SELECTEDORALL: true,
+              VISIBLE: true
             });
             var queryPromises = [];// raccoglie tutte le promises dei provider del layer
             // ciclo sui layer e per ogni layer chiamo il metodo query
@@ -369,7 +367,7 @@ proto.setupControls = function(){
               .then(function() {
                 layersResults = arguments;
                 var results = {
-                  query: layersResults[0].query,
+                  query: layersResults[0] ? layersResults[0].query: null,
                   data: []
                 };
                 _.forEach(layersResults, function(result) {
@@ -387,7 +385,8 @@ proto.setupControls = function(){
         case 'querybypolygon':
           var controlLayers = self.getLayers({
             QUERYABLE: true,
-            SELECTEDORALL: true
+            SELECTEDORALL: true,
+            VISIBLE: true
           });
           control = ControlsFactory.create({
             type: controlType,
@@ -397,13 +396,13 @@ proto.setupControls = function(){
             var showQueryResults = GUI.showContentFactory('query');
             control.on('picked', function (e) {
               var results = {};
-              var response = [];
               var queryPromises = [];// raccoglie tutte le promises dei provider del layer
               var geometry;
               var coordinates = e.coordinates;
               var layers = self.getLayers({
                 QUERYABLE: true,
-                SELECTED: true
+                SELECTED: true,
+                VISIBLE: true
               });
               _.forEach(layers, function (layer) {
                 queryPromises.push(layer.query({
@@ -415,24 +414,19 @@ proto.setupControls = function(){
               $.when.apply(this, queryPromises)
                 .then(function () {
                   queryPromises = [];
-                  response = arguments;
+                  layersResults = arguments;
                   results = {};
                   // vado ad unificare i rusltati delle promises
-                  results.query = response[0].query;
-                  var data = [];
-                  _.forEach(response, function (result) {
-                    data.push(result.data[0]);
-                  });
-                  results.data = data;
-                  if(results && results.data && results.data.length) {
-                    geometry = results.data[0].features[0].getGeometry();
+                  results.query = layersResults[0] ? layersResults[0].query: null;
+                  if(layersResults[0] && layersResults[0].data && layersResults[0].data.length) {
+                    geometry = layersResults[0].data[0].features[0].getGeometry();
                     if (geometry) {
                       var filter = new Filter();
                       filter.setGeometry(geometry);
                       var queryLayers = self.getLayers({
-                        QUERYABLE: true,
                         ALLNOTSELECTED: true,
-                        FILTERABLE: true
+                        FILTERABLE: true,
+                        VISIBLE: true
                       });
                       _.forEach(queryLayers, function (layer) {
                         queryPromises.push(layer.query({
@@ -476,9 +470,9 @@ proto.setupControls = function(){
         case 'querybbox':
           if (!isMobile.any && self.filterableLayersAvailable()) {
             var controlLayers = self.getLayers({
-              QUERYABLE: true,
               SELECTEDORALL: true,
-              WFS: true
+              FILTERABLE: true,
+              VISIBLE: true
             });
             control = ControlsFactory.create({
               type: controlType,
@@ -488,9 +482,9 @@ proto.setupControls = function(){
               control.on('bboxend', function (e) {
                 var bbox = e.extent;
                 var layers = self.getLayers({
-                  QUERYABLE: true,
                   SELECTEDORALL: true,
-                  FILTERABLE: true
+                  FILTERABLE: true,
+                  VISIBLE: true
                 });
                 var queryPromises = [];// raccoglie tutte le promises dei provider del layer
                 _.forEach(layers, function(layer) {
@@ -506,7 +500,7 @@ proto.setupControls = function(){
                   .then(function() {
                     layersResults = arguments;
                     var results = {
-                      query: layersResults[0].query,
+                      query: layersResults[0] ? layersResults[0].query: null,
                       data: []
                     };
                     _.forEach(layersResults, function(result) {
@@ -667,8 +661,7 @@ proto.setupControls = function(){
 proto.getLayers = function(filter) {
   filter = filter || {};
   var mapFilter = {
-    GEOLAYER: true,
-    HIDDEN: false
+    GEOLAYER: true
   };
   filter = _.merge(filter, mapFilter);
   var layers = [];
@@ -798,6 +791,7 @@ proto._unToggleControls = function() {
 
 };
 
+//aggiungo il map layers all lista maplayers
 proto.addMapLayer = function(mapLayer) {
   this._mapLayers.push(mapLayer);
 };
@@ -997,6 +991,7 @@ proto._setupListeners = function() {
 
 proto._setupBaseLayers = function(){
   var self = this;
+  var baseLayer;
   var baseLayers = self.getLayers({
     BASELAYER: true
   });
@@ -1005,35 +1000,41 @@ proto._setupBaseLayers = function(){
   }
   this.mapBaseLayers = {};
   _.forEach(baseLayers,function(layer) {
+    //verifico se è un layer wms
     if (layer.isWMS()) {
       var config = {
         url: layer.getWmsUrl(),
         id: layer.state.id,
         tiled: layer.state.tiled
       };
-      var mapLayer = new WMSLayer(config);
+      baseLayer = new WMSLayer(config);
+      baseLayer.addLayer(layer);
     } else {
-      mapLayer = layer;
+      baseLayer = layer;
+      baseLayer.setLayer(layer);
     }
-    self.addMapLayer(mapLayer);
-    self.registerListeners(mapLayer);
-    mapLayer.addLayer(layer);
-    self.mapBaseLayers[layer.getId()] = mapLayer;
+    self.registerListeners(baseLayer);
+    self.mapBaseLayers[layer.getId()] = baseLayer;
   });
 
-  _.forEach(_.values(this.mapBaseLayers).reverse(),function(mapLayer){
-    self.viewer.map.addLayer(mapLayer.getOLLayer());
-    mapLayer.update(self.state);
+  _.forEach(_.values(this.mapBaseLayers).reverse(),function(baseLayer){
+    self.viewer.map.addLayer(baseLayer.getOLLayer());
+    baseLayer.update(self.state);
   });
 };
 
 proto._setupLayers = function(){
   var self = this;
+  //vado a rimuvere tutti i layers della mappa
   this.viewer.removeLayers();
+  // resetto i mapLayers
+  this._resetMapLayers();
+  // vao da fare il setup dei base layesr
   this._setupBaseLayers();
-  this._reset();
-  // recupero i layers dai vari layerstore mettendo coem condizione HIDDEN e GEOLAYER
-  var layers = this.getLayers();
+  // recupero i layers dai vari layerstore mettendo coem condizione escludendo i base layer fatti sopra
+  var layers = this.getLayers({
+    BASELAYER:false
+  });
   //raggruppo per valore del multilayer con chiave valore multilayer
   // e valore array
   var multiLayers = _.groupBy(layers, function(layer){
@@ -1089,12 +1090,11 @@ proto.getOverviewMapLayers = function(project) {
     GEOLAYER: true,
     HIDDEN: false
   });
-  
 
   var multiLayers = _.groupBy(projectLayers,function(layer){
     return layer.getMultiLayerId();
   });
-  
+
   var overviewMapLayers = [];
   _.forEach(multiLayers,function(layers,id){
     var multilayerId = 'overview_layer_'+id;
@@ -1110,7 +1110,7 @@ proto.getOverviewMapLayers = function(project) {
     });
     overviewMapLayers.push(mapLayer.getOLLayer(true));
   });
-  
+
   return overviewMapLayers.reverse();
 };
 
@@ -1130,7 +1130,7 @@ proto.registerListeners = function(mapLayer) {
   mapLayer.on('loadend',function(){
     self._decrementLoaders(false);
   });
-  
+
   this.on('extraParamsSet',function(extraParams,update){
     if (update) {
       mapLayer.update(this.state,extraParams);
@@ -1161,13 +1161,12 @@ proto._watchInteraction = function(interaction) {
   var self = this;
   interaction.on('change:active',function(e) {
     if ((e.target instanceof ol.interaction.Pointer) && e.target.getActive()) {
-      self.emit('mapcontrol:active',e.target);
+      self.emit('mapcontrol:active', e.target);
     }
   })
 };
 
 proto.zoomTo = function(coordinate, zoom) {
-  console.log('zoom')
   zoom = _.isNumber(zoom) ? zoom : 6;
   this.viewer.zoomTo(coordinate, zoom);
 };
@@ -1216,7 +1215,7 @@ proto.highlightGeometry = function(geometryObj,options) {
   var highlight = (typeof options.highlight == 'boolean') ? options.highlight : true;
   var duration = options.duration || 2000;
   var view = this.viewer.map.getView();
-  
+
   var geometry;
   if (geometryObj instanceof ol.geom.Geometry){
     geometry = geometryObj;
@@ -1229,7 +1228,7 @@ proto.highlightGeometry = function(geometryObj,options) {
   if (options.fromWGS84) {
     geometry.transform('EPSG:4326','EPSG:'+ProjectService.state.project.crs);
   }
-  
+
   var geometryType = geometry.getType();
   if (zoom) {
     if (geometryType == 'Point' || (geometryType == 'MultiPoint' && geometry.getPoints().length == 1)) {
@@ -1317,9 +1316,10 @@ proto.clearHighlightGeometry = function() {
   }
 };
 
+// funzione che fa il refresh di tutti i layer della mappa
 proto.refreshMap = function() {
-  _.forEach(this._mapLayers, function(wmsLayer) {
-    wmsLayer.getOLLayer().getSource().updateParams({"time": Date.now()});
+  _.forEach(this._mapLayers, function(mapLayer) {
+    mapLayer.getOLLayer().getSource().updateParams({"time": Date.now()});
   });
 };
 
@@ -1337,10 +1337,9 @@ proto.layout = function(width, height) {
   }
 };
 
-proto._reset = function() {
+proto._resetMapLayers = function() {
   this._mapLayers = [];
 };
-
 
 proto.getMapBBOX = function() {
   return this.viewer.getBBOX();

@@ -3,6 +3,7 @@ var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var reject = require('core/utils/utils').reject;
 
+// Class Api Service
 function ApiService(){
   this._config = null;
   this._baseUrl = null;
@@ -23,7 +24,7 @@ function ApiService(){
     }
     howManyAreLoading += 1;
   };
-  
+
   this._decrementLoaders = function(){
     howManyAreLoading -= 1;
     if (howManyAreLoading == 0){
@@ -39,7 +40,7 @@ function ApiService(){
          completeUrl = completeUrl + '/' + options.request;
       }
       var params = options.params || {};
-      
+
       self.emit(api+'querystart');
       this._incrementLoaders();
       return $.get(completeUrl,params)

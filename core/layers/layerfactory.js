@@ -36,16 +36,16 @@ function LayerFactory() {
       if(config.source) {
         var type = config.source.type;
         switch (type) {
-          case 'WMS':
+          case 'wms':
             LayerClass = ImageLayer;
             break;
-          case 'WFS':
+          case 'wfs':
             LayerClass = VectorLayer;
         }
       }
     } else if(serverType == 'Local') {
       LayerClass = VectorLayer;
-    } else if(serverType == 'OSM' || serverType == 'BING') {
+    } else if(serverType == 'OSM' || serverType == 'Bing') {
       LayerClass = BaseLayers[serverType]
     }
     return LayerClass;

@@ -6,7 +6,6 @@ var LayersStore = require('core/layers/layersstore');
 var Projections = require('g3w-ol3/src/projection/projections');
 
 function Project(projectConfig) {
-  var self = this;
   /* struttura oggetto 'project'
   {
     id,
@@ -34,10 +33,7 @@ function Project(projectConfig) {
     setBaseLayer: function(id) {
       var self = this;
       _.forEach(self.state.baselayers, function(baseLayer) {
-        // questo lo setto per il catalog
-        baseLayer.visible = (baseLayer.id == id || (baseLayer.fixed === true));
-        // questo mi server per l'effettiva
-        self._layersStore.getLayerById(baseLayer.id).setVisible(baseLayer.visible);
+        self._layersStore.getLayerById(baseLayer.id).setVisible(baseLayer.id == id);
       })
     }
   };
@@ -60,14 +56,17 @@ proto._processLayers = function() {
   // e aggiungo informazioni utili ad esempio al catalogo
   function traverse(obj) {
     _.forIn(obj, function (layer, key) {
+      var layer_name_originale;
       //verifica che il nodo sia un layer e non un folder
       if (!_.isNil(layer.id)) {
         var fulllayer;
         _.forEach(self.state.layers, function(lyr) {
+          layer_name_originale = lyr.name;
           if (layer.id == lyr.id) {
             lyr.wmsUrl = self.getWmsUrl();
             lyr.project = self;
             fulllayer = _.merge(lyr, layer);
+            fulllayer.name = layer_name_originale;
             return false
           }
         });

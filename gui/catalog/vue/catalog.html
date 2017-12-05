@@ -3,12 +3,12 @@
   <!--<div class="title">{{ title }}</div>-->
   <div class="tabbable-line">
     <ul class="nav nav-tabs" role="tablist">
-      <li role="presentation" class="active" :style="{width: hasBaseLayers ? '32%' : '48%'}"><a href="#tree" aria-controls="tree" role="tab" data-toggle="tab" data-i18n="tree">Data</a></li>
-      <li v-if="hasBaseLayers" role="presentation" style="width: 32%"><a href="#baselayers" aria-controls="baselayers" role="tab" data-toggle="tab" data-i18n="baselayers">Layer Base</a></li>
-      <li role="presentation" :style="{width: hasBaseLayers ? '32%' : '48%'}"><a href="#legend" aria-controls="legend" role="tab" data-toggle="tab" data-i18n="legend">Legenda</a></li>
+      <li v-if="hasLayers" role="presentation"  :class="{ active: hasLayers }" :style="{width: hasBaseLayers ? '32%' : '48%'}"><a href="#tree" aria-controls="tree" role="tab" data-toggle="tab" data-i18n="tree">Data</a></li>
+      <li v-if="hasBaseLayers" role="presentation" :class="{ active: !hasLayers }" :style="{width: !hasLayers ? '100%' : '32%'}"><a href="#baselayers" aria-controls="baselayers" role="tab" data-toggle="tab" data-i18n="baselayers" >Layer Base</a></li>
+      <li v-if="hasLayers" role="presentation" :style="{width: hasBaseLayers ? '32%' : '48%'}"><a href="#legend" aria-controls="legend" role="tab" data-toggle="tab" data-i18n="legend">Legenda</a></li>
     </ul>
     <div  class="tab-content">
-      <div role="tabpanel" class="tab-pane active tree" id="tree">
+      <div role="tabpanel" class="tab-pane tree" :class="{ active: hasLayers }" id="tree">
         <ul class="tree-root" v-for="_layerstree in state.layerstrees">
           <tristate-tree  :highlightlayers="state.highlightlayers" :layerstree="layerstree" class="item" v-for="layerstree in _layerstree.tree" :storeid="_layerstree.storeid" :key="layerstree.id">
           </tristate-tree>
@@ -18,13 +18,13 @@
           </tristate-tree>
         </ul>
       </div>
-      <div v-if="hasBaseLayers" role="tabpanel" class="tab-pane baselayers" id="baselayers">
+      <div v-if="hasBaseLayers" role="tabpanel" class="tab-pane baselayers" :class="{ active: !hasLayers }" id="baselayers">
         <form>
           <ul>
             <li v-if="!baselayer.fixed" v-for="baselayer in baselayers">
               <div class="radio">
                 <label>
-                  <input type="radio" name="baselayer" v-checked="baselayer.visible" @click="setBaseLayer(baselayer.id)">
+                  <input type="radio" name="baselayer" :checked="baselayer.visible" @click="setBaseLayer(baselayer.id)">
                   {{ baselayer.title }}
                 </label>
               </div>

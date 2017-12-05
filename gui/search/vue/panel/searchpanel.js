@@ -1,9 +1,5 @@
 var inherit = require('core/utils/utils').inherit;
-var localize = require('core/i18n/i18n.service').t;
-var resolve = require('core/utils/utils').resolve;
 var GUI = require('gui/gui');
-var QueryService = require('core/query/queryservice');
-var ListPanel = require('gui/listpanel').ListPanel;
 var Panel = require('gui/panel');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var Filter = require('core/layers/filter/filter');
@@ -42,6 +38,9 @@ var SearchPanelComponet = Vue.extend({
         filter: filter
       })
       .then(function(results) {
+        results = {
+          data: results
+        };
          queryResultsPanel.setQueryResponse(results);
       })
       .fail(function() {

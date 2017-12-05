@@ -60,7 +60,7 @@ var ApplicationService = function() {
       this._initConfig = window.initConfig;
       return d.resolve(window.initConfig);
     }
-    // altrimenti se sono in ambiente development devo fare richiesta 
+    // altrimenti se sono in ambiente development devo fare richiesta
     // al server usando initconfigUrl e i parametri fornito dal percorso indicato in ?project=<percorso>
     else {
       var projectPath;
@@ -122,13 +122,18 @@ var ApplicationService = function() {
       RouterService.init();
       // una volta inizializzati i progetti e l'api service
       // registra i plugins passando gli static urls e l'oggetto plugins
-      PluginsRegistry.init({
-        pluginsBaseUrl: self._config.urls.staticurl,
-        pluginsConfigs: self._config.plugins,
-        otherPluginsConfig: ProjectsRegistry.getCurrentProject().getState()
-      });
+      this._bootstrapPlugins();
       this.complete = true;
     }
+  };
+
+  // funzione che fa il boostrap plugins
+  this._bootstrapPlugins = function() {
+    return PluginsRegistry.init({
+      pluginsBaseUrl: self._config.urls.staticurl,
+      pluginsConfigs: self._config.plugins,
+      otherPluginsConfig: ProjectsRegistry.getCurrentProject().getState()
+    });
   };
 
   // funzione bootstrap (quando viene chiamato l'init)
@@ -148,8 +153,8 @@ var ApplicationService = function() {
         // inizializza api service
         ApiService.init(this._config)
       ).then(function() {
-        // emetto l'evento ready
         self.emit('ready');
+        // emetto l'evento ready
         if (!self._acquirePostBoostrap) {
           self.postBootstrap();
         }

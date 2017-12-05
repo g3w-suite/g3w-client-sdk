@@ -4,11 +4,11 @@ var G3WObject = require('core/g3wobject');
 var RouterService = require('core/router');
 var ComponentsRegistry = require('gui/componentsregistry');
 
-// rappresenta l'interfaccia globale dell'API della GUI. 
+// rappresenta l'interfaccia globale dell'API della GUI.
 // metodi devono essere implementati (definiti) dall'applicazione ospite
 // l'app ospite dovrebbe chiamare anche la funzione GUI.ready() quando la UI è pronta
 function GUI() {
-  this.ready = false;
+  this.isready = false;
   // url delle risorse (immagini, ecc.)
   this.getResourcesUrl = noop;
   // show a Vue form
@@ -50,9 +50,9 @@ function GUI() {
 
   this.ready = function(){
     this.emit('ready');
-    this.ready = true;
+    this.isready = true;
   };
-  
+
   this.guiResized = function() {
     this.emit('guiresized');
   };
@@ -62,7 +62,7 @@ function GUI() {
 
   this.hideSpinner = function(id){};
 
-  
+
   this.notify = noop;
   this.dialog = noop;
 }

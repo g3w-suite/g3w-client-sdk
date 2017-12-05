@@ -6,21 +6,21 @@ var MapHelpers = {
   }
 };
 
-var _Viewer = function(opts){
-  var controls = ol.control.defaults({
-    attributionOptions: {
-      collapsible: false
-    },
-    zoom: false,
-    attribution: false
+var _Viewer = function(opts) {
+  var attribution = new ol.control.Attribution({
+    collapsible: false
   });
-  
+  var controls = ol.control.defaults({
+    attribution: false,
+    zoom: false
+  }).extend([attribution]);
+
   var interactions = ol.interaction.defaults()
     .extend([
       new ol.interaction.DragRotate()
     ]);
   interactions.removeAt(1);// rimuovo douclickzoom
-  
+
   var view;
   if (opts.view instanceof ol.View) {
     view = opts.view;
@@ -106,7 +106,7 @@ _Viewer.prototype.goToRes = function(coordinates, options){
   var animate = options.animate || true;
   var view = this.map.getView();
   var resolution = options.resolution || view.getResolution();
-  
+
   if (animate) {
     var panAnimation = {
       duration: 300,
@@ -125,10 +125,9 @@ _Viewer.prototype.goToRes = function(coordinates, options){
 
 _Viewer.prototype.fit = function(geometry, options){
   var view = this.map.getView();
-  
   var options = options || {};
   var animate = options.animate || true;
-  
+
   if (animate) {
     var panAnimation = view.animate({
       duration: 300,
@@ -138,15 +137,15 @@ _Viewer.prototype.fit = function(geometry, options){
       duration: 300,
       resolution: view.getResolution()
     });
-    //this.map.getView().animate(panAnimation,zoomAnimation);
   }
-  
+
   if (options.animate) {
     delete options.animate; // non lo passo al metodo di OL3 perché è un'opzione interna
   }
   options.constrainResolution = options.constrainResolution || true;
-  
-  view.fit(geometry,this.map.getSize(),options);
+  options.size = this.map.getSize();
+
+  view.fit(geometry,options);
 };
 
 _Viewer.prototype.getZoom = function(){
@@ -195,7 +194,7 @@ _Viewer.prototype.getActiveLayers = function(){
        activelayers.push(layer);
     }
   });
-  
+
   return activelayers;
 };
 
@@ -211,7 +210,7 @@ _Viewer.prototype.getLayersNoBase = function(){
       layers.push(layer);
     }
   });
-  
+
   return layers;
 };
 

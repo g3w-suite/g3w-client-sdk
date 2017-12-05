@@ -114,10 +114,6 @@ proto.getLayersDict = function(options) {
   var filterBaseLayer = options.BASELAYER;
   var filterGeoLayer = options.GEOLAYER;
   var filterHidden = options.HIDDEN;
-  var filterWfs = options.WFS;
-  if (filterSelectedOrAll) {
-    filterSelected = null;
-  }
   if (_.isUndefined(filterQueryable)
     && _.isUndefined(filterFilterable)
     && _.isUndefined(filterEditable)
@@ -193,8 +189,8 @@ proto.getLayersDict = function(options) {
   }
 
   if (typeof filterHidden == 'boolean') {
-    layers = _.filter(layers,function(layer){
-      return filterHidden == layer.isHidden();
+    layers = _.filter(layers,function(layer) {
+      return filterHidden == layer.isDisabled();
     });
   }
 
@@ -203,10 +199,11 @@ proto.getLayersDict = function(options) {
       return filterServerType = layer.getServerType();
     });
   }
+
   // filtra solo i selezionati
   if (filterSelectedOrAll) {
     var _layers = layers;
-    layers = _.filter(layers,function(layer){
+    layers = _.filter(layers,function(layer) {
       return layer.isSelected();
     });
     layers = layers.length ? layers : _layers;
@@ -285,6 +282,7 @@ proto.getProjection = function() {
   return this.config.projection;
 };
 
+
 proto.getExtent = function() {
   return this.config.extent;
 };
@@ -298,7 +296,7 @@ proto.getWmsUrl = function() {
 };
 
 // funzione che setta il layersstree deli layers del layersstore
-proto.setLayersTree = function(layerstree,name) {
+proto.setLayersTree = function(layerstree, name) {
   var self = this;
   function traverse(obj) {
     _.forIn(obj, function (layer, key) {
@@ -311,15 +309,17 @@ proto.setLayersTree = function(layerstree,name) {
       }
     });
   }
-  traverse(layerstree);
-  // questo server per raggruppare ogni albero dei layer
-  // al proprio gruppo che sia un progetto, un plugin o altro
-  // quando viene creato il layersstore
-  this.state.layerstree.splice(0,0,{
-    title: name || this.config.id,
-    expanded: true,
-    nodes: layerstree
-  });
+  if (layerstree.length) {
+    traverse(layerstree);
+    // questo server per raggruppare ogni albero dei layer
+    // al proprio gruppo che sia un progetto, un plugin o altro
+    // quando viene creato il layersstore
+    this.state.layerstree.splice(0,0,{
+      title: name || this.config.id,
+      expanded: true,
+      nodes: layerstree
+    });
+  }
 };
 
 // funzione che posso sfruttare dai plugin per costruire un
@@ -334,9 +334,8 @@ proto.createLayersTree = function(groupName, options) {
   if (_layerstree) {
     if (full === true) {
       return this.state.layerstree;
-    }
-    else {
-      function traverse(obj,newobj) {
+    } else {
+      function traverse(obj, newobj) {
         _.forIn(obj, function (layer) {
           var lightlayer = {};
           if (!_.isNil(layer.id)) {
@@ -351,10 +350,10 @@ proto.createLayersTree = function(groupName, options) {
           newobj.push(lightlayer);
         });
       }
-      traverse(_layerstree,layerstree);
+      traverse(_layerstree, layerstree);
     }
   } else {
-    _.forEach(this.getGeoLayers(), function (layer) {
+    _.forEach(this.getGeoLayers(), function(layer) {
       layerstree.push({
         id: layer.getId(),
         name: layer.getName(),
@@ -362,7 +361,7 @@ proto.createLayersTree = function(groupName, options) {
         visible: layer.isVisible() || false
       })
     });
-  }  
+  }
   this.setLayersTree(layerstree, groupName);
 };
 

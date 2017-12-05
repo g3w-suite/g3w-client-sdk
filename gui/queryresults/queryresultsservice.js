@@ -4,9 +4,8 @@ var ProjectsRegistry = require('core/project/projectsregistry');
 var Layer = require('core/layers/layer');
 var GUI = require('gui/gui');
 var G3WObject = require('core/g3wobject');
-var VectorLayer = require('core/map/layer/vectorlayer');
+var VectorLayer = require('core/layers/vectorlayer');
 var ComponentsRegistry = require('gui/componentsregistry');
-var QueryService = require('core/query/queryservice');
 var PhotoComponent = require('./components/photo/vue/photo');
 var RelationsPage = require('./components/relations/vue/relationspage');
 
@@ -71,7 +70,7 @@ function QueryResultsService() {
   this.setTitle = function(querytitle) {
     this.state.querytitle = querytitle || "";
   };
-  
+
   this.reset = function() {
     this.clearState();
   };
@@ -112,7 +111,6 @@ function QueryResultsService() {
   };
   // funzione che serve a far digerire i risultati delle features
   this._digestFeaturesForLayers = function(featuresForLayers) {
-    
     var self = this;
     var id = 0;
     // variabile che tiene traccia dei layer sotto query
@@ -192,7 +190,7 @@ function QueryResultsService() {
     });
     return layers;
   };
-  
+
   this._parseAttributes = function(layerAttributes, featureAttributes) {
     var featureAttributesNames = _.keys(featureAttributes);
     featureAttributesNames = _.filter(featureAttributesNames,function(featureAttributesName){
@@ -258,7 +256,7 @@ function QueryResultsService() {
     });
     this.addActionsForLayers(self.state.layersactions);
   };
-  
+
   this.trigger = function(actionId, layer, feature) {
     var actionMethod = this._actions[actionId];
     if (actionMethod) {

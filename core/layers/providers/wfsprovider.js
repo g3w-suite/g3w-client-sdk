@@ -9,6 +9,7 @@ function WFSDataProvider(options) {
   options = options || {};
   base(this, options);
   this._name = 'wfs';
+  this._layerName = this._layer.getQueryLayerName().replace(/ /g,'_');
 }
 
 inherit(WFSDataProvider, DataProvider);
@@ -27,7 +28,7 @@ proto.query = function(options) {
   var d = $.Deferred();
   this._doRequest(filter)
     .then(function(response) {
-      var featuresForLayers = self.handleQueryResponseFromServer(response,'wfs');
+      var featuresForLayers = self.handleQueryResponseFromServer(self._layerName, response);
       d.resolve({
         data: featuresForLayers
       });
@@ -68,7 +69,7 @@ proto._doRequest = function(filter) {
     SERVICE: 'WFS',
     VERSION: '1.3.0',
     REQUEST: 'GetFeature',
-    TYPENAME: layer.getQueryLayerName().replace(/ /g,'_'),
+    TYPENAME: this._layerName,
     OUTPUTFORMAT: infoFormat,
     SRSNAME:  crs
   };

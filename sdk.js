@@ -26,11 +26,7 @@ g3w.core = {
     Project: require('core/project/project')
   },
   map: {
-    MapLayersStoreRegistry: require('core/map/maplayersstoresregistry'),
-    layer: {
-      WmsLayer: require('core/map/layer/wmslayer'),
-      VectorLayerLoader: require('core/map/layer/loader/vectorloaderlayer')
-    }
+    MapLayersStoreRegistry: require('core/map/maplayersstoresregistry')
   },
   catalog: {
     CatalogLayersStoresRegistry: require('core/catalog/cataloglayersstoresregistry')
@@ -43,6 +39,9 @@ g3w.core = {
     TableLayer: require('core/layers/tablelayer'),
     VectorLayer: require('core/layers/vectorlayer'),
     ImageLayer: require('core/layers/imagelayer'),
+    WmsLayer: require('core/layers/map/wmslayer'),
+    XYZLayer: require('core/layers/map/xyzlayer'),
+    MapLayer: require('core/layers/map/maplayer'),
     geometry: {
       Geometry: require('core/geometry/geometry'),
       geom: require('core/geometry/geom')
@@ -55,11 +54,7 @@ g3w.core = {
     filter: {
       Filter: require('core/layers/filter/filter'),
       Expression: require('core/layers/filter/expression')
-    },
-    MapLayer: require('core/map/layer/maplayer')
-  },
-  query: {
-    QueryService: require('core/query/queryservice')
+    }
   },
   interaction: {
     PickCoordinatesInteraction: require('g3w-ol3/src/interactions/pickcoordinatesinteraction'),

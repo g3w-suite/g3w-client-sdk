@@ -1,17 +1,7 @@
 var BaseLayers = {};
 
 BaseLayers.OSM = new ol.layer.Tile({
-  source: new ol.source.OSM({
-    attributions: [
-      new ol.Attribution({
-        html: 'All maps &copy; ' +
-            '<a href="http://www.openstreetmap.org/">OpenStreetMap</a>'
-      }),
-      ol.source.OSM.ATTRIBUTION
-    ],
-    url: 'http://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    crossOrigin: null
-  }),
+  source: new ol.source.OSM(),
   id: 'osm',
   title: 'OSM',
   basemap: true
@@ -32,6 +22,7 @@ BaseLayers.BING.Road = new ol.layer.Tile({
   }),
   basemap: true
 });
+
 
 BaseLayers.BING.AerialWithLabels = new ol.layer.Tile({
   name: 'AerialWithLabels',

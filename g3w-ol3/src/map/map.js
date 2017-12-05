@@ -1,10 +1,11 @@
 /* MAP FUNCTIONS */
-_gis3wlib._map.prototype.setMap = function(mapOpts){
+_gis3wlib._map.prototype.setMap = function(mapOpts) {
+  var attribution = new ol.control.Attribution({
+    collapsible: false
+  });
   var controls = ol.control.defaults({
-    attributionOptions: {
-      collapsible: false
-    }
-  }).extend([new ol.control.Zoom()]);
+    attribution: false
+  }).extend([attribution, new ol.control.Zoom()]);
   var map  = new ol.Map({
     controls: controls,
     interactions: ol.interaction.defaults().extend([
@@ -19,7 +20,7 @@ _gis3wlib._map.prototype.setMap = function(mapOpts){
 
 _gis3wlib._map.prototype.updateMap = function(mapObject){};
 
-_gis3wlib._map.prototype.updateView = function(){}
+_gis3wlib._map.prototype.updateView = function(){};
 
 _gis3wlib._map.prototype.getMap = function(){
   return this.map;

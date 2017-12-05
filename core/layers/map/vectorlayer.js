@@ -1,7 +1,5 @@
 var inherit = require('core/utils/utils').inherit;
-var truefnc = require('core/utils/utils').truefnc;
 var resolve = require('core/utils/utils').resolve;
-var reject = require('core/utils/utils').reject;
 var G3WObject = require('core/g3wobject');
 
 function VectorLayer(config) {
