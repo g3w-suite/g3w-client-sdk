@@ -1,0 +1,15 @@
+{
+  "name": "g3w-client-sdk",
+  "version": "1.0.0",
+  "description": "sdk module for g3w-client",
+  "main": "index.js",
+  "repository": "https://volterra79@bitbucket.org/gis3w/g3w-client-sdk.git",
+  "author": "volterra79 <francescoboccacci@libero.it>",
+  "license": "MIT",
+  "devDependencies": {
+    "jasmine-core": "^2.8.0",
+    "karma": "^1.7.1",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-jasmine": "^1.1.1"
+  }
+}
