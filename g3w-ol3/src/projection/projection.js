@@ -33,4 +33,8 @@ proto.getAxisOrientation = function() {
   return this._axisOrientation;
 };
 
+proto.getOlProjection = function() {
+
+};
+
 module.exports = Projection;

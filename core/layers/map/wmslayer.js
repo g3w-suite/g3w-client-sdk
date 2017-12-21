@@ -118,7 +118,6 @@ proto._makeOlLayer = function(withLayers) {
   if (representativeLayer.state.source && representativeLayer.state.source.type == 'wms' && representativeLayer.state.source.url){
     wmsConfig.url = representativeLayer.state.source.url;
   }
-
   var olLayer = new RasterLayers.WMSLayer(wmsConfig,this.extraParams);
 
   olLayer.getSource().on('imageloadstart', function() {

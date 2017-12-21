@@ -5,8 +5,10 @@ var Service = require('../service');
 var DateTimePickerInput = Vue.extend({
   mixins: [Input],
   data: function() {
+    // creo un unico valore per identificare id
     var uniqueValue = Date.now();
-    var fielddatetimeformat =  this.state.input.options[0].fieldformat.toUpperCase();
+    var fielddatetimeformat =  this.state.input.options[0].fieldformat.replace('yyyy','YYYY').replace('dd','DD');
+    // in base al fielddatetimeformat creo la data tramite moment
     var date = moment(this.state.value, fielddatetimeformat, true).isValid() ? moment(this.state.value, fielddatetimeformat).toDate() : null;
     return {
       service: new Service({

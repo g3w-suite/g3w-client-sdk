@@ -248,7 +248,7 @@ Vue.component('tristate-tree', {
       })(this.layerstree);
       // lo metto qui n_childs perchè nel caso del reload ltiene quello precedente
       this.n_childs = _childsLength;//this.layerstree.nodes ? this.layerstree.nodes.length : 0;
-      var isFolder = this.n_childs ? true : false;
+      var isFolder = this.n_childs || this.layerstree.nodes ? true : false;
       if (isFolder) {
         this.n_parentChilds = this.n_childs - _visibleChilds;
       }

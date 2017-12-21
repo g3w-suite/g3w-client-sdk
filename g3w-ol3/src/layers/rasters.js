@@ -18,26 +18,27 @@ RasterLayers.WMSLayer = function(layerObj,extraParams){
   return RasterLayers._WMSLayer(options);
 };
 
-RasterLayers._WMSLayer = function(options){
+RasterLayers._WMSLayer = function(options) {
   var layerObj = options.layerObj;
   var extraParams = options.extraParams;
   var tiled = options.tiled || false;
-  
+  var projection = layerObj.projection ? layerObj.projection.getCode() : null;
+
   var params = {
     LAYERS: layerObj.layers || '',
     VERSION: '1.3.0',
     TRANSPARENT: true,
     SLD_VERSION: '1.1.0'
   };
-  
+
   params = utils.merge(params,extraParams);
-  
+
   var sourceOptions = {
     url: layerObj.url,
     params: params,
     ratio: 1
   };
-  
+
   var imageOptions = {
     id: layerObj.id,
     name: layerObj.name,
@@ -45,21 +46,20 @@ RasterLayers._WMSLayer = function(options){
     visible:layerObj.visible,
     maxResolution: layerObj.maxResolution
   };
-  
+
   var imageClass;
   var source;
   if (tiled) {
     source = new ol.source.TileWMS(sourceOptions);
     imageClass = ol.layer.Tile;
-    //imageOptions.extent = [1134867,3873002,2505964,5596944];
   }
   else {
     source = new ol.source.ImageWMS(sourceOptions);
     imageClass = ol.layer.Image;
   }
-  
+
   imageOptions.source = source;
-  
+
   return new imageClass(imageOptions);
 };
 
@@ -101,7 +101,7 @@ RasterLayers.XYZLayer = function(options){
     }),
     visible: layerObj.visible
   });
-  
+
   return layer;
 };*/
 

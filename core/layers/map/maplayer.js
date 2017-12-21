@@ -2,7 +2,7 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 
-function MapLayer(config){
+function MapLayer(config) {
   this.config = config || {};
   this.id = config.id;
   this.projection = config.projection;

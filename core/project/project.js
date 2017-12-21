@@ -25,7 +25,7 @@ function Project(projectConfig) {
   */
   this.state = projectConfig;
   this._processLayers();
-  // recupero la
+  // recupero o setta la proiezione se non standard
   this._projection = Projections.get(this.state.crs,this.state.proj4);
   this._layersStore = this._buildLayersStore();
 
@@ -97,7 +97,7 @@ proto._processLayers = function() {
   });
 };
 
-// funzione che fa il buil del layers store
+// funzione che fa il build del layers store
 // lo istanzia  crea il layersstree
 proto._buildLayersStore = function() {
   var self = this;
@@ -116,7 +116,7 @@ proto._buildLayersStore = function() {
   // vado a ciclare su tutti i layers per poterli istanziare
   // e aggiungere al layersstore
   _.forEach(this.getLayers(), function(layerConfig) {
-    // aggiungo la proiezione
+    // aggiungo la proiezione: nel caso esista il codice crs del layer lo prnedo altrimenti prondo la proiezione del progetto
     layerConfig.projection = self._projection;
     var layer = LayerFactory.build(layerConfig, {
       project: self
