@@ -182,7 +182,7 @@ _Viewer.prototype.removeLayerByName = function(layerName){
   var layer = this.getLayerByName(layerName);
   if (layer){
     this.map.removeLayer(layer);
-    delete layer;
+    layer = undefined;
   }
 };
 

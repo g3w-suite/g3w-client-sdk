@@ -1,16 +1,12 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var Service = require('gui/inputs/service');
-var UniqueValidator = require('./validator');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const Service = require('gui/inputs/service');
 
 function UniqueService(options) {
   options = options || {};
-  options.validator = UniqueValidator;
   base(this, options);
 }
 
 inherit(UniqueService, Service);
-
-var proto = UniqueService.prototype;
 
 module.exports = UniqueService;

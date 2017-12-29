@@ -1,10 +1,10 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils//utils').base;
-var Layer = require('./layer');
-var Editor = require('core/editing/editor');
-var FeaturesStore = require('./features/featuresstore');
-var Feature = require('./features/feature');
-var Relations = require('core/relations/relations');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils//utils').base;
+const Layer = require('./layer');
+const Editor = require('core/editing/editor');
+const FeaturesStore = require('./features/featuresstore');
+const Feature = require('./features/feature');
+const Relations = require('core/relations/relations');
 
 
 // Layer di base su cui si possono fare operazioni di editing
@@ -151,7 +151,7 @@ function TableLayer(config, options) {
 
 inherit(TableLayer, Layer);
 
-var proto = TableLayer.prototype;
+const proto = TableLayer.prototype;
 
 proto.setColor = function(color) {
   this._color = color;
@@ -222,6 +222,7 @@ proto._setOtherConfigParameters = function(config) {
 proto.getFields = function() {
   return this.config.editing.fields;
 };
+
 
 proto.getFieldsLabel = function() {
   var labels = [];
@@ -298,7 +299,7 @@ proto.getWidgetData = function(options) {
       d.reject(err)
     });
   return d.promise()
-  
+
 };
 
 proto.getCommitUrl = function() {
@@ -492,8 +493,8 @@ proto._createRelations = function(projectRelations) {
 };
 
 proto.createNewFeature = function() {
-  var feature = new ol.Feature();
-  var properties = {};
+  let feature = new ol.Feature();
+  const properties = {};
   _.forEach(this.getFields(), function(field) {
     properties[field.name] = null;
   });
@@ -502,7 +503,11 @@ proto.createNewFeature = function() {
     feature : feature,
     pk: this.getPk()
   });
-  feature.setTemporaryId();
+  //check if primary key is editable
+  if (!this.isPkEditable())
+    feature.setTemporaryId();
+  else
+    feature.setNew();
   return feature;
 };
 

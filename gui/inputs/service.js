@@ -1,14 +1,15 @@
-var Validator = require('./validator');
-var t = require('core/i18n/i18n.service').t;
+const Validators = require('core/validators/inputs/validators');
+const t = require('core/i18n/i18n.service').t;
 function Service(options) {
   options = options || {};
   this.state = options.state || {};
-  this._validatorOptions = options.validatorOptions || {};
+  const validatorType = this.state.type;
+  this._validatorOptions = options.validatorOptions || this.state.input.options || {};
   // serve il validatore per verificare se è valido il valore inserito
-  this._validator = options.validator || new Validator;
+  this._validator = Validators.get(validatorType);
 }
 
-var proto = Service.prototype;
+const proto = Service.prototype;
 
 // rsitutisce lo state
 proto.getState = function() {
@@ -33,10 +34,11 @@ proto.setValidator = function(validator) {
 // funzione generica che permette di verificare se
 // il valore dello state del campo è valido o no
 proto.validate = function() {
-  if (!_.isEmpty(_.trim(this.state.value)))
+  if (!_.isEmpty(_.trim(this.state.value))) {
     this.state.validate.valid = this._validator.validate(this.state.value, this._validatorOptions);
-  else
-      this.state.validate.valid = !!!this.state.validate.required;
+  } else {
+    this.state.validate.valid = !!!this.state.validate.required;
+  }
   this.state.validate.message = this.state.validate.valid ? null : t("input_validation_error")  ;
   return this.state.valid;
 };

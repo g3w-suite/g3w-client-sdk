@@ -17,7 +17,7 @@ function ComponentsRegistry() {
       this.components[id] = component;
       this.emit('componentregistered', component);
     }
-  }; 
+  };
   //funzione che retituisce il componente in base all'id
   this.getComponent = function(id) {
     return this.components[id];
@@ -40,7 +40,7 @@ function ComponentsRegistry() {
       //elimino il componente e lo setto a null per evitare
       // che se in un secondo momento lo registro di nuovo
       // questa venga ignorato
-      delete component;
+      //delete component;
       this._components[id] = null;
     }
   };

@@ -381,6 +381,8 @@ proto.setupControls = function(){
               })
           });
           self.addControl(controlType,control);
+          //set active control by default
+          control.toggle();
           break;
         case 'querybypolygon':
           var controlLayers = self.getLayers({

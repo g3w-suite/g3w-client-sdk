@@ -1,7 +1,6 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var Service = require('gui/inputs/service');
-var RadioValidator = require('./validator');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const Service = require('gui/inputs/service');
 
 function RadioService(options) {
   options = options || {};
@@ -10,7 +9,5 @@ function RadioService(options) {
 }
 
 inherit(RadioService, Service);
-
-var proto = RadioService.prototype;
 
 module.exports = RadioService;

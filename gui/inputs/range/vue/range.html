@@ -1,7 +1,8 @@
 <baseinput :state="state">
     <input
       slot="inputelement"
-      @change="change"
+      @keydown.69.prevent=""
+      @change="checkValue"
       style="width:100%;"
       v-disabled="!isEditable()"
       :class="{'input-error-validation' : !state.validate.valid}"

@@ -24,7 +24,6 @@ var BodyFormComponent = Vue.extend({
     }
   },
   mounted: function() {
-    
   }
 });
 

@@ -12,7 +12,7 @@ var Feature = function(options) {
   //verificare come utilizzare clone
   if (feature) {
     this.setProperties(feature.getProperties());
-    //vado a scrivere l'id univoco (corrispondente alla chiave primaria
+    //vado a scrivere l'id univoco (corrispondente alla chiave primaria)
     this.setId(feature.getId());
     this.setGeometryName(feature.getGeometryName());
     var geometry = feature.getGeometry();
@@ -40,9 +40,9 @@ proto.constructor = 'Feature';
 
 proto.clone = function() {
   // clono la feature
-  var feature = ol.Feature.prototype.clone.call(this);
+  const feature = ol.Feature.prototype.clone.call(this);
   feature.setId(this.getId());
-  var clone =  new Feature({
+  const clone =  new Feature({
     feature: feature,
     pk: this._pk
   });
@@ -52,7 +52,7 @@ proto.clone = function() {
 };
 
 proto.setTemporaryId = function() {
-  var newValue = this._newPrefix + Date.now();
+  let newValue = this._newPrefix + Date.now();
   this.setId(newValue);
   this.setNew();
 };
@@ -78,7 +78,7 @@ proto.update = function() {
 };
 
 // setta lo stato a nuovo 0
-proto.add = function() { 
+proto.add = function() {
   this.state.state = 'add';
   return this;
 };

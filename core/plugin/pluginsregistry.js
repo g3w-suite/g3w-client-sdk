@@ -2,6 +2,7 @@ var base = require('core/utils/utils').base;
 var inherit = require('core/utils/utils').inherit;
 var G3WObject = require('core/g3wobject');
 var GUI = require('gui/gui');
+var sdk = require('sdk');
 
 function PluginsRegistry() {
   var self = this;
@@ -33,7 +34,7 @@ function PluginsRegistry() {
     _.forEach(this.pluginsConfigs, function(pluginConfig, name) {
       self._setup(name, pluginConfig);
     });
-    
+
     return d.promise();
   };
 

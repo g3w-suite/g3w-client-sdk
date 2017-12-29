@@ -1,16 +1,23 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var Service = require('gui/inputs/service');
-var RangeValidator = require('./validator');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const Service = require('gui/inputs/service');
 
 function RangeService(options) {
   options = options || {};
-  options.validator = RangeValidator;
   base(this, options);
 }
 
 inherit(RangeService, Service);
 
-var proto = RangeService.prototype;
+const proto = Service.prototype;
+
+proto.setValidRangeValue = function(value, min, max, step) {
+  if (value > max) {
+    return max;
+  } else if (value < min) {
+    return min;
+  }
+  return value
+};
 
 module.exports = RangeService;

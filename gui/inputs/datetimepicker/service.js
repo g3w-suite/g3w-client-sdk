@@ -2,11 +2,9 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var ApplicationService = require('core/applicationservice');
 var Service = require('gui/inputs/service');
-var DateTimePickerValidator = require('./validator');
 
 function DateTimePickerService(options) {
   options = options || {};
-  options.validator = DateTimePickerValidator;
   base(this, options);
 }
 
