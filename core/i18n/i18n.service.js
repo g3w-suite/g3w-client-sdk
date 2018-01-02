@@ -1,13 +1,13 @@
 function init(config) {
   i18next
   .use(i18nextXHRBackend)
-  .init({ 
+  .init({
       lng: config.lng,
       ns: 'app',
       fallbackLng: 'en',
       resources: config.resources
   });
-  
+
   jqueryI18next.init(i18next, $, {
     tName: 't', // --> appends $.t = i18next.t
     i18nName: 'i18n', // --> appends $.i18n = i18next
@@ -19,12 +19,12 @@ function init(config) {
     parseDefaultValueFromContent: true // parses default values from content ele.val or ele.text
   });
 }
-    
-var t = function(text){
-    var trad = i18next.t(text);
+
+const t = function(text){
+    const trad = i18next.t(text);
     return trad;
 };
-    
+
 module.exports = {
   init: init,
   t: t

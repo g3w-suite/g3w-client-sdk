@@ -2,7 +2,7 @@
 // tutti i tipi di inputs. Mi serve per evitare di chiamare
 // tutte le volte nel require tutto il percorso
 
-var InputsComponents = {
+const InputsComponents = {
   'text_input': require('./text/vue/text'),
   'textarea_input': require('./textarea/vue/textarea'),
   'integer_input': require('./integer/vue/integer'),

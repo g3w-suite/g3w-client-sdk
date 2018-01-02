@@ -1,11 +1,10 @@
-var t = require('core/i18n/i18n.service').t;
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var merge = require('core/utils/utils').merge;
-var Component = require('gui/vue/component');
-var ToolsService = require('gui/tools/toolsservice');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const merge = require('core/utils/utils').merge;
+const Component = require('gui/vue/component');
+const ToolsService = require('gui/tools/toolsservice');
 
-var InternalComponent = Vue.extend({
+const InternalComponent = Vue.extend({
   template: require('./tools.html'),
   data: function() {
     return {
@@ -22,18 +21,17 @@ var InternalComponent = Vue.extend({
 function ToolsComponent(options) {
 
   base(this,options);
-  var self = this;
   this._service = new ToolsService();
   this.id = "tools-component";
   this.title = "tools";
   this.state.visible = false;
 
   // vado a settare l'onafter nel caso di un add tools che di un remove tool
-  this._service.onafter('addTools', function() {
-    self.state.visible = self._service.state.toolsGroups.length > 0;
+  this._service.onafter('addTools', () => {
+    this.state.visible = this._service.state.toolsGroups.length > 0;
   });
-  this._service.onafter('removeTools', function() {
-    self.state.visible = self._service.state.toolsGroups.length > 0;
+  this._service.onafter('removeTools', () => {
+    this.state.visible = this._service.state.toolsGroups.length > 0;
   });
   /* ----------------------*/
   merge(this, options);
@@ -45,7 +43,5 @@ function ToolsComponent(options) {
 }
 
 inherit(ToolsComponent, Component);
-
-var proto = ToolsComponent.prototype;
 
 module.exports = ToolsComponent;

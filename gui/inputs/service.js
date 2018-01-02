@@ -39,8 +39,12 @@ proto.validate = function() {
   } else {
     this.state.validate.valid = !!!this.state.validate.required;
   }
-  this.state.validate.message = this.state.validate.valid ? null : t("input_validation_error")  ;
+  this.state.validate.message = this.state.validate.valid ? null : this.getErrorValidateMessage(this.state.type) ;
   return this.state.valid;
+};
+
+proto.getErrorValidateMessage = function(field_type) {
+  return t("form.inputs.input_validation_error") + "("+t("form.inputs." + field_type) + ")";
 };
 
 proto.isEditable = function() {

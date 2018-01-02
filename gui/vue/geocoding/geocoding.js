@@ -1,6 +1,5 @@
-var t = require('core/i18n/i18n.service').t;
-var GUI = require('gui/gui');
-var GeocodingService = require('./geocodingservice');
+const t = require('core/i18n/i18n.service').t;
+const GeocodingService = require('./geocodingservice');
 
 Vue.component("geocoder",{
   template: require("./geocoding.html"),
@@ -12,17 +11,15 @@ Vue.component("geocoder",{
     }
   },
   methods: {
-    search: function(e){
+    search: function(e) {
       e.preventDefault();
-      var query = this.query;
-      this.service.search(query);
+      this.service.search(this.query);
     }
   },
   mounted: function(){
-    var self = this;
     this.service = GeocodingService[this.type];
-    this.service.on("results",function(){
-      self.query = "";
+    this.service.on("results", () => {
+      this.query = "";
     })
   }
 });

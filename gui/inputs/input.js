@@ -1,6 +1,6 @@
-var BaseInput = require('./baseinput').BaseInput;
-var BaseInputComponent= require('./baseinput').BaseInputComponent;
-var Input = {
+const BaseInput = require('./baseinput').BaseInput;
+const BaseInputComponent= require('./baseinput').BaseInputComponent;
+const Input = {
   props: ['state'],
   mixins: [BaseInput], // eredito dall'oggetto BaseInput
   components: {

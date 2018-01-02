@@ -1,6 +1,4 @@
-var t = require('i18n/i18n.service').t;
-var GUI = require('gui/gui');
-var ProjectsRegistry = require('core/project/projectsregistry');
+const ProjectsRegistry = require('core/project/projectsregistry');
 
 Vue.component('g3w-projects-catalog',{
     template: require('./projects.html'),

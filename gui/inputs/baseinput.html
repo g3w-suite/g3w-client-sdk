@@ -16,6 +16,6 @@
         :id="state.name"
         :placeholder="state.input.label">
     </slot>
-    <p class="error-input-message">{{ state.validate.message }}</p>
+    <p v-if="!state.validate.valid" class="error-input-message">{{ state.validate.message }}</p>
   </div>
 </div>
