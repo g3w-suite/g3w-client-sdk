@@ -1,22 +1,30 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var merge = require('core/utils/utils').merge;
-var Component = require('gui/vue/component');
-var QueryResultsService = require('gui/queryresults/queryresultsservice');
-var ProjectsRegistry = require('core/project/projectsregistry');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const merge = require('core/utils/utils').merge;
+const Component = require('gui/vue/component');
+const QueryResultsService = require('gui/queryresults/queryresultsservice');
+const ProjectsRegistry = require('core/project/projectsregistry');
+const t = require('core/i18n/i18n.service').t;
 
-var maxSubsetLength = 3;
-var headerExpandActionCellWidth = 10;
-var headerActionsCellWidth = 10;
+const maxSubsetLength = 3;
+const headerExpandActionCellWidth = 10;
+const headerActionsCellWidth = 10;
 
-var vueComponentOptions = {
+const vueComponentOptions = {
   template: require('./queryresults.html'),
   data: function() {
     return {
       state: this.$options.queryResultsService.state,
       layersFeaturesBoxes: {},
       headerExpandActionCellWidth: headerExpandActionCellWidth,
-      headerActionsCellWidth: headerActionsCellWidth
+      headerActionsCellWidth: headerActionsCellWidth,
+      noresultmessage: t("info.no_results"),
+      openlink: t("info.open_link")
+    }
+  },
+  computed: {
+    hasResults: function() {
+      return !!this.state.layers.length;
     }
   },
   methods: {
@@ -53,9 +61,6 @@ var vueComponentOptions = {
         return layer.features.length > 0;
       }
       return false;
-    },
-    hasResults: function() {
-      return this.state.layers.length;
     },
     layerHasActions: function(layer) {
       return this.state.layersactions[layer.id].length > 0;
@@ -158,6 +163,9 @@ var vueComponentOptions = {
     },
     showFullPhoto: function(url) {
       this.$options.queryResultsService.showFullPhoto(url);
+    },
+    openLink: function(link_url) {
+      window.open(link_url, '_blank');
     },
     getFieldType: function (layer, name, value) {
       return this.$options.queryResultsService.getFieldType(layer, name, value);

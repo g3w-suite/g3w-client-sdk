@@ -1,146 +1,147 @@
 <div id="search-results" class="queryresults-wrapper">
-  <h3 v-if="state.querytitle">Risultati {{state.querytitle.toLowerCase()}}</h3>
   <div v-show="state.loading" class="bar-loader"></div>
   <div class="queryresults-container">
-    <ul v-if="hasResults()" class="queryresults" id="queryresults">
-      <li v-if="layerHasFeatures(layer) && layer.show" v-for="layer in state.layers">
-        <div class="box box-primary">
-          <div class="box-header with-border" data-widget="collapse">
-            <h3 class="box-title">{{ layer.title }} ({{layer.features.length}})</h3>
-            <div class="box-tools pull-right">
-              <button class="btn btn-box-tool" data-widget="collapse"><i class="btn-collapser fa fa-minus"></i></button>
+    <template v-if="!state.loading">
+      <ul v-if="hasResults" class="queryresults" id="queryresults">
+        <li v-if="layerHasFeatures(layer) && layer.show" v-for="layer in state.layers">
+          <div class="box box-primary">
+            <div class="box-header with-border" data-widget="collapse">
+              <h3 class="box-title">{{ layer.title }} ({{layer.features.length}})</h3>
+              <div class="box-tools pull-right">
+                <button class="btn btn-box-tool" data-widget="collapse"><i class="btn-collapser fa fa-minus"></i></button>
+              </div>
             </div>
-          </div>
-          <div class="box-body">
-            <table class="table table-striped">
-              <thead>
-              <tr>
-                <th v-if="layer.hasgeometry"></th>
-                <th v-for="(attribute, index) in attributesSubset(layer.attributes)" :style="{ width:cellWidth(index,layer) + '%' }">{{attribute.label}}</th>
-                <th :style="{ width:headerExpandActionCellWidth + '%' }"></th>
-              </tr>
-              </thead>
-              <tbody>
-              <template v-if="feature.show" v-for="feature in layer.features">
-                <tr @click="toggleFeatureBoxAndZoom(layer,feature);" @mouseover="trigger('highlightgeometry',layer,feature)" @mouseout="trigger('clearHighlightGeometry')" class="featurebox-header">
-                  <td v-if="geometryAvailable(feature)" class="action-cell">
-                    <span @click.stop.prevent="trigger('gotogeometry',layer,feature)" class="glyphicon glyphicon-map-marker action-button-icon"></span>
-                  </td>
-                  <td v-for="attribute in attributesSubset(layer.attributes)">
-                    <span>{{feature.attributes[attribute.name]}}</span>
-                  </td>
-                  <td class="action-cell">
-                    <span class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? 'fa-plus' : 'fa-minus']"></span>
-                  </td>
+            <div class="box-body">
+              <table class="table table-striped">
+                <thead>
+                <tr>
+                  <th v-if="layer.hasgeometry"></th>
+                  <th v-for="(attribute, index) in attributesSubset(layer.attributes)" :style="{ width:cellWidth(index,layer) + '%' }">{{attribute.label}}</th>
+                  <th :style="{ width:headerExpandActionCellWidth + '%' }"></th>
                 </tr>
-                <tr v-show="!collapsedFeatureBox(layer,feature)" class="featurebox-body">
-                  <td :colspan="attributesSubsetLength(layer.attributes)+2">
-                    <div class="action-buttons-container">
-                      <template v-for="action in state.layersactions[layer.id]">
-                        <div @click="trigger(action.id,layer,feature)"  class="action-button hint--top-right" data-placement="auto bottom" data-toggle="tooltip" :title="action.hint">
-                          <span :class="'action-button-icon ' + action.class"></span>
-                        </div>
-                      </template>
-                    </div>
-                    <table>
-                      <tr v-for="attribute in layer.attributes">
-                        <td class="attr-label">{{attribute.label}}</td>
-                        <!--aggiungo un attributo attribute per fare delle selzioni mirate per i plugin</td>-->
-                        <td class="attr-value" :attribute="attribute.name">
-                          <span v-if="is('simple',layer,attribute.name,feature.attributes[attribute.name])">{{feature.attributes[attribute.name]}}</span>
-                          <img v-if="is('photo',layer,attribute.name,feature.attributes[attribute.name])"  class="photo-preview img-responsive img-thumbnail" title="Clicca per allargare"  @click="showFullPhoto(isRelativePath(feature.attributes[attribute.name]))" :src="isRelativePath(feature.attributes[attribute.name])">
-                          <!--<span v-if="isRoute(layer,feature,attribute)" class="link dashboardlink" @click="goto(layer,feature.attributes[attribute.name])">{{ feature.attributes[attribute.name] }}</span>-->
-                          <!--<img v-if="isPhoto(layer,feature,attribute)" :data-url="getPhotoUrl(feature.attributes[attribute.name])" style="max-width:50px" :src="getPhotoUrl(feature.attributes[attribute.name],thumb)" />-->
-                          <img v-else-if="checkField('image', attribute.label, layer.attributes)"  class="photo-preview img-responsive img-thumbnail" title="Clicca per allargare"  @click="showFullPhoto(isRelativePath(attribute.value))" :src="isRelativePath(attribute.value)">
-                          <a v-if="is('link',layer,attribute.name,feature.attributes[attribute.name])" :href="feature.attributes[attribute.name]"  style="display: block; width: 100%;  white-space: nowrap;  overflow: hidden;  text-overflow: ellipsis" target="_blank">{{ feature.attributes[attribute.name] }} </a>
-                          <a v-else-if="is('photolink',layer,attribute.name,feature.attributes[attribute.name])" :href="feature.attributes[attribute.name]" target="_blank">
-                            <img class=" img-responsive img-thumbnail"
-                                 :src="feature.attributes[attribute.name]">
-                          </a>                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr v-show="collapsedFeatureBox(layer,feature) && feature.attributes.relations">
-                  <td :colspan="attributesSubsetLength(layer.attributes)+2">
-                    <!--Relazioni-->
-                    <div class="queryresults-container">
-                      <ul class="queryresults" id="relations">
-                        <template v-for="relation in feature.attributes.relations">
-                          <li>
-                            <div class="box box-solid box-default relationsbox collapsed-box">
-                              <div class="box-header with-border" data-widget="collapse">
-                                <h3 class="box-title">{{ relation.name }} ({{ relation.elements.length }})</h3>
-                                <div class="box-tools pull-right">
-                                  <button class="btn btn-box-tool" data-widget="collapse"><i class="btn-collapser fa fa-plus"></i></button>
+                </thead>
+                <tbody>
+                <template v-if="feature.show" v-for="feature in layer.features">
+                  <tr @click="toggleFeatureBoxAndZoom(layer,feature);" @mouseover="trigger('highlightgeometry',layer,feature)" @mouseout="trigger('clearHighlightGeometry')" class="featurebox-header">
+                    <td v-if="geometryAvailable(feature)" class="action-cell">
+                      <span @click.stop.prevent="trigger('gotogeometry',layer,feature)" class="glyphicon glyphicon-map-marker action-button-icon"></span>
+                    </td>
+                    <td v-for="attribute in attributesSubset(layer.attributes)">
+                      <span>{{feature.attributes[attribute.name]}}</span>
+                    </td>
+                    <td class="action-cell">
+                      <span class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? 'fa-plus' : 'fa-minus']"></span>
+                    </td>
+                  </tr>
+                  <tr v-show="!collapsedFeatureBox(layer,feature)" class="featurebox-body">
+                    <td :colspan="attributesSubsetLength(layer.attributes)+2">
+                      <div class="action-buttons-container">
+                        <template v-for="action in state.layersactions[layer.id]">
+                          <div @click="trigger(action.id,layer,feature)"  class="action-button" data-placement="top" data-toggle="tooltip" :title="action.hint">
+                            <span :class="'action-button-icon ' + action.class"></span>
+                          </div>
+                        </template>
+                      </div>
+                      <table>
+                        <tr v-for="attribute in layer.attributes">
+                          <td class="attr-label">{{attribute.label}}</td>
+                          <!--aggiungo un attributo attribute per fare delle selzioni mirate per i plugin</td>-->
+                          <td class="attr-value" :attribute="attribute.name">
+                            <span v-if="is('simple',layer,attribute.name,feature.attributes[attribute.name])">{{feature.attributes[attribute.name]}}</span>
+                            <img v-if="is('photo',layer,attribute.name,feature.attributes[attribute.name])"  class="photo-preview img-responsive img-thumbnail" title="Clicca per allargare"  @click="showFullPhoto(isRelativePath(feature.attributes[attribute.name]))" :src="isRelativePath(feature.attributes[attribute.name])">
+                            <img v-else-if="checkField('image', attribute.label, layer.attributes)"  class="photo-preview img-responsive img-thumbnail" title="Clicca per allargare"  @click="showFullPhoto(isRelativePath(attribute.value))" :src="isRelativePath(attribute.value)">
+                            <!--<a v-if="is('link',layer,attribute.name,feature.attributes[attribute.name])" :href="feature.attributes[attribute.name]"  style="display: block; width: 100%;  white-space: nowrap;  overflow: hidden;  text-overflow: ellipsis" target="_blank">{{ feature.attributes[attribute.name] }} </a>-->
+                            <button v-if="is('link',layer,attribute.name,feature.attributes[attribute.name])"  class="btn btn-info" style="margin:5px"  @click="openLink(feature.attributes[attribute.name])">{{ openlink }}</button>
+                            <a v-else-if="is('photolink',layer,attribute.name,feature.attributes[attribute.name])" :href="feature.attributes[attribute.name]" target="_blank">
+                              <img class=" img-responsive img-thumbnail"
+                                   :src="feature.attributes[attribute.name]">
+                            </a>                        </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  <tr v-show="collapsedFeatureBox(layer,feature) && feature.attributes.relations">
+                    <td :colspan="attributesSubsetLength(layer.attributes)+2">
+                      <!--Relazioni-->
+                      <div class="queryresults-container">
+                        <ul class="queryresults" id="relations">
+                          <template v-for="relation in feature.attributes.relations">
+                            <li>
+                              <div class="box box-solid box-default relationsbox collapsed-box">
+                                <div class="box-header with-border" data-widget="collapse">
+                                  <h3 class="box-title">{{ relation.name }} ({{ relation.elements.length }})</h3>
+                                  <div class="box-tools pull-right">
+                                    <button class="btn btn-box-tool" data-widget="collapse"><i class="btn-collapser fa fa-plus"></i></button>
+                                  </div>
+                                </div>
+                                <div class="box-body">
+                                  <template v-for="(element, index) in relation.elements">
+                                    <table class="table table-striped">
+                                      <thead>
+                                      <tr>
+                                        <th v-for="attribute in relationsAttributesSubset(element)">
+                                          {{attribute.label}}
+                                        </th>
+                                        <th></th>
+                                      </tr>
+                                      </thead>
+                                      <tbody>
+                                      <tr @click="toggleFeatureBox(layer, feature, relation.name+index)"  class="featurebox-header">
+                                        <td v-for="attribute in relationsAttributesSubset(element)">
+                                          <span>{{attribute.value}}</span>
+                                        </td>
+                                        <td class="action-cell text-center">
+                                          <span class="fa link morelink" :class="[collapsedFeatureBox(layer, feature, relation.name+index) ? 'fa-minus' : 'fa-plus']" style="text-align: right"></span>
+                                        </td>
+                                      </tr>
+                                      <tr v-show="collapsedFeatureBox(layer, feature, relation.name+index)" class="featurebox-body">
+                                        <td :colspan="relationsAttributesSubsetLength(element)+1">
+                                          <table>
+                                            <tr v-for="relattribute in relationsAttributes(element)">
+                                              <td class="attr-label">{{relattribute.label}}</td>
+                                              <!--<td class="attr-value">{{attribute.value}}</td>-->
+                                              <td class="attr-value">
+                                                <div v-if="isArray(relattribute.value)" v-for="value in relattribute.value">
+                                                  <div v-for="value, label in value">
+                                                    <span>{{ label }}</span><span class="pull-right">{{ value }}</span>
+                                                  </div>
+                                                  <span class="divider"></span>
+                                                </div>
+                                                <span v-if="is('simple',layer,relattribute.name, relattribute.value)"> {{ relattribute.value }}</span>
+                                                <img v-if="is('photo',layer,relattribute.name, relattribute.value)"  class="photo-preview img-responsive img-thumbnail" title="Clicca per allargare"  @click="showFullPhoto(isRelativePath(relattribute.value))" :src="isRelativePath(relattribute.value)">
+                                                <img v-else-if="checkField('image', relattribute.label, relattribute.value)"  class="photo-preview img-responsive img-thumbnail" title="Clicca per allargare"  @click="showFullPhoto(isRelativePath(relattribute.value))" :src="isRelativePath(relattribute.value)">
+                                                <!--<a v-if="is('link',layer, relattribute.name, relattribute.value)" :href="relattribute.value"  style="display: block; width: 100%;  white-space: nowrap;  overflow: hidden;  text-overflow: ellipsis" target="_blank"> {{ relattribute.value }} </a>-->
+                                                <button v-if="is('link', layer, relattribute.name, relattribute.value)"  class="btn btn-info" style="margin:5px"  @click="openLink(relattribute.value)">{{ openlink }}</button>
+                                                <a v-else-if="is('photolink',layer, relattribute.name, relattribute.value)" :href="relattribute.value" target="_blank">
+                                                  <img class=" img-responsive img-thumbnail"
+                                                       :src="relattribute.value">
+                                                </a>
+                                              </td>
+                                            </tr>
+                                          </table>
+                                        </td>
+                                      </tr>
+                                      </tbody>
+                                    </table>
+                                  </template>
                                 </div>
                               </div>
-                              <div class="box-body">
-                                <template v-for="(element, index) in relation.elements">
-                                  <table class="table table-striped">
-                                    <thead>
-                                    <tr>
-                                      <th v-for="attribute in relationsAttributesSubset(element)">
-                                        {{attribute.label}}
-                                      </th>
-                                      <th></th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr @click="toggleFeatureBox(layer, feature, relation.name+index)"  class="featurebox-header">
-                                      <td v-for="attribute in relationsAttributesSubset(element)">
-                                        <span>{{attribute.value}}</span>
-                                      </td>
-                                      <td class="action-cell text-center">
-                                        <span class="fa link morelink" :class="[collapsedFeatureBox(layer, feature, relation.name+index) ? 'fa-minus' : 'fa-plus']" style="text-align: right"></span>
-                                      </td>
-                                    </tr>
-                                    <tr v-show="collapsedFeatureBox(layer, feature, relation.name+index)" class="featurebox-body">
-                                      <td :colspan="relationsAttributesSubsetLength(element)+1">
-                                        <table>
-                                          <tr v-for="relattribute in relationsAttributes(element)">
-                                            <td class="attr-label">{{relattribute.label}}</td>
-                                            <!--<td class="attr-value">{{attribute.value}}</td>-->
-                                            <td class="attr-value">
-                                              <div v-if="isArray(relattribute.value)" v-for="value in relattribute.value">
-                                                <div v-for="value, label in value">
-                                                  <span>{{ label }}</span><span class="pull-right">{{ value }}</span>
-                                                </div>
-                                                <span class="divider"></span>
-                                              </div>
-                                              <span v-if="is('simple',layer,relattribute.name, relattribute.value)"> {{ relattribute.value }}</span>
-                                              <img v-if="is('photo',layer,relattribute.name, relattribute.value)"  class="photo-preview img-responsive img-thumbnail" title="Clicca per allargare"  @click="showFullPhoto(isRelativePath(relattribute.value))" :src="isRelativePath(relattribute.value)">
-                                              <img v-else-if="checkField('image', relattribute.label, relattribute.value)"  class="photo-preview img-responsive img-thumbnail" title="Clicca per allargare"  @click="showFullPhoto(isRelativePath(relattribute.value))" :src="isRelativePath(relattribute.value)">
-                                              <a v-if="is('link',layer, relattribute.name, relattribute.value)" :href="relattribute.value"  style="display: block; width: 100%;  white-space: nowrap;  overflow: hidden;  text-overflow: ellipsis" target="_blank"> {{ relattribute.value }} </a>
-                                              <a v-else-if="is('photolink',layer, relattribute.name, relattribute.value)" :href="relattribute.value" target="_blank">
-                                                <img class=" img-responsive img-thumbnail"
-                                                     :src="relattribute.value">
-                                              </a>
-                                            </td>
-                                          </tr>
-                                        </table>
-                                      </td>
-                                    </tr>
-                                    </tbody>
-                                  </table>
-                                </template>
-                              </div>
-                            </div>
-                          </li>
-                        </template>
-                      </ul>
-                    </div>
-                    <!--Fine Relazioni-->
-                  </td>
-                </tr>
-              </template>
-              </tbody>
-            </table>
+                            </li>
+                          </template>
+                        </ul>
+                      </div>
+                      <!--Fine Relazioni-->
+                    </td>
+                  </tr>
+                </template>
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      </li>
-    </ul>
+        </li>
+      </ul>
+      <h4 v-else>{{ noresultmessage }}</h4>
+    </template>
   </div>
-  <span v-if="!hasResults() && !state.loading">Nessun risultato</span>
 </div>
 

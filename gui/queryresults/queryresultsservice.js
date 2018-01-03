@@ -1,17 +1,15 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var ProjectsRegistry = require('core/project/projectsregistry');
-var Layer = require('core/layers/layer');
-var GUI = require('gui/gui');
-var G3WObject = require('core/g3wobject');
-var VectorLayer = require('core/layers/vectorlayer');
-var ComponentsRegistry = require('gui/componentsregistry');
-var PhotoComponent = require('./components/photo/vue/photo');
-var RelationsPage = require('./components/relations/vue/relationspage');
-
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const ProjectsRegistry = require('core/project/projectsregistry');
+const Layer = require('core/layers/layer');
+const GUI = require('gui/gui');
+const G3WObject = require('core/g3wobject');
+const VectorLayer = require('core/layers/vectorlayer');
+const ComponentsRegistry = require('gui/componentsregistry');
+const PhotoComponent = require('./components/photo/vue/photo');
+const RelationsPage = require('./components/relations/vue/relationspage');
 
 function QueryResultsService() {
-  var self = this;
   // prendo le relazioni dal progetto e se ci sono e le raggruppo per referencedLayer
   this._relations = ProjectsRegistry.getCurrentProject().state.relations ? _.groupBy(ProjectsRegistry.getCurrentProject().state.relations,'referencedLayer'): null;
   this._actions = {
@@ -20,7 +18,7 @@ function QueryResultsService() {
     'clearHighlightGeometry': QueryResultsService.clearHighlightGeometry
   };
   this.state = {};
-  this.init = function(options) {
+  this.init = function() {
     this.clearState();
   };
 
@@ -33,7 +31,7 @@ function QueryResultsService() {
       this.state.query = queryResponse.query;
       //recupero tutti i mlayers dalll'attributo data della risposta
       // costuendo il formato digeribile dal componente query
-      var layers = this._digestFeaturesForLayers(queryResponse.data);
+      const layers = this._digestFeaturesForLayers(queryResponse.data);
       //setto i layers data
       this.setLayersData(layers);
     },
@@ -76,7 +74,7 @@ function QueryResultsService() {
   };
 
   this.getFieldType = function (layer, name, value) {
-    var Fields = {};
+    let Fields = {};
     Fields.SIMPLE = 'simple';
     Fields.LINK = 'link';
     Fields.PHOTO = 'photo';
@@ -85,14 +83,13 @@ function QueryResultsService() {
     Fields.POINTLINK = 'pointlink';
     Fields.ROUTE = 'route';
 
-    var URLPattern = /^(https?:\/\/[^\s]+)/g;
-    var PhotoPattern = /[^\s]+.(png|jpg|jpeg|gif)$/g;
+    const URLPattern = /^(https?:\/\/[^\s]+)/g;
+    const PhotoPattern = /[^\s]+.(png|jpg|jpeg|gif)$/g;
     if (_.isNil(value)) {
       return Fields.SIMPLE;
     }
     value = value.toString();
 
-    var extension = value.split('.').pop();
     if (!value.match(URLPattern) && value.match(PhotoPattern)) {
       return Fields.PHOTO;
     }
@@ -106,23 +103,22 @@ function QueryResultsService() {
     return Fields.SIMPLE;
   };
   this.fieldIs = function(TYPE,layer,attributeName,attributeValue) {
-    var fieldType = this.getFieldType(layer,attributeName,attributeValue);
+    const fieldType = this.getFieldType(layer,attributeName,attributeValue);
     return fieldType === TYPE;
   };
   // funzione che serve a far digerire i risultati delle features
   this._digestFeaturesForLayers = function(featuresForLayers) {
-    var self = this;
-    var id = 0;
+    let id = 0;
     // variabile che tiene traccia dei layer sotto query
-    var layers = [];
-    var layerAttributes,
+    let layers = [];
+    let layerAttributes,
       layerRelationsAttributes,
       layerTitle,
       layerId;
-    _.forEach(featuresForLayers, function(featuresForLayer) {
+    featuresForLayers.forEach((featuresForLayer) => {
       featuresForLayer = featuresForLayer;
       // prendo il layer
-      var layer = featuresForLayer.layer;
+      const layer = featuresForLayer.layer;
       // verifico che tipo ti vector layer ci sono
       if (layer instanceof Layer) {
         layerAttributes = layer.getAttributes();
@@ -137,7 +133,7 @@ function QueryResultsService() {
         layerId = layer.get('id');
       }
 
-      var layerObj = {
+      const layerObj = {
         title: layerTitle,
         id: layerId,
         attributes: [],
@@ -153,25 +149,25 @@ function QueryResultsService() {
       // verifico che ci siano feature legate a quel layer che sono il risultato della query
       if (featuresForLayer.features && featuresForLayer.features.length) {
         // prendo solo gli attributi effettivamente ritornati dal WMS (usando la prima feature disponibile)
-        layerObj.attributes = self._parseAttributes(layerAttributes, featuresForLayer.features[0].getProperties()),
+        layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0].getProperties())
         // faccio una ricerca sugli attributi del layer se esiste un campo image
         // se si lo setto a true
-        _.forEach(layerObj.attributes, function(attribute) {
+        layerObj.attributes.forEach((attribute) => {
           if (attribute.type == 'image') {
             layerObj.hasImageField = true;
           }
         });
         // a questo punto scorro sulle features selezionate dal risultato della query
-        _.forEach(featuresForLayer.features, function(feature){
-          var fid = feature.getId() ? feature.getId() : id;
-          var geometry = feature.getGeometry();
+        featuresForLayer.features.forEach((feature) => {
+          const fid = feature.getId() ? feature.getId() : id;
+          const geometry = feature.getGeometry();
           // verifico se il layer ha la geometria
           if (geometry) {
             // setto che ha geometria mi servirà per le action
             layerObj.hasgeometry = true
           }
           // creo un feature object
-          var featureObj = {
+          const featureObj = {
             id: fid,
             attributes: feature.getProperties(),
             geometry: feature.getGeometry(),
@@ -192,12 +188,12 @@ function QueryResultsService() {
   };
 
   this._parseAttributes = function(layerAttributes, featureAttributes) {
-    var featureAttributesNames = _.keys(featureAttributes);
+    let featureAttributesNames = _.keys(featureAttributes);
     featureAttributesNames = _.filter(featureAttributesNames,function(featureAttributesName){
       return ['boundedBy','geom','the_geom','geometry','bbox', 'GEOMETRY'].indexOf(featureAttributesName) == -1;
     });
     if (layerAttributes && layerAttributes.length) {
-      var featureAttributesNames = _.keys(featureAttributes);
+      let featureAttributesNames = _.keys(featureAttributes);
       return _.filter(layerAttributes,function(attribute){
         return featureAttributesNames.indexOf(attribute.name) > -1;
       })
@@ -217,19 +213,18 @@ function QueryResultsService() {
 
   // metodo per settare le azioni che si possono fare sulle feature del layer
   this.setActionsForLayers = function(layers) {
-    var self = this;
     // scorro su ogni layer che ho nella risposta
-    _.forEach(layers, function(layer) {
+    layers.forEach((layer) => {
       // se non esistono azioni su uno specifico layer creo
       // array di azioni con chiave id del layer (in quanto valore univoco)
-      if (!self.state.layersactions[layer.id]) {
-        self.state.layersactions[layer.id] = [];
+      if (!this.state.layersactions[layer.id]) {
+        this.state.layersactions[layer.id] = [];
       }
       // verifico se il layer ha gemetria
       if (layer.hasgeometry) {
         // se prsente aggiungo oggetto azione che mi server per fare
         // il goTo geometry
-        self.state.layersactions[layer.id].push({
+        this.state.layersactions[layer.id].push({
           id: 'gotogeometry',
           class: 'glyphicon glyphicon-map-marker',
           hint: 'Visualizza sulla mappa',
@@ -237,12 +232,12 @@ function QueryResultsService() {
         })
       }
       // vado a costruire l'action delle query-relazioni
-      if (self._relations) {
+      if (this._relations) {
         // scorro sulle relazioni e vado a verificare se ci sono relazioni che riguardano quel determintato layer
-        _.forEach(self._relations, function(relations, id) {
+        Object.entries(this._relations).forEach(([id, relations]) => {
           // verifico se l'id del layer è uguale all'id della relazione
           if (layer.id == id) {
-            self.state.layersactions[layer.id].push({
+            this.state.layersactions[layer.id].push({
               id: 'show-query-relations',
               class: 'fa fa-sitemap',
               hint: 'Visualizza Relazioni',
@@ -254,19 +249,19 @@ function QueryResultsService() {
         })
       }
     });
-    this.addActionsForLayers(self.state.layersactions);
+    this.addActionsForLayers(this.state.layersactions);
   };
 
   this.trigger = function(actionId, layer, feature) {
-    var actionMethod = this._actions[actionId];
+    const actionMethod = this._actions[actionId];
     if (actionMethod) {
       actionMethod(layer, feature);
     }
     if (layer) {
-      var layerActions = self.state.layersactions[layer.id];
+      const layerActions = this.state.layersactions[layer.id];
       if (layerActions) {
-        var action;
-        _.forEach(layerActions, function(layerAction){
+        let action;
+        layerActions.forEach((layerAction) => {
           if (layerAction.id == actionId) {
             action = layerAction;
           }
@@ -283,8 +278,8 @@ function QueryResultsService() {
       action.cbk(layer,feature, action)
     }
     if (action.route) {
-      var url;
-      var urlTemplate = action.route;
+      let url;
+      let urlTemplate = action.route;
       url = urlTemplate.replace(/{(\w*)}/g,function(m,key){
         return feature.attributes.hasOwnProperty(key) ? feature.attributes[key] : "";
       });
@@ -318,7 +313,7 @@ function QueryResultsService() {
 
   // funzione che mi serve per unregistrare il vector layer dalla query
   this.unregisterVectorLayer = function(vectorLayer) {
-    var index = this._vectorLayers.indexOf(vectorLayer);
+    const index = this._vectorLayers.indexOf(vectorLayer);
     if ( index != -1) {
       this._vectorLayers.splice(index, 1);
     }
@@ -326,13 +321,12 @@ function QueryResultsService() {
 
   // funzione che permette ai layer vettoriali di aggancirsi alla query info
   this._addVectorLayersDataToQueryResponse = function() {
-    var self = this;
-    this.onbefore('setQueryResponse', function (queryResponse, coordinates, resolution) {
+    this.onbefore('setQueryResponse', (queryResponse, coordinates, resolution) => {
       var mapService = ComponentsRegistry.getComponent('map').getService();
       var isVisible = false;
-      _.forEach(self._vectorLayers, function(vectorLayer) {
-        var features = [];
-        var feature,
+      this._vectorLayers.forEach((vectorLayer) => {
+        let features = [];
+        let feature,
           intersectGeom;
         // la prima condizione mi server se viene fatto un setQueryResponse sul singolo layer vettoriale
         // ad esempio con un pickfeature per evitare che venga scatenato un'altra query
@@ -352,7 +346,7 @@ function QueryResultsService() {
         // caso query info
         if (_.isArray(coordinates)) {
           if (coordinates.length == 2) {
-            var pixel = mapService.viewer.map.getPixelFromCoordinate(coordinates);
+            const pixel = mapService.viewer.map.getPixelFromCoordinate(coordinates);
             feature = mapService.viewer.map.forEachFeatureAtPixel(pixel, function (feature, layer) {
               return feature;
             },  {
@@ -414,20 +408,20 @@ QueryResultsService.zoomToElement = function(layer,feature) {
 
 QueryResultsService.goToGeometry = function(layer,feature) {
   if (feature.geometry) {
-    var mapService = ComponentsRegistry.getComponent('map').getService();
+    const mapService = ComponentsRegistry.getComponent('map').getService();
     mapService.highlightGeometry(feature.geometry, {duration: 4000});
   }
 };
 
 QueryResultsService.highlightGeometry = function(layer,feature) {
   if (feature.geometry) {
-    var mapService = ComponentsRegistry.getComponent('map').getService();
+    const mapService = ComponentsRegistry.getComponent('map').getService();
     mapService.highlightGeometry(feature.geometry,{zoom: false});
   }
 };
 
 QueryResultsService.clearHighlightGeometry = function(layer, feature) {
-  var mapService = ComponentsRegistry.getComponent('map').getService();
+  const mapService = ComponentsRegistry.getComponent('map').getService();
   mapService.clearHighlightGeometry();
 };
 

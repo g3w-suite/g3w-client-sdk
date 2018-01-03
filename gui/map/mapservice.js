@@ -1,21 +1,22 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var G3WObject = require('core/g3wobject');
-var GUI = require('gui/gui');
-var ApplicationService = require('core/applicationservice');
-var ProjectsRegistry = require('core/project/projectsregistry');
-var MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
-var Filter = require('core/layers/filter/filter');
-var WFSProvider = require('core/layers/providers/wfsprovider');
-var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
-var WMSLayer = require('core/layers/map/wmslayer');
-var XYZLayer = require('core/layers/map/xyzlayer');
-var ControlsFactory = require('gui/map/control/factory');
-var StreetViewService = require('gui/streetview/streetviewservice');
-var ControlsRegistry = require('gui/map/control/registry');
+const inherit = require('core/utils/utils').inherit;
+const t = require('core/i18n/i18n.service').t;
+const base = require('core/utils/utils').base;
+const G3WObject = require('core/g3wobject');
+const GUI = require('gui/gui');
+const ApplicationService = require('core/applicationservice');
+const ProjectsRegistry = require('core/project/projectsregistry');
+const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
+const Filter = require('core/layers/filter/filter');
+const WFSProvider = require('core/layers/providers/wfsprovider');
+const ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
+const WMSLayer = require('core/layers/map/wmslayer');
+const XYZLayer = require('core/layers/map/xyzlayer');
+const ControlsFactory = require('gui/map/control/factory');
+const StreetViewService = require('gui/streetview/streetviewservice');
+const ControlsRegistry = require('gui/map/control/registry');
 
 function MapService(options) {
-  var self = this;
+  let self = this;
   this.viewer = null;
   this.target = null;
   this._layersStoresEventKeys = {};
@@ -66,11 +67,11 @@ function MapService(options) {
     this.project = options.project;
   } else {
     this.project = ProjectsRegistry.getCurrentProject();
-    ProjectsRegistry.onafter('setCurrentProject',function(project){
-      self._removeListeners();
-      self.project = project;
-      self._setupLayers();
-      self._resetView();
+    ProjectsRegistry.onafter('setCurrentProject',(project) => {
+      this._removeListeners();
+      this.project = project;
+      this._setupLayers();
+      this._resetView();
     })
   }
   this._setupListeners();
@@ -90,22 +91,22 @@ function MapService(options) {
       if (width == 0 || height == 0) {
         return
       }
-      if (self.viewer) {
-        self.viewer.destroy();
-        self.viewer = null;
+      if (this.viewer) {
+        this.viewer.destroy();
+        this.viewer = null;
       }
-      self._setupViewer(width, height);
-      self.state.bbox = this.viewer.getBBOX();
-      self.state.resolution = this.viewer.getResolution();
-      self.state.center = this.viewer.getCenter();
-      self.setupControls();
-      self._setupLayers();
-      self.emit('viewerset');
+      this._setupViewer(width, height);
+      this.state.bbox = this.viewer.getBBOX();
+      this.state.resolution = this.viewer.getResolution();
+      this.state.center = this.viewer.getCenter();
+      this.setupControls();
+      this._setupLayers();
+      this.emit('viewerset');
     },
     controlClick: function() {}
   };
 
-  this.on('cataloglayerselected', function(layer) {
+  this.on('cataloglayerselected', (layer) => {
     // aggiunto condizione querable
    if (layer && layer.isQueryable()) {
      _.forEach(this._mapControls, function(mapcontrol) {
@@ -120,7 +121,7 @@ function MapService(options) {
    }
   });
 
-  this.on('cataloglayerunselected', function(layer) {
+  this.on('cataloglayerunselected', (layer) => {
     _.forEach(this._mapControls, function(mapcontrol) {
       if (_.indexOf(_.keysIn(mapcontrol.control),'onSelectLayer') > -1 && mapcontrol.control.onSelectLayer()) {
         mapcontrol.control.setEnable(false);
@@ -130,19 +131,19 @@ function MapService(options) {
 
   // vado a registrare gli eventi sui layerstores esistesenti nel registro al momento
   // dell'istanziamaneto del mapService
-  _.forEach(MapLayersStoreRegistry.getLayersStores(), function(layerStore) {
-    self._setUpEventsKeysToLayersStore(layerStore);
+  MapLayersStoreRegistry.getLayersStores().forEach((layerStore) => {
+    this._setUpEventsKeysToLayersStore(layerStore);
   });
 
   // sto in ascolto di evantuali aggiunte di layersStore per poter eventualmente
   // aggiungere i suoi layers alla mappa
-  MapLayersStoreRegistry.onafter('addLayersStore', function(layerStore) {
-    self._setUpEventsKeysToLayersStore(layerStore);
+  MapLayersStoreRegistry.onafter('addLayersStore', (layerStore) => {
+    this._setUpEventsKeysToLayersStore(layerStore);
   });
   // sto in ascolto di evantuali aggiunte di layersStore per poter eventualmente
   // aggiungere i suoi layers alla mappa
-  MapLayersStoreRegistry.onafter('removeLayersStore', function(layerStore) {
-    self._removeEventsKeysToLayersStore(layerStore);
+  MapLayersStoreRegistry.onafter('removeLayersStore', (layerStore) => {
+    this._removeEventsKeysToLayersStore(layerStore);
   });
   base(this);
 }
@@ -150,7 +151,7 @@ function MapService(options) {
 
 inherit(MapService, G3WObject);
 
-var proto = MapService.prototype;
+const proto = MapService.prototype;
 
 proto.createOlLayer = function(options) {
   options = options || {};
@@ -282,8 +283,8 @@ proto.getLayerByName = function(name) {
 
 // ritorna il layer della mappa in base all'id
 proto.getLayerById = function(id) {
-  var layer;
-  var map = this.viewer.map;
+  let layer;
+  const map = this.viewer.map;
   map.getLayers().forEach(function(lyr) {
     if (lyr.get('id') == id) {
       layer = lyr;
@@ -293,12 +294,38 @@ proto.getLayerById = function(id) {
   return layer;
 };
 
+proto.getQueryLayersPromisesByCoordinates = function(layerFilterObject, coordinates) {
+  const layers = this.getLayers(layerFilterObject);
+  let queryPromises = [];// raccoglie tutte le promises dei provider del layer
+  // ciclo sui layer e per ogni layer chiamo il metodo query
+  // passando alcune opzioni)
+  layers.forEach((layer) => {
+    queryPromises.push(layer.query({
+      coordinates: coordinates,
+      resolution: this.getResolution()
+    }))
+  });
+  return queryPromises;
+};
+
+proto.getQueryLayersPromisesByFilter = function(layerFilterObject, filter) {
+  const layers = this.getLayers(layerFilterObject);
+  let queryPromises = [];// raccoglie tutte le promises dei provider del layer
+  // ciclo sui layer e per ogni layer chiamo il metodo query
+  // passando alcune opzioni)
+  layers.forEach((layer) => {
+    queryPromises.push(layer.query({
+      filter: filter
+    }))
+  });
+  return queryPromises;
+};
 
 proto.setupControls = function(){
-  var self = this;
   if (this.config && this.config.mapcontrols) {
-    _.forEach(this.config.mapcontrols, function(controlType) {
-      var control;
+    const mapcontrols = this.config.mapcontrols;
+    mapcontrols.forEach((controlType) => {
+      let control;
       switch (controlType) {
         case 'reset':
           if (!isMobile.any) {
@@ -306,7 +333,7 @@ proto.setupControls = function(){
               type: controlType
             });
           }
-          self.addControl(controlType,control);
+          this.addControl(controlType,control);
           break;
         case 'zoom':
           control = ControlsFactory.create({
@@ -314,7 +341,7 @@ proto.setupControls = function(){
             zoomInLabel: "\ue98a",
             zoomOutLabel: "\ue98b"
           });
-          self.addControl(controlType,control);
+          this.addControl(controlType,control);
           break;
         case 'zoombox':
           if (!isMobile.any) {
@@ -322,9 +349,9 @@ proto.setupControls = function(){
               type: controlType
             });
             control.on('zoomend', function (e) {
-              self.viewer.fit(e.extent);
+              this.viewer.fit(e.extent);
             });
-            self.addControl(controlType,control);
+            this.addControl(controlType,control);
           }
           break;
         case 'zoomtoextent':
@@ -332,60 +359,53 @@ proto.setupControls = function(){
             control = ControlsFactory.create({
               type: controlType,
               label: "\ue98c",
-              extent: self.project.state.initextent
+              extent: this.project.state.initextent
             });
-            self.addControl(controlType,control);
+            this.addControl(controlType,control);
           }
           break;
         case 'query':
           control = ControlsFactory.create({
             type: controlType
           });
-          control.on('picked', function(e) {
-            var coordinates = e.coordinates;
+          control.on('picked', (e) => {
+            const coordinates = e.coordinates;
+            this.getMap().getView().setCenter(coordinates);
             // visualizzo il marker per far vederee il punto dove ho cliccato
-            self.showMarker(coordinates);
-            var showQueryResults = GUI.showContentFactory('query');
+            this.showMarker(coordinates);
+            const showQueryResults = GUI.showContentFactory('query');
             // recupero i layers che hanno le caratteristiche di esserere interrogabili
-            var layers = self.getLayers({
+            const layersFilterObject = {
               QUERYABLE: true,
               SELECTEDORALL: true,
               VISIBLE: true
-            });
-            var queryPromises = [];// raccoglie tutte le promises dei provider del layer
-            // ciclo sui layer e per ogni layer chiamo il metodo query
-            // passando alcune opzioni)
-            _.forEach(layers, function(layer) {
-              queryPromises.push(layer.query({
-                  coordinates: coordinates,
-                  resolution: self.getResolution()
-              }))
-            });
+            };
+            let queryPromises = this.getQueryLayersPromisesByCoordinates(layersFilterObject, coordinates);// raccoglie tutte le promises dei provider del layer
             //faccio query by location su i layers selezionati o tutti
-            var queryResultsPanel = showQueryResults('interrogazione');
+            const queryResultsPanel = showQueryResults('');
             $.when.apply(this, queryPromises)
-              .then(function() {
-                layersResults = arguments;
-                var results = {
+              .then((...args) => {
+                layersResults = args;
+                const results = {
                   query: layersResults[0] ? layersResults[0].query: null,
                   data: []
                 };
-                _.forEach(layersResults, function(result) {
+                layersResults.forEach((result) => {
                   results.data.push(result.data[0]);
                 });
-                queryResultsPanel.setQueryResponse(results, coordinates, self.state.resolution);
+                queryResultsPanel.setQueryResponse(results, coordinates, this.state.resolution);
                 })
               .fail(function() {
-                GUI.notify.error('Si è verificato un errore nella richiesta al server');
+                GUI.notify.error(t("info.server_error"));
                 GUI.closeContent();
               })
           });
-          self.addControl(controlType,control);
+          this.addControl(controlType,control);
           //set active control by default
           control.toggle();
           break;
         case 'querybypolygon':
-          var controlLayers = self.getLayers({
+          const controlLayers = this.getLayers({
             QUERYABLE: true,
             SELECTEDORALL: true,
             VISIBLE: true
@@ -395,83 +415,71 @@ proto.setupControls = function(){
             layers: controlLayers
           });
           if (control) {
-            var showQueryResults = GUI.showContentFactory('query');
-            control.on('picked', function (e) {
-              var results = {};
-              var queryPromises = [];// raccoglie tutte le promises dei provider del layer
-              var geometry;
-              var coordinates = e.coordinates;
-              var layers = self.getLayers({
+            const showQueryResults = GUI.showContentFactory('query');
+            control.on('picked', (e) => {
+              let results = {};
+              let geometry;
+              const coordinates = e.coordinates;
+              this.getMap().getView().setCenter(coordinates);
+              let layersFilterObject = {
                 QUERYABLE: true,
                 SELECTED: true,
                 VISIBLE: true
-              });
-              _.forEach(layers, function (layer) {
-                queryPromises.push(layer.query({
-                  coordinates: coordinates,
-                  resolution: self.getResolution()
-                }));
-              });
-
+              };
+              let queryPromises = this.getQueryLayersPromisesByCoordinates(layersFilterObject, coordinates);
               $.when.apply(this, queryPromises)
-                .then(function () {
-                  queryPromises = [];
-                  layersResults = arguments;
+                .then((...args) => {
+                  let layersResults = args;
+                  let queryPromises = [];
                   results = {};
                   // vado ad unificare i rusltati delle promises
                   results.query = layersResults[0] ? layersResults[0].query: null;
-                  if(layersResults[0] && layersResults[0].data && layersResults[0].data.length) {
+                  if (layersResults[0] && layersResults[0].data && layersResults[0].data.length) {
                     geometry = layersResults[0].data[0].features[0].getGeometry();
                     if (geometry) {
-                      var filter = new Filter();
+                      let filter = new Filter();
                       filter.setGeometry(geometry);
-                      var queryLayers = self.getLayers({
+                      let layersFilterObject = {
                         ALLNOTSELECTED: true,
                         FILTERABLE: true,
                         VISIBLE: true
-                      });
-                      _.forEach(queryLayers, function (layer) {
-                        queryPromises.push(layer.query({
-                            filter: filter
-                          })
-                        )
-                      });
-                      self.highlightGeometry(geometry);
+                      };
+                      queryPromises = this.getQueryLayersPromisesByFilter(layersFilterObject, filter);
+                      this.highlightGeometry(geometry);
                     }
-                    var queryResultsPanel = showQueryResults('interrogazione');
+                    const queryResultsPanel = showQueryResults('');
                     $.when.apply(this, queryPromises)
-                      .then(function () {
-                        layersResults = arguments;
-                        var results = {
+                      .then((...args) => {
+                        layersResults = args;
+                        const results = {
                           query: layersResults[0] ? layersResults[0].query: null,
                           data: []
                         };
                         _.forEach(layersResults, function(result) {
                           results.data.push(result.data[0]);
                         });
-                        queryResultsPanel.setQueryResponse(results, geometry, self.state.resolution);
+                        queryResultsPanel.setQueryResponse(results, geometry, this.state.resolution);
                       })
-                      .fail(function () {
-                        GUI.notify.error('Si è verificato un errore nella richiesta al server');
+                      .fail(() => {
+                        GUI.notify.error(t("info.server_error"));
                         GUI.closeContent();
                       })
-                      .always(function () {
-                        self.clearHighlightGeometry();
+                      .always(() => {
+                        this.clearHighlightGeometry();
                       });
                   }
                 })
-                .fail(function () {
-                  GUI.notify.error('Si è verificato un errore nella richiesta al server');
+                .fail(() => {
+                  GUI.notify.error(t("info.server_error"));
                   GUI.closeContent();
                 })
             });
-
-            self.addControl(controlType, control);
+            this.addControl(controlType, control);
           }
           break;
         case 'querybbox':
-          if (!isMobile.any && self.filterableLayersAvailable()) {
-            var controlLayers = self.getLayers({
+          if (!isMobile.any && this.filterableLayersAvailable()) {
+            const controlLayers = this.getLayers({
               SELECTEDORALL: true,
               FILTERABLE: true,
               VISIBLE: true
@@ -481,37 +489,39 @@ proto.setupControls = function(){
               layers: controlLayers
             });
             if (control) {
-              control.on('bboxend', function (e) {
-                var bbox = e.extent;
-                var layers = self.getLayers({
+              control.on('bboxend', (e) => {
+                const bbox = e.extent;
+                const center = ol.extent.getCenter(bbox);
+                this.getMap().getView().setCenter(center);
+                const layers = this.getLayers({
                   SELECTEDORALL: true,
                   FILTERABLE: true,
                   VISIBLE: true
                 });
-                var queryPromises = [];// raccoglie tutte le promises dei provider del layer
-                _.forEach(layers, function(layer) {
-                  var filter = new Filter();
+                let queryPromises = [];// raccoglie tutte le promises dei provider del layer
+                layers.forEach((layer) => {
+                  const filter = new Filter();
                   filter.setBBOX(bbox);
                   queryPromises.push(layer.query({
                     filter: filter
                   }))
                 });
-                var showQueryResults = GUI.showContentFactory('query');
-                var queryResultsPanel = showQueryResults('interrogazione');
+                const showQueryResults = GUI.showContentFactory('query');
+                const queryResultsPanel = showQueryResults('');
                 $.when.apply(this, queryPromises)
-                  .then(function() {
-                    layersResults = arguments;
-                    var results = {
+                  .then((...args) => {
+                    layersResults = args;
+                    const results = {
                       query: layersResults[0] ? layersResults[0].query: null,
                       data: []
                     };
                     _.forEach(layersResults, function(result) {
                       results.data.push(result.data[0]);
                     });
-                    queryResultsPanel.setQueryResponse(results, bbox, self.state.resolution);
+                    queryResultsPanel.setQueryResponse(results, bbox, this.state.resolution);
                   })
-                  .fail(function(error) {
-                    var msg = 'Si è verificato un errore nella richiesta al server';
+                  .fail((error) => {
+                    let msg = t("info.server_error");
                     if (error) {
                       msg += ' '+error;
                     }
@@ -519,7 +529,7 @@ proto.setupControls = function(){
                     GUI.closeContent();
                   })
                 });
-              self.addControl(controlType, control);
+              this.addControl(controlType, control);
             }
           }
           break;
@@ -529,30 +539,30 @@ proto.setupControls = function(){
             control = ControlsFactory.create({
               type: controlType
             });
-            control.setProjection(self.getProjection());
-            self.addControl(controlType, control);
-            self.on('viewerset', function() {
-              self.viewer.map.addLayer(control.getLayer());
+            control.setProjection(this.getProjection());
+            this.addControl(controlType, control);
+            this.on('viewerset', () => {
+              this.viewer.map.addLayer(control.getLayer());
             });
             $script("https://maps.googleapis.com/maps/api/js?key=AIzaSyBCHtKGx3yXWZZ7_gwtJKG8a_6hArEFefs",
               function() {
-                var position = {
+                let position = {
                   lat: null,
                   lng: null
                 };
-                var streetViewService = new StreetViewService();
-                streetViewService.onafter('postRender', function(position) {
+                const streetViewService = new StreetViewService();
+                streetViewService.onafter('postRender', (position) => {
                   control.setPosition(position);
                 });
                 if (control) {
-                  control.on('picked', function(e) {
-                    var coordinates = e.coordinates;
-                    var lonlat = ol.proj.transform(coordinates, self.getProjection().getCode(), 'EPSG:4326');
+                  control.on('picked', (e) => {
+                    const coordinates = e.coordinates;
+                    const lonlat = ol.proj.transform(coordinates, this.getProjection().getCode(), 'EPSG:4326');
                     position.lat = lonlat[1];
                     position.lng = lonlat[0];
                     streetViewService.showStreetView(position);
                   });
-                  control.on('disabled', function() {
+                  control.on('disabled', () => {
                     if (panorama) {
                       panorama = null;
                     }
@@ -567,18 +577,18 @@ proto.setupControls = function(){
             type: controlType,
             position: 'br'
           });
-          self.addControl(controlType,control);
+          this.addControl(controlType,control);
           break;
         case 'overview':
           if (!isMobile.any) {
-            if (!self.config.overviewproject) {
+            if (!this.config.overviewproject) {
               return
             }
-            var overviewProjectGid = self.config.overviewproject.gid;
+            const overviewProjectGid = this.config.overviewproject.gid;
             if (overviewProjectGid) {
               ProjectsRegistry.getProject(overviewProjectGid)
-              .then(function(project) {
-                var overViewMapLayers = self.getOverviewMapLayers(project);
+              .then((project) =>{
+                const overViewMapLayers = self.getOverviewMapLayers(project);
                 control = ControlsFactory.create({
                   type: controlType,
                   position: 'bl',
@@ -588,10 +598,10 @@ proto.setupControls = function(){
                   collapsed: false,
                   layers: overViewMapLayers,
                   view: new ol.View({
-                    projection: self.getProjection()
+                    projection: this.getProjection()
                   })
                 });
-                self.addControl(controlType,control);
+                this.addControl(controlType,control);
               });
             }
           }
@@ -600,13 +610,13 @@ proto.setupControls = function(){
           control = ControlsFactory.create({
             type: controlType
           });
-          control.on('addresschosen', function (evt) {
-            var coordinate = evt.coordinate;
-            var geometry =  new ol.geom.Point(coordinate);
-            self.highlightGeometry(geometry);
+          control.on('addresschosen', (evt) => {
+            const coordinate = evt.coordinate;
+            const geometry =  new ol.geom.Point(coordinate);
+            this.highlightGeometry(geometry);
           });
-          self.addControl(controlType,control);
-          $('#search_nominatim').click(function() {
+          this.addControl(controlType,control);
+          $('#search_nominatim').click(() => {
             control.nominatim.query($('input.gcd-txt-input').val());
           });
           $('.gcd-txt-result').perfectScrollbar();
@@ -618,13 +628,13 @@ proto.setupControls = function(){
             control = ControlsFactory.create({
               type: controlType
             });
-            control.on('click', function(evt) {
-              self.showMarker(evt.coordinates);
+            control.on('click',(evt) => {
+              this.showMarker(evt.coordinates);
             });
-            control.on('error', function(e) {
-              GUI.notify.error('Non è possibile calcolare la tua posizione. Si è verificato un errore di connessione al server')
+            control.on('error', (e) => {
+              GUI.notify.error(t("mapcontrols.geolocation.error"))
             });
-            self.addControl(controlType, control);
+            this.addControl(controlType, control);
           }
           break;
         case 'addlayers':
@@ -632,10 +642,10 @@ proto.setupControls = function(){
             control = ControlsFactory.create({
               type: controlType
             });
-            control.on('addlayer', function() {
-              self.emit('addexternallayer');
+            control.on('addlayer', () => {
+              this.emit('addexternallayer');
             });
-            self.addControl(controlType, control);
+            this.addControl(controlType, control);
           }
           break;
         case 'length':
@@ -643,7 +653,7 @@ proto.setupControls = function(){
             control = ControlsFactory.create({
               type: controlType
             });
-            self.addControl(controlType, control);
+            this.addControl(controlType, control);
           }
           break;
         case 'area':
@@ -651,7 +661,7 @@ proto.setupControls = function(){
             control = ControlsFactory.create({
               type: controlType
             });
-            self.addControl(controlType, control);
+            this.addControl(controlType, control);
           }
           break;
       }
@@ -662,11 +672,11 @@ proto.setupControls = function(){
 // funzione che recupera i layers dagli stores
 proto.getLayers = function(filter) {
   filter = filter || {};
-  var mapFilter = {
+  const mapFilter = {
     GEOLAYER: true
   };
   filter = _.merge(filter, mapFilter);
-  var layers = [];
+  let layers = [];
   _.forEach(MapLayersStoreRegistry.getQuerableLayersStores(), function(layerStore) {
     _.merge(layers, layerStore.getLayers(filter));
   });
