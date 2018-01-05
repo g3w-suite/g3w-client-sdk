@@ -1,8 +1,8 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var DataProvider = require('core/layers/providers/provider');
-var Feature = require('core/layers/features/feature');
-var Parsers = require('core/parsers/parsers');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const DataProvider = require('core/layers/providers/provider');
+const Feature = require('core/layers/features/feature');
+const Parsers = require('core/parsers/parsers');
 
 function QGISProvider(options) {
   options = options || {};
@@ -28,16 +28,15 @@ function QGISProvider(options) {
 
 inherit(QGISProvider, DataProvider);
 
-var proto = QGISProvider.prototype;
+const proto = QGISProvider.prototype;
 
 //metodo per le interrogazioni tramite filtri
 proto.query = function(options) {
-  var self = this;
-  var d = $.Deferred();
+  const d = $.Deferred();
   options = options || {};
-  var filter = options.filter || null;
+  const filter = options.filter || null;
   if (filter) {
-    var url = this._queryUrl;
+    const url = this._queryUrl;
       $.get( url, {
           SERVICE: 'WMS',
           VERSION: '1.3.0',
@@ -48,11 +47,11 @@ proto.query = function(options) {
           FEATURE_COUNT: 200,
           FILTER: filter.get()
         }
-      ).then(function(response) {
-        var featuresForLayers = self.handleQueryResponseFromServer(self._layerName, response);
-        d.resolve(featuresForLayers);
-      })
-        .fail(function(){
+      ).then((response) => {
+          const featuresForLayers = this.handleQueryResponseFromServer(this._layerName, response);
+          d.resolve(featuresForLayers);
+        })
+        .fail(() => {
           d.reject();
         });
     }
@@ -63,17 +62,17 @@ proto.query = function(options) {
 // del layer
 proto.getConfig = function(options) {
   options = options || {};
-  var d = $.Deferred();
-  var url = this._configUrl;
+  const d = $.Deferred();
+  const url = this._configUrl;
   if (!url) {
     d.reject('Url non valido');
     return;
   }
   $.get(url)
-    .then(function(config) {
+    .then((config) => {
       d.resolve(config);
     })
-    .fail(function(err) {
+    .fail((err) => {
       d.reject(err);
     });
   return d.promise();
@@ -81,9 +80,9 @@ proto.getConfig = function(options) {
 
 proto.getWidgetData = function(options) {
   options = options || {};
-  var type = options.type;
-  var fields = options.fields;
-  var url = this._widgetUrls[type];
+  const type = options.type;
+  const fields = options.fields;
+  const url = this._widgetUrls[type];
   return $.get(url, {
     fields: fields
   });
@@ -91,12 +90,12 @@ proto.getWidgetData = function(options) {
 
 // unlock feature
 proto.unlock = function() {
-  var d = $.Deferred();
+  const d = $.Deferred();
   $.post(this._unlockUrl)
-    .then(function(response) {
+    .then((response) => {
       d.resolve(response);
     })
-    .fail(function(err) {
+    .fail((err) => {
       d.reject(err);
     });
   return d.promise()
@@ -104,10 +103,10 @@ proto.unlock = function() {
 
 // funzione commit
 proto.commit = function(commitItems) {
-  var d = $.Deferred();
+  const d = $.Deferred();
   // verifico nel passaggio di opzioni se è stato richiesto editing o meno;
-  var url = this._commitUrl;
-  var jsonCommits = JSON.stringify(commitItems);
+  const url = this._commitUrl;
+  const jsonCommits = JSON.stringify(commitItems);
   $.post({
     url: url,
     data: jsonCommits,
@@ -124,45 +123,49 @@ proto.commit = function(commitItems) {
 
 // METODI LOADING EDITING FEATURES E STABILISCE SE IN LETTURA O SCRITTURA/LETTURA //
 proto.getFeatures = function(options) {
-  var self = this;
-  var d = $.Deferred();
+  const d = $.Deferred();
   options = options || {};
-  var layerType = options.type || 'vector'; //tipo di layer
+  const layerType = options.type || 'vector'; //tipo di layer
   // verifico nel passaggio di veridico se i dati sono richiesti in editing o sola lettura;
-  var url = options.editing ? this._editingUrl : this._dataUrl;
-  var filter = options.filter || null;
+  const url = options.editing ? this._editingUrl : this._dataUrl;
+  let filter = options.filter || null;
   if (filter) {
-    var bbox = filter.bbox;
+    const bbox = filter.bbox;
     filter = {in_bbox: bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3]};
   }
-  var pk = this._layer.getPk();
+  const pk = this._layer.getPk();
   if (!url) {
     d.reject('Url non valido');
     return;
   }
-  var features = [];
-  var jsonFilter = JSON.stringify(filter);
+  const features = [];
+  const jsonFilter = JSON.stringify(filter);
   $.post({
     url: url,
     data: jsonFilter,
     contentType: "application/json"
   })
-    .then(function(response) {
-      var vector = response.vector;
-      var featurelocks = response.featurelocks;
-      var data = vector.data;
-      var geometrytype = vector.geometrytype;
-      var parser = Parsers[layerType].get({
+    .then((response) => {
+      const vector = response.vector;
+      const featurelocks = response.featurelocks;
+      const data = vector.data;
+      const geometrytype = vector.geometrytype;
+      const parser = Parsers[layerType].get({
         type: 'json',
         pk: pk
       });
-      if (geometrytype != 'No geometry')
-        var parser_options = { crs: self._layer.getCrs() };
-      _.forEach(parser(data, parser_options), function(feature) {
-        features.push(new Feature({
-          feature: feature,
-          pk: pk
-        }));
+      let parser_options = {};
+      if (geometrytype != 'No geometry') parser_options = { crs: this._layer.getCrs() };
+      const lockIds = featurelocks.map((featureLock) => {
+        return 1*featureLock.featureid;
+      });
+      parser(data, parser_options).forEach((feature) => {
+        if (lockIds.includes(feature.getId())) {
+          features.push(new Feature({
+            feature: feature,
+            pk: pk
+          }));
+        }
       });
       // risolvo passando le features loccate e le features caricate
       d.resolve({

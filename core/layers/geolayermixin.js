@@ -1,10 +1,9 @@
-var Layer = require('core/layers/layer');
-var Projections = require('g3w-ol3/src/projection/projections');
+const Projections = require('g3w-ol3/src/projection/projections');
 
 
 function GeoLayerMixin(config) {}
 
-var proto = GeoLayerMixin.prototype;
+const proto = GeoLayerMixin.prototype;
 
 proto.setup = function(config) {
   if (!this.config) {
@@ -17,7 +16,9 @@ proto.setup = function(config) {
   // geolayer a true e aggiungendo le informazioni del bbox alla proprietà bbox
   _.extend(this.state, {
     geolayer: true,
-    bbox: config.bbox || null
+    bbox: config.bbox || null,
+    visible: config.visible,
+    exclude_from_legend: config.exclude_from_legend
   });
   if (config.projection) {
     this.config.projection = config.projection;

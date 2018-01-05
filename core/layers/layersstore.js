@@ -1,10 +1,9 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils//utils').base;
-var G3WObject = require('core/g3wobject');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils//utils').base;
+const G3WObject = require('core/g3wobject');
 
 // Interfaccia per registare i layers
 function LayersStore(config) {
-  var self = this;
   config = config || {};
   this.config = {
     id: config.id || Date.now(),
@@ -29,14 +28,13 @@ function LayersStore(config) {
 
   this.setters = {
     setLayersVisible: function (layersIds, visible) {
-      var self = this;
-      _.forEach(layersIds, function (layerId) {
-        self.getLayerById(layerId).state.visible = visible;
+      layersIds.forEach((layerId) => {
+        this.getLayerById(layerId).state.visible = visible;
       })
     },
     setLayerSelected: function(layerId, selected) {
-      var layers = this.getLayers();
-      _.forEach(layers, function(layer) {
+      const layers = this.getLayers();
+      layers.forEach((layer) => {
         layer.state.selected = ((layerId == layer.getId()) && selected) || false;
       })
     },
@@ -80,9 +78,8 @@ proto._addLayer = function(layer) {
 };
 
 proto.addLayers = function(layers) {
-  var self = this;
-  _.forEach(layers, function(layer) {
-    self.addLayer(layer);
+  layers.forEach((layer) =>  {
+    this.addLayer(layer);
   });
 };
 
@@ -100,20 +97,20 @@ proto.getLayersDict = function(options) {
   if (!options) {
     return this._layers;
   }
-  var options = options || {};
-  var filterActive = options.ACTIVE;
-  var filterQueryable = options.QUERYABLE;
-  var filterFilterable = options.FILTERABLE;
-  var filterEditable = options.EDITABLE;
-  var filterVisible = options.VISIBLE;
-  var filterSelected = options.SELECTED;
-  var filterCached = options.CACHED;
-  var filterSelectedOrAll = options.SELECTEDORALL;
-  var filterAllNotSelected = options.ALLNOTSELECTED;
-  var filterServerType = options.SERVERTYPE;
-  var filterBaseLayer = options.BASELAYER;
-  var filterGeoLayer = options.GEOLAYER;
-  var filterHidden = options.HIDDEN;
+  options = options || {};
+  const filterActive = options.ACTIVE;
+  const filterQueryable = options.QUERYABLE;
+  const filterFilterable = options.FILTERABLE;
+  const filterEditable = options.EDITABLE;
+  const filterVisible = options.VISIBLE;
+  const filterSelected = options.SELECTED;
+  const filterCached = options.CACHED;
+  const filterSelectedOrAll = options.SELECTEDORALL;
+  const filterAllNotSelected = options.ALLNOTSELECTED;
+  const filterServerType = options.SERVERTYPE;
+  const filterBaseLayer = options.BASELAYER;
+  const filterGeoLayer = options.GEOLAYER;
+  const filterHidden = options.HIDDEN;
   if (_.isUndefined(filterQueryable)
     && _.isUndefined(filterFilterable)
     && _.isUndefined(filterEditable)
@@ -128,7 +125,7 @@ proto.getLayersDict = function(options) {
     && _.isUndefined(filterBaseLayer)) {
     return this._layers;
   }
-  var layers = [];
+  let layers = [];
   _.forEach(this._layers, function(layer, key) {
     layers.push(layer);
   });
@@ -196,13 +193,13 @@ proto.getLayersDict = function(options) {
 
   if (typeof filterServerType == 'string' && filterServerType!='') {
     layers = _.filter(layers,function(layer){
-      return filterServerType = layer.getServerType();
+      return filterServerType == layer.getServerType();
     });
   }
 
   // filtra solo i selezionati
   if (filterSelectedOrAll) {
-    var _layers = layers;
+    let _layers = layers;
     layers = _.filter(layers,function(layer) {
       return layer.isSelected();
     });
@@ -211,7 +208,7 @@ proto.getLayersDict = function(options) {
 
   // filtra solo i quelli non selezionati
   if (filterAllNotSelected) {
-    var _layers = layers;
+    let _layers = layers;
     layers = _.filter(layers,function(layer){
       return !layer.isSelected();
     });
@@ -222,7 +219,7 @@ proto.getLayersDict = function(options) {
 
 // ritorna l'array dei layers (con opzioni di ricerca)
 proto.getLayers = function(options) {
-  var layers = this.getLayersDict(options);
+  const layers = this.getLayersDict(options);
   return _.values(layers);
 };
 
@@ -237,7 +234,7 @@ proto.getLayerById = function(layerId) {
 };
 
 proto.getLayerByName = function(name) {
-  var layer = null;
+  let layer = null;
   _.forEach(this.getLayersDict(),function(layer){
     if (layer.getName() == name){
       layer = _layer;
@@ -260,14 +257,85 @@ proto.getGeoLayers = function() {
   })
 };
 
-proto.toggleLayer = function(layerId,visible){
-  var layer = this.getLayerById(layerId);
-  var visible = visible || !layer.state.visible;
+proto._getAllSiblingsChildrenLayersId = function(layerstree) {
+  let nodeIds = [];
+  let traverse = (layerstree) => {
+    layerstree.nodes.forEach((node) => {
+      if (node.id)
+        nodeIds.push(node.id);
+      else
+        traverse(node);
+    });
+  };
+  traverse(layerstree);
+  return nodeIds;
+};
+
+proto._getAllParentLayersId = function(layerstree, node) {
+  let nodeIds = [];
+  let traverse = (layerstree) => {
+    layerstree.nodes.forEach((node) => {
+      if (node.id)
+        nodeIds.push(node.id);
+      else
+        traverse(node);
+    });
+  };
+
+  traverse({
+    nodes: layerstree.nodes.filter((_node) => {
+      return _node != node;
+    })
+  });
+  return nodeIds;
+};
+
+proto._mutuallyExclude = function(layerId) {
+  let parentLayersTree = this.state.layerstree;
+  let traverse = (obj) => {
+    Object.entries(obj).forEach(([key, layer]) => {
+      if (!_.isNil(layer.nodes)) {
+        let found = layer.nodes.reduce((previous, node) => {
+          return node.id == layerId ||  previous ;
+        }, false);
+        // if found mean that a found a group that contain layer with layerId
+        if (found) {
+          let checked_node;
+          let nodeIds = [];
+          layer.nodes.forEach((node) => {
+            if (node.id) {
+              if (node.id != layerId)
+                nodeIds.push(node.id);
+              else
+                checked_node = node;
+            } else {
+              nodeIds = nodeIds.concat(this._getAllSiblingsChildrenLayersId(node));
+            }
+          });
+          if (parentLayersTree.mutually_exclusive) {
+            nodeIds = nodeIds.concat(this._getAllParentLayersId(parentLayersTree, checked_node));
+          }
+          this.setLayersVisible(nodeIds, false);
+          parentLayersTree = layer;
+        }
+        traverse(layer.nodes);
+      }
+    });
+  };
+  traverse(this.state.layerstree)
+};
+
+proto.toggleLayer = function(layerId, visible, mutually_exclusive) {
+  const layer = this.getLayerById(layerId);
+  visible = visible || !layer.state.visible;
+  if (mutually_exclusive && visible) {
+    this._mutuallyExclude(layerId)
+  }
   this.setLayersVisible([layerId],visible);
 };
 
-proto.toggleLayers = function(layersIds,visible){
-  this.setLayersVisible(layersIds,visible);
+proto.toggleLayers = function(layersIds, visible) {
+  this.setLayersVisible(layersIds, visible);
 };
 
 proto.selectLayer = function(layerId){
@@ -295,20 +363,19 @@ proto.getWmsUrl = function() {
   return this.config.wmsUrl;
 };
 
-// funzione che setta il layersstree deli layers del layersstore
+// funzione che setta il layersstree dei layers del layersstore
 proto.setLayersTree = function(layerstree, name) {
-  var self = this;
-  function traverse(obj) {
-    _.forIn(obj, function (layer, key) {
+  let traverse = (obj) => {
+    Object.entries(obj).forEach(([key, layer]) => {
       //verifica che il nodo sia un layer e non un folder
       if (!_.isNil(layer.id)) {
-        obj[key] = self.getLayerById(layer.id).getState();
+        obj[key] = this.getLayerById(layer.id).getState();
       }
       if (!_.isNil(layer.nodes)){
         traverse(layer.nodes);
       }
     });
-  }
+  };
   if (layerstree.length) {
     traverse(layerstree);
     // questo server per raggruppare ogni albero dei layer
@@ -327,33 +394,35 @@ proto.setLayersTree = function(layerstree, name) {
 // naturalmente è ad una dimanesione altrimenti c'è da studiare
 // come creare un layers tree cosa innestata forse paasando un layertree nella configurazione
 proto.createLayersTree = function(groupName, options) {
-  var options = options || {};
-  var full = options.full || false;
-  var _layerstree = options.layerstree || null;
-  var layerstree = [];
+  options = options || {};
+  const full = options.full || false;
+  const _layerstree = options.layerstree || null;
+  let layerstree = [];
   if (_layerstree) {
     if (full === true) {
       return this.state.layerstree;
     } else {
-      function traverse(obj, newobj) {
+      let traverse = (obj, newobj) => {
         _.forIn(obj, function (layer) {
-          var lightlayer = {};
+          let lightlayer = {};
           if (!_.isNil(layer.id)) {
             lightlayer.id = layer.id;
           }
-          if (!_.isNil(layer.nodes)){
+          if (!_.isNil(layer.nodes)) {
             lightlayer.title = layer.name;
             lightlayer.expanded = layer.expanded;
             lightlayer.nodes = [];
+            lightlayer.mutually_exclusive = layer["mutually-exclusive"];
             traverse(layer.nodes,lightlayer.nodes)
           }
           newobj.push(lightlayer);
         });
-      }
+      };
       traverse(_layerstree, layerstree);
     }
   } else {
-    _.forEach(this.getGeoLayers(), function(layer) {
+    const geoLayers = this.getGeoLayers();
+    geoLayers.forEach((layer) => {
       layerstree.push({
         id: layer.getId(),
         name: layer.getName(),

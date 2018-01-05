@@ -43,12 +43,12 @@ function ProjectsRegistry() {
     maxscale: null,
     currentProject: null
   };
-  
+
   // tutte le configurazioni di base dei progetti, ma di cui non è detto che
   // sia ancora disponibile l'istanza (lazy loading)
   this._pendingProjects = [];
   this._projects = {};
-  
+
   base(this);
 }
 
@@ -139,7 +139,7 @@ proto.getListableProjects = function() {
     }
     //resituisce solo quelli diversi da overviewprojetc
     // nel caso si stato settato
-    if ((project.overviewprojectgid && project.gid != project.overviewprojectgid.gid && project.id != currentProjectId) || (project.id != currentProjectId)) {
+    if ((project.id != currentProjectId) && (project.overviewprojectgid && project.gid != project.overviewprojectgid.gid && project.id != currentProjectId)) {
       return project;
     }
   }), 'title')
@@ -187,7 +187,7 @@ proto.getProject = function(projectGid) {
     })
   }
 };
-  
+
 //ritorna una promises che verrà risolta con la
 // configuarzione del progetto corrente
 proto._getProjectFullConfig = function(projectBaseConfig) {

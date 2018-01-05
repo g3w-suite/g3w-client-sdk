@@ -348,7 +348,7 @@ proto.setupControls = function(){
             control = ControlsFactory.create({
               type: controlType
             });
-            control.on('zoomend', function (e) {
+            control.on('zoomend', (e) => {
               this.viewer.fit(e.extent);
             });
             this.addControl(controlType,control);
@@ -588,7 +588,7 @@ proto.setupControls = function(){
             if (overviewProjectGid) {
               ProjectsRegistry.getProject(overviewProjectGid)
               .then((project) =>{
-                const overViewMapLayers = self.getOverviewMapLayers(project);
+                const overViewMapLayers = this.getOverviewMapLayers(project);
                 control = ControlsFactory.create({
                   type: controlType,
                   position: 'bl',
@@ -608,7 +608,9 @@ proto.setupControls = function(){
           break;
         case 'nominatim':
           control = ControlsFactory.create({
-            type: controlType
+            type: controlType,
+            bbox: this.project.state.initextent,
+            mapCrs: 'EPSG:'+this.project.state.crs
           });
           control.on('addresschosen', (evt) => {
             const coordinate = evt.coordinate;

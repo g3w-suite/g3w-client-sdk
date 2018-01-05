@@ -1,16 +1,16 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var merge = require('core/utils/utils').merge;
-var Component = require('gui/vue/component');
-var ComponentsRegistry = require('gui/componentsregistry');
-var GUI = require('gui/gui');
-var ControlsRegistry = require('gui/map/control/registry');
-var CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
-var Service = require('../catalogservice');
-var ChromeComponent = VueColor.Chrome;
-var CatalogEventHub = new Vue();
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const merge = require('core/utils/utils').merge;
+const Component = require('gui/vue/component');
+const ComponentsRegistry = require('gui/componentsregistry');
+const GUI = require('gui/gui');
+const ControlsRegistry = require('gui/map/control/registry');
+const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
+const Service = require('../catalogservice');
+const ChromeComponent = VueColor.Chrome;
+const CatalogEventHub = new Vue();
 
-var vueComponentOptions = {
+const vueComponentOptions = {
   template: require('./catalog.html'),
   data: function() {
     return {
@@ -68,14 +68,14 @@ var vueComponentOptions = {
       return this.project.state.baselayers.length>0;
     },
     hasLayers: function() {
-      var layerstresslength = 0;
+      let layerstresslength = 0;
       _.forEach(this.state.layerstrees, function(layerstree) {
         layerstresslength+=layerstree.tree.length;
       });
       return this.state.externallayers.length>0 || layerstresslength>0 ;
     },
     hasBaseLayersVisible: function() {
-      var visible = false;
+      let visible = false;
       _.forEach(this.baselayers, function(baselayer) {
         if (baselayer.visible) {
           visible = true;
@@ -93,37 +93,38 @@ var vueComponentOptions = {
       this.project.setBaseLayer(null);
     },
     zoomToLayer: function() {
-      var bbox;
+      let bbox;
       if (this.layerMenu.layer.bbox) {
         bbox = [this.layerMenu.layer.bbox.minx, this.layerMenu.layer.bbox.miny, this.layerMenu.layer.bbox.maxx, this.layerMenu.layer.bbox.maxy] ;
       }
-      var mapService = GUI.getComponent('map').getService();
+      const mapService = GUI.getComponent('map').getService();
       mapService.goToBBox(bbox);
       this.layerMenu.show = false;
     },
     startEditing: function() {
-      var layer;
-      var self = this;
-      _.forEach(CatalogLayersStoresRegistry.getLayersStores(), function(layerStore) {
-        layer = layerStore.getLayerById(self.layerMenu.layer.id);
-        if (layer)
+      let layer;
+      const catallogLayersStores = CatalogLayersStoresRegistry.getLayersStores();
+      catallogLayersStores.forEach((layerStore) => {
+        layer = layerStore.getLayerById(this.layerMenu.layer.id);
+        if (layer) {
+          layer.getLayerForEditing();
           return false;
+        }
       });
-      layer.getLayerForEditing();
     },
     closeLayerMenu: function() {
       this.layerMenu.show = false;
       this.showColorMenu(false);
     },
     onChangeColor: function(val) {
-      var mapService = GUI.getComponent('map').getService();
+      const mapService = GUI.getComponent('map').getService();
       this.layerMenu.colorMenu.color = val;
-      var layer = mapService.getLayerByName(this.layerMenu.name);
+      const layer = mapService.getLayerByName(this.layerMenu.name);
       layer.setStyle(mapService.setExternalLayerColor(val));
     },
     showColorMenu: function(bool, evt) {
       if(bool) {
-        var elem = $(evt.target);
+        const elem = $(evt.target);
         this.layerMenu.colorMenu.top = elem.offset().top;
         this.layerMenu.colorMenu.left = elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) /2);
       }
@@ -131,37 +132,58 @@ var vueComponentOptions = {
     }
   },
   mounted: function() {
-    var self = this;
-    CatalogEventHub.$on('treenodetoogled',function(storeid, node) {
+    CatalogEventHub.$on('treenodetoogled',(storeid, node, parent_mutually_exclusive) => {
       if (node.external) {
-        var mapService = GUI.getComponent('map').getService();
-        var layer;
-        layer = mapService.getLayerByName(node.name);
+        const mapService = GUI.getComponent('map').getService();
+        let layer = mapService.getLayerByName(node.name);
         layer.setVisible(!layer.getVisible());
         node.visible = !node.visible;
       } else {
-        CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayer(node.id);
+        CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayer(node.id, null, parent_mutually_exclusive);
       }
     });
-
-    CatalogEventHub.$on('treenodestoogled',function(storeid, nodes,parentChecked) {
-      var layersIds = [];
-      function checkNodes(obj) {
+    // event that set all visible or not all children layer of the folder and if parent is mutually exclusive turn off all layer
+    CatalogEventHub.$on('treenodestoogled', (storeid, nodes, isFolderChecked) => {
+      let layersIds = [];
+      let checkNodes = (obj) => {
         if (obj.nodes) {
-          _.forEach(obj.nodes, function(node) {
-            checkNodes(node);
-          });
+          if (obj.mutually_exclusive) {
+            if (obj.lastLayerIdVisible)
+              layersIds.push(obj.lastLayerIdVisible);
+            else {
+              if (!isFolderChecked) {
+                layersIds = CatalogLayersStoresRegistry.getLayersStore(storeid)._getAllSiblingsChildrenLayersId(obj);
+              } else {
+                const getLayerIds = (nodes) => {
+                  nodes.some((node) => {
+                    if (node.id) {
+                      layersIds.push(node.id);
+                      return true;
+                    } else {
+                      getLayerIds(node.nodes);
+                    }
+                  })
+                };
+                getLayerIds(obj.nodes)
+              }
+            }
+          } else {
+            obj.nodes.forEach((node) =>{
+              checkNodes(node);
+            });
+          }
         } else {
           layersIds.push(obj.id);
         }
-      }
-      _.map(nodes,checkNodes);
-      CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayers(layersIds, parentChecked);
+      };
+      nodes.map(checkNodes);
+      CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayers(layersIds, isFolderChecked);
+
     });
 
     CatalogEventHub.$on('treenodeselected',function(storeid,node) {
-      var mapservice = GUI.getComponent('map').getService();
-      var layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(node.id);
+      const mapservice = GUI.getComponent('map').getService();
+      let layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(node.id);
       if (!layer.isSelected()) {
         CatalogLayersStoresRegistry.getLayersStore(storeid).selectLayer(node.id);
         // emetto il segnale layer selezionato dal catalogo
@@ -172,20 +194,20 @@ var vueComponentOptions = {
       }
     });
 
-    CatalogEventHub.$on('showmenulayer', function(layerstree, evt) {
-      self.layerMenu.top = evt.y;
-      self.layerMenu.left = evt.x;
-      self.layerMenu.name = layerstree.name;
-      self.layerMenu.layer = layerstree;
-      self.layerMenu.show = true;
-      self.layerMenu.colorMenu.color = layerstree.color;
+    CatalogEventHub.$on('showmenulayer', (layerstree, evt) => {
+      this.layerMenu.top = evt.y;
+      this.layerMenu.left = evt.x;
+      this.layerMenu.name = layerstree.name;
+      this.layerMenu.layer = layerstree;
+      this.layerMenu.show = true;
+      this.layerMenu.colorMenu.color = layerstree.color;
     });
 
-    ControlsRegistry.onafter('registerControl', function(id, control) {
+    ControlsRegistry.onafter('registerControl', (id, control) => {
       if (id == 'querybbox') {
-        control.getInteraction().on('propertychange', function(evt) {
+        control.getInteraction().on('propertychange', (evt) => {
           if (evt.key == 'active') {
-            self.state.highlightlayers=!evt.oldValue;
+            this.state.highlightlayers=!evt.oldValue;
           }
         })
       }
@@ -200,7 +222,7 @@ var vueComponentOptions = {
 };
 
 // se lo voglio istanziare manualmente
-var InternalComponent = Vue.extend(vueComponentOptions);
+const InternalComponent = Vue.extend(vueComponentOptions);
 
 // se lo voglio usare come componente come elemento html
 Vue.component('g3w-catalog', vueComponentOptions);
@@ -210,21 +232,13 @@ Vue.component('g3w-catalog', vueComponentOptions);
 // tree component
 Vue.component('tristate-tree', {
   template: require('./tristate-tree.html'),
-  props: {
-    layerstree: {},
-    storeid: null,
-    //eredito il numero di childs dal parent
-    checked: false,
-    highlightlayers: false,
-    parentFolder: false,
-    externallayers: null
-  },
+  props : ['layerstree', 'storeid', 'highlightlayers', 'parent_mutually_exclusive', 'parentFolder', 'externallayers', 'root', "parent"],
   data: function (){
     return {
       expanded: this.layerstree.expanded,
-      parentChecked: !this.checked,
+      isFolderChecked: true,
       controltoggled: false,
-      n_childs: null
+      n_childs: null,
     }
   },
   watch: {
@@ -233,24 +247,52 @@ Vue.component('tristate-tree', {
     }
   },
   computed: {
-    isFolder: function () {
-      var _visibleChilds = 0;
-      var _childsLength = 0;
-      (function countLayersVisible(layerstree) {
-        _.forEach(layerstree.nodes, function(layer) {
-          if (!layer.nodes) _childsLength+=1;
-          if (layer.visible) {
-            _visibleChilds += 1;
-          } else if (layer.nodes) {
-            countLayersVisible(layer);
-          }
-        });
-      })(this.layerstree);
-      // lo metto qui n_childs perchè nel caso del reload ltiene quello precedente
-      this.n_childs = _childsLength;//this.layerstree.nodes ? this.layerstree.nodes.length : 0;
-      var isFolder = this.n_childs || this.layerstree.nodes ? true : false;
+    isFolder: function() {
+      let _visibleChilds = 0;
+      let _childsLength = 0;
+      const isFolder = !!this.layerstree.nodes;
       if (isFolder) {
-        this.n_parentChilds = this.n_childs - _visibleChilds;
+        // function that count numbero of layers of each folder and visible layers
+        let countLayersVisible = (layerstree) => {
+          //if mutually exclusive count 1
+          if (layerstree.mutually_exclusive) {
+            _childsLength+=1;
+            layerstree.nodes.forEach((layer) => {
+              if (!layer.nodes) {
+                if (layer.visible) {
+                  layerstree.lastLayerIdVisible = layer.id;
+                  _visibleChilds += 1;
+                }
+              } else {
+                const countMEVisibleLayers = (nodes) => {
+                  const vME = nodes.reduce((previous, node) => {
+                      if (node.id) return node.visible || previous;
+                      else return countMEVisibleLayers(node.nodes) || previous;
+                    }
+                    , false);
+                  return vME;
+                };
+                _visibleChilds += countMEVisibleLayers(layer.nodes);
+              }
+            })
+          } else { // not mutually exclusive
+            layerstree.nodes.forEach((layer) => {
+              if (!layer.nodes) {
+                  _childsLength+=1;
+                if (layer.visible) {
+                  _visibleChilds += 1;
+                }
+              } else if (layer.nodes) {
+                countLayersVisible(layer);
+              }
+            });
+          }
+        };
+        countLayersVisible(this.layerstree);
+        this.n_childs = _childsLength;
+        this.n_visibleChilds = _visibleChilds;
+        //set folder is checked based on the behaviour of the child
+        this.isFolderChecked = !(this.n_childs - this.n_visibleChilds);
       }
       return isFolder
     },
@@ -258,43 +300,72 @@ Vue.component('tristate-tree', {
       return this.layerstree.hidden && (this.layerstree.hidden === true);
     },
     selected: function() {
-      var isSelected = this.layerstree.selected ? "SI" : "NO";
+      const isSelected = this.layerstree.selected ? "SI" : "NO";
       return isSelected;
     },
     isHighLight: function() {
-      var self = this;
       // da sostituire con una proprietà precalcolata nello state del layer
-      var layer;
-      _.forEach(CatalogLayersStoresRegistry.getLayers(), function(lyr) {
-        layer = lyr.getId() == self.layerstree.id ? lyr : null;
+      let layer;
+      const catalogLayers = CatalogLayersStoresRegistry.getLayers();
+      catalogLayers.forEach((lyr) => {
+        layer = lyr.getId() == this.layerstree.id ? lyr : null;
         if (layer)
           return false;
       });
       return this.highlightlayers && layer && layer.isFilterable() && layer.getProject() && layer.getProject().getProjection() == layer.getProjection();
     }
-
   },
   methods: {
-    toggle: function (checkAllLayers) {
-      var checkAll = checkAllLayers == 'true' ? true : false;
-      if (this.isFolder && !checkAll) {
-        this.layerstree.expanded = !this.layerstree.expanded;
-
-      }
-      else if (checkAll) {
-        if (this.parentChecked && !this.n_parentChilds){
-          this.parentChecked = false;
-        } else if (this.parentChecked && this.n_parentChilds) {
-          this.parentChecked = true;
+    toggle: function(isFolder) {
+      if (isFolder) {
+        //check if group is mutually exclusive
+        if (this.layerstree.mutually_exclusive) {
+          if (!this.layerstree.lastLayerIdVisible) {
+            let layerId;
+            const getLayerId = (nodes) => {
+              nodes.some((node) => {
+                if (node.id) {
+                  layerId = node.id;
+                  return true
+                } else {
+                  getLayerId(node.nodes);
+                }
+              });
+            };
+            this.layerstree.lastLayerIdVisible = layerId;
+          }
+          if (!this.isFolderChecked) {
+            CatalogEventHub.$emit('treenodetoogled', this.storeid, {
+              id: this.layerstree.lastLayerIdVisible //id of visible layers
+            }, this.layerstree.mutually_exclusive);
+          } else {
+            CatalogEventHub.$emit('treenodestoogled', this.storeid, this.layerstree.nodes, false, this.parent_mutually_exclusive)
+          }
+          this.isFolderChecked = !this.isFolderChecked;
+        } else {
+          if (this.isFolderChecked && !this.n_visibleChilds) {
+            this.isFolderChecked = true;
+          } else if (this.isFolderChecked && this.n_visibleChilds) {
+            this.isFolderChecked = false;
+          } else {
+            this.isFolderChecked = !this.isFolderChecked;
+          }
+          CatalogEventHub.$emit('treenodestoogled', this.storeid, this.layerstree.nodes, this.isFolderChecked, this.parent_mutually_exclusive);
         }
-        else {
-          this.parentChecked = !this.parentChecked;
+        if (this.isFolderChecked && this.parent_mutually_exclusive) {
+          this.parent.nodes.forEach((node) => {
+            let nodes = [];
+            if (node.title != this.layerstree.title)
+              nodes.push(node);
+            CatalogEventHub.$emit('treenodestoogled', this.storeid, nodes, false, this.parent_mutually_exclusive)
+          })
         }
-        CatalogEventHub.$emit('treenodestoogled',this.storeid, this.layerstree.nodes, this.parentChecked);
+      } else {
+        CatalogEventHub.$emit('treenodetoogled', this.storeid, this.layerstree, this.parent_mutually_exclusive);
       }
-      else {
-        CatalogEventHub.$emit('treenodetoogled',this.storeid,this.layerstree);
-      }
+    },
+    expandCollapse: function() {
+      this.layerstree.expanded = !this.layerstree.expanded;
     },
     select: function () {
       if (!this.isFolder && !this.layerstree.external) {
@@ -302,23 +373,39 @@ Vue.component('tristate-tree', {
       }
     },
     triClass: function () {
-      if (!this.n_parentChilds) {
+      if (this.n_visibleChilds == this.n_childs) {
+        //checked
         return 'fa-check-square-o';
-      } else if ((this.n_parentChilds > 0) && (this.n_parentChilds < this.n_childs)) {
+      } else if ((this.n_visibleChilds > 0) && (this.n_visibleChilds < this.n_childs)) {
+        if (this.layerstree.mutually_exclusive) {
+          //checked
+          return 'fa-check-square-o';
+        }
+        // white square
         return 'fa-square';
       } else {
+        //unchecked
         return 'fa-square-o';
       }
     },
     removeExternalLayer: function(name) {
-      var mapService = GUI.getComponent('map').getService();
-      var layer = mapService.getLayerByName(name);
+      const mapService = GUI.getComponent('map').getService();
       mapService.removeExternalLayer(name);
     },
     showLayerMenu: function(layerstree, evt) {
       if (!this.isFolder) {
         CatalogEventHub.$emit('showmenulayer', layerstree, evt);
       }
+    }
+  },
+  mounted: function() {
+    if (this.isFolder && !this.root) {
+      this.layerstree.nodes.forEach((node) => {
+        if (this.parent_mutually_exclusive && !this.layerstree.mutually_exclusive) {
+          if (node.id)
+            node.uncheckable = true;
+        }
+      })
     }
   }
 });
@@ -333,19 +420,19 @@ Vue.component('layerslegend',{
     },
     computed: {
       visiblelayers: function(){
-        var _visiblelayers = [];
-        var layerstree = this.layerstree.tree;
-        function traverse(obj){
-        _.forIn(obj, function (layer, key) {
-              //verifica che il valore dell'id non sia nullo
-              if (!_.isNil(layer.id) && layer.visible) {
+        let _visiblelayers = [];
+        const layerstree = this.layerstree.tree;
+        let traverse = (obj) => {
+        Object.entries(obj).forEach(([key, layer]) => {
+              //verifica che il valore dell'id non sia nullo, che il layer sia visibile e che non sia escluso dalla legenda
+              if (!_.isNil(layer.id) && layer.visible && !layer.exclude_from_legend) {
                   _visiblelayers.push(layer);
               }
               if (!_.isNil(layer.nodes)) {
                   traverse(layer.nodes);
               }
-          });
-        }
+          })
+        };
         traverse(layerstree);
         return _visiblelayers;
       }
@@ -370,11 +457,11 @@ Vue.component('layerslegend-item',{
   props: ['layer'],
   computed: {
     legendurl: function(){
-      var self = this;
-      var _legendurl;
-      _.forEach(CatalogLayersStoresRegistry.getLayersStores(), function(layerStore) {
-        if (layerStore.getLayerById(self.layer.id)){
-          _legendurl = layerStore.getLayerById(self.layer.id).getLegendUrl();
+      let _legendurl;
+      const catalogLayers = CatalogLayersStoresRegistry.getLayersStores();
+      catalogLayers.forEach((layerStore) => {
+        if (layerStore.getLayerById(this.layer.id)){
+          _legendurl = layerStore.getLayerById(this.layer.id).getLegendUrl();
           return false
         }
       });
@@ -393,29 +480,28 @@ Vue.component('layerslegend-item',{
 /* INTERFACCIA PUBBLICA */
 function CatalogComponent(options) {
   base(this);
-  var self = this;
   this.id = "catalog-component";
   this.title = "catalog";
   this.mapComponentId = options.mapcomponentid;
-  var service = options.service || new Service;
+  const service = options.service || new Service;
   this.setService(service);
   this.setInternalComponent(new InternalComponent({
     service: service
   }));
   this.internalComponent.state = this.getService().state;
-  function listenToMapVisibility(map) {
-    var mapService = map.getService();
-    self.state.visible = !mapService.state.hidden;
-    mapService.onafter('setHidden',function(hidden) {
-      self.state.visible = !mapService.state.hidden;
-      self.state.expanded = true;
+  let listenToMapVisibility = (map) => {
+    const mapService = map.getService();
+    this.state.visible = !mapService.state.hidden;
+    mapService.onafter('setHidden',(hidden) => {
+      this.state.visible = !mapService.state.hidden;
+      this.state.expanded = true;
     })
-  }
+  };
   if (this.mapComponentId) {
-    var map = GUI.getComponent(this.mapComponentId);
+    const map = GUI.getComponent(this.mapComponentId);
     if (!map) {
-      ComponentsRegistry.on('componentregistered',function(component){
-        if (component.getId() == self.mapComponentId) {
+      ComponentsRegistry.on('componentregistered', (component) => {
+        if (component.getId() == this.mapComponentId) {
           listenToMapVisibility(component);
         }
       })

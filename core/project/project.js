@@ -1,9 +1,9 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils//utils').base;
-var G3WObject = require('core/g3wobject');
-var LayerFactory = require('core/layers/layerfactory');
-var LayersStore = require('core/layers/layersstore');
-var Projections = require('g3w-ol3/src/projection/projections');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils//utils').base;
+const G3WObject = require('core/g3wobject');
+const LayerFactory = require('core/layers/layerfactory');
+const LayersStore = require('core/layers/layersstore');
+const Projections = require('g3w-ol3/src/projection/projections');
 
 function Project(projectConfig) {
   /* struttura oggetto 'project'
@@ -31,9 +31,9 @@ function Project(projectConfig) {
 
   this.setters = {
     setBaseLayer: function(id) {
-      var self = this;
-      _.forEach(self.state.baselayers, function(baseLayer) {
-        self._layersStore.getLayerById(baseLayer.id).setVisible(baseLayer.id == id);
+      const baseLayers = this.state.baselayers;
+      baseLayers.forEach((baseLayer) => {
+        this._layersStore.getLayerById(baseLayer.id).setVisible(baseLayer.id == id);
       })
     }
   };
@@ -43,7 +43,7 @@ function Project(projectConfig) {
 
 inherit(Project, G3WObject);
 
-var proto = Project.prototype;
+const proto = Project.prototype;
 
 proto.getRelations = function() {
   return this.state.relations;
@@ -51,20 +51,20 @@ proto.getRelations = function() {
 
 // funzione che processa i layers di progetto
 proto._processLayers = function() {
-  var self = this;
   // attraverso il tree dei layers (layerstree)
   // e aggiungo informazioni utili ad esempio al catalogo
-  function traverse(obj) {
-    _.forIn(obj, function (layer, key) {
-      var layer_name_originale;
+  let traverse = (obj) => {
+    Object.entries(obj).forEach(([key, layer]) => {
+      let layer_name_originale;
+      let fulllayer;
       //verifica che il nodo sia un layer e non un folder
       if (!_.isNil(layer.id)) {
-        var fulllayer;
-        _.forEach(self.state.layers, function(lyr) {
+        let layers = this.state.layers;
+        layers.forEach((lyr) => {
           layer_name_originale = lyr.name;
           if (layer.id == lyr.id) {
-            lyr.wmsUrl = self.getWmsUrl();
-            lyr.project = self;
+            lyr.wmsUrl = this.getWmsUrl();
+            lyr.project = this;
             fulllayer = _.merge(lyr, layer);
             fulllayer.name = layer_name_originale;
             return false
@@ -72,20 +72,21 @@ proto._processLayers = function() {
         });
         obj[parseInt(key)] = fulllayer;
       }
-      if (!_.isNil(layer.nodes)){
+      if (!_.isNil(layer.nodes)) {
         // aggiungo proprietà title per l'albero
         layer.title = layer.name;
         traverse(layer.nodes);
       }
     });
-  }
+  };
+
   traverse(this.state.layerstree);
 
-  _.forEach(this.state.baselayers, function(layerConfig) {
-    var visible = false;
-
-    if (self.state.initbaselayer) {
-      visible = (layerConfig.id == (self.state.initbaselayer));
+  const baseLayers = this.state.baselayers;
+  baseLayers.forEach((layerConfig) => {
+    let visible = false;
+    if (this.state.initbaselayer) {
+      visible = (layerConfig.id == (this.state.initbaselayer));
     }
 
     if (layerConfig.fixed) {
@@ -100,10 +101,9 @@ proto._processLayers = function() {
 // funzione che fa il build del layers store
 // lo istanzia  crea il layersstree
 proto._buildLayersStore = function() {
-  var self = this;
   // creo il layersStore
-  var layersStore = new LayersStore();
-  var overviewprojectgid = this.state.overviewprojectgid ? this.state.overviewprojectgid.gid : null;
+  const layersStore = new LayersStore();
+  const overviewprojectgid = this.state.overviewprojectgid ? this.state.overviewprojectgid.gid : null;
   layersStore.setOptions({
     id: this.state.gid,
     projection: this._projection,
@@ -115,11 +115,12 @@ proto._buildLayersStore = function() {
 
   // vado a ciclare su tutti i layers per poterli istanziare
   // e aggiungere al layersstore
-  _.forEach(this.getLayers(), function(layerConfig) {
+  const layers = this.getLayers();
+  layers.forEach((layerConfig) => {
     // aggiungo la proiezione: nel caso esista il codice crs del layer lo prnedo altrimenti prondo la proiezione del progetto
-    layerConfig.projection = self._projection;
-    var layer = LayerFactory.build(layerConfig, {
-      project: self
+    layerConfig.projection = this._projection;
+    const layer = LayerFactory.build(layerConfig, {
+      project: this
     });
     layersStore.addLayer(layer);
   });
@@ -134,6 +135,10 @@ proto._buildLayersStore = function() {
 
 proto.getLayers = function() {
   return _.concat(this.state.layers,this.state.baselayers);
+};
+
+proto.getThumbnail = function() {
+  return this.state.thumbnail;
 };
 
 proto.getState = function() {

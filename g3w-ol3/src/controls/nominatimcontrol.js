@@ -1,6 +1,7 @@
-var Control = require('./control');
-function NominatimControl() {
-  var self = this;
+const Control = require('./control');
+
+function NominatimControl(options) {
+  let self = this;
   this.options = {
     provider: 'osm',
     placeholder: 'Città, indirizzo ... ',
@@ -11,12 +12,15 @@ function NominatimControl() {
     preventDefault: false,
     autoComplete: false,
     autoCompleteMinLength: 4,
-    debug: false
+    debug: false,
+    viewbox: options.bbox,
+    bounded: 1,
+    mapCrs: options.mapCrs
   };
 
-  var inputQueryId = "gcd-input-query";
-  var inputResetId = "gcd-input-reset";
-  var cssClasses = {
+  const inputQueryId = "gcd-input-query";
+  const inputResetId = "gcd-input-reset";
+  const cssClasses = {
     "namespace": "ol-geocoder",
     "spin": "gcd-pseudo-rotate",
     "hidden": "gcd-hidden",
@@ -43,11 +47,11 @@ function NominatimControl() {
     }
   };
 
-  var targetType = {
+  const targetType = {
     GLASS: 'glass-button',
     INPUT: 'text-input'
   };
-  var vars = Object.freeze({
+  const vars = Object.freeze({
     inputQueryId: inputQueryId,
     inputResetId: inputResetId,
     cssClasses: cssClasses,
@@ -58,9 +62,9 @@ function NominatimControl() {
     }
   });
 
-  var utils = {
+  const utils = {
     toQueryString: function toQueryString(obj) {
-      var this$1 = this;
+      const this$1 = this;
       return Object.keys(obj).reduce(function (a, k) {
         a.push(
           typeof obj[k] === 'object' ?
@@ -535,7 +539,6 @@ function NominatimControl() {
   // classe OpenStreet //
 
   var OpenStreet = function OpenStreet() {
-
     this.settings = {
       url: '//nominatim.openstreetmap.org/search/',
       params: {
@@ -544,13 +547,14 @@ function NominatimControl() {
         addressdetails: 1,
         limit: 10,
         countrycodes: 'IT',
-        'accept-language': 'it-IT'
+        'accept-language': 'it-IT',
       }
     };
   };
 
 
   OpenStreet.prototype.getParameters = function getParameters(options) {
+    let viewbox = ol.proj.transformExtent(self.options.viewbox, self.options.mapCrs, 'EPSG:4326').join(',');
     return {
       url: this.settings.url,
       params: {
@@ -559,7 +563,9 @@ function NominatimControl() {
         addressdetails: 1,
         limit: options.limit || this.settings.params.limit,
         countrycodes: options.countrycodes || this.settings.params.countrycodes,
-        'accept-language': options.lang || this.settings.params['accept-language']
+        'accept-language': options.lang || this.settings.params['accept-language'],
+        viewbox: viewbox,
+        bounded: 1
       }
     };
   };
@@ -802,10 +808,10 @@ function NominatimControl() {
   };
 
   Nominatim.prototype.addLayer = function addLayer () {
-    var this$1 = this;
+    const this$1 = this;
 
-    var found = false;
-    var map = this.Base.getMap();
+    let found = false;
+    const map = this.Base.getMap();
 
     map.getLayers().forEach(function (layer) {
       if (layer === this$1.layer) { found = true; }
@@ -815,7 +821,7 @@ function NominatimControl() {
 
   // classe Nomitatim fine //
 
-  var $html = new Html(this);
+  const $html = new Html(this);
   this.container = $html.els.container;
   this.nominatim = new Nominatim(this, $html.els);
   this.layer = this.nominatim.layer;

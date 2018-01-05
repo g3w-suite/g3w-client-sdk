@@ -1,7 +1,7 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils//utils').base;
-var G3WObject = require('core/g3wobject');
-var ProviderFactory = require('core/layers/providers/providersfactory');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils//utils').base;
+const G3WObject = require('core/g3wobject');
+const ProviderFactory = require('core/layers/providers/providersfactory');
 
 // classe padre di tutti i Layer
 function Layer(config) {
@@ -31,7 +31,6 @@ function Layer(config) {
   this.state = {
     id: config.id,
     title: config.title,
-    visible: config.visible,
     selected: config.selected | false,
     disabled: config.disabled | false,
     hidden: config.hidden || false

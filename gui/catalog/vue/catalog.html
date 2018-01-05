@@ -10,7 +10,16 @@
     <div  class="tab-content">
       <div role="tabpanel" class="tab-pane tree" :class="{ active: hasLayers }" id="tree">
         <ul class="tree-root" v-for="_layerstree in state.layerstrees">
-          <tristate-tree  :highlightlayers="state.highlightlayers" :layerstree="layerstree" class="item" v-for="layerstree in _layerstree.tree" :storeid="_layerstree.storeid" :key="layerstree.id">
+          <tristate-tree
+            :highlightlayers="state.highlightlayers"
+            :layerstree="layerstree"
+            class="item"
+            :parentFolder="false"
+            :root="true"
+            :parent_mutually_exclusive="false"
+            v-for="layerstree in _layerstree.tree"
+            :storeid="_layerstree.storeid"
+            :key="layerstree.id">
           </tristate-tree>
         </ul>
         <ul>

@@ -1,22 +1,22 @@
-var ResetControl = require('g3w-ol3/src/controls/resetcontrol');
-var QueryControl = require('g3w-ol3/src/controls/querycontrol');
-var ZoomBoxControl = require('g3w-ol3/src/controls/zoomboxcontrol');
-var QueryBBoxControl = require('g3w-ol3/src/controls/querybboxcontrol');
-var QueryByPolygonControl = require('g3w-ol3/src/controls/querybypolygoncontrol');
-var GeolocationControl = require('g3w-ol3/src/controls/geolocationcontrol');
-var StreetViewControl = require('g3w-ol3/src/controls/streetviewcontrol');
-var AddLayersControl = require('g3w-ol3/src/controls/addlayers');
-var LengthControl = require('g3w-ol3/src/controls/lengthcontrol');
-var AreaControl = require('g3w-ol3/src/controls/areacontrol');
-var Control = require('g3w-ol3/src/controls/control');
-var OLControl = require('g3w-ol3/src/controls/olcontrol');
-var NominatimControl = require('g3w-ol3/src/controls/nominatimcontrol');
+const ResetControl = require('g3w-ol3/src/controls/resetcontrol');
+const QueryControl = require('g3w-ol3/src/controls/querycontrol');
+const ZoomBoxControl = require('g3w-ol3/src/controls/zoomboxcontrol');
+const QueryBBoxControl = require('g3w-ol3/src/controls/querybboxcontrol');
+const QueryByPolygonControl = require('g3w-ol3/src/controls/querybypolygoncontrol');
+const GeolocationControl = require('g3w-ol3/src/controls/geolocationcontrol');
+const StreetViewControl = require('g3w-ol3/src/controls/streetviewcontrol');
+const AddLayersControl = require('g3w-ol3/src/controls/addlayers');
+const LengthControl = require('g3w-ol3/src/controls/lengthcontrol');
+const AreaControl = require('g3w-ol3/src/controls/areacontrol');
+const Control = require('g3w-ol3/src/controls/control');
+const OLControl = require('g3w-ol3/src/controls/olcontrol');
+const NominatimControl = require('g3w-ol3/src/controls/nominatimcontrol');
 
-var ControlsFactory = {
+const ControlsFactory = {
   create: function(options) {
-    var control;
-    var ControlClass = ControlsFactory.CONTROLS[options.type];
-    var layers = options.layers; // opzione che mi server per far visualizzare o meno il controllo
+    let control;
+    const ControlClass = ControlsFactory.CONTROLS[options.type];
+    const layers = options.layers; // opzione che mi server per far visualizzare o meno il controllo
     if (ControlClass) {
       // istanzio il controllo
       control = new ControlClass(options);
@@ -27,12 +27,11 @@ var ControlsFactory = {
       if (!layers.length) {
         return null
       }
-      // ricavo le geometry su cui deve essere fatto i layer
-      var controlGeometryTypes = control.getGeometryTypes();
+      const controlGeometryTypes = control.getGeometryTypes();
       // imposto il valore iniziale di visible se è un array vuoto vuol dire che non ho specificato nessuna
       // geometria rilevante e quindi deve essere visible
-      var visible = (controlGeometryTypes.length) ? false : true;
-      _.forEach(layers, function (layer) {
+      let visible = (controlGeometryTypes.length) ? false : true;
+      _.forEach(layers, (layer) => {
         if (controlGeometryTypes.indexOf(layer.getGeometryType()) > -1) {
           visible = true;
           return false;
