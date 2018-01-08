@@ -1,10 +1,10 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var reject = require('core/utils/utils').reject;
-var G3WObject = require('core/g3wobject');
-var Project = require('core/project/project');
-var CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
-var MapLayersStoresRegistry = require('core/map/maplayersstoresregistry');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const reject = require('core/utils/utils').reject;
+const G3WObject = require('core/g3wobject');
+const Project = require('core/project/project');
+const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
+const MapLayersStoresRegistry = require('core/map/maplayersstoresregistry');
 
 /* service
 Funzione costruttore contentente tre proprieta':
@@ -15,7 +15,6 @@ Funzione costruttore contentente tre proprieta':
 
 // Public interface
 function ProjectsRegistry() {
-  var self = this;
   this.config = null;
   this.initialized = false;
   //tipo di progetto
@@ -26,10 +25,10 @@ function ProjectsRegistry() {
         CatalogLayersStoresRegistry.removeLayersStores();
         MapLayersStoresRegistry.removeLayersStores();
       }
-      self.state.currentProject = project;
+      this.state.currentProject = project;
       //aggiunto tipo progetto
-      self.setProjectType(project.state.type);
-      var projectLayersStore = project.getLayersStore();
+      this.setProjectType(project.state.type);
+      const projectLayersStore = project.getLayersStore();
       // lo mette sempre in prima posizione mi serve per il catalogo
       CatalogLayersStoresRegistry.addLayersStore(projectLayersStore, 0);
       // lo mette sempre in prima posizione mi serve per la mappa
@@ -54,14 +53,12 @@ function ProjectsRegistry() {
 
 inherit(ProjectsRegistry, G3WObject);
 
-var proto = ProjectsRegistry.prototype;
+const proto = ProjectsRegistry.prototype;
 
 proto.init = function(config) {
-  var self = this;
-  var deferred = $.Deferred();
+  const d = $.Deferred();
   //verifico se è già stato inizilizzato
   if (!this.initialized) {
-    this.initialized = true;
     //salva la configurazione
     this.config = config;
     // salvo l'overviewproject
@@ -70,16 +67,17 @@ proto.init = function(config) {
     this.setupState();
     // vado a prendere la configurazione del progetto corrente
     this.getProject(config.initproject)
-    .then(function(project) {
+    .then((project) => {
       // vado a settare il progetto corrente
-      self.setCurrentProject(project);
-      deferred.resolve(project);
+      this.setCurrentProject(project);
+      this.initialized = true;
+      d.resolve(project);
     })
     .fail(function() {
-      deferred.reject();
+      d.reject();
     })
   }
-  return deferred.promise();
+  return d.promise();
 };
 
 proto.setProjectType = function(projectType) {
@@ -96,26 +94,25 @@ proto.getState = function() {
 };
 
 proto.setupState = function() {
-  var self = this;
-  self.state.baseLayers = self.config.baselayers;
-  self.state.minScale = self.config.minscale;
-  self.state.maxScale = self.config.maxscale;
-  self.state.crs = self.config.crs;
-  self.state.proj4 = self.config.proj4;
+  this.state.baseLayers = this.config.baselayers;
+  this.state.minScale = this.config.minscale;
+  this.state.maxScale = this.config.maxscale;
+  this.state.crs = this.config.crs;
+  this.state.proj4 = this.config.proj4;
   // setto  quale progetto deve essere impostato come overview
   //questo è settato da django-admin
-  var overViewProject = (self.config.overviewproject && self.config.overviewproject.gid) ? self.config.overviewproject : null;
+  const overViewProject = (this.config.overviewproject && this.config.overviewproject.gid) ? this.config.overviewproject : null;
   //per ogni progetto ciclo e setto tutti gli attributi comuni
   // come i base layers etc ..
-  self.config.projects.forEach(function(project) {
-    project.baselayers = _.cloneDeep(self.config.baselayers);
-    project.minscale = self.config.minscale;
-    project.maxscale = self.config.maxscale;
-    project.crs = self.config.crs;
-    project.proj4 = self.config.proj4;
+  this.config.projects.forEach((project) => {
+    project.baselayers = _.cloneDeep(this.config.baselayers);
+    project.minscale = this.config.minscale;
+    project.maxscale = this.config.maxscale;
+    project.crs = this.config.crs;
+    project.proj4 = this.config.proj4;
     project.overviewprojectgid = overViewProject;
     //aggiungo tutti i progetti ai pending project
-    self._pendingProjects.push(project);
+    this._pendingProjects.push(project);
   });
 };
 
@@ -132,8 +129,8 @@ proto.getProjects = function() {
 };
 
 proto.getListableProjects = function() {
-  var currentProjectId = this.getCurrentProject().getId();
-  return _.sortBy(_.filter(this.getProjects(), function(project) {
+  const currentProjectId = this.getCurrentProject().getId();
+  return _.sortBy(_.filter(this.getProjects(), (project) => {
     if (!_.isNil(project.listable)) {
       return project.listable;
     }
@@ -154,16 +151,15 @@ proto.getCurrentProject = function(){
 // ritorna una promise nel caso non fosse stato ancora scaricato
 // il config completo (e quindi non sia ancora istanziato Project)
 proto.getProject = function(projectGid) {
-  var self = this;
-  var d = $.Deferred();
-  var pendingProject;
-  var project = null;
+  const d = $.Deferred();
+  let pendingProject;
+  let project = null;
   // scorro atraverso i pending project che contengono oggetti
   // di configurazione dei progetti del gruppo
-  this._pendingProjects.forEach(function(_pendingProject) {
+  this._pendingProjects.forEach((_pendingProject) => {
     if (_pendingProject.gid == projectGid) {
       pendingProject = _pendingProject;
-      project = self._projects[projectGid];
+      project = this._projects[projectGid];
     }
   });
   if (!pendingProject) {
@@ -174,15 +170,15 @@ proto.getProject = function(projectGid) {
     return d.resolve(project);
   } else {
     return this._getProjectFullConfig(pendingProject)
-    .then(function(projectFullConfig){
-      var projectConfig = _.merge(pendingProject,projectFullConfig);
-      projectConfig.WMSUrl = self.config.getWmsUrl(projectConfig);
-      var project = new Project(projectConfig);
+    .then((projectFullConfig) => {
+      const projectConfig = _.merge(pendingProject,projectFullConfig);
+      projectConfig.WMSUrl = this.config.getWmsUrl(projectConfig);
+      const project = new Project(projectConfig);
       // aggiungo/ registro il progetto
-      self._projects[projectConfig.gid] = project;
+      this._projects[projectConfig.gid] = project;
       return d.resolve(project);
     })
-    .fail(function() {
+    .fail(() => {
       return d.reject();
     })
   }
@@ -191,16 +187,16 @@ proto.getProject = function(projectGid) {
 //ritorna una promises che verrà risolta con la
 // configuarzione del progetto corrente
 proto._getProjectFullConfig = function(projectBaseConfig) {
-  var deferred = $.Deferred();
-  var url = this.config.getProjectConfigUrl(projectBaseConfig);
+  const d = $.Deferred();
+  const url = this.config.getProjectConfigUrl(projectBaseConfig);
   $.get(url)
-    .done(function(projectFullConfig) {
-      deferred.resolve(projectFullConfig);
+    .done((projectFullConfig) => {
+      d.resolve(projectFullConfig);
     })
-    .fail(function() {
-      deferred.reject();
+    .fail(() => {
+      d.reject();
     });
-  return deferred.promise();
+  return d.promise();
 };
 
 

@@ -1,17 +1,16 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var G3WObject = require('core/g3wobject');
-var ApiService = require('core/apiservice');
-var RouterService = require('core/router');
-var ProjectsRegistry = require('core/project/projectsregistry');
-var PluginsRegistry = require('core/plugin/pluginsregistry');
-var ClipboardService = require('core/clipboardservice');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const G3WObject = require('core/g3wobject');
+const ApiService = require('core/apiservice');
+const RouterService = require('core/router');
+const ProjectsRegistry = require('core/project/projectsregistry');
+const PluginsRegistry = require('core/plugin/pluginsregistry');
+const ClipboardService = require('core/clipboardservice');
 
-var G3W_VERSION = "{G3W_VERSION}";
+const G3W_VERSION = "{G3W_VERSION}";
 
 //oggetto servizio per la gestione dell'applicazione
-var ApplicationService = function() {
-  var self = this;
+const ApplicationService = function() {
   this.version = G3W_VERSION.indexOf("G3W_VERSION") == -1 ? G3W_VERSION  : "";
   this.secret = "### G3W Client Application Service ###";
   this.ready = false;
@@ -49,11 +48,10 @@ var ApplicationService = function() {
 
   // funzione che ottiene la configurazione dal server
   this.obtainInitConfig = function(initConfigUrl) {
-    var self = this;
     if (!this._initConfigUrl) {
       this._initConfigUrl = initConfigUrl;
     }
-    var d = $.Deferred();
+    const d = $.Deferred();
     //se esiste un oggetto globale initiConfig che vuol dire che sto facendo girare il client in produzione
     // in quanto django fronisce la variabile globale initConfig  e vad a risolvere con quell'oggetto
     if (window.initConfig) {
@@ -63,8 +61,8 @@ var ApplicationService = function() {
     // altrimenti se sono in ambiente development devo fare richiesta
     // al server usando initconfigUrl e i parametri fornito dal percorso indicato in ?project=<percorso>
     else {
-      var projectPath;
-      var queryTuples;
+      let projectPath;
+      let queryTuples;
       if (location.search) {
         queryTuples = location.search.substring(1).split('&');
         _.forEach(queryTuples, function (queryTuple) {
@@ -80,18 +78,18 @@ var ApplicationService = function() {
         projectPath = location.pathname.split('/').splice(-4,3).join('/');
       }
       if (projectPath) {
-        var initUrl = this._initConfigUrl;
+        let initUrl = this._initConfigUrl;
         if (projectPath) {
           initUrl = initUrl + '/' + projectPath;
         }
         //recupro dal server la configurazione di quel progetto
         $.get(initUrl)
-          .then(function(initConfig) {
+          .then((initConfig) => {
             //initConfig è l'oggetto contenete:
             //group, mediaurl, staticurl, user
             initConfig.staticurl = "../dist/"; // in locale forziamo il path degli asset
             initConfig.clienturl = "../dist/"; // in locale forziamo il path degli asset
-            self._initConfig = initConfig;
+            this._initConfig = initConfig;
             // setto la variabile initConfig
             window.initConfig = initConfig;
             d.resolve(initConfig);
@@ -130,16 +128,15 @@ var ApplicationService = function() {
   // funzione che fa il boostrap plugins
   this._bootstrapPlugins = function() {
     return PluginsRegistry.init({
-      pluginsBaseUrl: self._config.urls.staticurl,
-      pluginsConfigs: self._config.plugins,
+      pluginsBaseUrl: this._config.urls.staticurl,
+      pluginsConfigs: this._config.plugins,
       otherPluginsConfig: ProjectsRegistry.getCurrentProject().getState()
     });
   };
 
   // funzione bootstrap (quando viene chiamato l'init)
   this._bootstrap = function() {
-    var self = this;
-    var d = $.Deferred();
+    const d = $.Deferred();
     //nel caso in cui (prima volta) l'application service non è pronta
     //faccio una serie di cose
     if (!this.ready) {
@@ -152,15 +149,15 @@ var ApplicationService = function() {
         ProjectsRegistry.init(this._config),
         // inizializza api service
         ApiService.init(this._config)
-      ).then(function() {
-        self.emit('ready');
+      ).then(() => {
+        this.emit('ready');
         // emetto l'evento ready
-        if (!self._acquirePostBoostrap) {
-          self.postBootstrap();
+        if (!this._acquirePostBoostrap) {
+          this.postBootstrap();
         }
         this.initialized = true;
         d.resolve();
-      }).fail(function(error) {
+      }).fail((error) => {
         d.reject(error);
       })
     }

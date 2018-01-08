@@ -1,12 +1,12 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var utils = require('core/utils/utils');
-var geoutils = require('g3w-ol3/src/utils/utils');
-var DataProvider = require('core/layers/providers/provider');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const utils = require('core/utils/utils');
+const geoutils = require('g3w-ol3/src/utils/utils');
+const DataProvider = require('core/layers/providers/provider');
 //vado a sovrascrivere il metodo per leggere le feature
 // da un geojson
-var PIXEL_TOLERANCE = 10;
-var GETFEATUREINFO_IMAGE_SIZE = [101, 101];
+const PIXEL_TOLERANCE = 10;
+const GETFEATUREINFO_IMAGE_SIZE = [101, 101];
 
 function WMSDataProvider(options) {
   options = options || {};
@@ -19,12 +19,13 @@ function WMSDataProvider(options) {
 
 inherit(WMSDataProvider, DataProvider);
 
-var proto = WMSDataProvider.prototype;
+const proto = WMSDataProvider.prototype;
 
 
 proto._getRequestUrl = function(url, extent, size, pixelRatio, projection, params) {
+  const axisOrientation = projection.getAxisOrientation ? projection.getAxisOrientation() : "enu";
+  let bbox;
   params['CRS'] = projection.getCode();
-
   if (!('STYLES' in params)) {
     params['STYLES'] = '';
   }
@@ -32,8 +33,6 @@ proto._getRequestUrl = function(url, extent, size, pixelRatio, projection, param
   params['DPI'] = 90 * pixelRatio;
   params['WIDTH'] = size[0];
   params['HEIGHT'] = size[1];
-  var axisOrientation = projection.getAxisOrientation ? projection.getAxisOrientation() : "enu";
-  var bbox;
   if (axisOrientation.substr(0, 2) == 'ne') {
     bbox = [extent[1], extent[0], extent[3], extent[2]];
   } else {
@@ -46,9 +45,8 @@ proto._getRequestUrl = function(url, extent, size, pixelRatio, projection, param
 
 // funzione che deve esserere "estratta dal mapservice"
 proto._getGetFeatureInfoUrlForLayer = function(url, coordinates,resolution, params) {
-  var extent = geoutils.getExtentForViewAndSize(coordinates, resolution, 0, GETFEATUREINFO_IMAGE_SIZE);
-
-  var baseParams = {
+  const extent = geoutils.getExtentForViewAndSize(coordinates, resolution, 0, GETFEATUREINFO_IMAGE_SIZE);
+  const baseParams = {
     'SERVICE': 'WMS',
     'VERSION': '1.3.0',
     'REQUEST': 'GetFeatureInfo',
@@ -59,8 +57,8 @@ proto._getGetFeatureInfoUrlForLayer = function(url, coordinates,resolution, para
 
   _.merge(baseParams, params);
 
-  var x = Math.floor((coordinates[0] - extent[0]) / resolution);
-  var y = Math.floor((extent[3] - coordinates[1]) / resolution);
+  const x = Math.floor((coordinates[0] - extent[0]) / resolution);
+  const y = Math.floor((extent[3] - coordinates[1]) / resolution);
   baseParams[ 'I' ] = x;
   baseParams['J'] = y;
   return this._getRequestUrl(
@@ -69,21 +67,21 @@ proto._getGetFeatureInfoUrlForLayer = function(url, coordinates,resolution, para
 };
 
 proto.query = function(options) {
-  var d = $.Deferred();
-  var coordinates = options.coordinates || [];
-  var resolution = options.resolution || null;
-  var url = this._url;
-  var sourceParam = url.split('SOURCE');
+  const d = $.Deferred();
+  const coordinates = options.coordinates || [];
+  const resolution = options.resolution || null;
+  let url = this._url;
+  let sourceParam = url.split('SOURCE');
   if (sourceParam.length) {
     url = sourceParam[0];
-    
+
     if (sourceParam.length > 1) {
       sourceParam = '&SOURCE' + sourceParam[1];
     } else {
       sourceParam = '';
     }
   }
-  var params = {
+  const params = {
     LAYERS: this._layerName,
     QUERY_LAYERS: this._layerName,
     INFO_FORMAT: this._infoFormat,
@@ -94,8 +92,8 @@ proto.query = function(options) {
     FI_POLYGON_TOLERANCE: PIXEL_TOLERANCE,
     G3W_TOLERANCE: PIXEL_TOLERANCE * resolution
   };
-  var getFeatureInfoUrl = this._getGetFeatureInfoUrlForLayer(url, coordinates, resolution, params);
-  var queryString = getFeatureInfoUrl.split('?')[1];
+  const getFeatureInfoUrl = this._getGetFeatureInfoUrlForLayer(url, coordinates, resolution, params);
+  const queryString = getFeatureInfoUrl.split('?')[1];
   url += '?'+queryString + sourceParam;
 
   this.makeQueryForLayer(url, coordinates, resolution)
@@ -109,13 +107,13 @@ proto.query = function(options) {
 };
 
 proto.makeQueryForLayer = function(url, coordinates, resolution) {
-  var d = $.Deferred();
-  var queryInfo = {
+  const d = $.Deferred();
+  const queryInfo = {
     coordinates: coordinates,
     resolution: resolution
   };
   this.doRequestAndParse(url)
-    .then(function(response){
+    .then((response) => {
       d.resolve({
         data: response,
         query: queryInfo
@@ -128,14 +126,13 @@ proto.makeQueryForLayer = function(url, coordinates, resolution) {
 };
 
 proto.doRequestAndParse = function(url) {
-  var self = this;
-  var d = $.Deferred();
+  const d = $.Deferred();
   $.get(url)
-    .then(function(response) {
-      var featuresForLayers = self.handleQueryResponseFromServer(self._layerName, response);
+    .then((response) => {
+      const featuresForLayers = this.handleQueryResponseFromServer(this._layerName, response);
       d.resolve(featuresForLayers);
     })
-    .fail(function(){
+    .fail(() => {
       d.reject();
     });
   return d;

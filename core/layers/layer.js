@@ -278,11 +278,11 @@ proto.setInfoFormat = function(infoFormat) {
 };
 
 proto.getAttributes = function() {
-  return this.fields;
+  return this.config.fields;
 };
 
 proto.changeAttribute = function(attribute, type, options) {
-  _.forEach(this.fields, function(field) {
+  _.forEach(this.config.fields, function(field) {
     if (field.name == attribute) {
       field.type = type;
       field.options = options;

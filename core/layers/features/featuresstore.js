@@ -1,10 +1,10 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils//utils').base;
-var G3WObject = require('core/g3wobject');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils//utils').base;
+const G3WObject = require('core/g3wobject');
 
 // Interfaccia per registare i layers
 function FeaturesStore(options) {
-  var self = this;
+
   options = options || {};
   this._features = [];
   this._provider = options.provider || null;
@@ -12,8 +12,8 @@ function FeaturesStore(options) {
   this._lockIds = []; // contiene le features loccate
   this.setters = {
     addFeatures: function(features) {
-      _.forEach(features, function(feature) {
-        self._addFeature(feature);
+      features.forEach((feature) => {
+        this._addFeature(feature);
       })
     },
     addFeature: function(feature) {
@@ -43,7 +43,7 @@ function FeaturesStore(options) {
 
 inherit(FeaturesStore, G3WObject);
 
-proto = FeaturesStore.prototype;
+const proto = FeaturesStore.prototype;
 
 // funzione per l'unlock delle features
 proto.unlock = function() {
@@ -52,18 +52,17 @@ proto.unlock = function() {
 
 // funzione che recupera le features o dal server o dall'attributo _features
 proto._getFeatures = function(options) {
-  var self = this;
-  var d = $.Deferred();
-  var features;
+  const d = $.Deferred();
+  let features;
   // verifico che ci sia un provider altrimenti vado a recuperare le
   if (this._provider && options) {
     this._provider.getFeatures(options)
-      .then(function(options) {
-        features = self._filterFeaturesResponse(options);
-        self.addFeatures(features);
+      .then((options) => {
+        features = this._filterFeaturesResponse(options);
+        this.addFeatures(features);
         d.resolve(features);
       })
-      .fail(function(err) {
+      .fail((err) => {
         d.reject(err)
       })
   } else {
@@ -75,24 +74,23 @@ proto._getFeatures = function(options) {
 //funzione che in base alle features caricate filtra
 // escludendo quelle già inserite
 proto._filterFeaturesResponse = function(options) {
-  var self = this;
-  var added = false;
+  let added = false;
   options = options || {};
-  var features = options.features || [];
-  var featurelocks = options.featurelocks || [];
-  var featuresToAdd = _.filter(features, function(feature) {
-    added = _.includes(self._loadedPks, feature.getId());
+  const features = options.features || [];
+  const featurelocks = options.featurelocks || [];
+  const featuresToAdd = _.filter(features, (feature) => {
+    added = _.includes(this._loadedPks, feature.getId());
     if (!added)
-      self._loadedPks.push(feature.getId());
+      this._loadedPks.push(feature.getId());
     return !added
   });
-  self._filterLockIds(featurelocks);
+  this._filterLockIds(featurelocks);
   return featuresToAdd;
 };
 
 // funzione che mi dice le feature loccate
 proto._filterLockIds = function(featurelocks) {
-  var toAddLockId = _.differenceBy(featurelocks, this._lockIds, 'featureid');
+  const toAddLockId = _.differenceBy(featurelocks, this._lockIds, 'featureid');
   this._lockIds = _.union(this._lockIds, toAddLockId);
 };
 
@@ -110,16 +108,16 @@ proto._readFeatures = function() {
 };
 
 proto._commit = function(commitItems, featurestore) {
-  var d = $.Deferred();
+  const d = $.Deferred();
   // verifico che ci siano opzioni e un provider altrimenti vado a recuperare le
   // features direttamente nel featuresstore
   if (commitItems && this._provider) {
     commitItems.lockids = this._lockIds;
     this._provider.commit(commitItems)
-      .then(function(response) {
+      .then((response) => {
         d.resolve(response);
       })
-      .fail(function(err) {
+      .fail((err) => {
         d.reject(err);
       })
   } else {
@@ -130,8 +128,8 @@ proto._commit = function(commitItems, featurestore) {
 
 // recupera una feature dal suo id
 proto.getFeatureById = function(featureId) {
-  var feat;
-  _.forEach(this._features, function(feature) {
+  let feat;
+  this._features.forEach((feature) => {
     if (feature.getId() == featureId) {
       feat = feature;
       return false;
@@ -146,17 +144,16 @@ proto._addFeature = function(feature) {
 
 //vado ad eseguire in pratica la sostituzione della feature dopo una modifica
 proto._updateFeature = function(feature) {
-  var self = this;
-  _.forEach(this._features, function(feat, idx) {
-    if (feat.getId() == feature.getId()) {
-      self._features[idx] = feature;
+  this._features.forEach((feat, idx) => {
+    if (feat == feature) {
+      this._features[idx] = feature;
       return false;
     }
   });
 };
 
 proto.updatePkFeature = function(newValue, oldValue) {
-  var feature
+  //TODO
 };
 
 proto.setFeatures = function(features) {
@@ -164,10 +161,9 @@ proto.setFeatures = function(features) {
 };
 
 proto._removeFeature = function(feature) {
-  var self = this;
-  _.forEach(this._features, function(feat, idx) {
-    if (feature.getId() == feat.getId()) {
-      self._features.splice(idx, 1);
+  this._features.forEach((feat, idx) => {
+    if (feature == feat) {
+      this._features.splice(idx, 1);
       return false
     }
   })

@@ -149,7 +149,7 @@ function QueryResultsService() {
       // verifico che ci siano feature legate a quel layer che sono il risultato della query
       if (featuresForLayer.features && featuresForLayer.features.length) {
         // prendo solo gli attributi effettivamente ritornati dal WMS (usando la prima feature disponibile)
-        layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0].getProperties())
+        layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0].getProperties());
         // faccio una ricerca sugli attributi del layer se esiste un campo image
         // se si lo setto a true
         layerObj.attributes.forEach((attribute) => {
@@ -181,7 +181,6 @@ function QueryResultsService() {
       }
       else if (featuresForLayer.error){
         layerObj.error = featuresForLayer.error;
-        console.log(featuresForLayer.error);
       }
     });
     return layers;
@@ -202,7 +201,7 @@ function QueryResultsService() {
     // (es. quando l'interrogazione è verso un layer esterno di cui non so i campi)
     // costruisco la struttura "fittizia" usando l'attributo sia come name che come label
     else {
-      return _.map(featureAttributesNames, function(featureAttributesName){
+      return _.map(featureAttributesNames, function(featureAttributesName) {
         return {
           name: featureAttributesName,
           label: featureAttributesName

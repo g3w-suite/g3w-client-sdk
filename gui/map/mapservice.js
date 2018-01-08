@@ -391,7 +391,7 @@ proto.setupControls = function(){
                   data: []
                 };
                 layersResults.forEach((result) => {
-                  results.data.push(result.data[0]);
+                  result.data ? results.data.push(result.data[0]): null;
                 });
                 queryResultsPanel.setQueryResponse(results, coordinates, this.state.resolution);
                 })
@@ -456,7 +456,7 @@ proto.setupControls = function(){
                           data: []
                         };
                         _.forEach(layersResults, function(result) {
-                          results.data.push(result.data[0]);
+                          result.data ? results.data.push(result.data[0]): null;
                         });
                         queryResultsPanel.setQueryResponse(results, geometry, this.state.resolution);
                       })
@@ -516,7 +516,7 @@ proto.setupControls = function(){
                       data: []
                     };
                     _.forEach(layersResults, function(result) {
-                      results.data.push(result.data[0]);
+                      result.data ? results.data.push(result.data[0]): null;
                     });
                     queryResultsPanel.setQueryResponse(results, bbox, this.state.resolution);
                   })

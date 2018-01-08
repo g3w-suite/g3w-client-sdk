@@ -70,13 +70,13 @@ proto.extractGML = function (response) {
 // dal server così da avere una risposta coerente in termini di formato risultati da presentare
 // nel componente QueryResults
 proto.handleQueryResponseFromServer = function(layerName, response) {
-  var self = this;
-  var _fakeLayerName = 'layer';
+  let _fakeLayerName = 'layer';
+  let parser;
   this._layer.getInfoFormat();
-  var format = new ol.format.WMSGetFeatureInfo(({
+  const format = new ol.format.WMSGetFeatureInfo(({
     layers: [this._layer.getId()]
   }));
-  var features = format.readFeatures(response);
+  let features = format.readFeatures(response);
   switch (this._layer.getInfoFormat()) {
     case 'json':
       parser = this._parseLayerGeoJSON;
@@ -84,17 +84,21 @@ proto.handleQueryResponseFromServer = function(layerName, response) {
       features = parser.call(self, data, ogcservice);
       break;
     default:
-      var x2js = new X2JS();
+      const x2js = new X2JS();
       if (!_.isString(response)) {
         // vado a convertire il tutto in stringa
         response = new XMLSerializer().serializeToString(response)
       }
       try {
         if (_.isString(response)) {
-          var layerNameSanitazed = layerName.replace(/[/\s]/g, '');
-          var reg = new RegExp(layerNameSanitazed, "g");
+          let layerNameSanitazed = layerName.replace(/[/\s]/g, '');
+          layerNameSanitazed = layerNameSanitazed.replace(')', '\\)');
+          layerNameSanitazed = layerNameSanitazed.replace('(', '\\(');
+          let reg = new RegExp(layerNameSanitazed, "g");
           response = response.replace(reg, _fakeLayerName);
-          reg = new RegExp(this._layer.getName(),"g");
+          layerName = layerName.replace(')', '\\)');
+          layerName = layerName.replace('(', '\\(');
+          reg = new RegExp(layerName,"g");
           response = response.replace(reg, _fakeLayerName);
           jsonresponse = x2js.xml_str2json(response);
         } else {
@@ -105,7 +109,7 @@ proto.handleQueryResponseFromServer = function(layerName, response) {
       catch (e) {
         return;
       }
-      var rootNode = _.keys(jsonresponse)[0];
+      const rootNode = _.keys(jsonresponse)[0];
       switch (rootNode) {
         case 'FeatureCollection':
           parser = this._parseLayerFeatureCollection;
@@ -113,8 +117,8 @@ proto.handleQueryResponseFromServer = function(layerName, response) {
           features = parser.call(self, data, _fakeLayerName);
           break;
         case "msGMLOutput":
-          var layers = this._layer.getQueryLayerOrigName();
-          var parser = new ol.format.WMSGetFeatureInfo({
+          const layers = this._layer.getQueryLayerOrigName();
+          parser = new ol.format.WMSGetFeatureInfo({
             layers: layers
           });
           features = parser.readFeatures(response);
@@ -130,33 +134,33 @@ proto.handleQueryResponseFromServer = function(layerName, response) {
 // Brutto ma per ora unica soluzione trovata per dividere per layer i risultati di un doc xml wfs.FeatureCollection.
 // OL3 li parserizza tutti insieme non distinguendo le features dei diversi layers
 proto._parseLayerFeatureCollection = function(data, layerName) {
-  var layerData = _.cloneDeep(data);
+  const layerData = _.cloneDeep(data);
   layerData.FeatureCollection.featureMember = [];
-  var featureMembers = data.FeatureCollection.featureMember;
+  let featureMembers = data.FeatureCollection.featureMember;
   featureMembers = _.isArray(featureMembers) ? featureMembers : [featureMembers];
   _.forEach(featureMembers,function(featureMember){
-    var isLayerMember = _.get(featureMember, layerName);
+    const isLayerMember = _.get(featureMember, layerName);
     if (isLayerMember) {
       layerData.FeatureCollection.featureMember.push(featureMember);
     }
   });
-  var x2js = new X2JS();
-  var layerFeatureCollectionXML = x2js.json2xml_str(layerData);
-  var parser = new ol.format.WMSGetFeatureInfo();
+  const x2js = new X2JS();
+  const layerFeatureCollectionXML = x2js.json2xml_str(layerData);
+  const parser = new ol.format.WMSGetFeatureInfo();
   return parser.readFeatures(layerFeatureCollectionXML);
 };
 
 // mentre con i risultati in msGLMOutput (da Mapserver) il parser può essere istruito per parserizzare in base ad un layer di filtro
 proto._parseLayermsGMLOutput = function(data) {
-  var layers = this._layer.getQueryLayerOrigName();
-  var parser = new ol.format.WMSGetFeatureInfo({
+  const layers = this._layer.getQueryLayerOrigName();
+  const parser = new ol.format.WMSGetFeatureInfo({
     layers: layers
   });
   return parser.readFeatures(data);
 };
 
 proto._parseLayerGeoJSON = function(data) {
-  var geojson = new ol.format.GeoJSON({
+  const geojson = new ol.format.GeoJSON({
     defaultDataProjection: this.crs,
     geometryName: "geometry"
   });

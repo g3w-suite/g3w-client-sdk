@@ -10,8 +10,7 @@ const Relations = require('core/relations/relations');
 // Layer di base su cui si possono fare operazioni di editing
 function TableLayer(config, options) {
   options = options || {}; // queste mi servono per aggiungere altre infoemazioni oltra alla configurazione del layer setsso
-  var ProjectsRegistry = require('core/project/projectsregistry');
-  var self = this;
+  const ProjectsRegistry = require('core/project/projectsregistry');
   // setters
   this.setters = {
     // cancellazione di tutte le features del layer
@@ -33,44 +32,44 @@ function TableLayer(config, options) {
     // funzione che recupera i dati da qualsisasi fonte (server, wms, etc..)
     // mediante il provider legato al fetauresstore
     getFeatures: function (options) {
-      var self = this;
-      var d = $.Deferred();
+      const d = $.Deferred();
       // qui mi ritorna la promessa del setter (G3WOBJECT)
       this._featuresStore.getFeatures(options)
-        .then(function (promise) {
-          promise.then(function (features) {
-            self.emit('getFeatures', features);
+        .then((promise) => {
+          promise.then((features) => {
+            this.emit('getFeatures', features);
             return d.resolve(features);
-          }).fail(function (err) {
+          }).fail((err) => {
             return d.reject(err);
           })
         })
-        .fail(function (err) {
+        .fail((err) => {
           d.reject(err);
         });
       return d.promise();
     },
     commit: function(commitItems, featurestore) {
-      var d = $.Deferred();
+      const d = $.Deferred();
       this._featuresStore.commit(commitItems, featurestore)
-        .then(function (promise) {
+        .then((promise) => {
           promise
-            .then(function (response) {
+            .then((response) => {
               // se tutto andato a buon fine il commit
+              let features;
               if (featurestore)
-                var features = _.clone(featurestore.readFeatures());
-                _.forEach(features, function(feature) {
+                features = _.clone(featurestore.readFeatures());
+              features.forEach((feature) => {
                   feature.clearState();
                 });
-                self._featuresStore.setFeatures(features);
-              self.applyCommitResponse(response);
+                this._featuresStore.setFeatures(features);
+              this.applyCommitResponse(response);
               return d.resolve(response);
             })
-            .fail(function (err) {
+            .fail((err) => {
               return d.reject(err);
           })
         })
-        .fail(function (err) {
+        .fail((err)  => {
           d.reject(err);
         });
       return d.promise();
@@ -89,12 +88,12 @@ function TableLayer(config, options) {
   });
   // colore
   this._color = null;
-  var currentProject = options.project || ProjectsRegistry.getCurrentProject();
+  const currentProject = options.project || ProjectsRegistry.getCurrentProject();
   // vado a settare urls che mi servono
-  var projectType = currentProject.getType();
-  var projectId = currentProject.getId();
-  var vectorUrl = initConfig.vectorurl;
-  var suffixUrl = projectType + '/' + projectId + '/' + config.id + '/';
+  const projectType = currentProject.getType();
+  const projectId = currentProject.getId();
+  const vectorUrl = initConfig.vectorurl;
+  const suffixUrl = projectType + '/' + projectId + '/' + config.id + '/';
   // vado ad aggiungere gli url che mi servono
   config.urls = {
     editing: vectorUrl + 'editing/' + suffixUrl ,
@@ -113,7 +112,7 @@ function TableLayer(config, options) {
   };
   // vado a chiamare il Layer di base
   base(this, config);
-  var projectRelations = currentProject.getRelations();
+  const projectRelations = currentProject.getRelations();
   // vado a creare le relazioni
   this._relations = null;
   this._createRelations(projectRelations);
@@ -130,16 +129,16 @@ function TableLayer(config, options) {
   // vado a recuperare la configurazione dal server se è editabile
   if (this.isEditable()) {
     this.getEditingConfig()
-      .then(function(config) {
-        self.config.editing.pk = config.vector.pk;
-        self.config.editing.fields = config.vector.fields;
-        self.config.editing.format = config.vector.format;
-        self._setOtherConfigParameters(config);
-        self._setPkEditable(self.config.editing.fields);
-        self.setReady(true);
+      .then((config) => {
+        this.config.editing.pk = config.vector.pk;
+        this.config.editing.fields = config.vector.fields;
+        this.config.editing.format = config.vector.format;
+        this._setOtherConfigParameters(config);
+        this._setPkEditable(this.config.editing.fields);
+        this.setReady(true);
       })
-      .fail(function(err) {
-        self.setReady(false);
+      .fail((err) => {
+        this.setReady(false);
       });
   }
   // viene istanziato un featuresstore e gli viene associato
@@ -168,13 +167,12 @@ proto.readFeatures = function() {
 // funzione che restituisce il layer per l'editing
 proto.getLayerForEditing = function() {
   // nel caso fosse già un vector layer ritorna se stesso
-  var editingLayer = this;
-  return editingLayer;
+  return this;
 };
 
 proto.isFieldRequired = function(fieldName) {
-  var required = false;
-  _.forEach(this.getFields(), function(field) {
+  let required = false;
+  this.getFields().forEach((field) => {
     if (fieldName == field.name) {
       required = !!field.validate.required;
       return false;
@@ -187,14 +185,13 @@ proto.isFieldRequired = function(fieldName) {
 // nel caso di inserimento di una nuova feature
 // nel caso di inserimento di una nuova feature
 proto.applyCommitResponse = function(response) {
-  var self = this;
-  var data = response;
+  const data = response;
   if (data) {
-    var feature;
-    var ids = data.response.new;
-    var lockids = data.response.new_lockids;
-    _.forEach(ids, function(idobj) {
-      feature = self._featuresStore.getFeatureById(idobj.clientid);
+    let feature;
+    const ids = data.response.new;
+    const lockids = data.response.new_lockids;
+    ids.forEach((idobj) => {
+      feature = this._featuresStore.getFeatureById(idobj.clientid);
       feature.setId(idobj.id);
     });
     this._featuresStore.addLockIds(lockids);
@@ -203,12 +200,12 @@ proto.applyCommitResponse = function(response) {
 
 // unlock editng features
 proto.unlock = function() {
-  var d = $.Deferred();
+  const d = $.Deferred();
   this._featuresStore.unlock()
-    .then(function() {
+    .then(() => {
       d.resolve()
     })
-    .fail(function(err) {
+    .fail((err) => {
       d.reject(err);
     });
   return d.promise();
@@ -225,7 +222,7 @@ proto.getFields = function() {
 
 
 proto.getFieldsLabel = function() {
-  var labels = [];
+  const labels = [];
   _.forEach(this.getFields(), function(field) {
     labels.push(field.label)
   });
@@ -241,10 +238,9 @@ proto.getPk = function() {
 };
 
 proto._setPkEditable = function(fields) {
-  var self = this;
-  _.forEach(fields, function(field) {
-    if (field.name == self.getPk()) {
-      self.state.editing.ispkeditable = field.editable;
+  fields.forEach((field) => {
+    if (field.name == this.getPk()) {
+      this.state.editing.ispkeditable = field.editable;
       return false;
     }
   })
@@ -274,28 +270,28 @@ proto.isPkEditable = function() {
 
 // funzione che recuprera la configurazione di editing del layer
 proto.getEditingConfig = function(options) {
-  var d = $.Deferred();
+  const d = $.Deferred();
   options = options || {};
-  var provider = this.getProvider('data');
+  const provider = this.getProvider('data');
   // ritorno la promise del provider
   provider.getConfig(options)
-    .then(function(config) {
+    .then((config) => {
       d.resolve(config);
     })
-    .fail(function(err) {
-      d.reject()
+    .fail((err) => {
+      d.reject(err)
     });
   return d.promise()
 };
 
 proto.getWidgetData = function(options) {
-  var provider = this.getProvider('data');
-  var d = $.Deferred();
+  const provider = this.getProvider('data');
+  const d = $.Deferred();
   provider.getWidgetData(options)
-    .then(function(response) {
+    .then((response) => {
       d.resolve(response);
     })
-    .fail(function(err) {
+    .fail((err) => {
       d.reject(err)
     });
   return d.promise()
@@ -381,9 +377,8 @@ proto._setFeatures = function(features) {
 };
 
 proto.addFeatures = function(features) {
-  var self = this;
-  _.forEach(features, function(feature) {
-    self.addFeature(feature);
+  features.forEach((feature) => {
+    this.addFeature(feature);
   });
 };
 
@@ -393,7 +388,7 @@ proto._addFeature = function(feature) {
 };
 
 proto._deleteFeature = function(feature) {
-  var featureId = feature.getId();
+  return feature.getId();
 };
 
 proto._updateFeature = function(feature) {
@@ -411,9 +406,9 @@ proto.addLockIds = function(lockIds) {
 // viene chamato quando si preme ad esempio Salva sul Form degli
 // attributi di una feature
 proto.setFieldsWithValues = function(feature, fields) {
-  var attributes = {};
-  var pkValue;
-  _.forEach(fields, function(field) {
+  const attributes = {};
+  let pkValue;
+  fields.forEach((field)=> {
     // vado a verificares se il campo è primary key e se è editable
     if (feature.getPk() == field.name && field.editable) {
       pkValue = field.type == "integer" ? 1* field.value : field.value;
@@ -428,18 +423,18 @@ proto.setFieldsWithValues = function(feature, fields) {
   });
   // setto i campi della feature con i valori editati nel form
   feature.setProperties(attributes);
+  return attributes;
 
 };
 
 // funzione che server per associare campi a valori
 proto.getFieldsWithValues = function(obj, options) {
-  var self = this;
   options = options || {};
-  var exclude = options.exclude || [];
-  var pkeditable = _.isBoolean(options.pkeditable) ? options.pkeditable : true;
+  const exclude = options.exclude || [];
+  const pkeditable = _.isBoolean(options.pkeditable) ? options.pkeditable : true;
   // clono i fields in quanto non voglio modificare i valori originali
-  var fields = _.cloneDeep(this.getFields());
-  var feature, attributes;
+  let fields = _.cloneDeep(this.getFields());
+  let feature, attributes;
   // il metodo accetta sia feature che fid
   if (obj instanceof Feature){
     feature = obj;
@@ -455,17 +450,17 @@ proto.getFieldsWithValues = function(obj, options) {
     return exclude.indexOf(field.name) == -1;
   });
   // scorro sui campi della feature
-  _.forEach(fields, function(field) {
+  fields.forEach((field) => {
     if (feature) {
       // verifico se è campo pk
-      if (field.name == self.config.editing.pk) {
+      if (field.name == this.config.editing.pk) {
         // verifico che
-        if (feature.getId() && self.isPkEditable()) {
+        if (feature.getId()) {
           field.value = feature.getId();
-          field.editable = !field.editable ? field.editable : feature.isNew();
         } else {
           field.value = null;
         }
+        field.editable = this.isPkEditable();
       } else {
         field.value = attributes[field.name];
       }
@@ -479,9 +474,9 @@ proto.getFieldsWithValues = function(obj, options) {
 
 //Metodi legati alle relazioni
 proto._createRelations = function(projectRelations) {
-  var relations = [];
-  var layerId = this.getId();
-  _.forEach(projectRelations, function(relation) {
+  const relations = [];
+  const layerId = this.getId();
+  projectRelations.forEach((relation) => {
     if ([relation.referencedLayer, relation.referencingLayer].indexOf(layerId) != -1)
       relations.push(relation);
   });
@@ -490,6 +485,7 @@ proto._createRelations = function(projectRelations) {
       relations: relations
     });
   }
+  return relations;
 };
 
 proto.createNewFeature = function() {
@@ -519,8 +515,8 @@ proto.getRelations = function() {
 
 //restituisce gli attributi fields di una deterninata relazione
 proto.getRelationAttributes = function(relationName) {
-  var fields = [];
-  _.forEach(this._relations, function(relation) {
+  let fields = [];
+  this._relations.forEach((relation) => {
     if (relation.name == relationName) {
       fields = relation.fields;
       return false
@@ -531,8 +527,8 @@ proto.getRelationAttributes = function(relationName) {
 
 // retituisce un oggetto contenente nome relazione e fileds(attributi) associati
 proto.getRelationsAttributes = function() {
-  var fields = {};
-  _.forEach(this.state.relations, function(relation) {
+  const fields = {};
+  this.state.relations.forEach((relation) => {
     fields[relation.name] = relation.fields;
   });
   return fields;

@@ -41,7 +41,7 @@ const vueComponentOptions = {
       return this.fieldIs(type,layer,attributeName,attributeValue);
     },
     checkField: function(type, fieldname, attributes) {
-      var isType = false;
+      let isType = false;
       _.forEach(attributes, function(attribute) {
         if (attribute.name == fieldname) {
           isType = attribute.type == type;
@@ -77,24 +77,23 @@ const vueComponentOptions = {
     attributesSubset: function(attributes) {
       // faccio un filtro sul campo immagine perchè non ha senso far vedere
       // la stringa con il path dell'immagine
-      var attributes = _.filter(attributes, function(attribute) {
+      const _attributes = _.filter(attributes, function(attribute) {
         return attribute.type != 'image';
       });
-      var end = Math.min(maxSubsetLength, attributes.length);
-      return attributes.slice(0, end);
+      const end = Math.min(maxSubsetLength, attributes.length);
+      return _attributes.slice(0, end);
     },
     relationsAttributesSubset: function(relationAttributes) {
-      var attributes = [];
-
+      const attributes = [];
       _.forEach(relationAttributes, function (value, attribute) {
         if (_.isArray(value)) return;
         attributes.push({label: attribute, value: value})
       });
-      var end = Math.min(maxSubsetLength, attributes.length);
+      const end = Math.min(maxSubsetLength, attributes.length);
       return attributes.slice(0, end);
     },
     relationsAttributes: function(relationAttributes) {
-      var attributes = [];
+      const attributes = [];
       _.forEach(relationAttributes, function (value, attribute) {
         attributes.push({label: attribute, value: value})
       });
@@ -104,11 +103,11 @@ const vueComponentOptions = {
       return this.attributesSubset(attributes).length;
     },
     cellWidth: function(index,layer) {
-      var subsetLength = this.attributesSubsetLength(layer.attributes);
-      var diff = maxSubsetLength - subsetLength;
+      const subsetLength = this.attributesSubsetLength(layer.attributes);
+      const diff = maxSubsetLength - subsetLength;
       actionsCellWidth = layer.hasgeometry ? headerActionsCellWidth : 0;
-      var headerAttributeCellTotalWidth = 100 - headerExpandActionCellWidth - actionsCellWidth;
-      var baseCellWidth = headerAttributeCellTotalWidth / maxSubsetLength;
+      const headerAttributeCellTotalWidth = 100 - headerExpandActionCellWidth - actionsCellWidth;
+      const baseCellWidth = headerAttributeCellTotalWidth / maxSubsetLength;
       if ((index == subsetLength-1) && diff>0) {
         return baseCellWidth * (diff+1);
       }
@@ -117,7 +116,7 @@ const vueComponentOptions = {
       }
     },
     featureBoxColspan: function(layer) {
-      var colspan = this.attributesSubsetLength(layer.attributes);
+      let colspan = this.attributesSubsetLength(layer.attributes);
       if (layer.expandable) {
         colspan += 1;
       }
@@ -130,8 +129,8 @@ const vueComponentOptions = {
       return this.relationsAttributesSubset(elements).length;
     },
     collapsedFeatureBox: function(layer, feature, relation_index) {
-      var collapsed = true;
-      var boxid;
+      let collapsed = true;
+      let boxid;
       if (!_.isNil(relation_index)) {
         boxid = layer.id + '_' + feature.id+ '_' + relation_index;
       } else {
@@ -143,7 +142,7 @@ const vueComponentOptions = {
       return collapsed;
     },
     toggleFeatureBox: function(layer, feature, relation_index) {
-      var boxid;
+      let boxid;
       if (!_.isNil(relation_index)) {
         boxid = layer.id + '_' + feature.id+ '_' + relation_index;
       } else {
@@ -179,16 +178,15 @@ const vueComponentOptions = {
     // potrebbero avere bisogno di modificare il DOM dopo che sono cambiati
     // (per qualsiasi motivo) i dati e quindi Vue rirenderizza il DOM
     'state.layers': function(layers) {
-      var self = this;
       if (layers.length) {
-        this.$nextTick(function() {
-          self.$options.queryResultsService.postRender(self.$el);
+        this.$nextTick(() => {
+          this.$options.queryResultsService.postRender(this.$el);
         })
       }
     }
   },
   mounted: function() {
-    Vue.nextTick(function() {
+    Vue.nextTick(() => {
       // vado a settare i tooltip
       $('[data-toggle="tooltip"]').tooltip();
     })
@@ -196,11 +194,10 @@ const vueComponentOptions = {
 };
 
 // se lo voglio istanziare manualmente
-var InternalComponent = Vue.extend(vueComponentOptions);
+const InternalComponent = Vue.extend(vueComponentOptions);
 
 function QueryResultsComponent(options) {
   base(this, options);
-  var self = this;
   this.id = "queryresults";
   this.title = "Query Results";
   this._service = new QueryResultsService();
@@ -219,36 +216,38 @@ function QueryResultsComponent(options) {
     }
   };
 
-  this._service.onafter('setLayersData',function() {
-    if (!self.internalComponent) {
-      self.setInternalComponent();
+  this._service.onafter('setLayersData', () => {
+    if (!this.internalComponent) {
+      this.setInternalComponent();
     }
-    self.createLayersFeaturesBoxes();
+    this.createLayersFeaturesBoxes();
   });
 
   merge(this, options);
 
   this.createLayersFeaturesBoxes = function() {
-    var layersFeaturesBoxes = {};
-    var layers = this._service.state.layers;
-    _.forEach(layers, function(layer) {
+    const layersFeaturesBoxes = {};
+    const layers = this._service.state.layers;
+    layers.forEach((layer) => {
       //da rivedere meglio
       if (layer.attributes.length <= maxSubsetLength && !layer.hasImageField) {
         layer.expandable = false;
       }
-      _.forEach(layer.features, function(feature, index) {
+      layer.features.forEach((feature, index) => {
         // se è la prima feature e il layer ha più di maxSubsetLength attributi, allora la espando già in apertura
         //var collapsed = (index == 0 && layer.attributes.length > maxSubsetLength) ? false : true;
-        var collapsed = true;
-        var boxid = layer.id+'_'+feature.id;
+        let collapsed = true;
+        let boxid = layer.id+'_'+feature.id;
         layersFeaturesBoxes[boxid] = {
           collapsed: collapsed
         };
         if (feature.attributes.relations) {
           boxid = '';
-          _.forEach(feature.attributes.relations, function(relation) {
+          const relations = feature.attributes.relations;
+          relations.forEach((relation) => {
             boxid = layer.id + '_' + feature.id + '_' + relation.name;
-            _.forEach(relation.elements, function(element, index){
+            const elements = relation.elements;
+            elements.forEach((element, index) =>{
               layersFeaturesBoxes[boxid+index] = {
                 collapsed: true
               };
