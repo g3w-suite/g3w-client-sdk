@@ -2,7 +2,7 @@ function Expression() {
   this._expression = '';
 }
 
-var proto = Expression.prototype;
+const proto = Expression.prototype;
 
 proto.and = function(field, value) {
     this._expression = this._expression ? this._expression + ' AND ': this._expression;
@@ -77,13 +77,13 @@ proto._build = function(operator, field, value) {
 
 proto.createExpressionFromFilter = function(filterObject, layername) {
   /////inserisco il nome del layer (typename) ///
-  var filter = [];
+  let filter = [];
   function createSingleFilter(booleanObject) {
-    var filterElements = [];
-    var filterElement = '';
-    var valueExtra = "";
-    var valueQuotes = "'";
-    var rootFilter;
+    let filterElements = [];
+    let filterElement = '';
+    let valueExtra = "";
+    let valueQuotes = "'";
+    let rootFilter;
     _.forEach(booleanObject, function(v, k, obj) {
       //creo il filtro root che sarà AND OR
       rootFilter = Expression.OPERATORS[k];
@@ -100,7 +100,7 @@ proto.createExpressionFromFilter = function(filterObject, layername) {
               valueExtra = "%";
             }
             filterOp = Expression.OPERATORS[k];
-            var value;
+            let value;
             _.forEach(input, function(v, k, obj) {
               _.forEach(v, function(v, k, obj) {
                 //verifico se il valore non è un numero e quindi aggiungo singolo apice

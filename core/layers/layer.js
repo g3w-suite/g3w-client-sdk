@@ -1,11 +1,20 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils//utils').base;
 const G3WObject = require('core/g3wobject');
+const Filter = require('core/layers/filter/filter');
 const ProviderFactory = require('core/layers/providers/providersfactory');
 
 // classe padre di tutti i Layer
 function Layer(config) {
   config = config || {};
+  const ProjectsRegistry = require('core/project/projectsregistry');
+
+  ProjectsRegistry.onafter('setCurrentProject', (project) => {
+    const projectType = project.getType();
+    const projectId = project.getId();
+    const suffixUrl = projectType + '/' + projectId + '/' + config.id + '/';
+    this.config.urls.data = initConfig.vectorurl + 'data/' + suffixUrl;
+  });
   // contiene la configurazione statica del layer
   // messo merge perchè deve eventualmente mergiare attributi in comune
   this.config = _.merge({
@@ -33,12 +42,13 @@ function Layer(config) {
     title: config.title,
     selected: config.selected | false,
     disabled: config.disabled | false,
-    hidden: config.hidden || false
+    hidden: config.hidden || false,
+    openattributetable: this.canShowTable()
   };
   // tipo di server
-  var serverType = this.config.servertype;
+  const serverType = this.config.servertype;
   // tipo di sorgente del layer
-  var sourceType = this.config.source ? this.config.source.type : null ;
+  const sourceType = this.config.source ? this.config.source.type : null ;
   // vado a fare riferimento al suo contenitore (layersstore);
   this._layersstore = config.layersstore || null;
   /*
@@ -71,14 +81,58 @@ function Layer(config) {
 
 inherit(Layer, G3WObject);
 
-var proto = Layer.prototype;
+const proto = Layer.prototype;
 
+proto.getDataTable = function() {
+  let provider;
+  const d = $.Deferred();
+  if (this.isFilterable()) {
+    provider = this.getProvider('filter');
+    const filter = new Filter();
+    filter.getAll();
+    provider.query({
+      filter: filter
+    })
+      .done((response) => {
+        const data = provider.digestFeaturesForLayers(response.data);
+        const dataTableObject = {
+          headers: data[0].attributes,
+          features: data[0].features,
+          title: this.getTitle()
+        };
+        d.resolve(dataTableObject)
+      })
+      .fail((err) => {
+        d.reject(err)
+      })
+  } else {
+    provider = this.getProvider('data');
+    provider.getFeatures({
+      editing:false
+    })
+      .done((response) => {
+        const pkProperties = this.getFields().find((field) => response.pk == field.name);
+        const data = response.data;
+        const attributes = [pkProperties].concat(provider._parseAttributes(this.getAttributes(), data.features[0].properties));
+        const dataTableObject = {
+          headers: attributes,
+          features: data.features,
+          title: this.getTitle()
+        };
+        d.resolve(dataTableObject)
+      })
+      .fail((err) => {
+        d.reject(err)
+      })
+  }
+  return d.promise();
+};
 
 //metodo search
 proto.search = function(options) {
   options = options || {};
-  var d = $.Deferred();
-  var provider = this.getProvider('search');
+  const d = $.Deferred();
+  const provider = this.getProvider('search');
   if (provider) {
     provider.query(options)
       .done(function(response) {
@@ -97,9 +151,9 @@ proto.search = function(options) {
 // vinene chiamato solo nei layers che sono interroabili
 proto.query = function(options) {
   options = options || {};
-  var d = $.Deferred();
+  const d = $.Deferred();
   // prendo come provider di default il provider query
-  var provider = this.getProvider('query');
+  let provider = this.getProvider('query');
   // nel caso in cui nell'opzioni della query ho passato il parametro filtro
   if (options.filter) {
     provider = this.providers.filter;
@@ -117,6 +171,10 @@ proto.query = function(options) {
     d.reject('Il layer non è interrogabile');
   }
   return d.promise();
+};
+
+proto.getFields = function() {
+  return this.config.fields
 };
 
 proto.getProject = function() {
@@ -198,8 +256,8 @@ proto.setVisible = function(bool) {
 };
 // verifica se il layer è interrogabile
 proto.isQueryable = function() {
-  var queryEnabled = false;
-  var queryableForCababilities = !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.QUERYABLE));
+  let queryEnabled = false;
+  const queryableForCababilities = !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.QUERYABLE));
   // se è interrogabile verifico che il suo stato sia visibile e non disabilitato
   if (queryableForCababilities) {
     // è interrogabile se visibile e non disabilitato (per scala) oppure se interrogabile comunque (forzato dalla proprietà infowhennotvisible)
@@ -243,7 +301,7 @@ proto.setQueryUrl = function(queryUrl) {
 };
 
 proto.getQueryLayerName = function() {
-  var queryLayerName;
+  let queryLayerName;
   if (this.config.infolayer && this.config.infolayer != '') {
     queryLayerName = this.config.infolayer;
   }
@@ -254,7 +312,7 @@ proto.getQueryLayerName = function() {
 };
 
 proto.getQueryLayerOrigName = function() {
-  var queryLayerName;
+  let queryLayerName;
   if (this.state.infolayer && this.config.infolayer != '') {
     queryLayerName = this.config.infolayer;
   }
@@ -282,7 +340,7 @@ proto.getAttributes = function() {
 };
 
 proto.changeAttribute = function(attribute, type, options) {
-  _.forEach(this.config.fields, function(field) {
+  this.config.fields.forEach((field) => {
     if (field.name == attribute) {
       field.type = type;
       field.options = options;
@@ -291,8 +349,8 @@ proto.changeAttribute = function(attribute, type, options) {
 };
 
 proto.getAttributeLabel = function(name) {
-  var label;
-  _.forEach(this.getAttributes(),function(field){
+  let label;
+  this.getAttributes().forEach((field) => {
     if (field.name == name){
       label = field.label;
     }
@@ -315,6 +373,16 @@ proto.getLayersStore = function() {
 proto.setLayersStore = function(layerstore) {
   this._layersstore = layerstore;
 };
+
+proto.canShowTable = function() {
+  if (this.getServerType() == 'QGIS') {
+    if([Layer.SourceTypes.POSTGIS, Layer.SourceTypes.SPATIALITE, Layer.SourceTypes.CSV].indexOf(this.config.source.type) > -1) {
+      return true
+    }
+  }
+  return false
+};
+
 
 ///PROPRIETÀ DEL LAYER
 

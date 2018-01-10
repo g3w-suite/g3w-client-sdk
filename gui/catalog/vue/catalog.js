@@ -1,7 +1,9 @@
 const inherit = require('core/utils/utils').inherit;
+const t = require('core/i18n/i18n.service').t;
 const base = require('core/utils/utils').base;
 const merge = require('core/utils/utils').merge;
 const Component = require('gui/vue/component');
+const TableComponent = require('gui/table/vue/table');
 const ComponentsRegistry = require('gui/componentsregistry');
 const GUI = require('gui/gui');
 const ControlsRegistry = require('gui/map/control/registry');
@@ -23,6 +25,10 @@ const vueComponentOptions = {
         left:0,
         name: '',
         layer: null,
+        items: {
+          zoomtolayer: t("catalog_items.contextmenu.zoomtolayer"),
+          open_attribute_table:t("catalog_items.contextmenu.open_attribute_table")
+        },
         //oggetto colorMenu
         colorMenu: {
           show: false,
@@ -99,6 +105,34 @@ const vueComponentOptions = {
       }
       const mapService = GUI.getComponent('map').getService();
       mapService.goToBBox(bbox);
+      this.layerMenu.show = false;
+    },
+    showAttributeTable: function() {
+      let layer;
+      let features;
+      const catallogLayersStores = CatalogLayersStoresRegistry.getLayersStores();
+      catallogLayersStores.forEach((layerStore) => {
+        layer = layerStore.getLayerById(this.layerMenu.layer.id);
+        if (layer) {
+          layer.getLayerForEditing();
+          return false;
+        }
+      });
+      layer.getDataTable()
+        .then((data) => {
+          GUI.showContent({
+            content: new TableComponent({
+              features: data.features,
+              headers: data.headers,
+              title: data.title
+            }),
+            perc: 50,
+            split: 'v',
+            push: false
+          });
+        })
+        .fail((err) => {
+        });
       this.layerMenu.show = false;
     },
     startEditing: function() {
@@ -307,10 +341,10 @@ Vue.component('tristate-tree', {
       // da sostituire con una proprietà precalcolata nello state del layer
       let layer;
       const catalogLayers = CatalogLayersStoresRegistry.getLayers();
-      catalogLayers.forEach((lyr) => {
+      catalogLayers.some((lyr) => {
         layer = lyr.getId() == this.layerstree.id ? lyr : null;
         if (layer)
-          return false;
+          return true;
       });
       return this.highlightlayers && layer && layer.isFilterable() && layer.getProject() && layer.getProject().getProjection() == layer.getProjection();
     }

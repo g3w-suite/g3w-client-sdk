@@ -1,8 +1,6 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var G3WObject = require('core/g3wobject');
-var Feature = require('core/layers/features/feature');
-
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const G3WObject = require('core/g3wobject');
 
 function Provider(options) {
   options = options || {};
@@ -14,7 +12,7 @@ function Provider(options) {
 
 inherit(Provider, G3WObject);
 
-var proto = Provider.prototype;
+const proto = Provider.prototype;
 
 proto.getFeatures = function() {
   console.log('da sovrascrivere')
@@ -50,20 +48,17 @@ proto.extractGML = function (response) {
   if (response.substr(0,2) != '--') {
     return response;
   }
-  var gmlTag1 = new RegExp("<([^ ]*)FeatureCollection");
-  var gmlTag2 = new RegExp("<([^ ]*)msGMLOutput");
-  var boundary = '\r\n--';
-  var parts = response.split(new RegExp(boundary));
-
-  for (var i=0; i<parts.length; i++) {
-    var part = parts[i];
-    var isGmlPart = false;
+  const gmlTag1 = new RegExp("<([^ ]*)FeatureCollection");
+  const gmlTag2 = new RegExp("<([^ ]*)msGMLOutput");
+  const boundary = '\r\n--';
+  const parts = response.split(new RegExp(boundary));
+  parts.forEach((part) => {
     isGmlPart = part.search(gmlTag1) > -1 ? true : part.search(gmlTag2) > -1 ? true : false;
     if (isGmlPart) {
       var gml = part.substr(part.indexOf("<?xml"));
       return gml;
     }
-  }
+  });
 };
 
 // Messo qui generale la funzione che si prende cura della trasformazione dell'xml di risposta
@@ -130,6 +125,100 @@ proto.handleQueryResponseFromServer = function(layerName, response) {
     features: features
   }];
 };
+
+// funzione che serve a far digerire i risultati delle features
+proto.digestFeaturesForLayers = function(featuresForLayers) {
+  let id = 0;
+  // variabile che tiene traccia dei layer sotto query
+  let layers = [];
+  let layerAttributes,
+    layerRelationsAttributes,
+    layerTitle,
+    layerId;
+  featuresForLayers.forEach((featuresForLayer) => {
+    featuresForLayer = featuresForLayer;
+    // prendo il layer
+    const layer = featuresForLayer.layer;
+    // verifico che tipo ti vector layer ci sono
+    layerAttributes = layer.getAttributes();
+    layerTitle = layer.getTitle();
+    layerId = layer.getId();
+
+    const layerObj = {
+      title: layerTitle,
+      id: layerId,
+      attributes: [],
+      features: [],
+      hasgeometry: false,
+      show: true,
+      expandable: true,
+      hasImageField: false, // regola che mi permette di vedere se esiste un campo image
+      error: ''
+    };
+
+    // verifico che ci siano feature legate a quel layer che sono il risultato della query
+    if (featuresForLayer.features && featuresForLayer.features.length) {
+      // prendo solo gli attributi effettivamente ritornati dal WMS (usando la prima feature disponibile)
+      layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0].getProperties());
+      // faccio una ricerca sugli attributi del layer se esiste un campo image
+      // se si lo setto a true
+      layerObj.attributes.forEach((attribute) => {
+        if (attribute.type == 'image') {
+          layerObj.hasImageField = true;
+        }
+      });
+      // a questo punto scorro sulle features selezionate dal risultato della query
+      featuresForLayer.features.forEach((feature) => {
+        const fid = feature.getId() ? feature.getId() : id;
+        const geometry = feature.getGeometry();
+        // verifico se il layer ha la geometria
+        if (geometry) {
+          // setto che ha geometria mi servirà per le action
+          layerObj.hasgeometry = true
+        }
+        // creo un feature object
+        const featureObj = {
+          id: fid,
+          attributes: feature.getProperties(),
+          geometry: feature.getGeometry(),
+          show: true
+        };
+        layerObj.features.push(featureObj);
+        id += 1;
+      });
+      layers.push(layerObj);
+    }
+    else if (featuresForLayer.error){
+      layerObj.error = featuresForLayer.error;
+    }
+  });
+  return layers;
+};
+
+proto._parseAttributes = function(layerAttributes, featureAttributes) {
+  let featureAttributesNames = _.keys(featureAttributes);
+  featureAttributesNames = _.filter(featureAttributesNames,function(featureAttributesName) {
+    return ['boundedBy','geom','the_geom','geometry','bbox', 'GEOMETRY'].indexOf(featureAttributesName) == -1;
+  });
+  if (layerAttributes && layerAttributes.length) {
+    let featureAttributesNames = _.keys(featureAttributes);
+    return _.filter(layerAttributes,function(attribute){
+      return featureAttributesNames.indexOf(attribute.name) > -1;
+    })
+  }
+  // se layer.attributes è vuoto
+  // (es. quando l'interrogazione è verso un layer esterno di cui non so i campi)
+  // costruisco la struttura "fittizia" usando l'attributo sia come name che come label
+  else {
+    return _.map(featureAttributesNames, function(featureAttributesName) {
+      return {
+        name: featureAttributesName,
+        label: featureAttributesName
+      }
+    })
+  }
+};
+
 
 // Brutto ma per ora unica soluzione trovata per dividere per layer i risultati di un doc xml wfs.FeatureCollection.
 // OL3 li parserizza tutti insieme non distinguendo le features dei diversi layers

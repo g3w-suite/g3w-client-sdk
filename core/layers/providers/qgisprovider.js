@@ -15,8 +15,6 @@ function QGISProvider(options) {
   // editing url api
   this._editingUrl = this._layer.getUrl('editing');
   this._commitUrl = this._layer.getUrl('commit');
-  // url riferito ai dati;
-  this._dataUrl = this._layer.getUrls('data');
   // url per prendere la configurazione del layer dal server
   this._configUrl = this._layer.getUrl('config');
   // url dei widget
@@ -60,8 +58,7 @@ proto.query = function(options) {
 
 // ci vuole un metodo per prendere la configurazione dal server
 // del layer
-proto.getConfig = function(options) {
-  options = options || {};
+proto.getConfig = function() {
   const d = $.Deferred();
   const url = this._configUrl;
   if (!url) {
@@ -127,55 +124,74 @@ proto.getFeatures = function(options) {
   options = options || {};
   const layerType = options.type || 'vector'; //tipo di layer
   // verifico nel passaggio di veridico se i dati sono richiesti in editing o sola lettura;
-  const url = options.editing ? this._editingUrl : this._dataUrl;
-  let filter = options.filter || null;
-  if (filter) {
-    const bbox = filter.bbox;
-    filter = {in_bbox: bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3]};
-  }
-  const pk = this._layer.getPk();
-  if (!url) {
-    d.reject('Url non valido');
-    return;
-  }
-  const features = [];
-  const jsonFilter = JSON.stringify(filter);
-  $.post({
-    url: url,
-    data: jsonFilter,
-    contentType: "application/json"
-  })
-    .then((response) => {
-      const vector = response.vector;
-      const featurelocks = response.featurelocks;
-      const data = vector.data;
-      const geometrytype = vector.geometrytype;
-      const parser = Parsers[layerType].get({
-        type: 'json',
-        pk: pk
-      });
-      let parser_options = {};
-      if (geometrytype != 'No geometry') parser_options = { crs: this._layer.getCrs() };
-      const lockIds = featurelocks.map((featureLock) => {
-        return 1*featureLock.featureid;
-      });
-      parser(data, parser_options).forEach((feature) => {
-        if (lockIds.includes(feature.getId())) {
-          features.push(new Feature({
-            feature: feature,
-            pk: pk
-          }));
-        }
-      });
-      // risolvo passando le features loccate e le features caricate
-      d.resolve({
-        features: features,
-        featurelocks: featurelocks
-      });
+  let url;
+  //case editing
+  if (options.editing) {
+    url = this._editingUrl;
+    let filter = options.filter || null;
+    if (filter) {
+      const bbox = filter.bbox;
+      filter = {in_bbox: bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3]};
+    }
+    const pk = this._layer.getPk();
+    if (!url) {
+      d.reject('Url non valido');
+      return;
+    }
+    const features = [];
+    const jsonFilter = JSON.stringify(filter);
+    $.post({
+      url: url,
+      //data: jsonFilter,
+      contentType: "application/json"
     })
-    .fail(function(err) {
-      d.reject(err);
-    });
+      .then((response) => {
+        const vector = response.vector;
+        const featurelocks = response.featurelocks;
+        const data = vector.data;
+        const geometrytype = vector.geometrytype;
+        const parser = Parsers[layerType].get({
+          type: 'json',
+          pk: pk
+        });
+        let parser_options = {};
+        if (geometrytype != 'No geometry') parser_options = { crs: this._layer.getCrs() };
+        const lockIds = featurelocks.map((featureLock) => {
+          return 1*featureLock.featureid;
+        });
+        parser(data, parser_options).forEach((feature) => {
+          if (lockIds.includes(feature.getId())) {
+            features.push(new Feature({
+              feature: feature,
+              pk: pk
+            }));
+          }
+        });
+        // risolvo passando le features loccate e le features caricate
+        d.resolve({
+          features: features,
+          featurelocks: featurelocks
+        });
+      })
+      .fail(function(err) {
+        d.reject(err);
+      });
+  } else {
+    url = this._layer.getUrl('data');
+    $.get({
+      url: url,
+      contentType: "application/json"
+    })
+      .then((response) => {
+        const vector = response.vector;
+        const data = vector.data;
+        d.resolve({
+          data: data,
+          pk: vector.pk
+        })
+      })
+  }
+
   return d.promise();
 };
 

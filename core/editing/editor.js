@@ -1,7 +1,6 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils//utils').base;
-var G3WObject = require('core/g3wobject');
-var Session = require('./session');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils//utils').base;
+const G3WObject = require('core/g3wobject');
 
 // classe Editor che ha lo scopo di comunicare con il layer e
 // di svolgere azioni primarie
@@ -36,7 +35,7 @@ function Editor(options) {
 
 inherit(Editor, G3WObject);
 
-var proto = Editor.prototype;
+const proto = Editor.prototype;
 
 proto.getLayer = function() {
   return this._layer;
@@ -49,7 +48,7 @@ proto.setLayer = function(layer) {
 
 // funzione per il recupero delle get features
 proto._getFeatures = function(options) {
-  var d = $.Deferred();
+  const d = $.Deferred();
   this._layer.getFeatures(options)
     .then(function (promise) {
       promise.then(function (features) {
@@ -67,7 +66,7 @@ proto._getFeatures = function(options) {
 // funzione che viene lanciata dopo che è stato salvato
 // il nuovo stato del layer definitivamente sul server
 proto.commit = function(commitItems, featurestore) {
-  var d = $.Deferred();
+  const d = $.Deferred();
   this._layer.commit(commitItems, featurestore)
     .then(function (promise) {
       promise
@@ -87,24 +86,23 @@ proto.commit = function(commitItems, featurestore) {
 
 //funzione che fa partire lo start editing
 proto.start = function(options) {
-  var self = this;
-  var d = $.Deferred();
+  const d = $.Deferred();
   // carica le features del layer in base al tipo di filtro (da vedere come)
   this.getFeatures(options)
-    .then(function(promise) {
+    .then((promise) => {
       promise
-        .then(function(features) {
+        .then((features) => {
           // le features ono già dentro il featuresstore del layer
           d.resolve(features);
           // se andato tutto bene setto a true la proprietà
-          self._started = true;
+          this._started = true;
         })
-        .fail(function(err) {
+        .fail((err) => {
           d.reject(err);
         })
 
     })
-    .fail(function(err) {
+    .fail((err) => {
       d.reject(err);
     });
   return d.promise()
@@ -130,15 +128,13 @@ proto._setFeatures = function(features) {
 
 // stop editor
 proto.stop = function() {
-  var d = $.Deferred();
-  var self = this;
+  const d = $.Deferred();
   this._layer.unlock()
-    .then(function(response) {
-      self._started = false;
+    .then((response) => {
+      this._started = false;
       d.resolve(response);
     })
-    .fail(function(err) {
-      console.log(err);
+    .fail((err) => {
       d.reject(err);
     });
   return d.promise();

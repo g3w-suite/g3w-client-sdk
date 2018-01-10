@@ -6,7 +6,12 @@ function Filter() {
   this._type = null;
 }
 
-var proto = Filter.prototype;
+const proto = Filter.prototype;
+
+proto.getAll = function() {
+  this._type = Filter.TYPES.all;
+  this._filter = null 
+};
 
 // server per creare un filtro complesso
 proto.setExpression = function(expression) {
@@ -54,7 +59,8 @@ Filter.TYPES = {
   bbox: 'bbox',
   geometry: 'geometry',
   expression: 'expression',
-  fids: 'fids'
+  fids: 'fids',
+  all: 'all'
 };
 
 module.exports = Filter;

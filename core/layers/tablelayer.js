@@ -98,7 +98,6 @@ function TableLayer(config, options) {
   config.urls = {
     editing: vectorUrl + 'editing/' + suffixUrl ,
     commit:vectorUrl + 'commit/' + suffixUrl ,
-    data: vectorUrl + 'data/' + suffixUrl ,
     config: vectorUrl + 'config/' + suffixUrl,
     unlock: vectorUrl + 'unlock/' + suffixUrl,
     widget: {

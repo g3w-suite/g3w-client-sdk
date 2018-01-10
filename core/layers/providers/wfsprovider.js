@@ -1,9 +1,7 @@
-var inherit = require('core/utils/utils').inherit;
-var resolve = require('core/utils/utils').resolve;
-var reject = require('core/utils/utils').reject;
-var base = require('core/utils/utils').base;
-var DataProvider = require('core/layers/providers/provider');
-var Filter = require('core/layers/filter/filter');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const DataProvider = require('core/layers/providers/provider');
+const Filter = require('core/layers/filter/filter');
 
 function WFSDataProvider(options) {
   options = options || {};
@@ -14,26 +12,25 @@ function WFSDataProvider(options) {
 
 inherit(WFSDataProvider, DataProvider);
 
-var proto = WFSDataProvider.prototype;
+const proto = WFSDataProvider.prototype;
 
 proto.getData = function() {
-  var d = $.Deferred();
+  const d = $.Deferred();
   return d.promise();
 };
 
 // metodo del provider che risponde alla query del layer
-proto.query = function(options) {
-  var self = this;
-  var filter = options.filter;
-  var d = $.Deferred();
+proto.query = function(options={}) {
+  const filter = options.filter;
+  const d = $.Deferred();
   this._doRequest(filter)
-    .then(function(response) {
-      var featuresForLayers = self.handleQueryResponseFromServer(self._layerName, response);
+    .then((response) => {
+      const featuresForLayers = this.handleQueryResponseFromServer(this._layerName, response);
       d.resolve({
         data: featuresForLayers
       });
     })
-    .fail(function(e){
+    .fail((e) => {
       d.reject(e);
     });
   return d.promise();
@@ -48,24 +45,20 @@ proto._post = function(url, params) {
 // get request
 proto._get = function(url, params) {
   // trasformo i parametri
-  var urlParams = $.param(params);
+  const urlParams = $.param(params);
   url = url + '?' + urlParams;
   return $.get(url)
 };
 
 //funzione che si occupa di fare la richiesta al server
 proto._doRequest = function(filter) {
-  filter = filter || null;
-  // verifico che il filtro sia istanza della classe Filter
-  if (!(filter instanceof Filter)) {
-    return resolve();
-  }
-  var layer = this._layer;
-  var url = layer.getQueryUrl();
-  var crs = layer.getProjection().getCode();
-  var infoFormat = layer.getInfoFormat();
+  filter = filter || new Filter();
+  const layer = this._layer;
+  const url = layer.getQueryUrl();
+  const crs = layer.getProjection().getCode();
+  const infoFormat = layer.getInfoFormat();
 
-  var params = {
+  const params = {
     SERVICE: 'WFS',
     VERSION: '1.3.0',
     REQUEST: 'GetFeature',
@@ -73,36 +66,39 @@ proto._doRequest = function(filter) {
     OUTPUTFORMAT: infoFormat,
     SRSNAME:  crs
   };
-  var filterType = filter.getType();
-  var filter = filter.get();
   if (filter) {
-    var f = ol.format.filter;
+    const filterType = filter.getType();
+    let featureRequest;
+    const f = ol.format.filter;
+    filter = filter.get();
     switch (filterType) {
       case 'bbox':
-        var featureRequest = new ol.format.WFS().writeGetFeature({
+        featureRequest = new ol.format.WFS().writeGetFeature({
           featureTypes: [layer],
           filter: f.bbox('the_geom', filter)
         });
         break;
       case 'geometry':
-        var featureRequest = new ol.format.WFS().writeGetFeature({
+        featureRequest = new ol.format.WFS().writeGetFeature({
           featureTypes: [layer],
           filter: f.intersects('the_geom', filter)
         });
         break;
       case 'expression':
-        var featureRequest = new ol.format.WFS().writeGetFeature({
+        featureRequest = new ol.format.WFS().writeGetFeature({
           featureTypes: [layer],
           filter: null
         });
+        break;
+      case 'all':
+        request = this._post(url, params);
+        return request;
       default:
         break;
     }
     params.FILTER = featureRequest.children[0].innerHTML;
     request = this._post(url, params);
-    return request
-  } else {
-    return reject()
+    return request;
   }
 };
 

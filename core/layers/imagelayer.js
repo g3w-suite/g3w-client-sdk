@@ -1,9 +1,9 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils//utils').base;
-var mixin = require('core/utils/utils').mixin;
-var Layer = require('core/layers/layer');
-var VectorLayer = require('./vectorlayer');
-var GeoLayerMixin = require('./geolayermixin');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils//utils').base;
+const mixin = require('core/utils/utils').mixin;
+const Layer = require('core/layers/layer');
+const VectorLayer = require('./vectorlayer');
+const GeoLayerMixin = require('./geolayermixin');
 
 function ImageLayer(config) {
   config = config || {};
@@ -45,13 +45,13 @@ inherit(ImageLayer, Layer);
 
 mixin(ImageLayer, GeoLayerMixin);
 
-var proto = ImageLayer.prototype;
+const proto = ImageLayer.prototype;
 
 proto.getLayerForEditing = function() {
   if (this.isEditable()) {
     // vado a clonare la configurazione
     // affinchè non vado a toccare l'originale
-    var config = _.cloneDeep(this.config);
+    const config = _.cloneDeep(this.config);
     //ritorno l'istanza del vectorlayer
     return new VectorLayer(config);
   } else {
@@ -73,7 +73,7 @@ proto.isExternalWMS = function() {
 
 proto.getWMSLayerName = function() {
   // prendo come inizio 'attributo name come nome del layer wms
-  var layerName = this.config.name;
+  let layerName = this.config.name;
   if (this.config.source && this.config.source.layers) {
     layerName = this.config.source.layers;
   }
@@ -81,7 +81,7 @@ proto.getWMSLayerName = function() {
 };
 
 proto.getWmsUrl = function() {
-  var url;
+  let url;
   if (this.config.source && this.config.source.type == 'wms' && this.config.source.url) {
     url = this.config.source.url
   } else {
@@ -91,7 +91,7 @@ proto.getWmsUrl = function() {
 };
 
 proto.getQueryUrl = function() {
-  var url = base(this, 'getQueryUrl');
+  let url = base(this, 'getQueryUrl');
   if (this.getServerType() == 'QGIS' && this.config.source && this.config.source.type == 'wms' && this.config.source.external) {
     url+='SOURCE=wms';
   }
@@ -99,14 +99,14 @@ proto.getQueryUrl = function() {
 };
 
 proto.getLegendUrl = function() {
-  var url = this.getWmsUrl();
+  let url = this.getWmsUrl();
   sep = (url.indexOf('?') > -1) ? '&' : '?';
   return url+sep+'SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.1.0&FORMAT=image/png&TRANSPARENT=true&ITEMFONTCOLOR=white&LAYERTITLE=True&ITEMFONTSIZE=10&WIDTH=300&LAYER='+this.getWMSLayerName();
 };
 
 proto.getWFSLayerName = function() {
   // prendo come inizio 'attributo name come nome del layer wms
-  var layerName = this.config.origname;
+  let layerName = this.config.origname;
   if (this.config.source && this.config.source.layers) {
     layerName = this.config.source.layers;
   }

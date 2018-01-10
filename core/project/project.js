@@ -129,7 +129,6 @@ proto._buildLayersStore = function() {
   layersStore.createLayersTree(this.state.name, {
     layerstree: this.state.layerstree
   });
-
   return layersStore;
 };
 

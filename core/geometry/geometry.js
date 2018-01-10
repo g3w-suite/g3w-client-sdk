@@ -1,10 +1,12 @@
-var Geometry = {};
+const Geometry = {};
 
 Geometry.GeometryTypes = {
   POINT: "Point",
   MULTIPOINT: "MultiPoint",
-  LINESTRING: "Line", // per seguire la definizione di QGis.GeometryType, che definisce Line invece di Linestring.
-  MULTILINESTRING: "MultiLine",
+  LINESTRING: "LineString", // per seguire la definizione di QGis.GeometryType, che definisce Line invece di Linestring.
+  LINE: "Line",
+  MULTILINESTRING: "MultiLineString",
+  MULTILINE:"MultiLine",
   POLYGON: "Polygon",
   MULTIPOLYGON: "MultiPolygon",
   GEOMETRYCOLLECTION: "GeometryCollection"
@@ -13,8 +15,10 @@ Geometry.GeometryTypes = {
 Geometry.SupportedGeometryTypes = [
   Geometry.GeometryTypes.POINT,
   Geometry.GeometryTypes.MULTIPOINT,
+  Geometry.GeometryTypes.LINE,
   Geometry.GeometryTypes.LINESTRING,
-  Geometry.GeometryTypes.MULTILINESTRING,
+  Geometry.GeometryTypes.MULTILINE,
+  Geometry.GeometryTypes.LINESTRING,
   Geometry.GeometryTypes.POLYGON,
   Geometry.GeometryTypes.MULTIPOLYGON
 ];

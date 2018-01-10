@@ -255,24 +255,23 @@ proto.getEpsg = function() {
 };
 
 proto.getGetFeatureInfoUrlForLayer = function(layer,coordinates,resolution,epsg,params) {
-  var mapLayer = this.getMapLayerForLayer(layer);
+  const mapLayer = this.getMapLayerForLayer(layer);
   return mapLayer.getGetFeatureInfoUrl(coordinates,resolution,epsg,params);
 };
 
 proto.showMarker = function(coordinates, duration) {
   duration = duration || 1000;
-  var self = this;
   this._marker.setPosition(coordinates);
-  setTimeout(function(){
-    self._marker.setPosition();
+  setTimeout(() => {
+    this._marker.setPosition();
   }, duration)
 };
 
 // ritorna il layer nella mappa in base al name
 proto.getLayerByName = function(name) {
-  var map = this.viewer.map;
-  var layer = null;
-  map.getLayers().forEach(function(lyr) {
+  const map = this.viewer.map;
+  let layer = null;
+  map.getLayers().forEach((lyr) => {
     if (lyr.get('name') == name) {
       layer = lyr;
       return false
@@ -687,31 +686,29 @@ proto.getLayers = function(filter) {
 
 // verifica se esistono layer filtrabili
 proto.filterableLayersAvailable = function() {
-  var self = this;
-  var layers = this.getLayers({
+  const layers = this.getLayers({
     QUERYABLE: true,
     FILTERABLE: true,
     SELECTEDORALL: true
   });
-  return _.some(layers, function(layer) {
+  return layers.some((layer) => {
     // nel caso il provider dei filtri sia WFS verifico che sia lo stesso sistema di riferimento del progetto, perché QGIS ancora non supporta riproiezione su WFS
     if (layer.getProvider('filter') instanceof WFSProvider) {
-      return layer.getProjection().getCode() == self.project.getLayersStore().getProjection().getCode();
+      return layer.getProjection().getCode() == this.project.getLayersStore().getProjection().getCode();
     }
     return true;
   });
 };
 
 proto.addControl = function(type, control) {
-  var self = this;
   this.viewer.map.addControl(control);
   this._mapControls.push({
     type: type,
     control: control,
     visible: true
   });
-  control.on('controlclick', function() {
-    self.controlClick();
+  control.on('controlclick', () => {
+    this.controlClick();
   });
   // vado a registrare il controllo aggiunto
   ControlsRegistry.registerControl(type, control);
@@ -748,9 +745,8 @@ proto.hideAllControls = function() {
 };
 
 proto.toggleControls = function(toggle, types) {
-  var self = this;
   this._removeControls();
-  _.forEach(this._mapControls,function(controlObj){
+  this._mapControls.forEach((controlObj) => {
     if (types) {
       if (types.indexOf(controlObj.type) > -1) {
         controlObj.visible = toggle;
@@ -764,10 +760,9 @@ proto.toggleControls = function(toggle, types) {
 };
 
 proto._layoutControls = function() {
-  var self = this;
-  _.forEach(this._mapControls,function(controlObj){
+  this._mapControls.forEach((controlObj) => {
     if (controlObj.visible) {
-      self.viewer.map.addControl(controlObj.control);
+      this.viewer.map.addControl(controlObj.control);
     }
   })
 };
@@ -777,25 +772,23 @@ proto.getMapControls = function() {
 };
 
 proto.removeControl = function(type) {
-  var self = this;
-  _.forEach(this._mapControls,function(controlObj, ctrlIdx) {
+  this._mapControls.forEach((controlObj, ctrlIdx) => {
     if (type == controlObj.type) {
-      self._mapControls.splice(ctrlIdx,1);
-      self.viewer.map.removeControl(controlObj.control);
+      this._mapControls.splice(ctrlIdx,1);
+      this.viewer.map.removeControl(controlObj.control);
       return false;
     }
   })
 };
 
 proto._removeControls = function() {
-  var self = this;
-  _.forEach(this._mapControls,function(controlObj){
-    self.viewer.map.removeControl(controlObj.control);
+  this._mapControls.forEach((controlObj) => {
+    this.viewer.map.removeControl(controlObj.control);
   })
 };
 
 proto._unToggleControls = function() {
-  _.forEach(this._mapControls,function(controlObj) {
+  this._mapControls.forEach((controlObj) => {
     // verifico che sia un controllo con la funzione is Toggled e se questo è stata settata a true
     if (controlObj.control.isToggled && controlObj.control.isToggled()) {
       controlObj.control.toggle(false);
@@ -815,8 +808,8 @@ proto.getMapLayers = function() {
 };
 
 proto.getMapLayerForLayer = function(layer) {
-  var mapLayer;
-  var multilayerId = 'layer_'+layer.getMultiLayerId();
+  let mapLayer;
+  const multilayerId = 'layer_'+layer.getMultiLayerId();
   _.forEach(this.getMapLayers(), function(_mapLayer) {
     if (_mapLayer.getId() == multilayerId) {
       mapLayer = _mapLayer;
@@ -827,8 +820,8 @@ proto.getMapLayerForLayer = function(layer) {
 };
 
 proto.getProjectLayer = function(layerId) {
-  var layer = null;
-  _.forEach(MapLayersStoreRegistry.getLayersStores(), function(layerStore) {
+  let layer = null;
+  MapLayersStoreRegistry.getLayersStores().forEach((layerStore) => {
     layer = layerStore.getLayerById(layerId);
     if (layer)
       return false
@@ -837,13 +830,13 @@ proto.getProjectLayer = function(layerId) {
 };
 
 proto._resetView = function() {
-  var width = this.viewer.map.getSize()[0];
-  var height = this.viewer.map.getSize()[1];
-  var extent = this.project.state.extent;
-  var maxxRes = ol.extent.getWidth(extent) / width;
-  var minyRes = ol.extent.getHeight(extent) / height;
-  var maxResolution = Math.max(maxxRes,minyRes) > this.viewer.map.getView().getMaxResolution() ? Math.max(maxxRes,minyRes): this.viewer.map.getView().getMaxResolution();
-  var view = new ol.View({
+  const width = this.viewer.map.getSize()[0];
+  const height = this.viewer.map.getSize()[1];
+  const extent = this.project.state.extent;
+  const maxxRes = ol.extent.getWidth(extent) / width;
+  const minyRes = ol.extent.getHeight(extent) / height;
+  const maxResolution = Math.max(maxxRes,minyRes) > this.viewer.map.getView().getMaxResolution() ? Math.max(maxxRes,minyRes): this.viewer.map.getView().getMaxResolution();
+  const view = new ol.View({
     extent: extent,
     projection: this.viewer.map.getView().getProjection(),
     center: this.viewer.map.getView().getCenter(),
@@ -855,21 +848,20 @@ proto._resetView = function() {
 
 // funzione che setta la view basata sulle informazioni del progetto
 proto._setupViewer = function(width,height) {
-  var self = this;
-  var projection = this.getProjection();
+  const projection = this.getProjection();
   // ricavo l'estensione iniziale del progetto)
-  var initextent = self.project.state.initextent;
+  const initextent = this.project.state.initextent;
   // ricavo l'estensione del progetto
-  var extent = self.project.state.extent;
+  const extent = this.project.state.extent;
 
-  var maxxRes = ol.extent.getWidth(extent) / width;
-  var minyRes = ol.extent.getHeight(extent) / height;
+  const maxxRes = ol.extent.getWidth(extent) / width;
+  const minyRes = ol.extent.getHeight(extent) / height;
   // calcolo la massima risoluzione
-  var maxResolution = Math.max(maxxRes,minyRes);
+  const maxResolution = Math.max(maxxRes,minyRes);
 
-  var initxRes = ol.extent.getWidth(initextent) / width;
-  var inityRes = ol.extent.getHeight(initextent) / height;
-  var initResolution = Math.max(initxRes,inityRes);
+  const initxRes = ol.extent.getWidth(initextent) / width;
+  const inityRes = ol.extent.getHeight(initextent) / height;
+  const initResolution = Math.max(initxRes,inityRes);
 
   this.viewer = ol3helpers.createViewer({
     id: this.target,
@@ -892,24 +884,24 @@ proto._setupViewer = function(width,height) {
     $('#' + this.target).css('background-color', this.config.background_color);
   }
 
-  $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute;right:0px;"></div>');
+  $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute;right:0;"></div>');
 
-  this.viewer.map.getInteractions().forEach(function(interaction){
-    self._watchInteraction(interaction);
+  this.viewer.map.getInteractions().forEach((interaction) => {
+    this._watchInteraction(interaction);
   });
 
-  this.viewer.map.getInteractions().on('add',function(interaction){
-    self._watchInteraction(interaction.element);
+  this.viewer.map.getInteractions().on('add', (interaction) => {
+    this._watchInteraction(interaction.element);
   });
 
-  this.viewer.map.getInteractions().on('remove',function(interaction){
-    //self._onRemoveInteraction(interaction);
+  this.viewer.map.getInteractions().on('remove',(interaction) => {
+    //this._onRemoveInteraction(interaction);
   });
 
   this.viewer.map.getView().setResolution(initResolution);
 
-  this.viewer.map.on('moveend',function(e) {
-    self._setMapView();
+  this.viewer.map.on('moveend',(e) =>{
+    this._setMapView();
   });
 
   this._marker = new ol.Overlay({
@@ -933,10 +925,9 @@ proto._removeListeners = function() {
 
 // vado a registrare tuti gli ebventi del layersStore
 proto._removeEventsKeysToLayersStore = function(layerStore) {
-  var self = this;
-  var layerStoreId = layerStore.getId();
-  if (self._layersStoresEventKeys[layerStoreId]) {
-    _.forEach(self._layersStoresEventKeys[layerStoreId], function(eventObj) {
+  const layerStoreId = layerStore.getId();
+  if (this._layersStoresEventKeys[layerStoreId]) {
+    this._layersStoresEventKeys[layerStoreId].forEach((eventObj) => {
       _.forEach(eventObj, function(eventKey, event) {
         layerStore.un(event, eventKey);
       })
@@ -946,33 +937,32 @@ proto._removeEventsKeysToLayersStore = function(layerStore) {
 
 // vado a registrare tuti gli eventi del layersStore
 proto._setUpEventsKeysToLayersStore = function(layerStore) {
-  var self = this;
-  var layerStoreId = layerStore.getId();
+  const layerStoreId = layerStore.getId();
   if (!this._layersStoresEventKeys[layerStoreId]) {
     this._layersStoresEventKeys[layerStoreId] = [];
     //evento cambio visibilità al layer
-    var layerVisibleKey = layerStore.onafter('setLayersVisible', function (layersIds) {
-      var mapLayers = _.map(layersIds, function(layerId) {
-        var layer = layerStore.getLayerById(layerId);
-        return self.getMapLayerForLayer(layer);
+    const layerVisibleKey = layerStore.onafter('setLayersVisible',  (layersIds) => {
+      const mapLayers = layersIds.map((layerId) => {
+        const layer = layerStore.getLayerById(layerId);
+        return this.getMapLayerForLayer(layer);
       });
-      self.updateMapLayers(mapLayers);
+      this.updateMapLayers(mapLayers);
     });
     this._layersStoresEventKeys[layerStore.getId()].push({
       setLayersVisible:layerVisibleKey
     });
 
     //evento aggiunta Layer al layerStore
-    var addLayerKey = layerStore.onafter('addLayer', function(layer) {
+    const addLayerKey = layerStore.onafter('addLayer', (layer) => {
       if (layer.getType() == 'vector') {
         //creo il layer OL
-        var olLayer = self.createOlLayer({
+        const olLayer = this.createOlLayer({
           id: layer.getId(),
           geometryType: layer.getGeometryType(),
           color: layer.getColor()
         });
         // lo aggiungo alla mappa
-        self.viewer.map.addLayer(olLayer);
+        this.viewer.map.addLayer(olLayer);
       }
     });
 
@@ -981,12 +971,12 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
     });
 
     //evento aggiunta Layer al layerStore
-    var removeLayerKey = layerStore.onafter('removeLayer', function (layer) {
+    const removeLayerKey = layerStore.onafter('removeLayer',  (layer) => {
       if (layer.getType() == 'vector') {
-        var layerId = layer.getId();
-        var olLayer = self.getLayerById(layerId);
+        const layerId = layer.getId();
+        const olLayer = this.getLayerById(layerId);
         // lo aggiungo alla mappa
-        self.viewer.map.removeLayer(olLayer);
+        this.viewer.map.removeLayer(olLayer);
       }
     });
 
@@ -997,26 +987,24 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
 };
 
 proto._setupListeners = function() {
-  var self = this;
-  this._setBaseLayerListenerKey = this.project.onafter('setBaseLayer',function() {
-    self.updateMapLayers(self.mapBaseLayers);
+  this._setBaseLayerListenerKey = this.project.onafter('setBaseLayer',() => {
+    this.updateMapLayers(this.mapBaseLayers);
   });
 };
 
 proto._setupBaseLayers = function(){
-  var self = this;
-  var baseLayer;
-  var baseLayers = self.getLayers({
+  let baseLayer;
+  const baseLayers = this.getLayers({
     BASELAYER: true
   });
   if (!baseLayers.length){
     return;
   }
   this.mapBaseLayers = {};
-  _.forEach(baseLayers,function(layer) {
+  baseLayers.forEach((layer) => {
     //verifico se è un layer wms
     if (layer.isWMS()) {
-      var config = {
+      const config = {
         url: layer.getWmsUrl(),
         id: layer.state.id,
         tiled: layer.state.tiled
@@ -1027,18 +1015,17 @@ proto._setupBaseLayers = function(){
       baseLayer = layer;
       baseLayer.setLayer(layer);
     }
-    self.registerListeners(baseLayer);
-    self.mapBaseLayers[layer.getId()] = baseLayer;
+    this.registerListeners(baseLayer);
+    this.mapBaseLayers[layer.getId()] = baseLayer;
   });
-
-  _.forEach(_.values(this.mapBaseLayers).reverse(),function(baseLayer){
-    self.viewer.map.addLayer(baseLayer.getOLLayer());
-    baseLayer.update(self.state);
+  const reverseBaseLayers = Object.values(this.mapBaseLayers).reverse();
+  reverseBaseLayers.forEach((baseLayer) => {
+    this.viewer.map.addLayer(baseLayer.getOLLayer());
+    baseLayer.update(this.state);
   });
 };
 
 proto._setupLayers = function(){
-  var self = this;
   //vado a rimuvere tutti i layers della mappa
   this.viewer.removeLayers();
   // resetto i mapLayers
@@ -1046,27 +1033,27 @@ proto._setupLayers = function(){
   // vao da fare il setup dei base layesr
   this._setupBaseLayers();
   // recupero i layers dai vari layerstore mettendo coem condizione escludendo i base layer fatti sopra
-  var layers = this.getLayers({
+  const layers = this.getLayers({
     BASELAYER:false
   });
   //raggruppo per valore del multilayer con chiave valore multilayer
   // e valore array
-  var multiLayers = _.groupBy(layers, function(layer){
+  const multiLayers = _.groupBy(layers, function(layer){
     return layer.getMultiLayerId();
   });
   //una volta raggruppati per multilayer dove la chiave è il valore del multilayer
   // e il valore è un array di uno o più Layers, distinguo tra layers singoli o multipli e tra layer cachati o non
-  _.forEach(multiLayers, function(layers, id) {
-    var multilayerId = 'layer_'+id;
-    var mapLayer;
-    var layer = layers[0];
+  Object.entries(multiLayers).forEach(([id, layers]) => {
+    const multilayerId = 'layer_'+id;
+    let mapLayer;
+    const layer = layers[0];
     if (layers.length == 1 && layer.isCached()) {
       mapLayer = new XYZLayer({
         id: multilayerId,
-        projection: self.getProjection()
+        projection: this.getProjection()
       });
-      self.addMapLayer(mapLayer);
-      self.registerListeners(mapLayer);
+      this.addMapLayer(mapLayer);
+      this.registerListeners(mapLayer);
       mapLayer.addLayer(layer);
     }
     // in casi di multilayers
@@ -1077,11 +1064,11 @@ proto._setupLayers = function(){
         // getWMSUrl funzione creata in fase di inizializzazione dell'applicazione
         url: layer.getWmsUrl(),
         id: multilayerId
-      }, self.layersExtraParams);
-      self.addMapLayer(mapLayer);
-      self.registerListeners(mapLayer);
+      }, this.layersExtraParams);
+      this.addMapLayer(mapLayer);
+      this.registerListeners(mapLayer);
       // lo aggiungo alla lista dei mapLayers
-      _.forEach(layers.reverse(), function(sub_layer) {
+      layers.reverse().forEach((sub_layer) => {
         // per ogni layer appartenete allo stesso multilayer (è un array)
         // viene aggiunto al mapLayer (WMSLayer) perecedentemente creato
         mapLayer.addLayer(sub_layer);
@@ -1090,36 +1077,36 @@ proto._setupLayers = function(){
   });
 
   // una volta creati tutti i mapLayer apparteneti alla mappa
-  _.forEach(this.getMapLayers().reverse(), function(mapLayer) {
+  this.getMapLayers().reverse().forEach((mapLayer) => {
     // scorro sui mapLayer (reverse) e aggiungo alla mappa
-    self.viewer.map.addLayer(mapLayer.getOLLayer());
-    mapLayer.update(self.state, self.layersExtraParams);
+    this.viewer.map.addLayer(mapLayer.getOLLayer());
+    mapLayer.update(this.state, this.layersExtraParams);
   });
   return this.mapLayers;
 };
 
 proto.getOverviewMapLayers = function(project) {
-  var projectLayers = project.getLayersStore().getLayers({
+  const projectLayers = project.getLayersStore().getLayers({
     VISIBLE: true,
     GEOLAYER: true,
     HIDDEN: false
   });
 
-  var multiLayers = _.groupBy(projectLayers,function(layer){
+  const multiLayers = _.groupBy(projectLayers,function(layer){
     return layer.getMultiLayerId();
   });
 
-  var overviewMapLayers = [];
-  _.forEach(multiLayers,function(layers,id){
-    var multilayerId = 'overview_layer_'+id;
-    var tiled = layers[0].state.tiled;
-    var config = {
+  let overviewMapLayers = [];
+  Object.entries(multiLayers).forEach(([id, layers]) => {
+    const multilayerId = 'overview_layer_'+id;
+    const tiled = layers[0].state.tiled;
+    const config = {
       url: project.getWmsUrl(),
       id: multilayerId,
       tiled: tiled
     };
-    var mapLayer = new WMSLayer(config);
-    _.forEach(layers.reverse(),function(layer){
+    const mapLayer = new WMSLayer(config);
+    layers.reverse().forEach((layer) => {
       mapLayer.addLayer(layer);
     });
     overviewMapLayers.push(mapLayer.getOLLayer(true));
@@ -1129,23 +1116,21 @@ proto.getOverviewMapLayers = function(project) {
 };
 
 proto.updateMapLayers = function(mapLayers) {
-  var self = this;
-  _.forEach(mapLayers, function(mapLayer) {
-    mapLayer.update(self.state, self.layersExtraParams);
+  mapLayers.forEach((mapLayer) => {
+    mapLayer.update(this.state, this.layersExtraParams);
   })
 };
 // funzione che registra i listeners sulla creazione del mapLayers
 proto.registerListeners = function(mapLayer) {
 
-  var self = this;
-  mapLayer.on('loadstart',function(){
-    self._incrementLoaders();
+  mapLayer.on('loadstart', () => {
+    this._incrementLoaders();
   });
-  mapLayer.on('loadend',function(){
-    self._decrementLoaders(false);
+  mapLayer.on('loadend', () => {
+    this._decrementLoaders(false);
   });
 
-  this.on('extraParamsSet',function(extraParams,update){
+  this.on('extraParamsSet',(extraParams, update) => {
     if (update) {
       mapLayer.update(this.state,extraParams);
     }
@@ -1172,10 +1157,9 @@ proto.removeInteraction = function(interaction){
 // emetto evento quando viene attivata un interazione di tipo Pointer
 // (utile ad es. per disattivare/riattivare i tool di editing)
 proto._watchInteraction = function(interaction) {
-  var self = this;
-  interaction.on('change:active',function(e) {
+  interaction.on('change:active',(e) => {
     if ((e.target instanceof ol.interaction.Pointer) && e.target.getActive()) {
-      self.emit('mapcontrol:active', e.target);
+      this.emit('mapcontrol:active', e.target);
     }
   })
 };
@@ -1186,14 +1170,14 @@ proto.zoomTo = function(coordinate, zoom) {
 };
 
 proto.goTo = function(coordinates,zoom) {
-  var options = {
+  const options = {
     zoom: zoom || 6
   };
-  this.viewer.goTo(coordinates,options);
+  this.viewer.goTo(coordinates, options);
 };
 
-proto.goToRes = function(coordinates,resolution){
-  var options = {
+proto.goToRes = function(coordinates, resolution){
+  const options = {
     resolution: resolution
   };
   this.viewer.goToRes(coordinates,options);
@@ -1205,7 +1189,7 @@ proto.goToBBox = function(bbox) {
 
 
 proto.goToWGS84 = function(coordinates,zoom){
-  var coordinates = ol.proj.transform(coordinates,'EPSG:4326','EPSG:'+this.project.state.crs);
+  coordinates = ol.proj.transform(coordinates,'EPSG:4326','EPSG:'+this.project.state.crs);
   this.goTo(coordinates,zoom);
 };
 
@@ -1214,28 +1198,25 @@ proto.extentToWGS84 = function(extent){
 };
 
 proto.getResolutionForMeters = function(meters) {
-  var viewport = this.viewer.map.getViewport();
+  const viewport = this.viewer.map.getViewport();
   return meters / Math.max(viewport.clientWidth,viewport.clientHeight);
 };
 
-var highlightLayer = null;
-var animatingHighlight = false;
+let highlightLayer = null;
+let animatingHighlight = false;
 
 proto.highlightGeometry = function(geometryObj,options) {
-  var self = this;
   this.clearHighlightGeometry();
-  var options = options || {};
-  var zoom = (typeof options.zoom == 'boolean') ? options.zoom : true;
-  var highlight = (typeof options.highlight == 'boolean') ? options.highlight : true;
-  var duration = options.duration || 2000;
-  var view = this.viewer.map.getView();
-
-  var geometry;
+  options = options || {};
+  let zoom = (typeof options.zoom == 'boolean') ? options.zoom : true;
+  const highlight = (typeof options.highlight == 'boolean') ? options.highlight : true;
+  const duration = options.duration || 2000;
+  let geometry;
   if (geometryObj instanceof ol.geom.Geometry){
     geometry = geometryObj;
   }
   else {
-    var format = new ol.format.GeoJSON;
+    let format = new ol.format.GeoJSON;
     geometry = format.readGeometry(geometryObj);
   }
 
@@ -1243,18 +1224,18 @@ proto.highlightGeometry = function(geometryObj,options) {
     geometry.transform('EPSG:4326','EPSG:'+ProjectService.state.project.crs);
   }
 
-  var geometryType = geometry.getType();
+  const geometryType = geometry.getType();
   if (zoom) {
     if (geometryType == 'Point' || (geometryType == 'MultiPoint' && geometry.getPoints().length == 1)) {
-      var coordinates = geometryType == 'Point' ? geometry.getCoordinates() : geometry.getPoint(0).getCoordinates();
+      const coordinates = geometryType == 'Point' ? geometry.getCoordinates() : geometry.getPoint(0).getCoordinates();
       if (this.project.state.crs != 4326 && this.project.state.crs != 3857) {
         // zoom ad una risoluzione in cui la mappa copra 100m
-        var res = this.getResolutionForMeters(100);
-        self.goToRes(coordinates,res);
+        const res = this.getResolutionForMeters(100);
+        this.goToRes(coordinates,res);
       }
       else {
-        zoom = self.viewer.map.getView().getZoom() > 6 ? self.viewer.map.getView().getZoom() : 6;
-        self.goTo(coordinates, zoom);
+        zoom = this.viewer.map.getView().getZoom() > 6 ? self.viewer.map.getView().getZoom() : 6;
+        this.goTo(coordinates, zoom);
       }
     }
     else {
@@ -1263,7 +1244,7 @@ proto.highlightGeometry = function(geometryObj,options) {
   }
 
   if (highlight) {
-    var feature = new ol.Feature({
+    const feature = new ol.Feature({
       geometry: geometry
     });
 
@@ -1271,10 +1252,10 @@ proto.highlightGeometry = function(geometryObj,options) {
       highlightLayer = new ol.layer.Vector({
         source: new ol.source.Vector(),
         style: function(feature){
-          var styles = [];
-          var geometryType = feature.getGeometry().getType();
+          let styles = [];
+          const geometryType = feature.getGeometry().getType();
           if (geometryType == 'LineString' || geometryType == 'MultiLineString') {
-            var style = new ol.style.Style({
+            const style = new ol.style.Style({
               stroke: new ol.style.Stroke({
                 color: 'rgb(255,255,0)',
                 width: 4
@@ -1283,7 +1264,7 @@ proto.highlightGeometry = function(geometryObj,options) {
             styles.push(style);
           }
           else if (geometryType == 'Point' || geometryType == 'MultiPoint') {
-            var style = new ol.style.Style({
+            const style = new ol.style.Style({
               image: new ol.style.Circle({
                 radius: 6,
                 fill: new ol.style.Fill({
@@ -1294,7 +1275,7 @@ proto.highlightGeometry = function(geometryObj,options) {
             });
             styles.push(style);
           } else if (geometryType == 'MultiPolygon' || geometryType == 'Polygon') {
-            var style = new ol.style.Style({
+            const style = new ol.style.Style({
               stroke: new ol.style.Stroke({
                 color: 'rgb(255,255,0)',
                 width: 4
@@ -1360,14 +1341,14 @@ proto.getMapBBOX = function() {
 };
 
 proto._setMapView = function() {
-  var bbox = this.viewer.getBBOX();
-  var resolution = this.viewer.getResolution();
-  var center = this.viewer.getCenter();
+  const bbox = this.viewer.getBBOX();
+  const resolution = this.viewer.getResolution();
+  const center = this.viewer.getCenter();
   this.setMapView(bbox, resolution, center);
 };
 
 proto.getMapSize = function() {
-  var map = this.viewer.map;
+  const map = this.viewer.map;
   return map.getSize();
 };
 
@@ -1386,14 +1367,14 @@ proto._resetDrawShadowInner = function() {
 };
 
 proto.setInnerGreyCoverBBox = function(options) {
-  var options = options || {};
-  var map = this.viewer.map;
-  var type = options.type || 'coordinate'; // di solito sollo coordinate
-  var inner = options.inner || null;
-  var rotation = options.rotation;
-  var scale = options.scale;
-  var lowerLeftInner;
-  var upperRightInner;
+  options = options || {};
+  const map = this.viewer.map;
+  const type = options.type || 'coordinate'; // di solito sollo coordinate
+  const inner = options.inner || null;
+  const rotation = options.rotation;
+  const scale = options.scale;
+  let lowerLeftInner;
+  let upperRightInner;
   if (inner) {
     switch (type) {
       case 'coordinate':
@@ -1405,10 +1386,10 @@ proto.setInnerGreyCoverBBox = function(options) {
         upperRightInner = [inner[2], inner[3]];
         break
     }
-    var y_min = lowerLeftInner[1] * ol.has.DEVICE_PIXEL_RATIO;
-    var x_min = lowerLeftInner[0] * ol.has.DEVICE_PIXEL_RATIO;
-    var y_max = upperRightInner[1] * ol.has.DEVICE_PIXEL_RATIO;
-    var x_max = upperRightInner[0] * ol.has.DEVICE_PIXEL_RATIO;
+    const y_min = lowerLeftInner[1] * ol.has.DEVICE_PIXEL_RATIO;
+    const x_min = lowerLeftInner[0] * ol.has.DEVICE_PIXEL_RATIO;
+    const y_max = upperRightInner[1] * ol.has.DEVICE_PIXEL_RATIO;
+    const x_max = upperRightInner[0] * ol.has.DEVICE_PIXEL_RATIO;
     this._drawShadow.inner[0] = x_min;
     this._drawShadow.inner[1] = y_min;
     this._drawShadow.inner[2] = x_max;
@@ -1431,22 +1412,21 @@ proto.setInnerGreyCoverBBox = function(options) {
 
 // funzione grigio mappa precompose mapcompose
 proto.startDrawGreyCover = function() {
-  var self = this;
-    // after rendering the layer, restore the canvas context
-  var map = this.viewer.map;
-  var x_min, x_max, y_min, y_max, rotation, scale;
+  // after rendering the layer, restore the canvas context
+  const map = this.viewer.map;
+  let x_min, x_max, y_min, y_max, rotation, scale;
   //verifico che non ci sia già un greyListener
   if (this._greyListenerKey) {
       this.stopDrawGreyCover();
   }
 
-  function postcompose(evt) {
-    var ctx = evt.context;
-    var size = this.getSize();
+  const postcompose = (evt) => {
+    const ctx = evt.context;
+    const size = this.getMap().getSize();
     // Inner polygon,must be counter-clockwise
-    var height = size[1] * ol.has.DEVICE_PIXEL_RATIO;
-    var width = size[0] * ol.has.DEVICE_PIXEL_RATIO;
-    self._drawShadow.outer = [0,0,width, height];
+    const height = size[1] * ol.has.DEVICE_PIXEL_RATIO;
+    const width = size[0] * ol.has.DEVICE_PIXEL_RATIO;
+    this._drawShadow.outer = [0,0,width, height];
     ctx.restore();
     ctx.beginPath();
     // Outside polygon, must be clockwise
@@ -1457,14 +1437,14 @@ proto.startDrawGreyCover = function() {
     ctx.lineTo(0, 0);
     ctx.closePath();
     // fine bbox esterno (tutta la mappa-)
-    if (self._drawShadow.inner.length) {
+    if (this._drawShadow.inner.length) {
       ctx.save();
-      x_min = self._drawShadow.inner[0];
-      y_min = self._drawShadow.inner[3];
-      x_max = self._drawShadow.inner[2];
-      y_max = self._drawShadow.inner[1];
-      rotation = self._drawShadow.rotation;
-      scale = self._drawShadow.scale;
+      x_min = this._drawShadow.inner[0];
+      y_min = this._drawShadow.inner[3];
+      x_max = this._drawShadow.inner[2];
+      y_max = this._drawShadow.inner[1];
+      rotation = this._drawShadow.rotation;
+      scale = selthisf._drawShadow.scale;
       // Inner polygon,must be counter-clockwise antiorario
       ctx.translate((x_max+x_min)/2, (y_max+y_min)/2);
       ctx.rotate(rotation*Math.PI / 180);
@@ -1479,12 +1459,13 @@ proto.startDrawGreyCover = function() {
     ctx.fillStyle = 'rgba(0, 5, 25, 0.40)';
     ctx.fill();
     ctx.restore();
-  }
+  };
+
   this._greyListenerKey = map.on('postcompose', postcompose);
 };
 
 proto.stopDrawGreyCover = function() {
-  var map = this.viewer.map;
+  const map = this.viewer.map;
   ol.Observable.unByKey(this._greyListenerKey);
   this._greyListenerKey = null;
   if (this._drawShadow.inner.length) {
@@ -1495,9 +1476,9 @@ proto.stopDrawGreyCover = function() {
 
 // funzione che rimuove layer aggiunti esterni
 proto.removeExternalLayer = function(name) {
-  var layer = this.getLayerByName(name);
-  var catalogService = GUI.getComponent('catalog').getService();
-  var QueryResultService = GUI.getComponent('queryresults').getService();
+  const layer = this.getLayerByName(name);
+  const catalogService = GUI.getComponent('catalog').getService();
+  const QueryResultService = GUI.getComponent('queryresults').getService();
   QueryResultService.unregisterVectorLayer(layer);
   this.viewer.map.removeLayer(layer);
   catalogService.removeExternalLayer(name);
@@ -1505,11 +1486,26 @@ proto.removeExternalLayer = function(name) {
 
 // funzione che aggiunge layer esterni
 proto.addExternalLayer = function(externalLayer) {
+  let format,
+    features,
+    vectorSource,
+    vectorLayer,
+    extent;
+  const map = this.viewer.map;
+  const name = externalLayer.name;
+  const color = externalLayer.color;
+  const type = externalLayer.type;
+  let crs = externalLayer.crs;
+  let data = externalLayer.data;
+  const catalogService = GUI.getComponent('catalog').getService();
+  const QueryResultService = GUI.getComponent('queryresults').getService();
+  // cerco di verificare se esiste già un layer nella mappa
+  const layer = this.getLayerByName(name);
   //funzione che mippermette di fare il loadind del layer sulla mappa
-  function loadExternalLayer(format, data) {
+  const loadExternalLayer = (format, data) => {
     features = format.readFeatures(data, {
       dataProjection: 'EPSG:'+ crs,
-      featureProjection: self.getEpsg()
+      featureProjection: this.getEpsg()
     });
     vectorSource = new ol.source.Vector({
       features: features
@@ -1520,7 +1516,7 @@ proto.addExternalLayer = function(externalLayer) {
       name: name
     });
     //vado a settare il colore al vector layer
-    vectorLayer.setStyle(self.setExternalLayerColor(color));
+    vectorLayer.setStyle(this.setExternalLayerColor(color));
     extent = vectorLayer.getSource().getExtent();
     //setto il bbox perchè mi servirà nel catalog
     externalLayer.bbox = {
@@ -1536,30 +1532,14 @@ proto.addExternalLayer = function(externalLayer) {
     //var externalVectorLayer = new VectorLayer(externalLayer);
     catalogService.addExternalLayer(externalLayer);
     map.getView().fit(vectorSource.getExtent());
-  }
+  };
 
-  var self = this;
-  var format,
-    features,
-    vectorSource,
-    vectorLayer,
-    extent;
-  var map = this.viewer.map;
-  var name = externalLayer.name;
-  var color = externalLayer.color;
-  var type = externalLayer.type;
-  var crs = externalLayer.crs;
-  var data = externalLayer.data;
-  var catalogService = GUI.getComponent('catalog').getService();
-  var QueryResultService = GUI.getComponent('queryresults').getService();
-  // cerco di verificare se esiste già un layer nella mappa
-  var layer = this.getLayerByName(name);
   // aggiungo solo nel caso di layer non presente
   if (!layer) {
     // nel caso in cui i sistemi di riferimento del layer e della mappa sono diversi
     // vado a definirne il sistema (caso a sistemi di proiezione non standard in OL3 diversi da 3857 e 4326)
-    if (crs != self.getCrs()) {
-      self.defineProjection(crs);
+    if (crs != this.getCrs()) {
+      this.defineProjection(crs);
     }
     //verifico il tipo di file uplodato
     switch (type) {
@@ -1576,7 +1556,7 @@ proto.addExternalLayer = function(externalLayer) {
       case 'zip':
         // qui non specifico l'epsg in quanto lo legge da solo
         // dal file prj
-        var geoJSONFile;
+        let geoJSONFile;
         loadshp({
           url: data,
           encoding: 'big5',
@@ -1600,9 +1580,9 @@ proto.addExternalLayer = function(externalLayer) {
 // setta il colore al layer caricati esternamente
 proto.setExternalLayerColor = function(color) {
   // stile
-  var color = color.rgba;
+  color = color.rgba;
   color = 'rgba(' + color.r + ',' + color.g + ',' + color.b + ','  + color.a + ')';
-  var defaultStyle = {
+  const defaultStyle = {
     'Point': new ol.style.Style({
       image: new ol.style.Circle({
         fill: new ol.style.Fill({
@@ -1658,8 +1638,8 @@ proto.setExternalLayerColor = function(color) {
       })
     })
   };
-  var styleFunction = function(feature, resolution) {
-    var featureStyleFunction = feature.getStyleFunction();
+  const styleFunction = function(feature, resolution) {
+    const featureStyleFunction = feature.getStyleFunction();
     if (featureStyleFunction) {
       return featureStyleFunction.call(feature, resolution);
     } else {
