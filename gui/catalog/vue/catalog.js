@@ -191,8 +191,11 @@ const vueComponentOptions = {
                 const getLayerIds = (nodes) => {
                   nodes.some((node) => {
                     if (node.id) {
-                      layersIds.push(node.id);
-                      return true;
+                      if (node.geolayer) {
+                        layersIds.push(node.id);
+                        return true;
+                      }
+
                     } else {
                       getLayerIds(node.nodes);
                     }
@@ -207,7 +210,8 @@ const vueComponentOptions = {
             });
           }
         } else {
-          layersIds.push(obj.id);
+          if (obj.geolayer)
+            layersIds.push(obj.id);
         }
       };
       nodes.map(checkNodes);
@@ -311,7 +315,7 @@ Vue.component('tristate-tree', {
             })
           } else { // not mutually exclusive
             layerstree.nodes.forEach((layer) => {
-              if (!layer.nodes) {
+              if (!layer.nodes && layer.geolayer) {
                   _childsLength+=1;
                 if (layer.visible) {
                   _visibleChilds += 1;
@@ -329,6 +333,11 @@ Vue.component('tristate-tree', {
         this.isFolderChecked = !(this.n_childs - this.n_visibleChilds);
       }
       return isFolder
+    },
+    isTable: function() {
+      if (!this.isFolder) {
+        return !this.layerstree.geolayer && !this.layerstree.external;
+      }
     },
     isHidden: function() {
       return this.layerstree.hidden && (this.layerstree.hidden === true);
@@ -358,7 +367,8 @@ Vue.component('tristate-tree', {
             let layerId;
             const getLayerId = (nodes) => {
               nodes.some((node) => {
-                if (node.id) {
+                if (node.id)
+                  if (node.geolayer) {
                   layerId = node.id;
                   return true
                 } else {
@@ -366,6 +376,7 @@ Vue.component('tristate-tree', {
                 }
               });
             };
+            getLayerId(this.layerstree.nodes);
             this.layerstree.lastLayerIdVisible = layerId;
           }
           if (!this.isFolderChecked) {
@@ -402,7 +413,7 @@ Vue.component('tristate-tree', {
       this.layerstree.expanded = !this.layerstree.expanded;
     },
     select: function () {
-      if (!this.isFolder && !this.layerstree.external) {
+      if (!this.isFolder && !this.layerstree.external && !this.isTable) {
         CatalogEventHub.$emit('treenodeselected',this.storeid,this.layerstree);
       }
     },
@@ -427,9 +438,10 @@ Vue.component('tristate-tree', {
       mapService.removeExternalLayer(name);
     },
     showLayerMenu: function(layerstree, evt) {
-      if (!this.isFolder) {
+      if (!this.isFolder && (this.layerstree.openattributetable || this.layerstree.geolayer || this.layerstree.external)) {
         CatalogEventHub.$emit('showmenulayer', layerstree, evt);
       }
+
     }
   },
   mounted: function() {

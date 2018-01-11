@@ -111,12 +111,24 @@ proto.getDataTable = function() {
       editing:false
     })
       .done((response) => {
-        const pkProperties = this.getFields().find((field) => response.pk == field.name);
+        let pkProperties;
         const data = response.data;
-        const attributes = [pkProperties].concat(provider._parseAttributes(this.getAttributes(), data.features[0].properties));
+        let attributes, features;
+        if (this.getType() == 'table') {
+          features = data.map((feature) => {
+            return {
+              properties: feature
+            }
+          });
+          attributes = this.getAttributes();
+        } else {
+          pkProperties = this.getFields().find((field) => response.pk == field.name);
+          features = data.features;
+          attributes = [pkProperties].concat(provider._parseAttributes(this.getAttributes(), data.features[0].properties));
+        }
         const dataTableObject = {
           headers: attributes,
-          features: data.features,
+          features: features,
           title: this.getTitle()
         };
         d.resolve(dataTableObject)
@@ -376,7 +388,7 @@ proto.setLayersStore = function(layerstore) {
 
 proto.canShowTable = function() {
   if (this.getServerType() == 'QGIS') {
-    if([Layer.SourceTypes.POSTGIS, Layer.SourceTypes.SPATIALITE, Layer.SourceTypes.CSV].indexOf(this.config.source.type) > -1) {
+    if([Layer.SourceTypes.POSTGIS, Layer.SourceTypes.SPATIALITE].indexOf(this.config.source.type) > -1) {
       return true
     }
   }

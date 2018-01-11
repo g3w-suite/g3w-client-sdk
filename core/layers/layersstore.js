@@ -304,7 +304,7 @@ proto._mutuallyExclude = function(layerId) {
           let nodeIds = [];
           layer.nodes.forEach((node) => {
             if (node.id) {
-              if (node.id != layerId)
+              if (node.id != layerId && node.geolayer)
                 nodeIds.push(node.id);
               else
                 checked_node = node;
@@ -313,7 +313,7 @@ proto._mutuallyExclude = function(layerId) {
             }
           });
           if (parentLayersTree.mutually_exclusive) {
-            nodeIds = nodeIds.concat(this._getAllParentLayersId(parentLayersTree, checked_node));
+            nodeIds = nodeIds.concat(this._getAllParentLayersId(parentLayersTree));
           }
           this.setLayersVisible(nodeIds, false);
           parentLayersTree = layer;

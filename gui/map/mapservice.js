@@ -1116,7 +1116,7 @@ proto.getOverviewMapLayers = function(project) {
 };
 
 proto.updateMapLayers = function(mapLayers) {
-  mapLayers.forEach((mapLayer) => {
+  Object.entries(mapLayers).forEach(([key,mapLayer]) => {
     mapLayer.update(this.state, this.layersExtraParams);
   })
 };
@@ -1314,7 +1314,8 @@ proto.clearHighlightGeometry = function() {
 // funzione che fa il refresh di tutti i layer della mappa
 proto.refreshMap = function() {
   _.forEach(this._mapLayers, function(mapLayer) {
-    mapLayer.getOLLayer().getSource().updateParams({"time": Date.now()});
+    if (!(mapLayer instanceof XYZLayer))
+      mapLayer.getOLLayer().getSource().updateParams({"time": Date.now()});
   });
 };
 

@@ -65,6 +65,10 @@ proto.getPk = function() {
   return this._pk;
 };
 
+proto.isPk = function(field) {
+  return field == this.getPk();
+};
+
 // setta la feature a state 2 delete
 proto.delete = function() {
   this.state.state = 'delete';

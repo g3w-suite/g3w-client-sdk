@@ -1,23 +1,22 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var Service = require('gui/inputs/service');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const Service = require('gui/inputs/service');
 
-function IntegerService(options) {
+function CheckBoxService(options) {
   options = options || {};
   base(this, options);
 }
 
-inherit(IntegerService, Service);
+inherit(CheckBoxService, Service);
 
-var proto = IntegerService.prototype;
+const proto = CheckBoxService.prototype;
 
 proto.convertCheckedToValue = function(checked) {
-  var self = this;
-  var value;
-  var options = this.state.input.options;
-  _.forEach(options, function(option) {
+  let value;
+  const options = this.state.input.options;
+  options.forEach((option) => {
     if (option.checked === checked) {
-      self.state.value = value = option.value;
+      this.state.value = value = option.value;
       return false;
     }
   });
@@ -25,11 +24,10 @@ proto.convertCheckedToValue = function(checked) {
 };
 
 proto.convertValueToChecked = function() {
-  var self = this;
-  var checked = null;
-  var options = this.state.input.options;
-  _.forEach(options, function(option) {
-    if (option.value === self.state.value) {
+  let checked = null;
+  const options = this.state.input.options;
+  options.forEach((option) =>{
+    if (option.value === this.state.value) {
       checked = option.checked;
       return false;
     }
@@ -38,4 +36,4 @@ proto.convertValueToChecked = function() {
 };
 
 
-module.exports = IntegerService;
+module.exports = CheckBoxService;

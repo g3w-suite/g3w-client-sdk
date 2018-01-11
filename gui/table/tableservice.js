@@ -12,7 +12,8 @@ const TableService = function(options) {
     headers: headers,
     geometry: hasGeometry
   };
-  this._addPkProperties(features);
+  if (hasGeometry)
+    this._addPkProperties(features);
 };
 
 const proto = TableService.prototype;
@@ -40,7 +41,7 @@ proto.hasGeometry = function(features) {
 
 proto._addPkProperties = function(features) {
   features.forEach((feature) => {
-    if (feature.properties)
+    if (!feature.attributes)
       feature.properties[this.state.headers[0].name] = feature.id;
   })
 };

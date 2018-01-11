@@ -1,11 +1,12 @@
-var inherit = require('core/utils/utils').inherit;
-var merge = require('core/utils/utils').merge;
-var base = require('core/utils/utils').base;
-var G3WObject = require('core/g3wobject');
-var VUECOMPONENTSATTRIBUTES = ['methods', 'computed', 'data', 'components'];
+const inherit = require('core/utils/utils').inherit;
+const merge = require('core/utils/utils').merge;
+const base = require('core/utils/utils').base;
+const G3WObject = require('core/g3wobject');
+const t = require('core/i18n/i18n.service').t;
+const VUECOMPONENTSATTRIBUTES = ['methods', 'computed', 'data', 'components'];
 
 // Classe componente base
-var Component = function(options) {
+const Component = function(options) {
   options = options || {};
   // compontente interno vue
   this.internalComponent = null;
@@ -48,7 +49,7 @@ var Component = function(options) {
     this.setInternalComponentTemplate(options.template);
     // funzione che permette di settare il componente interno
     this.setInternalComponent = function() {
-      var InternalComponent = Vue.extend(this.vueComponent);
+      const InternalComponent = Vue.extend(this.vueComponent);
       this.internalComponent = new InternalComponent({
         service: this._service,
         template: this.getInternalTemplate()
@@ -66,7 +67,7 @@ var Component = function(options) {
 
 inherit(Component, G3WObject);
 
-var proto = Component.prototype;
+const proto = Component.prototype;
 
 // restituisce id del componente
 proto.getId = function() {
@@ -126,10 +127,9 @@ proto.popComponent = function() {
 
 
 proto.removeComponent = function(Component) {
-  var self = this;
-  _.forEach(this._components, function(component, index) {
+  this._components.forEach((component, index) => {
     if (component == Component) {
-      self.splice(index, 1);
+      this.splice(index, 1);
       return false;
     }
   })
@@ -175,9 +175,8 @@ proto.overwriteServiceMethod = function(methodName, method) {
 
 // sovrascrive i metodi che hanno chiave uguale a quelli presenti nel servizio
 proto.overwriteServiceMethods = function(methodsOptions) {
-  var self = this;
-  _.forEach(methodsOptions, function(method, methodName) {
-    self.overwriteServiceMethod(methodName, method);
+  Object.entries(methodsOptions).forEach(([methodName, method]) => {
+    this.overwriteServiceMethod(methodName, method);
   })
 };
 
@@ -190,21 +189,20 @@ proto.extendService = function(serviceOptions) {
 
 // estende in modo generico il vue component
 proto.extendInternalComponent = function(internalComponentOptions) {
-  var self = this;
   if (this.vueComponent) {
     // faccio il clone altrimenti ho problem con i components
-    _.forEach(internalComponentOptions, function(value, key) {
+    Object.entries(internalComponentOptions).forEach(([key, value]) => {
       // verifico che ci sia uno chiame appartenete agli attributi previsti dal compoennte vue
       if (VUECOMPONENTSATTRIBUTES.indexOf(key) > -1) {
         switch (key) {
           case 'methods':
-            self.extendInternalComponentMethods(value);
+            this.extendInternalComponentMethods(value);
             break;
           case 'components':
-            self.extendInternalComponentComponents(value);
+            this.extendInternalComponentComponents(value);
             break;
           default:
-            merge(self.vueComponent[key], value);
+            merge(this.vueComponent[key], value);
         }
       }
     });
@@ -274,9 +272,9 @@ proto.getInternalTemplate = function() {
 
 ////////// fine metodi Service Components //////////
 /* HOOKS */
-/* 
+/*
  * Il metodo permette al componente di montarsi nel DOM
- * parentEl: elemento DOM padre, su cui inserirsi; 
+ * parentEl: elemento DOM padre, su cui inserirsi;
  * ritorna una promise, risolta nel momento in cui sarà terminato il montaggio
 */
 proto.mount = function(parent) {};

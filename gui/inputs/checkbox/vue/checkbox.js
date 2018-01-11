@@ -1,15 +1,15 @@
 // oggetto base utilizzato per i mixins
-var Input = require('gui/inputs/input');
-var Service = require('../service');
+const Input = require('gui/inputs/input');
+const Service = require('../service');
 
-var CheckBoxInput = Vue.extend({
+const CheckBoxInput = Vue.extend({
   mixins: [Input],
   template: require('./checkbox.html'),
   data: function() {
-    var values = _.map(this.state.input.options, function(option) {
+    const values = _.map(this.state.input.options, function(option) {
       return option.value;
     });
-    var label = values.indexOf(this.state.value) != -1 ? this.state.value : null;
+    const label = values.indexOf(this.state.value) != -1 ? this.state.value : null;
     return {
       service: new Service({
         state: this.state,

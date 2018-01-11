@@ -216,7 +216,7 @@ proto._setOtherConfigParameters = function(config) {
 
 // funzione che restituisce i campi del layer
 proto.getFields = function() {
-  return this.config.editing.fields;
+  return this.config.editing.fields.length ? this.config.editing.fields: this.config.fields;
 };
 
 
