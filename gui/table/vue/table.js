@@ -3,12 +3,20 @@ const base = require('core/utils/utils').base;
 const Component = require('gui/vue/component');
 const TableService = require('../tableservice');
 
+const Link = {
+  template: '<a :href="href" target="_blank"><i class="glyphicon glyphicon-link"></i></a>',
+  props: ['href']
+}
+
 const InternalComponent = Vue.extend({
   template: require('./table.html'),
   data: function() {
     return {
       state: null
     }
+  },
+  components: {
+    'link-item': Link
   },
   methods: {
     _setLayout: function() {
@@ -18,16 +26,18 @@ const InternalComponent = Vue.extend({
       if (this.state.geometry)
         this.$options.service.zoomAndHighLightSelectedFeature(feature, zoom);
     },
-    showAttribute: function(feature, attribute)  {
-      return this.$options.service.showAttribute(feature, attribute)
+    getValueObjectFromAttribute: function(feature, attribute)  {
+      return this.$options.service.getValueObjectFromAttribute(feature, attribute)
     }
   },
   mounted: function() {
     this.$nextTick(() => {
       const tableHeight = $(".content").height();
+      const scrollX = $('#layer_attribute_table thead').width() > $(".content").width()
       $('#open_attribute_table table').DataTable( {
         "pageLength": 10,
         "bLengthChange": false,
+        "scrollX": scrollX,
         "scrollY": tableHeight / 2 +  "px",
         "scrollCollapse": true,
         "order": [ 0, 'asc' ]

@@ -1,6 +1,6 @@
 <div id="open_attribute_table" class="g3w-editing-table">
   <b style="color:#3f8dbc">{{ state.title }}</b>
-  <table class="table table-striped display">
+  <table id="layer_attribute_table" class="table table-striped">
     <thead>
       <tr>
         <th v-for="header in state.headers">{{ header.label }}</th>
@@ -8,7 +8,10 @@
     </thead>
     <tbody>
       <tr :id="'open_table_row_' + index"  v-for="(feature, index) in state.features" @mouseenter="zoomAndHighLightSelectedFeature(feature, false)" @click="zoomAndHighLightSelectedFeature(feature)" style="cursor: pointer">
-        <td v-for="header in state.headers">{{ showAttribute(feature, header.name) }}</td>
+        <td v-for="header in state.headers">
+          <link-item v-if="getValueObjectFromAttribute(feature, header.name).type == 'link'" :href="getValueObjectFromAttribute(feature, header.name).value"></link-item>
+          <p v-else> {{ getValueObjectFromAttribute(feature, header.name).value }}</p>
+        </td>
       </tr>
     </tbody>
   </table>

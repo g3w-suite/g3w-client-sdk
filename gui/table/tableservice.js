@@ -55,8 +55,21 @@ proto.zoomAndHighLightSelectedFeature = function(feature, zoom=true) {
   });
 };
 
-proto.showAttribute = function(feature, attribute) {
-  return feature.attributes ? feature.attributes[attribute] : feature.properties[attribute]
+proto._getType = function(value) {
+  const URLPattern = /^(https?:\/\/[^\s]+)/g;
+  if (value && value.toString().match(URLPattern))
+    return 'link'
+  return ''
+}
+
+proto.getValueObjectFromAttribute = function(feature, attribute) {
+  const value =  feature.attributes ? feature.attributes[attribute] : feature.properties[attribute];
+  const type = this._getType(value);
+  const valueObject = {
+    value,
+    type
+  }
+  return valueObject
 };
 
 
