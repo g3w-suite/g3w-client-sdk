@@ -56,8 +56,6 @@ proto.zoomAndHighLightSelectedFeature = function(feature, zoom=true) {
 };
 
 proto.showAttribute = function(feature, attribute) {
-  console.log(attribute)
-  console.log(feature.attributes ? feature.attributes[attribute] : feature.properties[attribute])
   return feature.attributes ? feature.attributes[attribute] : feature.properties[attribute]
 };
 
