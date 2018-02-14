@@ -1,35 +1,34 @@
-var path = require('path');
-var del = require('del');
-var url = require('url');
+const path = require('path');
+const del = require('del');
+const url = require('url');
 //Gulp
-var gulp   = require('gulp');
-var concat = require('gulp-concat');
-var streamify = require('gulp-streamify');
-var rename = require('gulp-rename');
-var source = require('vinyl-source-stream');
-var buffer = require('vinyl-buffer');
-var flatten = require('gulp-flatten');
-var useref = require('gulp-useref');
-var filter = require('gulp-filter');
-var gulpif = require('gulp-if');
-var uglify = require('gulp-uglify');
-var chalk = require('chalk');
-var watch = require('gulp-watch');
-var cleanCSS = require('gulp-clean-css');
-var gutil = require("gulp-util");
-var less = require('gulp-less');
-var jshint = require('gulp-jshint');
-var browserify = require('browserify');
-var watchify = require('watchify');
-var stringify = require('stringify');
-var sourcemaps = require('gulp-sourcemaps');
-var browserSync = require('browser-sync');
+const gulp   = require('gulp');
+const concat = require('gulp-concat');
+const streamify = require('gulp-streamify');
+const rename = require('gulp-rename');
+const source = require('vinyl-source-stream');
+const buffer = require('vinyl-buffer');
+const flatten = require('gulp-flatten');
+const useref = require('gulp-useref');
+const filter = require('gulp-filter');
+const gulpif = require('gulp-if');
+const uglify = require('gulp-uglify');
+const chalk = require('chalk');
+const watch = require('gulp-watch');
+const cleanCSS = require('gulp-clean-css');
+const gutil = require("gulp-util");
+const less = require('gulp-less');
+const jshint = require('gulp-jshint');
+const browserify = require('browserify');
+const watchify = require('watchify');
+const stringify = require('stringify');
+const sourcemaps = require('gulp-sourcemaps');
+const browserSync = require('browser-sync');
 
-
-var production = false;
+const production = false;
 
 gulp.task('browserify', [], function(done) {
-    var bundler = browserify('./sdk.js', {
+  const bundler = browserify('./sdk.js', {
       basedir: "./",
       paths: ["./"],
       standalone: 'g3wsdk',

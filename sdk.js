@@ -1,4 +1,4 @@
-var g3w = g3w || {};
+const g3w = g3w || {};
 
 g3w.core = {
   G3WObject: require('core/g3wobject'),
@@ -87,9 +87,9 @@ g3w.gui = {
     MapComponent: require('gui/map/vue/map'),
     ToolsComponent: require('gui/tools/vue/tools'),
     QueryResultsComponent : require('gui/queryresults/vue/queryresults'),
-    // componente Form Principale
+    // main Form
     FormComponent: require('gui/form/vue/form'),
-    // componenti Form
+    // Form Components
     FormComponents: {
       Body: require('gui/form/components/body/vue/body'),
       Footer: require('gui/form/components/footer/vue/footer')
