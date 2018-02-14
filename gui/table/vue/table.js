@@ -33,7 +33,7 @@ const InternalComponent = Vue.extend({
   mounted: function() {
     this.$nextTick(() => {
       const tableHeight = $(".content").height();
-      const scrollX = $('#layer_attribute_table thead').width() > $(".content").width()
+      const scrollX = $('#layer_attribute_table thead').width() > $(".content").width();
       $('#open_attribute_table table').DataTable( {
         "pageLength": 10,
         "bLengthChange": false,
