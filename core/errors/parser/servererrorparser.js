@@ -1,11 +1,11 @@
-var serverErrorParser = function(options) {
+const serverErrorParser = function(options) {
   this._error = options.error;
 };
 
-var proto = serverErrorParser.prototype;
+const proto = serverErrorParser.prototype;
 
 proto.parse = function() {
-  var error_message = null;
+  let error_message = null;
   function traverseErrorMessage(obj) {
     _.forIn(obj, function (val, key) {
       if(_.isArray(val)) {
@@ -19,7 +19,7 @@ proto.parse = function() {
       }
     });
   }
-  var error_obj = (this._error && this._error.responseJSON && this._error.responseJSON.error.data) ? this._error.responseJSON.error.data : null;
+  let error_obj = (this._error && this._error.responseJSON && this._error.responseJSON.error.data) ? this._error.responseJSON.error.data : null;
   if (error_obj) {
     error_message = "";
     traverseErrorMessage(error_obj);

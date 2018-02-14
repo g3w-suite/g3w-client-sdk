@@ -1,8 +1,8 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils//utils').base;
-var FeaturesStore = require('./featuresstore');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils//utils').base;
+const FeaturesStore = require('./featuresstore');
 
-// Storage delle features di un layer vettoriale
+// Storage of the feature in vector layer
 function OlFeaturesStore(options) {
   base(this, options);
   this._features = new ol.Collection();
@@ -12,15 +12,14 @@ inherit(OlFeaturesStore, FeaturesStore);
 
 proto = OlFeaturesStore.prototype;
 
-//sovrascrivo
+//overwrite
 proto.setFeatures = function(features) {
-  var self = this;
   this._features.clear();
-  _.forEach(features, function(feature) {
-    self._features.push(feature);
+  features.forEach((feature) => {
+    this._features.push(feature);
   })
 };
-// sovrascrivo
+// overwrite
 proto.readFeatures = function() {
   return this._features.getArray();
 };
@@ -30,8 +29,8 @@ proto.getFeaturesCollection = function() {
 };
 
 proto.getFeatureById = function(featureId) {
-  var feat;
-  _.forEach(this._features.getArray(), function(feature) {
+  let feat;
+  this._features.getArray().forEach(function(feature) {
     if (feature.getId() == featureId) {
       feat = feature;
       return false;
@@ -40,7 +39,7 @@ proto.getFeatureById = function(featureId) {
   return feat;
 };
 
-//vado ad eseguire in pratica la sostituzione della feature dopo una modifica
+//sobtitute the feature afet modify
 proto._updateFeature = function(feature) {
   this._features.forEach(function(feat, idx, array) {
     if (feat.getId() == feature.getId()) {
@@ -50,7 +49,7 @@ proto._updateFeature = function(feature) {
   }, this._features);
 };
 
-// funzione che va a rimuovere la feature
+// remove feature from store
 proto._removeFeature = function(feature) {
   this._features.forEach(function(feat, idx, array) {
     if (feature.getId() == feat.getId()) {
@@ -61,8 +60,7 @@ proto._removeFeature = function(feature) {
 };
 
 proto._clearFeatures = function() {
-  // vado a rimuovere le feature in modo reattivo (per vue) utlizzando metodi che vue
-  // possa reagire allacancellazione di elementi di un array
+  ///remove feature in reactive way
   this._features.clear();
 };
 

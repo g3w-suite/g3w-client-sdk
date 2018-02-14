@@ -7,13 +7,13 @@ const Feature = require('./features/feature');
 const Relations = require('core/relations/relations');
 
 
-// Layer di base su cui si possono fare operazioni di editing
+// Base Layer tht support editing
 function TableLayer(config, options) {
-  options = options || {}; // queste mi servono per aggiungere altre infoemazioni oltra alla configurazione del layer setsso
+  options = options || {}; // to add more informations
   const ProjectsRegistry = require('core/project/projectsregistry');
   // setters
   this.setters = {
-    // cancellazione di tutte le features del layer
+    // delete all features
     clearFeatures: function () {
       this._clearFeatures();
     },
@@ -29,11 +29,10 @@ function TableLayer(config, options) {
     setFeatures: function (features) {
       this._setFeatures(features);
     },
-    // funzione che recupera i dati da qualsisasi fonte (server, wms, etc..)
-    // mediante il provider legato al fetauresstore
+    // get data from every sources (server, wms, etc..)
+    // throught provider related to fetauresstore
     getFeatures: function (options) {
       const d = $.Deferred();
-      // qui mi ritorna la promessa del setter (G3WOBJECT)
       this._featuresStore.getFeatures(options)
         .then((promise) => {
           promise.then((features) => {
@@ -54,7 +53,7 @@ function TableLayer(config, options) {
         .then((promise) => {
           promise
             .then((response) => {
-              // se tutto andato a buon fine il commit
+              // if commit go right
               let features;
               if (featurestore)
                 features = _.clone(featurestore.readFeatures());
@@ -76,25 +75,25 @@ function TableLayer(config, options) {
     }
   };
   /*
-   * composizione url editing api
-   * la chimata /api/vector/<tipo di richiesta: data/editing/config>/<project_type>/<project_id>/<layer_id>
-   * esempio /api/vector/config/qdjango/10/punti273849503023
+   * editing url api:
+   * /api/vector/<type of request: data/editing/config>/<project_type>/<project_id>/<layer_id>
+   * example: /api/vector/config/qdjango/10/points273849503023
    *
   */
   this.type = Layer.LayerTypes.TABLE;
-  // istanzia un editor alla sua creazione
+  // creare an istance of edito
   this._editor = new Editor({
     layer: this
   });
-  // colore
+  // color
   this._color = null;
   const currentProject = options.project || ProjectsRegistry.getCurrentProject();
-  // vado a settare urls che mi servono
+  // set urls
   const projectType = currentProject.getType();
   const projectId = currentProject.getId();
   const vectorUrl = initConfig.vectorurl;
   const suffixUrl = projectType + '/' + projectId + '/' + config.id + '/';
-  // vado ad aggiungere gli url che mi servono
+  // add urls
   config.urls = {
     editing: vectorUrl + 'editing/' + suffixUrl ,
     commit:vectorUrl + 'commit/' + suffixUrl ,
@@ -104,19 +103,18 @@ function TableLayer(config, options) {
       unique: vectorUrl + 'widget/unique/data/' + suffixUrl
     }
   };
-  // aggiungo alla configurazione la parte di editing
+  // add cediting configurations
   config.editing = {
-    pk: null, // campo primary kaey
-    fields: [] // campi utili all'editing,
+    pk: null, // primary key
+    fields: [] // editing fields
   };
-  // vado a chiamare il Layer di base
+  // call base layer
   base(this, config);
   const projectRelations = currentProject.getRelations();
-  // vado a creare le relazioni
+  // create realations
   this._relations = null;
   this._createRelations(projectRelations);
-  // aggiungo nformazioni allo state che sono solo necessarie a layer
-  // di possibile editing
+  // add state info for the layer
   this.state = _.merge({
     editing: {
       started: false,
@@ -125,7 +123,7 @@ function TableLayer(config, options) {
       ispkeditable: false
     }
   }, this.state);
-  // vado a recuperare la configurazione dal server se è editabile
+  // get configuration from server if is editable
   if (this.isEditable()) {
     this.getEditingConfig()
       .then((config) => {
@@ -140,8 +138,6 @@ function TableLayer(config, options) {
         this.setReady(false);
       });
   }
-  // viene istanziato un featuresstore e gli viene associato
-  // il data provider
   this._featuresStore = new FeaturesStore({
     provider: this.providers.data
   });
@@ -163,9 +159,9 @@ proto.readFeatures = function() {
   return this._featuresStore.readFeatures();
 };
 
-// funzione che restituisce il layer per l'editing
+// return layer for editing
 proto.getLayerForEditing = function() {
-  // nel caso fosse già un vector layer ritorna se stesso
+  // if the original layer is a vector layer return itself
   return this;
 };
 
@@ -180,9 +176,7 @@ proto.isFieldRequired = function(fieldName) {
   return required;
 };
 
-// funzione che permette di applicare l'eventuale risposta dal server
-// nel caso di inserimento di una nuova feature
-// nel caso di inserimento di una nuova feature
+// apply resposnse data from server in case of new inserted feature
 proto.applyCommitResponse = function(response) {
   const data = response;
   if (data) {
@@ -211,10 +205,10 @@ proto.unlock = function() {
 };
 
 proto._setOtherConfigParameters = function(config) {
-  // questa funzione verrà sovrascritta ad esempio dal vector layer
+  // overwrite by vector layer
 };
 
-// funzione che restituisce i campi del layer
+// return layer fields
 proto.getFields = function() {
   return this.config.editing.fields.length ? this.config.editing.fields: this.config.fields;
 };
@@ -245,12 +239,12 @@ proto._setPkEditable = function(fields) {
   })
 };
 
-// funzione che restituisce l'array (configurazione) dei campi utlizzati per l'editing
+// return fields of editing
 proto.getEditingFields = function() {
   return this.config.editing.fields;
 };
 
-// funzione che restituisce il formato dei dati grezzi
+// raw data
 proto.getEditingFormat = function() {
   return this.config.editing.format;
 };
@@ -267,12 +261,11 @@ proto.isPkEditable = function() {
   return this.state.editing.ispkeditable;
 };
 
-// funzione che recuprera la configurazione di editing del layer
+// get configuration from server
 proto.getEditingConfig = function(options) {
   const d = $.Deferred();
   options = options || {};
   const provider = this.getProvider('data');
-  // ritorno la promise del provider
   provider.getConfig(options)
     .then((config) => {
       d.resolve(config);
@@ -325,7 +318,7 @@ proto.getWidgetUrl = function() {
   return this.config.urls.widget;
 };
 
-// funzione che server per settare il data url
+// set data url
 proto.setDataUrl = function(url) {
   this.config.urls.data = url;
 };
@@ -334,7 +327,7 @@ proto.getDataUrl = function() {
   return this.config.urls.data;
 };
 
-// url dedicato a ricevere la struttura del layer
+// url to get config layer
 proto.getConfigUrl = function() {
   return this.config.urls.config;
 };
@@ -359,9 +352,6 @@ proto.setFeaturesStore = function(featuresstore) {
   this._featuresStore = featuresstore;
 };
 
-// la funzione che permette di settare il source delle features
-// di default è il featuresstore che istanzia al momento in cui
-// viene creato il layer
 proto.setSource = function(source) {
   this.setFeaturesStore(source);
 };
@@ -370,7 +360,6 @@ proto.getSource = function() {
   return this._featuresStore;
 };
 
-//funzione che va a sostiuire le features al featuresstore del layer
 proto._setFeatures = function(features) {
   this._featuresStore.setFeatures(features);
 };
@@ -381,7 +370,6 @@ proto.addFeatures = function(features) {
   });
 };
 
-//metodo che ha lo scopo di aggiungere la feature all featuresstore del layer
 proto._addFeature = function(feature) {
   this._featuresStore.addFeature(feature);
 };
@@ -402,64 +390,63 @@ proto.addLockIds = function(lockIds) {
   this._featuresStore.addLockIds(lockIds);
 };
 
-// viene chamato quando si preme ad esempio Salva sul Form degli
-// attributi di una feature
 proto.setFieldsWithValues = function(feature, fields) {
   const attributes = {};
   let pkValue;
   fields.forEach((field)=> {
-    // vado a verificares se il campo è primary key e se è editable
+    // check if primary key is editbale
     if (feature.getPk() == field.name && field.editable) {
       pkValue = field.type == "integer" ? 1* field.value : field.value;
       feature.setId(pkValue);
     } else {
-      // mi serve nel caso delle select ch devo forzare il valore a 'null'
+      // case selct force to null
       if (field.value == 'null') {
         field.value = null;
       }
       attributes[field.name] = field.value;
     }
   });
-  // setto i campi della feature con i valori editati nel form
   feature.setProperties(attributes);
   return attributes;
 
 };
 
-// funzione che server per associare campi a valori
 proto.getFieldsWithValues = function(obj, options) {
   options = options || {};
   const exclude = options.exclude || [];
-  const pkeditable = _.isBoolean(options.pkeditable) ? options.pkeditable : true;
-  // clono i fields in quanto non voglio modificare i valori originali
+  const relation = options.relation || false;
+  // colne fields 
   let fields = _.cloneDeep(this.getFields());
   let feature, attributes;
-  // il metodo accetta sia feature che fid
   if (obj instanceof Feature){
     feature = obj;
   }
   else if (obj){
     feature = this.getFeatureById(obj);
   }
-  // se c'è una feature ne prendo le proprietà
   if (feature) {
     attributes = feature.getProperties();
   }
-  fields = _.filter(fields, function(field) {
+  fields = fields.filter((field) =>  {
+    //check if field is pk and if is new nad if is not editable
+    if (!relation && (field.name == this.config.editing.pk) && feature.isNew() && !this.isPkEditable()) {
+        return false;
+    }
     return exclude.indexOf(field.name) == -1;
   });
-  // scorro sui campi della feature
   fields.forEach((field) => {
     if (feature) {
-      // verifico se è campo pk
+      // check if pk
       if (field.name == this.config.editing.pk) {
-        // verifico che
+        let editable = this.isPkEditable();
+        // che check if has a value
         if (feature.getId()) {
           field.value = feature.getId();
+          editable = false;
         } else {
           field.value = null;
         }
-        field.editable = this.isPkEditable();
+        field.editable = editable;
       } else {
         field.value = attributes[field.name];
       }
@@ -471,7 +458,6 @@ proto.getFieldsWithValues = function(obj, options) {
   return fields;
 };
 
-//Metodi legati alle relazioni
 proto._createRelations = function(projectRelations) {
   const relations = [];
   const layerId = this.getId();
@@ -506,13 +492,12 @@ proto.createNewFeature = function() {
   return feature;
 };
 
-// restituisce tutte le relazioni legati a quel layer
+// retunr relations of layer
 proto.getRelations = function() {
   return this._relations
 };
 
 
-//restituisce gli attributi fields di una deterninata relazione
 proto.getRelationAttributes = function(relationName) {
   let fields = [];
   this._relations.forEach((relation) => {
@@ -524,7 +509,6 @@ proto.getRelationAttributes = function(relationName) {
   return fields;
 };
 
-// retituisce un oggetto contenente nome relazione e fileds(attributi) associati
 proto.getRelationsAttributes = function() {
   const fields = {};
   this.state.relations.forEach((relation) => {
@@ -533,28 +517,24 @@ proto.getRelationsAttributes = function() {
   return fields;
 };
 
-// metodo che restituisce true o false se il layer è figlio
 proto.isChild = function() {
   if (!this.getRelations())
     return false;
   return this._relations.isChild(this.getId());
 };
 
-// metodo che restituisce true o false se il layer è padre
 proto.isFather = function() {
   if (!this.getRelations())
     return false;
   return this._relations.isFather(this.getId());
 };
 
-// ritorna i figli sono dopo che è stato verificato che è un padre
 proto.getChildren = function() {
   if (!this.isFather())
     return [];
   return this._relations.getChildren(this.getId());
 };
 
-// ritorna i padri dopo aver verificato che è un figlio
 proto.getFathers = function() {
   if (!this.isChild())
     return [];

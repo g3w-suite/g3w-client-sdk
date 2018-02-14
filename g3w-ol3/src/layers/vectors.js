@@ -4,7 +4,7 @@ _gis3wlib._layer.prototype.buildvectorLayer = function(vectorOpts){
 };
 
 _gis3wlib._layer.prototype.addVectorLayer = function(layerObj){
-  var layer = new ol.layer.vector({
+  const layer = new ol.layer.vector({
     name: layerObj.name,
     source:layerObj.source
   });
@@ -13,8 +13,7 @@ _gis3wlib._layer.prototype.addVectorLayer = function(layerObj){
 };
 
 _gis3wlib._layer.prototype.addVectorLayers = function(layerObjArray){
-  var self = this;
-  layerObjArray.forEach(function(vectorLayerObj){
-    self.addVectorLayer(vectorLayerObj);
+  layerObjArray.forEach((vectorLayerObj) => {
+    this.addVectorLayer(vectorLayerObj);
   })
 };

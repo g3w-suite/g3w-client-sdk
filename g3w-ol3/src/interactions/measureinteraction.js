@@ -1,13 +1,13 @@
 // MeasureInteracion
 
-var MeasureIteraction = function(options) {
+const MeasureIteraction = function(options) {
   this._helpTooltip;
   this._measureTooltipElement;
   this._measureTooltip;
   this._featureGeometryChangelistener;
   this._poinOnMapMoveListener;
 
-  var measureStyle = new ol.style.Style({
+  const measureStyle = new ol.style.Style({
     fill: new ol.style.Fill({
       color: 'rgba(255, 255, 255, 0.2)'
     }),
@@ -26,17 +26,17 @@ var MeasureIteraction = function(options) {
       })
     })
   });
-  var geometryType = options.geometryType || 'LineString';
+  const geometryType = options.geometryType || 'LineString';
   this._formatMeasure = null;
   this._helpMsg = null;
-  // funzione che serve per gestire il keydow della cancellazione ultimo vertice disegnato
+  // handel keydown event - delete of last vertex
   this._keyDownEventHandler = null;
   switch (geometryType) {
     case 'LineString':
      this._formatMeasure = function(feature) {
-        var length;
+        let length;
         length = Math.round(feature.getLength() * 100) / 100;
-        var output;
+        let output;
         if (length > 1000) {
           output = (Math.round(length / 1000 * 1000) / 1000) +
             ' ' + 'km';
@@ -50,11 +50,10 @@ var MeasureIteraction = function(options) {
       break;
     case 'Polygon':
       this._formatMeasure = function(feature) {
-        var area;
-        area = Math.round(feature.getArea() * 100) / 100;
-        var output;
-        if (area > 1000) {
-          output = (Math.round(area / 1000 * 1000) / 1000) +
+        const area = feature.getArea(feature);
+        let output;
+        if (area > 10000) {
+          output = (Math.round(area / 1000000 * 100) / 100) +
             ' ' + 'km<sup>2</sup>';
         } else {
           output = (Math.round(area * 100) / 100) +
@@ -65,14 +64,14 @@ var MeasureIteraction = function(options) {
       this._helpMsg = "Click per continuare a disegnare il poligono.<br>CANC se si vuole cancellare l'ultimo vertice inserito";
       break;
   }
-  var source = new ol.source.Vector();
+  const source = new ol.source.Vector();
   this._helpTooltipElement;
   this._map = null;
   this._feature = null;
   this._layer = new ol.layer.Vector({
     source: source,
     style: function(feature) {
-      var styles = [
+      const styles = [
         // linestring
         new ol.style.Style({
           stroke: new ol.style.Stroke({
@@ -96,7 +95,7 @@ var MeasureIteraction = function(options) {
   this.set('beforeRemove', this.clear);
   this.set('layer', this._layer);
 
-  // registro gli eventi sulle due interaction
+  // register event on two action
   this.on('drawstart', this._drawStart);
   this.on('drawend', this._drawEnd);
 
@@ -105,7 +104,7 @@ var MeasureIteraction = function(options) {
 ol.inherits(MeasureIteraction, ol.interaction.Draw);
 
 
-var proto = MeasureIteraction.prototype;
+const proto = MeasureIteraction.prototype;
 
 proto.clear = function() {
   this._layer.getSource().clear();
@@ -130,7 +129,7 @@ proto._clearMessagesAndListeners = function() {
 };
 
 proto._removeLastPoint = function(event) {
-  var geom = this._feature.getGeometry();
+  const geom = this._feature.getGeometry();
   if (event.keyCode === 46) {
     if( geom instanceof ol.geom.Polygon && geom.getCoordinates()[0].length > 2) {
       this.removeLastPoint();
@@ -140,9 +139,8 @@ proto._removeLastPoint = function(event) {
   }
 };
 
-//funzione drawStart
+//drawStart function
 proto._drawStart = function(evt) {
-  var self = this;
   this._map = this.getMap();
   this._createMeasureTooltip();
   this._createHelpTooltip();
@@ -151,29 +149,29 @@ proto._drawStart = function(evt) {
   $(document).on('keydown', this._keyDownEventHandler);
   // vado a ripulire tutte le features
   this._layer.getSource().clear();
-  this._poinOnMapMoveListener = this._map.on('pointermove', function(evt) {
+  this._poinOnMapMoveListener = this._map.on('pointermove', (evt) => {
     if (evt.dragging) {
       return;
     }
-    if (self._feature) {
-      helpMsg = self._helpMsg;
+    if (this._feature) {
+      helpMsg = this._helpMsg;
     }
-    self._helpTooltipElement.innerHTML = helpMsg;
-    self._helpTooltip.setPosition(evt.coordinate);
-    self._helpTooltipElement.classList.remove('hidden');
+    this._helpTooltipElement.innerHTML = helpMsg;
+    this._helpTooltip.setPosition(evt.coordinate);
+    this._helpTooltipElement.classList.remove('hidden');
   });
-  var tooltipCoord = evt.coordinate;
-  this._featureGeometryChangelistener = this._feature.getGeometry().on('change', function(evt) {
-    var geom = evt.target;
-    var output;
+  let tooltipCoord = evt.coordinate;
+  this._featureGeometryChangelistener = this._feature.getGeometry().on('change', (evt) => {
+    const geom = evt.target;
+    let output;
     if (geom instanceof ol.geom.Polygon) {
       tooltipCoord = geom.getInteriorPoint().getCoordinates();
     } else if (geom instanceof ol.geom.LineString) {
       tooltipCoord = geom.getLastCoordinate();
     }
-    output = self._formatMeasure(geom);
-    self._measureTooltipElement.innerHTML = output;
-    self._measureTooltip.setPosition(tooltipCoord);
+    output = this._formatMeasure(geom);
+    this._measureTooltipElement.innerHTML = output;
+    this._measureTooltip.setPosition(tooltipCoord);
   });
 };
 

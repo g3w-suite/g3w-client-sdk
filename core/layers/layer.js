@@ -4,19 +4,18 @@ const G3WObject = require('core/g3wobject');
 const Filter = require('core/layers/filter/filter');
 const ProviderFactory = require('core/layers/providers/providersfactory');
 
-// classe padre di tutti i Layer
+// Base Class of all Layer
 function Layer(config) {
   config = config || {};
   const ProjectsRegistry = require('core/project/projectsregistry');
-
   ProjectsRegistry.onafter('setCurrentProject', (project) => {
     const projectType = project.getType();
     const projectId = project.getId();
     const suffixUrl = projectType + '/' + projectId + '/' + config.id + '/';
     this.config.urls.data = initConfig.vectorurl + 'data/' + suffixUrl;
   });
-  // contiene la configurazione statica del layer
-  // messo merge perchè deve eventualmente mergiare attributi in comune
+  // static configuration of layer
+  // merging all common attributes
   this.config = _.merge({
     id: config.id || 'Layer' ,
     title: config.title  || null,
@@ -34,9 +33,8 @@ function Layer(config) {
     }
   }, config);
 
-  // contiene la parte dinamica del layer
-  //this.state = config; // questo fa in modo che il catalog reagisca al mutamento
-  // delle proprietà dinamiche (select, disable, visible)
+  // dinamic layer values
+  //this.state = config; //catalog reactive
   this.state = {
     id: config.id,
     title: config.title,
@@ -45,20 +43,19 @@ function Layer(config) {
     hidden: config.hidden || false,
     openattributetable: this.canShowTable()
   };
-  // tipo di server
+  // server type
   const serverType = this.config.servertype;
-  // tipo di sorgente del layer
+  // source layer
   const sourceType = this.config.source ? this.config.source.type : null ;
-  // vado a fare riferimento al suo contenitore (layersstore);
+  // refferred to (layersstore);
   this._layersstore = config.layersstore || null;
   /*
-    questi sono i providers che il layer ha per
-    la gestione di una query semplice, query che utilizza filtri e recupero dei
-    dati grezzi del layer. Tutto è delegato ai sui providers
-    Esistono tre tipi di provider:
+    Providers that layer can use
+
+    Three type of provider:
       1 - query
       2 - filter
-      3 - data -- utilizzato quando dobbiamo recupeare i dati grezzi del layer (esempio editing)
+      3 - data -- raw data del layer (editing)
    */
   if (serverType && sourceType) {
     this.providers = {
@@ -140,7 +137,7 @@ proto.getDataTable = function() {
   return d.promise();
 };
 
-//metodo search
+// search method
 proto.search = function(options) {
   options = options || {};
   const d = $.Deferred();
@@ -159,18 +156,16 @@ proto.search = function(options) {
   return d.promise();
 };
 
-// metodo che server a recupere informazioni del layer
-// vinene chiamato solo nei layers che sono interroabili
+//Info from layer (only for querable layers)
 proto.query = function(options) {
   options = options || {};
   const d = $.Deferred();
-  // prendo come provider di default il provider query
   let provider = this.getProvider('query');
-  // nel caso in cui nell'opzioni della query ho passato il parametro filtro
+  // in case filter
   if (options.filter) {
     provider = this.providers.filter;
   }
-  // solo nel caso in cui sia stato istanziato un provider
+  // if is intanced provider
   if (provider) {
     provider.query(options)
       .done(function(response) {
@@ -202,7 +197,7 @@ proto.getState = function() {
 };
 
 proto.getEditingLayer = function() {
-  return self;
+  return this;
 };
 
 proto.isHidden = function() {
@@ -214,7 +209,6 @@ proto.setHidden = function(bool) {
 };
 
 proto.isModified = function() {
-  //medodo che stbilisce se modificato o no
   return this.state.modified;
 };
 
@@ -266,14 +260,12 @@ proto.isVisible = function() {
 proto.setVisible = function(bool) {
   this.state.visible = bool;
 };
-// verifica se il layer è interrogabile
 proto.isQueryable = function() {
   let queryEnabled = false;
   const queryableForCababilities = !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.QUERYABLE));
-  // se è interrogabile verifico che il suo stato sia visibile e non disabilitato
+  // if querable check if is visible or disabled
   if (queryableForCababilities) {
-    // è interrogabile se visibile e non disabilitato (per scala) oppure se interrogabile comunque (forzato dalla proprietà infowhennotvisible)
-    queryEnabled = (this.isVisible() && !this.isDisabled());
+       queryEnabled = (this.isVisible() && !this.isDisabled());
     if (!_.isUndefined(this.config.infowhennotvisible) && (this.config.infowhennotvisible === true)) {
       queryEnabled = true;
     }
@@ -281,7 +273,6 @@ proto.isQueryable = function() {
   return queryEnabled;
 };
 
-//verifica se il il Layer è filtrabile
 proto.isFilterable = function() {
   return !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.FILTERABLE));
 };
@@ -294,12 +285,12 @@ proto.isBaseLayer = function() {
   return this.config.baselayer;
 };
 
-// funzione che permette di ricavare un tipo di url del layer passandofli il tio (esempio data, editing..etc..)
+// get url by type ( data, editing..etc..)
 proto.getUrl = function(type) {
   return this.config.urls[type];
 };
 
-// funzione generica che ritorna il valore urls del config
+// return urls
 proto.getUrls = function() {
   return this.config.urls;
 };
@@ -396,16 +387,16 @@ proto.canShowTable = function() {
 };
 
 
-///PROPRIETÀ DEL LAYER
+/// LAYER PROPERTIES
 
-// Tipo di Layer
+// Layer Types
 Layer.LayerTypes = {
   TABLE: "table",
   IMAGE: "image",
   VECTOR: "vector"
 };
 
-// Tipo di server che lo gestisce
+// Server Types
 Layer.ServerTypes = {
   OGC: "OGC",
   QGIS: "QGIS",
@@ -417,7 +408,7 @@ Layer.ServerTypes = {
   Local: "Local"
 };
 
-// tipo di sorgente
+// Source Types
 Layer.SourceTypes = {
   POSTGIS: 'postgres',
   SPATIALITE: 'spatialite',
@@ -425,14 +416,14 @@ Layer.SourceTypes = {
   WMS: 'wms'
 };
 
-// Caratteristiche del layer
+// Layer Capabilities
 Layer.CAPABILITIES = {
   QUERYABLE: 1,
   FILTERABLE: 2,
   EDITABLE: 4
 };
 
-//Tipi di editing sul layer
+//Editing types
 Layer.EDITOPS = {
   INSERT: 1,
   UPDATE: 2,

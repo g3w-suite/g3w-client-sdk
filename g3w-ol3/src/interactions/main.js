@@ -1,5 +1,5 @@
 _gis3wlib._interaction.prototype.addInteraction = function(type){
-  var interaction = new this[type]();
+  const interaction = new this[type]();
   return interaction
 };
 

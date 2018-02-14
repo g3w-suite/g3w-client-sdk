@@ -65,8 +65,7 @@ proto.clear = function() {
   return this;
 };
 
-// metodo per il recupero dell'espressione
-// chiamato da chi vuole ortriene il valore reale dell'espressione
+// get expression method to get the realt value of the expression
 proto.get = function() {
   return this._expression;
 };
@@ -76,7 +75,7 @@ proto._build = function(operator, field, value) {
 };
 
 proto.createExpressionFromFilter = function(filterObject, layername) {
-  /////inserisco il nome del layer (typename) ///
+  /////insert (typename) ///
   let filter = [];
   function createSingleFilter(booleanObject) {
     let filterElements = [];
@@ -85,17 +84,16 @@ proto.createExpressionFromFilter = function(filterObject, layername) {
     let valueQuotes = "'";
     let rootFilter;
     _.forEach(booleanObject, function(v, k, obj) {
-      //creo il filtro root che sarà AND OR
+      //root filter AND or OR
       rootFilter = Expression.OPERATORS[k];
-      //qui c'è array degli elementi di un booleano
+      //boolean array
       _.forEach(v, function(input){
-        //scorro su oggetto
+        //loop on the obejct
         valueExtra = "";
         _.forEach(input, function(v, k, obj) {
-          //verifico se il valore dell'oggetto è array e quindi è altro oggetto padre booleano
           if (_.isArray(v)) {
             filterElement = createSingleFilter(obj);
-          } else { // è un oggetto operatore
+          } else { 
             if (k == 'LIKE' || k == 'ILIKE') {
               valueExtra = "%";
             }
@@ -103,7 +101,6 @@ proto.createExpressionFromFilter = function(filterObject, layername) {
             let value;
             _.forEach(input, function(v, k, obj) {
               _.forEach(v, function(v, k, obj) {
-                //verifico se il valore non è un numero e quindi aggiungo singolo apice
                 if (!(_.isNull(v) || (_.isNaN(v) || _.trim(v) == ''))) {
                   filterElement = "\"" + k + "\" "+ filterOp +" " + valueQuotes + valueExtra + v + valueExtra + valueQuotes;
                   filterElements.push(filterElement);
@@ -117,7 +114,6 @@ proto.createExpressionFromFilter = function(filterObject, layername) {
     });
     return rootFilter;
   }
-  //assegno il filtro creato
   if (createSingleFilter(filterObject)) {
     this._expression = layername + ":" + createSingleFilter(filterObject);
     return this;

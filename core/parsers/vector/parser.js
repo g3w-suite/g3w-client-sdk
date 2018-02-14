@@ -1,5 +1,5 @@
 const VectorParser = function() {
-  // funzione che permette di recuprarer il parser addatto alla richiesta
+  // return the right parser for the request
   this.get = function(options) {
     options = options || {};
     const type = options.type;

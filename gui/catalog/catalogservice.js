@@ -1,11 +1,10 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var G3WObject = require('core/g3wobject');
-var ProjectsRegistry = require('core/project/projectsregistry');
-var CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const G3WObject = require('core/g3wobject');
+const ProjectsRegistry = require('core/project/projectsregistry');
+const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 
 function CatalogService() {
-  var self = this;
   this.state = {
     prstate: ProjectsRegistry.state,
     highlightlayers: false,
@@ -17,17 +16,14 @@ function CatalogService() {
     this.state.externallayers.push(layer);
   };
   this.removeExternalLayer = function(name) {
-    var self = this;
-    _.forEach(this.state.externallayers, function(layer, index) {
+    this.state.externallayers.forEach((layer, index) => {
       if (layer.name == name) {
-        self.state.externallayers.splice(index, 1);
+        this.state.externallayers.splice(index, 1);
         return false
       }
     });
   };
 
-  // funzione che verifica se il layerssore aggiunto è addatttao per essere aggiunto
-  // al layerstrees del catalogo e quindi visibile come albero dei layer
   this.addLayersStoreToLayersTrees = function(layersStore) {
     this.state.layerstrees.push({
       tree: layersStore.getLayersTree(),
@@ -36,30 +32,26 @@ function CatalogService() {
   };
 
   base(this);
-  // vado a popolare cosa c'è già
-  var layersStores = CatalogLayersStoresRegistry.getLayersStores();
-  _.forEach(layersStores, function(layersStore) {
-    self.addLayersStoreToLayersTrees(layersStore);
+  const layersStores = CatalogLayersStoresRegistry.getLayersStores();
+  layersStores.forEach((layersStore) => {
+    this.addLayersStoreToLayersTrees(layersStore);
   });
 
-  // resto in ascolto di eventuali layersStore aggiunti
-  CatalogLayersStoresRegistry.onafter('addLayersStore', function(layersStore) {
-    self.addLayersStoreToLayersTrees(layersStore);
+  CatalogLayersStoresRegistry.onafter('addLayersStore', (layersStore) => {
+    this.addLayersStoreToLayersTrees(layersStore);
   });
 
-  //registro l'eventuale rimozione del layersSore dal LayersRegistryStore
-  CatalogLayersStoresRegistry.onafter('removeLayersStore', function(layersStore) {
-    _.forEach(self.state.layerstrees, function(layersTree, idx) {
+  CatalogLayersStoresRegistry.onafter('removeLayersStore', (layersStore) => {
+    this.state.layerstrees.forEach((layersTree, idx) => {
       if (layersTree.storeid == layersStore.getId()) {
-        self.state.layerstrees.splice(idx, 1);
+        this.state.layerstrees.splice(idx, 1);
         return false;
       }
     });
   });
-  //registro l'eventuale rimozione di tuuti i layersStores dal LayersRegistryStore
-  CatalogLayersStoresRegistry.onafter('removeLayersStores', function() {
-    _.forEach(self.state.layerstrees, function(layersTree, idx) {
-      self.state.layerstrees.splice(idx, 1);
+  CatalogLayersStoresRegistry.onafter('removeLayersStores', () => {
+    this.state.layerstrees.forEach((layersTree, idx) => {
+      this.state.layerstrees.splice(idx, 1);
       return false;
     });
   });

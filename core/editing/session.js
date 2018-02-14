@@ -1,10 +1,10 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils//utils').base;
-var G3WObject = require('core/g3wobject');
-var History = require('./history');
-var FeaturesStore = require('core/layers/features/featuresstore');
-var ChangesManager = require('./changesmanager');
-var SessionsRegistry = require('./sessionsregistry');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils//utils').base;
+const G3WObject = require('core/g3wobject');
+const History = require('./history');
+const FeaturesStore = require('core/layers/features/featuresstore');
+const ChangesManager = require('./changesmanager');
+const SessionsRegistry = require('./sessionsregistry');
 
 // classe Session
 function Session(options) {
@@ -43,28 +43,27 @@ function Session(options) {
 
 inherit(Session, G3WObject);
 
-var proto = Session.prototype;
+const proto = Session.prototype;
 
 proto.getId = function() {
   return this.state.id;
 };
 
 proto._start = function(options) {
-  var self = this;
-  var d = $.Deferred();
+  const d = $.Deferred();
   // vado a registrare la sessione
   SessionsRegistry.register(this);
   this._editor.start(options)
-    .then(function(features) {
-      features = self._cloneFeatures(features);
+    .then((features) => {
+      features = this._cloneFeatures(features);
       // vado a popolare il featuresstore della sessione con le features
       //che vengono caricate via via dall'editor
-      self._featuresstore.setFeatures(features);
-      self.state.started = true;
+      this._featuresstore.setFeatures(features);
+      this.state.started = true;
       d.resolve(features);
     })
-    .fail(function(err) {
-      self.state.started = true;
+    .fail((err) => {
+      this.state.started = true;
       d.reject(err);
     });
   return d.promise();
@@ -73,16 +72,15 @@ proto._start = function(options) {
 //funzione che server per recuperare le features
 //dal server o dalla fonte delle features
 proto._getFeatures = function(options) {
-  var self = this;
-  var d = $.Deferred();
+  const d = $.Deferred();
   this._editor.getFeatures(options)
-    .then(function(promise) {
-      promise.then(function(features) {
-        features = self._cloneFeatures(features);
-        self._featuresstore.addFeatures(features);
+    .then((promise) => {
+      promise.then((features) => {
+        features = this._cloneFeatures(features);
+        this._featuresstore.addFeatures(features);
         d.resolve(features);
       })
-      .fail(function (err) {
+      .fail((err) => {
         d.reject(err);
       });
     });
@@ -167,7 +165,7 @@ proto.pushUpdate = function(layerId, newFeature, oldFeature) {
     {
       layerId: layerId,
       feature: oldFeature.update()
-      
+
     })
 };
 
@@ -314,7 +312,7 @@ proto._serializeCommit = function(itemsToCommit) {
   return commitObj;
 };
 
-// funzione che mi server per ricavare quali saranno 
+// funzione che mi server per ricavare quali saranno
 // gli items da committare
 proto.getCommitItems = function() {
   var commitItems = this._history.commit();

@@ -1,10 +1,10 @@
-var utils = require('../utils');
-var InteractionControl = require('./interactioncontrol');
+const utils = require('../utils');
+const InteractionControl = require('./interactioncontrol');
 
-var ResetControl = function(options){
+const ResetControl = function(options){
   this._toggled = true;
   this._startCoordinate = null;
-  var _options = {
+  const _options = {
       name: "reset",
       tipLabel: "Pan",
       label: "\ue901"
@@ -19,7 +19,7 @@ ol.inherits(ResetControl, InteractionControl);
 
 module.exports = ResetControl;
 
-var proto = ResetControl.prototype;
+const proto = ResetControl.prototype;
 
 proto._postRender = function(){
   this.toggle(true);

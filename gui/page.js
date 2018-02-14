@@ -1,8 +1,8 @@
-var inherit = require('core/utils').inherit;
-var base = require('core/utils').base;
-var G3WObject = require('core/g3wobject');
+const inherit = require('core/utils').inherit;
+const base = require('core/utils').base;
+const G3WObject = require('core/g3wobject');
 
-var Page = function(parentView,config){
+const Page = function(parentView,config){
   this.parentView = parentView;
   this.config = config;
   this.pageComponent = config.pageComponent;
@@ -10,9 +10,8 @@ var Page = function(parentView,config){
   base(this);
   
   this.onShow = function(path,request) {
-    var self = this;
-    this.parentView.on('pagemounted',function(){
-      self.handleRequest(path,request);
+    this.parentView.on('pagemounted', () => {
+      this.handleRequest(path,request);
     });
     return this.pageComponent;
   }

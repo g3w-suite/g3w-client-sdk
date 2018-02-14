@@ -2,24 +2,24 @@
 // necessari anche alla costruzione di un layer vettoriale
 // Allo stesso modo può essere un oggetto non vettoriale non settando la geometria
 // ma solo le proprièta
-var Feature = function(options) {
+const Feature = function(options) {
   ol.Feature.call(this);
   options = options || {};
   this._newPrefix = '_new_';
   // mi serve per capire quale è la pk della feature
   this._pk = options.pk || "id";
-  var feature = options.feature;
+  const feature = options.feature;
   //verificare come utilizzare clone
   if (feature) {
     this.setProperties(feature.getProperties());
     //vado a scrivere l'id univoco (corrispondente alla chiave primaria)
     this.setId(feature.getId());
     this.setGeometryName(feature.getGeometryName());
-    var geometry = feature.getGeometry();
+    const geometry = feature.getGeometry();
     if (geometry) {
       this.setGeometry(geometry);
     }
-    var style = this.getStyle();
+    const style = this.getStyle();
     if (style) {
       this.setStyle(style);
     }
@@ -33,7 +33,7 @@ var Feature = function(options) {
 
 ol.inherits(Feature, ol.Feature);
 
-proto = Feature.prototype;
+const proto = Feature.prototype;
 
 // vado a cambiare il costruttore
 proto.constructor = 'Feature';

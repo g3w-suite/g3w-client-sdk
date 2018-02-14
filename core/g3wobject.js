@@ -1,11 +1,11 @@
-var inherit = require('core/utils/utils').inherit;
-var noop = require('core/utils/utils').noop;
+const inherit = require('core/utils/utils').inherit;
+const noop = require('core/utils/utils').noop;
 
 /**
  * Un oggetto base in grado di gestire eventuali setter e relativa catena di listeners.
  * @constructor
  */
-var G3WObject = function() {
+const G3WObject = function() {
   //quando istanzio l'oggetto verifico che nella sua proprietà
   // ci sia l'attributo setters. Se si vado a registare la catena di eventi
   // per poter registare azioni prima e dopo la chiamata del metodo
@@ -16,7 +16,7 @@ var G3WObject = function() {
 
 inherit(G3WObject, EventEmitter);
 
-var proto = G3WObject.prototype;
+const proto = G3WObject.prototype;
 
 /**
  * Inserisce un listener dopo che è stato eseguito il setter
@@ -51,8 +51,8 @@ proto.onbeforeasync = function(setter, listener, priority) {
 };
 
 proto.un = function(setter, key){
-  _.forEach(this.settersListeners,function(settersListeners) {
-    _.forEach(settersListeners[setter],function(setterListener, idx) {
+  this.settersListeners.forEach((settersListeners) => {
+    settersListeners[setter].forEach((setterListener, idx) => {
       if(setterListener.key == key) {
         settersListeners[setter].slice(idx, 1);
       }
@@ -68,13 +68,13 @@ proto.un = function(setter, key){
 */
 proto._onsetter = function(when, setter, listener, async, priority) {
   // vado a recuperarer l'oggetto che ceh si riferifsce al when
-  var settersListeners = this.settersListeners[when];
+  const settersListeners = this.settersListeners[when];
   // creo una listenerKey unica
-  var listenerKey = ""+Math.floor(Math.random()*1000000)+""+Date.now();
+  const listenerKey = ""+Math.floor(Math.random()*1000000)+""+Date.now();
   // verifico la priorità
   priority = priority || 0;
   // prendo tutto ciò che riguarda il setter (la funzione che dovrà essere chiamata)
-  var settersListeneres = settersListeners[setter];
+  const settersListeneres = settersListeners[setter];
   // vado ad inserire l'oggetto che mi servirà a chiamare la funzione legata
   // al tipo di evento del setter
   settersListeneres.push({

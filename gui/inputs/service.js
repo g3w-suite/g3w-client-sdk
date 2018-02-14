@@ -6,34 +6,30 @@ function Service(options) {
   this.state = options.state || {};
   const validatorType = this.state.type;
   this._validatorOptions = options.validatorOptions || this.state.input.options || {};
-  // serve il validatore per verificare se è valido il valore inserito
+  // useful for the validator to validate imput
   this._validator = Validators.get(validatorType);
 }
 
 const proto = Service.prototype;
 
-// rsitutisce lo state
 proto.getState = function() {
   return this.state;
 };
 
-// setta un eventuale nuovo stato
 proto.setState = function(state) {
   this.state = _.isObject(state) ? state : {};
 };
 
-// resituisce il validator
+// return validator
 proto.getValidator = function() {
   return this._validator;
 };
 
-// setta il nuovo validator
 proto.setValidator = function(validator) {
   this._validator = validator;
 };
 
-// funzione generica che permette di verificare se
-// il valore dello state del campo è valido o no
+// general method to check the value of the state is valid or not
 proto.validate = function() {
   if (!_.isEmpty(_.trim(this.state.value))) {
     this.state.validate.valid = this._validator.validate(this.state.value, this._validatorOptions);

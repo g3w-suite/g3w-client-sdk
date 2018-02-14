@@ -1,24 +1,22 @@
-// questa classe mi serve per far applicare le modifche fatte sulle varie feature
-// sui vari oggetti che ne devono essere modificati
+//lass that is usefult to apply changes to features (undo/redo) singleton
 function ChangesManager() {
   this.execute = function(object, items, reverse) {
-    var fnc;
-    var feature;
-    // ciclo sugli items da applicare all'oggetto o featuresstore
-    _.forEach(items, function(item) {
+    let fnc;
+    let feature;
+    items.forEach((item) => {
       feature = item.feature;
       if (reverse) {
-        // cambio lo stato dell'item al suo opposto
+        // change to opposite
         feature[ChangesManager.Actions[feature.getState()].opposite]();
       }
-      // estraggo il comnado / metogo da eseguire sull'oggetto
+      // get method from object
       fnc = ChangesManager.Actions[feature.getState()].fnc;
       object[fnc](feature);
     })
   }
 }
 
-// azioni possibili
+// know actions
 ChangesManager.Actions = {
   'add': {
     fnc: 'addFeature',

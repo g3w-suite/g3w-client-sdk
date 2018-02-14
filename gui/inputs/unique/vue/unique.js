@@ -1,13 +1,12 @@
-// oggetto base utilizzato per i mixins
-var Input = require('gui/inputs/input');
-var selectMixin = require('gui/inputs/select/vue/selectmixin');
-var Service = require('../service');
+const Input = require('gui/inputs/input');
+const selectMixin = require('gui/inputs/select/vue/selectmixin');
+const Service = require('../service');
 
-var UniqueInput = Vue.extend({
+const UniqueInput = Vue.extend({
   mixins: [Input, selectMixin],
   template: require('./unique.html'),
   data: function() {
-    var uniqueid = 'uniqueinputid_' + Date.now();
+    const uniqueid = 'uniqueinputid_' + Date.now();
     return {
       service: new Service({
         state: this.state
@@ -16,7 +15,7 @@ var UniqueInput = Vue.extend({
     }
   },
   mounted: function() {
-    var self = this;
+    const self = this;
     this.$nextTick(function() {
       if (self.state.input.options.editable) {
         $('#'+self.id).select2({

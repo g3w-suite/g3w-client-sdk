@@ -1,15 +1,14 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var geo = require('core/utils/geo');
-var MapLayer = require('./maplayer');
-var RasterLayers = require('g3w-ol3/src/layers/rasters');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const geo = require('core/utils/geo');
+const MapLayer = require('./maplayer');
+const RasterLayers = require('g3w-ol3/src/layers/rasters');
 
-function WMSLayer(options, extraParams){
+function WMSLayer(options, extraParams) {
   this.LAYERTYPE = {
     LAYER: 'layer',
     MULTILAYER: 'multilayer'
   };
-
   this.extraParams = extraParams;
   this.layers = [];
 
@@ -18,10 +17,10 @@ function WMSLayer(options, extraParams){
 
 inherit(WMSLayer, MapLayer);
 
-var proto = WMSLayer.prototype;
+const proto = WMSLayer.prototype;
 
 proto.getOLLayer = function(withLayers) {
-  var olLayer = this._olLayer;
+  let olLayer = this._olLayer;
   if (!olLayer){
     olLayer = this._olLayer = this._makeOlLayer(withLayers);
   }
@@ -49,7 +48,7 @@ proto.addLayer = function(layer) {
 };
 
 proto.toggleLayer = function(layer) {
-  _.forEach(this.layers,function(_layer){
+  this.layers.forEach((_layer) => {
     if (_layer.id == layer.id){
       _layer.visible = layer.visible;
     }
@@ -66,7 +65,7 @@ proto.isVisible = function(){
 };
 
 proto.getQueryUrl = function() {
-  var layer = this.layers[0];
+  const layer = this.layers[0];
   if (layer.infourl && layer.infourl != '') {
     return layer.infourl;
   }
@@ -80,11 +79,10 @@ proto.getQueryableLayers = function() {
 };
 
 proto._getVisibleLayers = function(mapState) {
-
-  var scale = geo.resToScale(mapState.resolution);
-  var visibleLayers = [];
-  var visible;
-  _.forEach(this.layers,function(layer) {
+  const scale = geo.resToScale(mapState.resolution);
+  const visibleLayers = [];
+  let visible;
+  this.layers.forEach((layer) => {
     visible = true;
     if (layer.config.minscale) {
       visible = visible && (layer.config.minscale > scale);
@@ -101,39 +99,39 @@ proto._getVisibleLayers = function(mapState) {
 };
 
 proto._makeOlLayer = function(withLayers) {
-  var self = this;
-  var wmsConfig = {
+  const wmsConfig = {
     url: this.config.url,
-    id: this.config.id
+    id: this.config.id,
+    projection: this.config.projection
   };
 
   if (withLayers) {
-    wmsConfig.layers = _.map(this.layers,function(layer) {
+    wmsConfig.layers = this.layers.map((layer) => {
       return layer.getWMSLayerName();
     });
   }
 
-  var representativeLayer = this.layers[0]; //BRUTTO, DEVO PRENDERE UN LAYER A CASO (IL PRIMO) PER VEDERE SE PUNTA AD UN SOURCE DIVERSO (dovrebbe accadere solo per i layer singoli, WMS esterni)
+  const representativeLayer = this.layers[0]; 
 
   if (representativeLayer.state.source && representativeLayer.state.source.type == 'wms' && representativeLayer.state.source.url){
     wmsConfig.url = representativeLayer.state.source.url;
   }
-  var olLayer = new RasterLayers.WMSLayer(wmsConfig,this.extraParams);
+  const olLayer = new RasterLayers.WMSLayer(wmsConfig,this.extraParams);
 
-  olLayer.getSource().on('imageloadstart', function() {
-        self.emit("loadstart");
+  olLayer.getSource().on('imageloadstart', () => {
+        this.emit("loadstart");
       });
-  olLayer.getSource().on('imageloadend', function() {
-      self.emit("loadend");
+  olLayer.getSource().on('imageloadend', () => {
+      this.emit("loadend");
   });
 
   return olLayer
 };
 
 proto.checkLayerDisabled = function(layer,resolution) {
-  var enabled = true;
+  let enabled = true;
   if (layer.config.scalebasedvisibility) {
-    var scale = geo.resToScale(resolution);
+    const scale = geo.resToScale(resolution);
     if (layer.config.minscale) {
       enabled = enabled && (layer.config.minscale > scale);
     }
@@ -145,17 +143,16 @@ proto.checkLayerDisabled = function(layer,resolution) {
 };
 
 proto.checkLayersDisabled = function(resolution){
-  var self = this;
-  _.forEach(this.layers,function(layer){
-    self.checkLayerDisabled(layer,resolution);
+  this.layers.forEach((layer) => {
+    this.checkLayerDisabled(layer, resolution);
   });
 };
 
 proto._updateLayers = function(mapState,extraParams){
   this.checkLayersDisabled(mapState.resolution);
-  var visibleLayers = this._getVisibleLayers(mapState);
+  const visibleLayers = this._getVisibleLayers(mapState);
   if (visibleLayers.length > 0) {
-    var params = {
+    let params = {
       LAYERS: _.join(_.map(visibleLayers, function(layer) {
         return layer.getWMSLayerName();
       }),',')

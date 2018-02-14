@@ -1,16 +1,16 @@
-var inherit = require('core/utils/utils').inherit;
-var GUI = require('gui/gui');
-var Component = require('gui/vue/component');
-var Service = require('../formservice');
-var base = require('core/utils/utils').base;
-var Template = require('./form.html');
-var HeaderFormComponent = require('../components/header/vue/header');
-var BodyFormComponent = require('../components/body/vue/body');
-var FooterFormComponent = require('../components/footer/vue/footer');
+const inherit = require('core/utils/utils').inherit;
+const GUI = require('gui/gui');
+const Component = require('gui/vue/component');
+const Service = require('../formservice');
+const base = require('core/utils/utils').base;
+const Template = require('./form.html');
+const HeaderFormComponent = require('../components/header/vue/header');
+const BodyFormComponent = require('../components/body/vue/body');
+const FooterFormComponent = require('../components/footer/vue/footer');
 
 
-//Definisco l'oggetto che contiene i dati necessari per instanziare un vue component
-var vueComponentObject = {
+//vue component
+const vueComponentObject = {
   template: null,
   data: function() {
     return {
@@ -20,27 +20,27 @@ var vueComponentObject = {
   transitions: {'addremovetransition': 'showhide'},
   methods: {
     changeInput: function(input) {
-      //vado ad emettere un chenge input del body input
+      //emit change input of body input
       this.$options.service.eventBus.$emit('changeinput', input);
       return this.$options.service.isValid();
     },
     addToValidate: function(validate) {
       this.$options.service.addToValidate(validate);
     },
-    // funzione che fa il reload del layout
+    // relaod layout
     reloadLayout: function() {
-      var height = $(this.$el).height();
-      var width = $(this.$el).width();
-      // verifico altezza altrimenti esco
+      const height = $(this.$el).height();
+      const width = $(this.$el).width();
+      // check height
       if (!height)
         return;
-      var isHeader = false; // verifco elemento is header
-      var isFooter = false; // verifico elemento is footer
-      var formElement = $(this.$el).find("div[class*=\"g3w-form-component\"]");
-      var externalElement = [];
-      var centralElements = [];
-      var notBodyElementHeight = 0;
-      var centralElementsNumber = 0;
+      let isHeader = false; // is header
+      let isFooter = false; // is footer
+      let notBodyElementHeight = 0;
+      let centralElementsNumber = 0;
+      const formElement = $(this.$el).find("div[class*=\"g3w-form-component\"]");
+      const externalElement = [];
+      const centralElements = [];
       formElement.each(function() {
         isFooter = $(this).hasClass('g3w-form-component_footer');
         if (!isHeader || isFooter) {
@@ -54,48 +54,41 @@ var vueComponentObject = {
         }
         isHeader = !isHeader ? $(this).hasClass('g3w-form-component_header') : true;
       });
-      // vado a calcolare la possibile altezza del body
-      var centralHeight = height - (notBodyElementHeight); // altezza dedidcata alla parte centrale del form
-      var heightToAppy = (centralHeight/ centralElementsNumber) - 15; // altezza che possono essere assegnate alle varie parti
-      // verifico l'altezza del bosy (se settata
-      var bodyElementHeight = $(this.$el).find(".g3w-form-component_body .box-primary").outerHeight() + 20; // prendo l'altezza del bosy
-      bodyElementHeight =  bodyElementHeight > heightToAppy ? heightToAppy: bodyElementHeight ; // verifico se è maggiore dell'altezza prevsta
+      // calculate heigth body
+      let centralHeight = height - (notBodyElementHeight); // central form dom
+      let heightToAppy = (centralHeight/ centralElementsNumber) - 15; // height of others part
+      // check height of the bosy 
+      let bodyElementHeight = $(this.$el).find(".g3w-form-component_body .box-primary").outerHeight() + 20;
+      bodyElementHeight =  bodyElementHeight > heightToAppy ? heightToAppy: bodyElementHeight ; 
       $(this.$el).find(".g3w-form-component_body").height(bodyElementHeight);
-      centralHeight = centralHeight - bodyElementHeight; // ricalcolo l'altezza che devo assegnare alle altre parti in base all'altezza del body
-      centralElementsNumber-=1; // tolgo un elemento
+      centralHeight = centralHeight - bodyElementHeight; 
+      centralElementsNumber-=1; 
       heightToAppy = (centralHeight/ centralElementsNumber) - 15;
-      _.forEach(centralElements, function(element) {
+      centralElements.forEach((element) => {
         element.height(heightToAppy)
       });
       $(".nano").nanoScroller();
     }
   },
   mounted: function() {
-    var self = this;
     this.$options.service.getEventBus().$on('addtovalidate', this.addToValidate);
-    this.$nextTick(function() {
+    this.$nextTick(() => {
       this.reloadLayout();
-      self.$options.service.postRender();
+      this.$options.service.postRender();
     });
   }
 };
 
 function FormComponent(options) {
   options = options || {};
-  // vado a settare il'id del componente
   options.id = options.id || 'form';
   // qui vado a tenere traccia delle tre cose che mi permettono di customizzare
-  // vue component, service e template
-  // proprietà necessarie. In futuro le mettermo in una classe Panel
-  // da cui deriveranno tutti i pannelli che vogliono essere mostrati nella sidebar
   base(this, options);
-  //settor il service del component (lo istanzio tutte le volte che inizializzo un componente
   options.service = options.service ?  new options.service : new Service;
   options.vueComponentObject = options.vueComponentObject  || vueComponentObject;
   options.template = options.template || Template;
-  // qui vado a settare i componenti del form altrimenti setto quelli standard
+  //set statdar element of the form
   options.components = options.components || [HeaderFormComponent, BodyFormComponent, FooterFormComponent];
-  // lancio l'inizializzazione del componente
   this.init(options);
 
   this.addComponentBeforeBody = function(Component) {
@@ -113,18 +106,14 @@ function FormComponent(options) {
   this.addComponentAfterFooter = function(Component) {
     //TODO
   };
-  // Sovrascrivo il metodo mount padre. Viene richiamato dalla toolbar quando
-  // il plugin chiede di mostrare un proprio pannello nella GUI (GUI.showPanel)
+  // overwrite father mount method. 
   this.mount = function(parent, append) {
-    var self = this;
-    // richiama il mont padre
     return base(this, 'mount', parent, append)
-      // una volta footo il mount
-    .then(function() {
-      // setto il modale a true
+    .then(() => {
+      // set modal window to true
       GUI.setModal(true);
-      //vado a validare subito il form
-      self.getService().isValid();
+      //checkform validation
+      this.getService().isValid();
     });
   };
   this.layout = function() {

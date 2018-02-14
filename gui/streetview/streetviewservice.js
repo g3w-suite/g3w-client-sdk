@@ -1,15 +1,13 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var G3WObject = require('core/g3wobject');
-var GUI = require('gui/gui');
-var StreetViewComponent = require('gui/streetview/vue/streetview');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const G3WObject = require('core/g3wobject');
+const GUI = require('gui/gui');
+const StreetViewComponent = require('gui/streetview/vue/streetview');
 
 function StreetViewService() {
   this._position = null;
   this.setters = {
-    postRender: function(position) {
-      //hook postrender
-    }
+    postRender: function(position) {}
   };
 
   this.getPosition = function() {

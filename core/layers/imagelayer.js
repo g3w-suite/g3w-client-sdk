@@ -37,7 +37,6 @@ function ImageLayer(config) {
   base(this, config);
   this.config.baselayer = config.baselayer || false;
   this.type = Layer.LayerTypes.IMAGE;
-  // vado a modificare lo state aggiungendo il bbox e l'informazione geolayer
   this.setup(config);
 }
 
@@ -49,10 +48,9 @@ const proto = ImageLayer.prototype;
 
 proto.getLayerForEditing = function() {
   if (this.isEditable()) {
-    // vado a clonare la configurazione
-    // affinchè non vado a toccare l'originale
+    // clone configuration
     const config = _.cloneDeep(this.config);
-    //ritorno l'istanza del vectorlayer
+    //return istance of vectorlayer
     return new VectorLayer(config);
   } else {
     return null
@@ -72,7 +70,6 @@ proto.isExternalWMS = function() {
 };
 
 proto.getWMSLayerName = function() {
-  // prendo come inizio 'attributo name come nome del layer wms
   let layerName = this.config.name;
   if (this.config.source && this.config.source.layers) {
     layerName = this.config.source.layers;
@@ -105,7 +102,6 @@ proto.getLegendUrl = function() {
 };
 
 proto.getWFSLayerName = function() {
-  // prendo come inizio 'attributo name come nome del layer wms
   let layerName = this.config.origname;
   if (this.config.source && this.config.source.layers) {
     layerName = this.config.source.layers;

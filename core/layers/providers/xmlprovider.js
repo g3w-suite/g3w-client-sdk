@@ -1,6 +1,6 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var DataProvider = require('core/layers/providers/provider');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const DataProvider = require('core/layers/providers/provider');
 
 function XMLDataProvider(options) {
   options = options || {};
@@ -10,10 +10,10 @@ function XMLDataProvider(options) {
 
 inherit(XMLDataProvider, DataProvider);
 
-var proto = XMLDataProvider.prototype;
+const proto = XMLDataProvider.prototype;
 
 proto.getData = function() {
-  var d = $.Deferred();
+  const d = $.Deferred();
   return d.promise();
 };
 

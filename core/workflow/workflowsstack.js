@@ -1,7 +1,6 @@
-// Oggetto che tiene conto di tutti i workflow
-// che sono stati attivati
+// Stor all workflow activated
 
-var WorkFlowsStack = function() {
+const WorkFlowsStack = function() {
   this._workflows = [];
   this.push = function(workflow) {
     if (this._workflows.indexOf(workflow) == -1)
@@ -18,7 +17,7 @@ var WorkFlowsStack = function() {
   };
 
   this.getLast = function() {
-    var length = this._workflows.length;
+    const length = this._workflows.length;
     return  length ? this._workflows[length -1] : null;
   };
 

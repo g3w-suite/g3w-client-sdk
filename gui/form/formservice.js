@@ -1,6 +1,6 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var G3WObject = require('core/g3wobject');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const G3WObject = require('core/g3wobject');
 
 function FormService() {
   this.state = null;
@@ -9,59 +9,53 @@ function FormService() {
     setInitForm: function(options) {
       this._setInitForm(options);
     },
-    // setter sul cambio dei campi
+    // setter change fields
     setFormFields: function (fields) {
       this.state.fields = fields;
     },
     setupFields: function() {
       this._setupFields();
     },
-    // setter sull'inserimento dei dati del form
+    // setter sinsert data into form
     setFormData: function(fields) {
       this.setFormFields(fields);
     },
-    // setter del singolo field
+    // setter single field
     setField: function(field) {},
-    // settere dello state
+    // settere state
     setState: function(state) {
       this._setState(state);
     },
-    // setter sull'aggiunta di un'azione sul form
-    addActionsForForm: function (actions) {
-      // un opportunità per i listener per aggiungere azioni a form
-    },
+    // setter add action
+    addActionsForForm: function (actions) {},
     postRender: function (element) {
-      // un opportunità per i listener di intervenire sul DOM
+      // hook for listener to chenge DOM
     }
   };
-  // inizializzo il form con l'opzioni passate dall'editor al momento del'apertura del form
+  // init form options paased for example by editor
   this._setInitForm = function(options) {
     options = options || {};
     this.title = options.title || 'Form';
     this.formId = options.formId;
-    this.name = options.name; // nome del form
-    this.pk = options.pk || null; // eventuale chiave primaria (non tutti i form potrebbero avercela o averne bisogno
-    this.buttons = options.buttons || []; // qui dovrò mettere i bottoni standar del form
+    this.name = options.name; 
+    this.pk = options.pk || null; 
+    this.buttons = options.buttons || []; 
     this._pickedPromise = null;
-    // setto lo stato che lo divido per compoennti del form totale
     this.state = {
       title: this.title,
       fields: null,
       buttons: this.buttons,
       disabled: false,
-      valid: true, // la validazione generale del form inzialmente è a true
-        // verrà cambiata con un and generale a true false per ogni modfica dei campi singoli
-      tovalidate: [] // contiene array di oggetti che deveono essere validati. Sono oggetti che contengono almeno il campo valid
+      valid: true, // global form validation state. True at beginning
+        // when input change will be update 
+      tovalidate: [] // object array to be validate. They have at list valid key (boolean)
     };
-    //chiamo i setter
     this.setFormFields(options.fields);
   };
-  // funzione che mi restituisco lo stato generale del form
-  // ogni singolo input, al cambiamento del suo valore, comunicherà se è valido o no
-  // e quiesto andrà ad inficiare lo stato generale del form
+  // Every input send to form it valid value that will change the genaral state of form
   this.isValid = function() {
-    var bool = true;
-    _.forEach(this.state.tovalidate, function(tovalidate) {
+    let bool = true;
+    this.state.tovalidate.forEach((tovalidate) => {
       if (!tovalidate.valid) {
         bool = false;
         return false;
@@ -72,37 +66,35 @@ function FormService() {
   this.addToValidate = function(validate) {
     this.state.tovalidate.push(validate);
   };
-  
+
   this.getState = function () {
     return this.state;
   };
   this._setState = function(state) {
     this.state = state;
   };
-  //funzione che retituisce i fields
   this.getFields = function() {
     return this.state.fields;
   };
-  
+
   this._getField = function(fieldName){
-    var field = null;
-    _.forEach(this.state.fields,function(f){
+    let field = null;
+    this.state.fields.forEach((f) => {
       if (f.name == fieldName){
         field = f;
       }
     });
     return field;
   };
-  
+
   this.getEventBus = function() {
     return this.eventBus;
   };
   
-  // funzione di inzializzazione
   this.init = function(options) {
     this._setInitForm(options);
   };
-  
+
   base(this);
 }
 

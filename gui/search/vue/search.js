@@ -1,11 +1,11 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var merge = require('core/utils/utils').merge;
-var Component = require('gui/vue/component');
-var ProjectsRegistry = require('core/project/projectsregistry');
-var SearchesService = require('gui/search/searchesservice');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const merge = require('core/utils/utils').merge;
+const Component = require('gui/vue/component');
+const ProjectsRegistry = require('core/project/projectsregistry');
+const SearchesService = require('gui/search/searchesservice');
 
-var vueComponentOptions = {
+const vueComponentOptions = {
    template: require('./search.html'),
    data: function() {
     	return {
@@ -19,14 +19,8 @@ var vueComponentOptions = {
   }
 };
 
-// se lo voglio istanziare manualmente
-var InternalComponent = Vue.extend(vueComponentOptions);
-// se lo voglio usare come componente come elemento html
+const InternalComponent = Vue.extend(vueComponentOptions);
 
-/* COMPONENTI FIGLI */
-/* FINE COMPONENTI FIGLI */
-
-/* INTERFACCIA PUBBLICA */
 function SearchComponent(options){
   base(this,options);
   this.id = "search-component";
@@ -39,7 +33,6 @@ function SearchComponent(options){
   this.state.visible = ProjectsRegistry.getCurrentProject().state.search.length > 0;
   merge(this, options);
   this.initService = function() {
-    //inizializzo il servizio
     this._service.init();
   };
 

@@ -1,5 +1,5 @@
-var FooterTemplate = require('./footer.html');
-var FooterFormComponent = Vue.extend({
+const FooterTemplate = require('./footer.html');
+const FooterFormComponent = Vue.extend({
   template: FooterTemplate,
   props: ['state'],
   methods: {

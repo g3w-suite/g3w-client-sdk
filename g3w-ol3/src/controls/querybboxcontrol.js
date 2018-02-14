@@ -16,25 +16,24 @@ var QueryBBoxControl = function(options){
 
 ol.inherits(QueryBBoxControl, InteractionControl);
 
-var proto = QueryBBoxControl.prototype;
+const proto = QueryBBoxControl.prototype;
 
 proto.setMap = function(map) {
-  var self = this;
   InteractionControl.prototype.setMap.call(this,map);
-  this._interaction.on('boxstart',function(e){
-    self._startCoordinate = e.coordinate;
+  this._interaction.on('boxstart',(e) => {
+    this._startCoordinate = e.coordinate;
   });
-  this._interaction.on('boxend',function(e){
-    var start_coordinate = self._startCoordinate;
-    var end_coordinate = e.coordinate;
-    var extent = ol.extent.boundingExtent([start_coordinate,end_coordinate]);
-    self.dispatchEvent({
+  this._interaction.on('boxend',(e) => {
+    const start_coordinate = this._startCoordinate;
+    const end_coordinate = e.coordinate;
+    const extent = ol.extent.boundingExtent([start_coordinate,end_coordinate]);
+    this.dispatchEvent({
       type: 'bboxend',
       extent: extent
     });
-    self._startCoordinate = null;
-    if (self._autountoggle) {
-      self.toggle();
+    this._startCoordinate = null;
+    if (this._autountoggle) {
+      this.toggle();
     }
   })
 };

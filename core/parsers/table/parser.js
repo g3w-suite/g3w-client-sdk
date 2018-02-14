@@ -1,11 +1,10 @@
-var TableParser = function() {
+const TableParser = function() {
   var pk;
-  // funzione che permette di recuprarer il parser addatto alla richiesta
   this.get = function(options) {
     options = options || {};
-    var type = options.type;
-    pk = options.pk || 'id';
-    var parser;
+    const type = options.type;
+    const pk = options.pk || 'id';
+    let parser;
     switch (type) {
       case 'json':
         parser = this._parserJSON;
@@ -17,8 +16,8 @@ var TableParser = function() {
   };
   
   this._parserJSON = function(data) {
-    var features = [];
-    var feature;
+    const features = [];
+    let feature;
     _.forEach(data, function(properties) {
       feature = new ol.Feature();
       //vado a settare le proprietà

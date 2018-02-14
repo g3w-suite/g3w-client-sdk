@@ -1,24 +1,23 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var geo = require('core/utils/geo');
-var MapLayer = require('./maplayer');
-var RasterLayers = require('g3w-ol3/src/layers/rasters');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const geo = require('core/utils/geo');
+const MapLayer = require('./maplayer');
+const RasterLayers = require('g3w-ol3/src/layers/rasters');
 
-var GENERCI_GRID_EXTENT = [0,0,8388608,8388608];
-var STANDARD_PROJECTIONS = [3857,900913,4326];
+const GENERCI_GRID_EXTENT = [0,0,8388608,8388608];
+const STANDARD_PROJECTIONS = [3857,900913,4326];
 
 function XYZLayer(options,extraParams){
-  var self = this;
   base(this,options);
   this.layer = null;
 }
 
 inherit(XYZLayer,MapLayer);
 
-var proto = XYZLayer.prototype;
+const proto = XYZLayer.prototype;
 
 proto.getOLLayer = function(){
-  var olLayer = this._olLayer;
+  let olLayer = this._olLayer;
   if (!olLayer){
     olLayer = this._olLayer = this._makeOlLayer();
   }
@@ -50,11 +49,8 @@ proto.isVisible = function(){
 };
 
 proto._makeOlLayer = function(){
-  var self = this;
-  
-  var projection = this.projection ? this.projection : this.layer.getProjection();
-
-  var layerOptions = {
+  const projection = this.projection ? this.projection : this.layer.getProjection();
+  const layerOptions = {
     url: this.layer.getCacheUrl()+"/{z}/{x}/{y}.png",
     maxZoom: 20
   };
@@ -67,14 +63,13 @@ proto._makeOlLayer = function(){
   }*/
 
   layerOptions.projection = projection;
+  const olLayer = RasterLayers.XYZLayer(layerOptions);
 
-  var olLayer = RasterLayers.XYZLayer(layerOptions);
-
-  olLayer.getSource().on('imageloadstart', function() {
-    self.emit("loadstart");
+  olLayer.getSource().on('imageloadstart', () => {
+    this.emit("loadstart");
   });
-  olLayer.getSource().on('imageloadend', function() {
-    self.emit("loadend");
+  olLayer.getSource().on('imageloadend', () => {
+    this.emit("loadend");
   });
 
   return olLayer

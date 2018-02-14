@@ -7,17 +7,15 @@ const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresreg
 const MapLayersStoresRegistry = require('core/map/maplayersstoresregistry');
 
 /* service
-Funzione costruttore contentente tre proprieta':
-    setup: metodo di inizializzazione
-    getLayersState: ritorna l'oggetto LayersState
-    getLayersTree: ritorna l'array layersTree dall'oggetto LayersState
+    setup: init method
+    getLayersState: returnLayersState
+    getLayersTree: retunr  array of layersTree from LayersState
 */
 
 // Public interface
 function ProjectsRegistry() {
   this.config = null;
   this.initialized = false;
-  //tipo di progetto
   this.projectType = null;
   this.setters = {
     setCurrentProject: function(project) {
@@ -26,16 +24,15 @@ function ProjectsRegistry() {
         MapLayersStoresRegistry.removeLayersStores();
       }
       this.state.currentProject = project;
-      //aggiunto tipo progetto
       this.setProjectType(project.state.type);
       const projectLayersStore = project.getLayersStore();
-      // lo mette sempre in prima posizione mi serve per il catalogo
+      //set in first position (catalog)
       CatalogLayersStoresRegistry.addLayersStore(projectLayersStore, 0);
-      // lo mette sempre in prima posizione mi serve per la mappa
+      //set in first position (map)
       MapLayersStoresRegistry.addLayersStore(projectLayersStore, 0);
     }
   };
-  //stato del registro progetti
+  
   this.state = {
     baseLayers: {},
     minScale: null,
@@ -43,8 +40,7 @@ function ProjectsRegistry() {
     currentProject: null
   };
 
-  // tutte le configurazioni di base dei progetti, ma di cui non è detto che
-  // sia ancora disponibile l'istanza (lazy loading)
+  // (lazy loading)
   this._pendingProjects = [];
   this._projects = {};
 
@@ -57,18 +53,15 @@ const proto = ProjectsRegistry.prototype;
 
 proto.init = function(config) {
   const d = $.Deferred();
-  //verifico se è già stato inizilizzato
+  //check if already initialized
   if (!this.initialized) {
-    //salva la configurazione
     this.config = config;
-    // salvo l'overviewproject
     this.overviewproject = config.overviewproject;
-    //setta lo state
     this.setupState();
-    // vado a prendere la configurazione del progetto corrente
+    // get current configuration
     this.getProject(config.initproject)
     .then((project) => {
-      // vado a settare il progetto corrente
+      // set current project
       this.setCurrentProject(project);
       this.initialized = true;
       d.resolve(project);
@@ -99,11 +92,7 @@ proto.setupState = function() {
   this.state.maxScale = this.config.maxscale;
   this.state.crs = this.config.crs;
   this.state.proj4 = this.config.proj4;
-  // setto  quale progetto deve essere impostato come overview
-  //questo è settato da django-admin
   const overViewProject = (this.config.overviewproject && this.config.overviewproject.gid) ? this.config.overviewproject : null;
-  //per ogni progetto ciclo e setto tutti gli attributi comuni
-  // come i base layers etc ..
   this.config.projects.forEach((project) => {
     project.baselayers = _.cloneDeep(this.config.baselayers);
     project.minscale = this.config.minscale;
@@ -111,7 +100,6 @@ proto.setupState = function() {
     project.crs = this.config.crs;
     project.proj4 = this.config.proj4;
     project.overviewprojectgid = overViewProject;
-    //aggiungo tutti i progetti ai pending project
     this._pendingProjects.push(project);
   });
 };
@@ -134,28 +122,20 @@ proto.getListableProjects = function() {
     if (!_.isNil(project.listable)) {
       return project.listable;
     }
-    //resituisce solo quelli diversi da overviewprojetc
-    // nel caso si stato settato
     if ((project.id != currentProjectId) && (project.overviewprojectgid && project.gid != project.overviewprojectgid.gid && project.id != currentProjectId)) {
       return project;
     }
   }), 'title')
 };
 
-//recupera il progetto corrente
 proto.getCurrentProject = function(){
   return this.state.currentProject;
 };
 
-// ottengo il progetto dal suo gid;
-// ritorna una promise nel caso non fosse stato ancora scaricato
-// il config completo (e quindi non sia ancora istanziato Project)
 proto.getProject = function(projectGid) {
   const d = $.Deferred();
   let pendingProject;
   let project = null;
-  // scorro atraverso i pending project che contengono oggetti
-  // di configurazione dei progetti del gruppo
   this._pendingProjects.forEach((_pendingProject) => {
     if (_pendingProject.gid == projectGid) {
       pendingProject = _pendingProject;
@@ -174,7 +154,6 @@ proto.getProject = function(projectGid) {
       const projectConfig = _.merge(pendingProject,projectFullConfig);
       projectConfig.WMSUrl = this.config.getWmsUrl(projectConfig);
       const project = new Project(projectConfig);
-      // aggiungo/ registro il progetto
       this._projects[projectConfig.gid] = project;
       return d.resolve(project);
     })
@@ -184,8 +163,6 @@ proto.getProject = function(projectGid) {
   }
 };
 
-//ritorna una promises che verrà risolta con la
-// configuarzione del progetto corrente
 proto._getProjectFullConfig = function(projectBaseConfig) {
   const d = $.Deferred();
   const url = this.config.getProjectConfigUrl(projectBaseConfig);

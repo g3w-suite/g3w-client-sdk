@@ -1,6 +1,6 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var G3WObject = require('core/g3wobject');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const G3WObject = require('core/g3wobject');
 
 function MapLayer(config) {
   this.config = config || {};
@@ -12,7 +12,7 @@ function MapLayer(config) {
 
 inherit(MapLayer, G3WObject);
 
-var proto = MapLayer.prototype;
+const proto = MapLayer.prototype;
 
 proto.getId = function(){
   return this.id;

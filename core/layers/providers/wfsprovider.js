@@ -19,7 +19,7 @@ proto.getData = function() {
   return d.promise();
 };
 
-// metodo del provider che risponde alla query del layer
+// query method
 proto.query = function(options={}) {
   const filter = options.filter;
   const d = $.Deferred();
@@ -44,13 +44,13 @@ proto._post = function(url, params) {
 
 // get request
 proto._get = function(url, params) {
-  // trasformo i parametri
+  // trasform parameters
   const urlParams = $.param(params);
   url = url + '?' + urlParams;
   return $.get(url)
 };
 
-//funzione che si occupa di fare la richiesta al server
+//request to server
 proto._doRequest = function(filter) {
   filter = filter || new Filter();
   const layer = this._layer;

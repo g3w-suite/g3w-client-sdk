@@ -1,7 +1,7 @@
-var OLControl = function(options){
+const OLControl = function(options){
   this._control = null;
   this.positionCode = options.position || 'tl';
-  
+
   switch (options.type) {
     case 'zoom':
       this._control = new ol.control.Zoom(options);
@@ -15,9 +15,9 @@ var OLControl = function(options){
     case 'overview':
       this._control = new ol.control.OverviewMap(options);
   }
-  
+
   $(this._control.element).addClass("ol-control-"+this.positionCode);
-  
+
   ol.control.Control.call(this,{
     element: this._control.element
   });
@@ -27,11 +27,11 @@ var OLControl = function(options){
 ol.inherits(OLControl, ol.control.Control);
 module.exports = OLControl;
 
-var proto = OLControl.prototype;
+const proto = OLControl.prototype;
 
 proto.getPosition = function(positionCode) {
-  var positionCode = positionCode || this.positionCode;
-  var position = {};
+  positionCode = positionCode || this.positionCode;
+  const position = {};
   position['top'] = (positionCode.indexOf('t') > -1) ? true : false;
   position['left'] = (positionCode.indexOf('l') > -1) ? true : false;
   return position;
@@ -39,15 +39,15 @@ proto.getPosition = function(positionCode) {
 
 proto.layout = function(map) {
   if (map) {
-    var position =  this.getPosition();
-    var viewPort = map.getViewport();
-    var previusControls = $(viewPort).find('.ol-control-'+this.positionCode);
+    const position =  this.getPosition();
+    const viewPort = map.getViewport();
+    const previusControls = $(viewPort).find('.ol-control-'+this.positionCode);
     if (previusControls.length) {
       previusControl = previusControls.last();
-      var previousOffset = position.left ? previusControl.position().left : previusControl.position().right;
-      var hWhere = position.left ? 'left' : 'right';
-      var previousWidth = previusControl[0].offsetWidth;
-      var hOffset = $(this.element).position()[hWhere] + previousOffset + previousWidth + 2;
+      const previousOffset = position.left ? previusControl.position().left : previusControl.position().right;
+      const hWhere = position.left ? 'left' : 'right';
+      const previousWidth = previusControl[0].offsetWidth;
+      const hOffset = $(this.element).position()[hWhere] + previousOffset + previousWidth + 2;
       $(this.element).css(hWhere, hOffset+'px');
     }
   }

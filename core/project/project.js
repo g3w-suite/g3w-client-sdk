@@ -6,7 +6,7 @@ const LayersStore = require('core/layers/layersstore');
 const Projections = require('g3w-ol3/src/projection/projections');
 
 function Project(projectConfig) {
-  /* struttura oggetto 'project'
+  /* structure 'project' object
   {
     id,
     type,
@@ -25,8 +25,7 @@ function Project(projectConfig) {
   */
   this.state = projectConfig;
   this._processLayers();
-  // recupero o setta la proiezione se non standard
-  this._projection = Projections.get(this.state.crs,this.state.proj4);
+  this._projection = Projections.get(this.state.crs, this.state.proj4);
   this._layersStore = this._buildLayersStore();
 
   this.setters = {
@@ -49,15 +48,14 @@ proto.getRelations = function() {
   return this.state.relations;
 };
 
-// funzione che processa i layers di progetto
+// precess layers of the project
 proto._processLayers = function() {
-  // attraverso il tree dei layers (layerstree)
-  // e aggiungo informazioni utili ad esempio al catalogo
+  //info useful for catalog
   let traverse = (obj) => {
     Object.entries(obj).forEach(([key, layer]) => {
       let layer_name_originale;
       let fulllayer;
-      //verifica che il nodo sia un layer e non un folder
+      //check if layer (node) of folder
       if (!_.isNil(layer.id)) {
         let layers = this.state.layers;
         layers.forEach((lyr) => {
@@ -73,7 +71,7 @@ proto._processLayers = function() {
         obj[parseInt(key)] = fulllayer;
       }
       if (!_.isNil(layer.nodes)) {
-        // aggiungo proprietà title per l'albero
+        //add title to tree
         layer.title = layer.name;
         traverse(layer.nodes);
       }
@@ -98,8 +96,7 @@ proto._processLayers = function() {
   });
 };
 
-// funzione che fa il build del layers store
-// lo istanzia  crea il layersstree
+// build layersstore and create layersstree
 proto._buildLayersStore = function() {
   // creo il layersStore
   const layersStore = new LayersStore();
@@ -113,11 +110,10 @@ proto._buildLayersStore = function() {
     catalog: this.state.gid != overviewprojectgid
   });
 
-  // vado a ciclare su tutti i layers per poterli istanziare
-  // e aggiungere al layersstore
+  // intsnce each layer ad area added to layersstore
   const layers = this.getLayers();
   layers.forEach((layerConfig) => {
-    // aggiungo la proiezione: nel caso esista il codice crs del layer lo prnedo altrimenti prondo la proiezione del progetto
+    // add projection
     layerConfig.projection = this._projection;
     const layer = LayerFactory.build(layerConfig, {
       project: this
@@ -125,7 +121,7 @@ proto._buildLayersStore = function() {
     layersStore.addLayer(layer);
   });
 
-  // funzione che crea il layerstree del layersstore
+  // create layerstree from layerstore
   layersStore.createLayersTree(this.state.name, {
     layerstree: this.state.layerstree
   });
@@ -144,12 +140,10 @@ proto.getState = function() {
   return this.state;
 };
 
-// funzione che ritorna id
 proto.getId = function() {
   return this.state.id;
 };
 
-//funzione che ritorna il tipo
 proto.getType = function() {
   return this.state.type;
 };

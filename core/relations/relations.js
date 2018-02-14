@@ -1,29 +1,25 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils//utils').base;
-var G3WObject = require('core/g3wobject');
-var Relation = require('./relation');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils//utils').base;
+const G3WObject = require('core/g3wobject');
+const Relation = require('./relation');
 
-// clase Relations
+// class Relations
 function Relations(options) {
-  var self = this;
   options = options || {};
-  var relations = options.relations;
-  // qui conservo tutte le relazioni
+  const relations = options.relations;
+  //store relations
   this._relations = {};
   this._length = relations ? relations.length: 0;
-  // qui mi serve per costruire tutte le relazioni tra i layers
+  // to build relations between layers
   this._relationsInfo = {
-    children: {}, // contiene l'array dei figli (id unici)
-    fathers: {}, // contiene l'array dei padri (unici)
-    father_child: {} // contiene oggetti informazione padre figlio relazione
+    children: {}, // array child (unique ids)
+    fathers: {}, // array father (unique ids)
+    father_child: {} // info parent child
   };
-  var relation;
-  //vado a polpolare le relazioni
-  _.forEach(relations, function(relationConfig) {
-    // vado a creare la relazione
+  let relation;
+  relations.forEach((relationConfig) => {
     relation = new Relation(relationConfig);
-    // aggiungo all'oggetto relations
-    self._relations[relation.getId()] = relation;
+    this._relations[relation.getId()] = relation;
   });
   this._createRelationsInfo();
   base(this);
@@ -31,26 +27,23 @@ function Relations(options) {
 
 inherit(Relations, G3WObject);
 
-var proto = Relations.prototype;
+const proto = Relations.prototype;
 
 proto._createRelationsInfo = function() {
-  var self = this;
-  var father;
-  var child;
-  _.forEach(this._relations, function(relation, relationKey) {
-    // scooro tra le relazioni create e vado ad aggiunfere informazioni
-    // per velocizzare le richieste
+  let father;
+  let child;
+  Object.entries(this._relations).forEach(([relationKey, relation]) => {
     father = relation.getFather();
     child = relation.getChild();
-    self._relationsInfo.father_child[father+child] = relationKey;
-    if (!self._relationsInfo.fathers[father]) {
-      self._relationsInfo.fathers[father] = [];
+    this._relationsInfo.father_child[father+child] = relationKey;
+    if (!this._relationsInfo.fathers[father]) {
+      this._relationsInfo.fathers[father] = [];
     }
-    if (!self._relationsInfo.children[child]) {
-      self._relationsInfo.children[child] = [];
+    if (!this._relationsInfo.children[child]) {
+      this._relationsInfo.children[child] = [];
     }
-    self._relationsInfo.fathers[father].push(child);
-    self._relationsInfo.children[child].push(father);
+    this._relationsInfo.fathers[father].push(child);
+    this._relationsInfo.children[child].push(father);
   });
 };
 
@@ -67,20 +60,19 @@ proto._reloadRelationsInfo = function() {
   this._createRelationsInfo();
 };
 
-// restituisce il numero di relazioni
+// number of relations
 proto.getLength = function() {
   return this._length
 };
 
-// retituisce tutte le relazini create
 proto.getRelations = function() {
   return this._relations;
 };
 
-// funzione che restituisce array delle relazioni
+// array of relation
 proto.getArray = function() {
-  var relations = [];
-  _.forEach(this._relations, function(relation) {
+  const relations = [];
+  Object.entries(this._relations).forEach(([relName, relation]) => {
     relations.push(relation);
   });
   return relations;
@@ -95,7 +87,7 @@ proto.getRelationById = function(id) {
 };
 
 proto.getRelationByFatherChildren = function(father, child) {
-  var relationId = this._relationsInfo.father_child[father+child];
+  const relationId = this._relationsInfo.father_child[father+child];
   return this.getRelationById(relationId);
 };
 
@@ -107,7 +99,7 @@ proto.addRelation = function(relation) {
 };
 
 proto.removeRelation = function(relation) {
-  var relationId;
+  let relationId;
   if (relation instanceof Relation) {
     relationId = relation.getId();
     delete this._relations[relationId];
@@ -116,16 +108,16 @@ proto.removeRelation = function(relation) {
 };
 
 proto.hasChildren = function(childId) {
-  var children = this.getChildren(childId);
+  const children = this.getChildren(childId);
   return  children ? !!children.length: false;
 };
 
 proto.hasFathers = function(fatherId) {
-  var fathers = this.getFathers(fatherId);
+  const fathers = this.getFathers(fatherId);
   return fathers ? !!fathers.length : false;
 };
 
-// vado a recuperare i figli a seconda se passato il parametro fatherId o no
+// get children based on father id
 proto.getChildren = function(fatherId) {
   if (!this.isFather(fatherId)) {
     return null;
@@ -133,7 +125,7 @@ proto.getChildren = function(fatherId) {
   return this._relationsInfo.fathers[fatherId];
 };
 
-// vado a recuperare i figli a seconda se passato il parametro childrenId o no
+// get fathers based on childId
 proto.getFathers = function(childId) {
   if (!this.isChild(childId)) {
     return null;
@@ -141,12 +133,10 @@ proto.getFathers = function(childId) {
   return this._relationsInfo.children[childId];
 };
 
-// verifico se è un figlio o no
 proto.isChild = function(id) {
   return !!this._relationsInfo.children[id];
 };
 
-// verifico se è un padre o no
 proto.isFather = function(id) {
   return !!this._relationsInfo.fathers[id];
 };

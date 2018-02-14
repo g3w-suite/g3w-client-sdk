@@ -1,10 +1,10 @@
-var utils = require('../utils');
-var InteractionControl = require('./interactioncontrol');
-var PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
+const utils = require('../utils');
+const InteractionControl = require('./interactioncontrol');
+const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
 
 
-var StreetViewControl = function(options) {
-  var _options = {
+const StreetViewControl = function(options) {
+  const _options = {
     name: "streetview",
     tipLabel: "StreetView",
     label: "\ue905",
@@ -25,7 +25,7 @@ var StreetViewControl = function(options) {
       })
     })
   }));
-  var streetVectorSource = new ol.source.Vector({
+  const streetVectorSource = new ol.source.Vector({
     features: []
   });
 
@@ -38,7 +38,7 @@ var StreetViewControl = function(options) {
 
 ol.inherits(StreetViewControl, InteractionControl);
 
-var proto = StreetViewControl.prototype;
+const proto = StreetViewControl.prototype;
 
 
 proto.getLayer = function() {
@@ -50,9 +50,9 @@ proto.setProjection = function(projection) {
 };
 
 proto.setPosition = function(position) {
-  var self = this;
-  var lnglat;
-  var pixel;
+  const self = this;
+  let lnglat;
+  let pixel;
   if (!this._sv) {
     this._sv = new google.maps.StreetViewService();
   }
@@ -83,16 +83,15 @@ proto.setPosition = function(position) {
 };
 
 proto.setMap = function(map) {
-  var self = this;
   this._map = map;
   InteractionControl.prototype.setMap.call(this,map);
-  this._interaction.on('picked',function(e){
-    self.dispatchEvent({
+  this._interaction.on('picked',(e) => {
+    this.dispatchEvent({
       type: 'picked',
       coordinates: e.coordinate
     });
-    if (self._autountoggle) {
-      self.toggle();
+    if (this._autountoggle) {
+      this.toggle();
     }
   });
 };

@@ -1,10 +1,9 @@
-var utils = require('../utils');
-var InteractionControl = require('./interactioncontrol');
+const utils = require('../utils');
+const InteractionControl = require('./interactioncontrol');
+const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
 
-var PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
-
-var QueryByPolygonControl = function(options){
-  var _options = {
+const QueryByPolygonControl = function(options){
+  const _options = {
     name: "querybypolygon",
     tipLabel: "Query By Polygon",
     label: "\ue903",
@@ -20,22 +19,21 @@ var QueryByPolygonControl = function(options){
 
 ol.inherits(QueryByPolygonControl, InteractionControl);
 
-var proto = QueryByPolygonControl.prototype;
+const proto = QueryByPolygonControl.prototype;
 
 proto.setMap = function(map) {
-  var self = this;
   InteractionControl.prototype.setMap.call(this,map);
-  this._interaction.on('boxstart',function(e){
-    self._startCoordinate = e.coordinate;
+  this._interaction.on('boxstart',(e) =>{
+    this._startCoordinate = e.coordinate;
   });
 
-  this._interaction.on('picked',function(e){
-    self.dispatchEvent({
+  this._interaction.on('picked',(e) => {
+    this.dispatchEvent({
       type: 'picked',
       coordinates: e.coordinate
     });
-    if (self._autountoggle) {
-      self.toggle();
+    if (this._autountoggle) {
+      this.toggle();
     }
   });
   this.setEnable(false);

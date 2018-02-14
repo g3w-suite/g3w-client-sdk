@@ -1,23 +1,22 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var G3WObject = require('core/g3wobject');
-var reject = require('core/utils/utils').reject;
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const G3WObject = require('core/g3wobject');
+const reject = require('core/utils/utils').reject;
 
 // Class Api Service
 function ApiService(){
   this._config = null;
   this._baseUrl = null;
   this.init = function(config) {
-    var deferred = $.Deferred();
+    const d = $.Deferred();
     this._config = config;
     // prende l'url base delle api dal config dell'applicazione
     this._baseUrl = config.urls.api;
     this._apiEndpoints = config.urls.apiEndpoints;
-    deferred.resolve();
-    return deferred.promise();
+    d.resolve();
+    return d.promise();
   };
-  //incrementi
-  var howManyAreLoading = 0;
+  let howManyAreLoading = 0;
   this._incrementLoaders = function(){
     if (howManyAreLoading == 0){
       this.emit('apiquerystart');
@@ -32,28 +31,27 @@ function ApiService(){
     }
   };
   this.get = function(api, options) {
-    var self = this;
-    var apiEndPoint = this._apiEndpoints[api];
+    const apiEndPoint = this._apiEndpoints[api];
     if (apiEndPoint) {
-      var completeUrl = this._baseUrl + '/' + apiEndPoint;
+      let completeUrl = this._baseUrl + '/' + apiEndPoint;
       if (options.request) {
          completeUrl = completeUrl + '/' + options.request;
       }
-      var params = options.params || {};
+      const params = options.params || {};
 
-      self.emit(api+'querystart');
+      this.emit(api+'querystart');
       this._incrementLoaders();
       return $.get(completeUrl,params)
-      .done(function(response){
-        self.emit(api+'queryend',response);
+      .done((response) => {
+        this.emit(api+'queryend',response);
         return response;
       })
-      .fail(function(e){
-        self.emit(api+'queryfail',e);
+      .fail((e) => {
+        this.emit(api+'queryfail',e);
         return e;
       })
-      .always(function(){
-        self._decrementLoaders();
+      .always(() => {
+        this._decrementLoaders();
       });
     }
     else {

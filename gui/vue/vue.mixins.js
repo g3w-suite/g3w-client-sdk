@@ -1,6 +1,8 @@
-var isMobileMixin = {
+const isMobileMixin = {
   methods: {
-    isMobile: function(){return isMobile.any}
+    isMobile: function() {
+      return isMobile.any
+    }
   }
 }
 

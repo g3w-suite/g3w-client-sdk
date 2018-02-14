@@ -1,8 +1,8 @@
-var SessionsRegistry = function() {
+const SessionsRegistry = function() {
   this._sessions = {};
   
   this.register = function(session) {
-    var id = session.getId();
+    const id = session.getId();
     this._sessions[id] = session;
   };
 

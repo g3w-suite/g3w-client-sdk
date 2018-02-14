@@ -1,8 +1,8 @@
-var MeasureInteraction = require('./measureinteraction');
+const MeasureInteraction = require('./measureinteraction');
 
 // LenghtInteracion
-var LengthIteraction = function() {
-  var options = {};
+const LengthIteraction = function() {
+  const options = {};
   options.geometryType = "LineString";
   MeasureInteraction.call(this, options)
 };

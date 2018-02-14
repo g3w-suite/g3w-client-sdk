@@ -1,8 +1,7 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var ProjectsRegistry = require('core/project/projectsregistry');
-var G3WObject = require('core/g3wobject');
-var GUI = require('gui/gui');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const ProjectsRegistry = require('core/project/projectsregistry');
+const G3WObject = require('core/g3wobject');
 
 
 function RelationsService(options) {
@@ -11,15 +10,15 @@ function RelationsService(options) {
   base(this);
 
   this.getRelations = function(options) {
-    var projectId = this._project.state.id;
     options = options || {};
-    var value = options.value || null;
-    var id = options.id || null;
+    const projectId = this._project.state.id;
+    const value = options.value || null;
+    const id = options.id || null;
     return $.get('/qdjango/api/relations/'+projectId+'/'+id+'/'+value)
   };
   this.buildRelationTable = function(relations) {
-    var columns = _.keys(relations[0]);
-    var rows = [];
+    const columns = _.keys(relations[0]);
+    const rows = [];
     _.forEach(relations, function(relation){
       rows.push(_.values(relation));
     });

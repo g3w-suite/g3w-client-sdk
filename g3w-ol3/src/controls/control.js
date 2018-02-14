@@ -1,17 +1,17 @@
-var Control = function(options) {
-  var name = options.name || "?";
+const Control = function(options) {
+  const name = options.name || "?";
   this.name = name.split(' ').join('-').toLowerCase();
   this.id = this.name+'_'+(Math.floor(Math.random() * 1000000));
   this.positionCode = options.position || 'tl';
   this.priority = options.priority || 0;
   if (!options.element) {
-    var className = "ol-"+this.name.split(' ').join('-').toLowerCase();
-    var tipLabel = options.tipLabel || this.name;
-    var label = options.label || "?";
+    const className = "ol-"+this.name.split(' ').join('-').toLowerCase();
+    const tipLabel = options.tipLabel || this.name;
+    const label = options.label || "?";
     options.element = $('<div class="'+className+' ol-unselectable ol-control"><button type="button" title="'+tipLabel+'">'+label+'</button></div>')[0];
   }
   $(options.element).addClass("ol-control-"+this.positionCode);
-  var buttonClickHandler = options.buttonClickHandler || Control.prototype._handleClick.bind(this);
+  const buttonClickHandler = options.buttonClickHandler || Control.prototype._handleClick.bind(this);
   $(options.element).on('click',buttonClickHandler);
   ol.control.Control.call(this, options);
   this._postRender();
@@ -21,11 +21,11 @@ var Control = function(options) {
 // sotto classse della classe Control di OL3
 ol.inherits(Control, ol.control.Control);
 
-var proto = Control.prototype;
+const proto = Control.prototype;
 
 proto.getPosition = function(positionCode) {
-  var positionCode = positionCode || this.positionCode;
-  var position = {};
+  positionCode = positionCode || this.positionCode;
+  const position = {};
   position['top'] = (positionCode.indexOf('t') > -1) ? true : false;
   position['left'] = (positionCode.indexOf('l') > -1) ? true : false;
   return position;
@@ -33,74 +33,70 @@ proto.getPosition = function(positionCode) {
 
 proto._handleClick = function(event) {
   event.preventDefault();
-  var self = this;
-  var map = this.getMap();
-  var resetControl = null;
+  const map = this.getMap();
+  let resetControl = null;
   // remove all the other, eventually toggled, interactioncontrols
-  var controls = map.getControls();
-  controls.forEach(function(control){
-    if(control.id && control.toggle && (control.id != self.id)) {
+  const controls = map.getControls();
+  controls.forEach((control) => {
+    if(control.id && control.toggle && (control.id != this.id)) {
       control.toggle(false);
       if (control.name == 'reset') {
         resetControl = control;
       }
     }
   });
-  if (!self._toggled && resetControl) {
+  if (!this._toggled && resetControl) {
     resetControl.toggle(true);
   }
   this.dispatchEvent('controlclick');
 };
 
-//funzione che fa lo shift della posizione
+//shift of control position
 proto.shiftPosition = function(position) {
   $(this.element).css(hWhere, position+'px');
 };
 
-// funzione che gestisce il layout
+// layout handler
 proto.layout = function(map) {
   if (map) {
-    var position =  this.getPosition();
-    var viewPort = map.getViewport();
-    // vado a verificare se trovo elementi con lo stessa classe .ol-control-t o .ol-control-tl(che sono i default di ol3)
-    var previusControls = $(viewPort).find('.ol-control-'+this.positionCode+':visible');
+    const position =  this.getPosition();
+    const viewPort = map.getViewport();
+    //check if there are element with the same class .ol-control-t o .ol-control-tl(default di ol3)
+    const previusControls = $(viewPort).find('.ol-control-'+this.positionCode+':visible');
     if (previusControls.length) {
       previusControl = previusControls.last();
-      var previousOffset = position.left ? previusControl.position().left : previusControl.position().top;
-      var hWhere = position.left ? 'left' : 'top';
-      var previousWidth = previusControl[0].offsetWidth;
-      var hOffset = $(this.element).position()[hWhere] + previousOffset + previousWidth;
+      const previousOffset = position.left ? previusControl.position().left : previusControl.position().top;
+      const hWhere = position.left ? 'left' : 'top';
+      const previousWidth = previusControl[0].offsetWidth;
+      const hOffset = $(this.element).position()[hWhere] + previousOffset + previousWidth;
       $(this.element).css(hWhere,hOffset+'px');
     }
   }
 };
 
-// funzione che cambia il layout dei controlli
+// change layout of controls
 proto.changelayout = function(map) {
-  var viewPort = map.getViewport();
-  var viewPortWidth = $(viewPort).width();
-  var previusControls = $(viewPort).find('.ol-control-'+this.positionCode+':visible');
-  var firstControl = previusControls.first();
-  var firtsLeft = firstControl.position().left;
-  var firstControlHeightOffset = firstControl[0].offsetHeight;
-  var topPosition = previusControls.first().position().top + firstControlHeightOffset + 6; // 6 margin
-  var nextElement = $(this.element).next('.ol-control-'+this.positionCode+':visible');
-  var prevElement = $(this.element).prev('.ol-control-'+this.positionCode+':visible');
-  // vado a verificare se la posizione left del controllo è maggiore alla dimensione della viewport
+  const viewPort = map.getViewport();
+  const viewPortWidth = $(viewPort).width();
+  const previusControls = $(viewPort).find('.ol-control-'+this.positionCode+':visible');
+  const firstControl = previusControls.first();
+  const firtsLeft = firstControl.position().left;
+  const firstControlHeightOffset = firstControl[0].offsetHeight;
+  const topPosition = previusControls.first().position().top + firstControlHeightOffset + 6; // 6 margin
+  const nextElement = $(this.element).next('.ol-control-'+this.positionCode+':visible');
+  const prevElement = $(this.element).prev('.ol-control-'+this.positionCode+':visible');
+  // check if left position of the controlis more than dimension of viewport
   if ($(this.element).position().left + $(this.element).width() > viewPortWidth) {
-    // se si è verificato la condizione sopra verifico se non sia l'ultimo elemento
-    // e che la posizione del controllo successiovo sia uguale alla topPosition che
-    // equivale all seconda riga di controlli
     if (nextElement.length && nextElement.position().top  ==  topPosition) {
       $(this.element).css('left', firtsLeft+'px');
-      var elementWidth = $(this.element)[0].offsetWidth;
-      var hOffset = $(this.element).position().left + elementWidth;
+      const elementWidth = $(this.element)[0].offsetWidth;
+      const hOffset = $(this.element).position().left + elementWidth;
       nextElement.css('left', hOffset+'px');
       $(this.element).css('top', topPosition+'px');
     } else {
       if (prevElement.position() && (topPosition == prevElement.position().top)) {
-        var elementWidth = prevElement[0].offsetWidth;
-        var hOffset = prevElement.position().left + elementWidth;
+        const elementWidth = prevElement[0].offsetWidth;
+        const hOffset = prevElement.position().left + elementWidth;
         $(this.element).css('top', topPosition+'px');
         $(this.element).css('left', hOffset+'px');
       } else {
@@ -112,8 +108,8 @@ proto.changelayout = function(map) {
     // vado a verificare se il controllo successiovo si tova ad un'altezza diversa dal primo controllo
     if (nextElement.length && nextElement.position().top != previusControls.first().position().top) {
       nextElement.css('top', $(this.element).position().top +'px');
-      var elementWidth = $(this.element)[0].offsetWidth;
-      var hOffset = $(this.element).position().left  + elementWidth;
+      const elementWidth = $(this.element)[0].offsetWidth;
+      const hOffset = $(this.element).position().left  + elementWidth;
       nextElement.css('left', hOffset+'px');
     }
   }
@@ -123,8 +119,7 @@ proto.showHide = function() {
   $(this.element).toggle();
 };
 
-// funzione che viene chiamata al momento che il controllo viene
-// aggiunto alla mappa
+//called when a control is added to map
 proto.setMap = function(map) {
   if (map) {
     this.layout(map);
@@ -132,19 +127,18 @@ proto.setMap = function(map) {
   }
 };
 
-// funzione che nasconde il controllo e sposta tutti i controlli a destra
-// senza lasciare il buco
+//hide control and move all controls that sit on his right position
 proto.hideControl = function() {
-  var position = $(this.element).position().left;
-  var controlWidth = $(this.element).outerWidth();
-  var newPosition = position;
-  var controls = $(this.element).siblings('.ol-control-tl');
+  let position = $(this.element).position().left;
+  let controlWidth = $(this.element).outerWidth();
+  let newPosition = position;
+  const controls = $(this.element).siblings('.ol-control-tl');
   controls.each(function() {
     if ($(this).position().left > position) {
       newPosition = $(this).position().left;
       if (controlWidth > $(this).outerWidth()) {
         position = position + (controlWidth - $(this).outerWidth())
-      } 
+      }
       $(this).css('left', position+'px');
       position = newPosition;
       controlWidth = $(this).outerWidth();

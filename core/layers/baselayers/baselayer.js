@@ -1,6 +1,6 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var ImageLayer = require('core/layers/imagelayer');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const ImageLayer = require('core/layers/imagelayer');
 
 function BaseLayer(options){
   base(this,options);
@@ -9,7 +9,7 @@ function BaseLayer(options){
 
 inherit(BaseLayer, ImageLayer);
 
-var proto = BaseLayer.prototype;
+const proto = BaseLayer.prototype;
 
 proto._makeOlLayer = function() {
   //TO OVERWRITE
@@ -36,7 +36,7 @@ proto.update = function(mapState, extraParams) {
 };
 
 proto.getOLLayer = function(){
-  var olLayer = this._olLayer;
+  let olLayer = this._olLayer;
   if (!olLayer) {
     olLayer = this._olLayer = this._makeOlLayer();
     if (this.layer.config.attributions) {

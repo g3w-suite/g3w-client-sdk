@@ -1,10 +1,10 @@
-var DeleteInteractionEvent = function(type, layer, features, coordinate) {
+const DeleteInteractionEvent = function(type, layer, features, coordinate) {
   this.type = type;
   this.features = features;
   this.coordinate = coordinate;
 };
 
-var DeleteInteraction = function(options) {
+const DeleteInteraction = function(options) {
   ol.interaction.Pointer.call(this, {
     handleDownEvent: DeleteInteraction.handleDownEvent_,
     handleMoveEvent: DeleteInteraction.handleMoveEvent_,
@@ -25,7 +25,7 @@ ol.inherits(DeleteInteraction, ol.interaction.Pointer);
 DeleteInteraction.handleEvent_ = function(mapBrowserEvent) {
   if (mapBrowserEvent.type == 'keydown'){
     if(this.features_.getArray().length && mapBrowserEvent.originalEvent.keyCode == 46) {
-      // un evento può essere una stringa o un oggetto con un attributo type
+      // an event can be string or an object with attribute type
       this.dispatchEvent(
           new DeleteInteractionEvent(
               'deleteend',
@@ -56,16 +56,14 @@ DeleteInteraction.handleDownEvent_ = function(event) {
 };
 
 DeleteInteraction.handleMoveEvent_ = function(event) {
-  var self = this;
   this.map_ = event.map;
-  var elem = this.map_.getTargetElement();
+  const elem = this.map_.getTargetElement();
   if (this.startCursor_ === undefined) {
     this.startCursor_ = elem.style.cursor;
   }
-  var intersectingFeature = this.map_.forEachFeatureAtPixel(event.pixel,
-      function(feature, layer) {
-        // vado a verificare che il layer sia quello in editing in quel momento
-        feature = (layer == self.layer_) ? feature : null;
+  const intersectingFeature = this.map_.forEachFeatureAtPixel(event.pixel, (feature, layer) =>  {
+        ///check if is the same layero of editing
+        feature = (layer == this.layer_) ? feature : null;
         return feature;
       });
   if (intersectingFeature) {
@@ -80,11 +78,10 @@ DeleteInteraction.handleMoveEvent_ = function(event) {
 };
 
 DeleteInteraction.prototype.featuresAtPixel_ = function(pixel, map) {
-  var found = null;
-  var intersectingFeature = map.forEachFeatureAtPixel(pixel,
-      function(feature) {
-        return feature;
-      });
+  let found = null;
+  const intersectingFeature = map.forEachFeatureAtPixel(pixel, (feature) => {
+    return feature;
+  });
   if (this.features_ &&
      _.includes(this.features_.getArray(), intersectingFeature)) {
     found = intersectingFeature;
@@ -94,7 +91,7 @@ DeleteInteraction.prototype.featuresAtPixel_ = function(pixel, map) {
 
 
 DeleteInteraction.prototype.clear = function() {
-  var elem;
+  let elem;
   if (this.map_) {
     elem = this.map_.getTargetElement();
     elem.style.cursor = this.startCursor_;

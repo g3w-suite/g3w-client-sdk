@@ -1,6 +1,6 @@
-var Control = require('./control');
+const Control = require('./control');
 function GeolocationControl() {
-  var options = {
+  const options = {
     name: "geolocation",
     tipLabel: "Geolocation",
     label: "\ue904"
@@ -10,13 +10,13 @@ function GeolocationControl() {
 
 ol.inherits(GeolocationControl, Control);
 
-var proto = GeolocationControl.prototype;
+const proto = GeolocationControl.prototype;
 
 proto.setMap = function(map) {
-  var self = this;
+  const self = this;
   Control.prototype.setMap.call(this,map);
   // faccio la gestione tutta interna alla rimozione del controllo
-  var geolocation = new ol.Geolocation({
+  const geolocation = new ol.Geolocation({
     projection: map.getView().getProjection(),
     tracking: true
   });
@@ -25,8 +25,8 @@ proto.setMap = function(map) {
     if (this.getPosition()) {
       $(self.element).removeClass('g3w-ol-disabled');
       $(self.element).on('click', function() {
-        var map = self.getMap();
-        var view = map.getView();
+        const map = self.getMap();
+        const view = map.getView();
         coordinates = geolocation.getPosition();
         view.setCenter(coordinates);
         self.dispatchEvent({

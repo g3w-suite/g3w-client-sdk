@@ -2,10 +2,9 @@ const BaseInput = require('./baseinput').BaseInput;
 const BaseInputComponent= require('./baseinput').BaseInputComponent;
 const Input = {
   props: ['state'],
-  mixins: [BaseInput], // eredito dall'oggetto BaseInput
+  mixins: [BaseInput],
   components: {
-    baseinput: BaseInputComponent // definisco il componente BaseInput che mi servirà poi
-                                  // come base per modificare la label e l'input element
+    baseinput: BaseInputComponent 
   }
 };
 

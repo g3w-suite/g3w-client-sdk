@@ -1,10 +1,10 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var G3WObject = require('core/g3wobject');
-var ProjectsRegistry = require('core/project/projectsregistry');
-var PluginsRegistry = require('./pluginsregistry');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const G3WObject = require('core/g3wobject');
+const ProjectsRegistry = require('core/project/projectsregistry');
+const PluginsRegistry = require('./pluginsregistry');
 
-var Plugin = function() {
+const Plugin = function() {
 
   base(this);
   this.name = '(no name)';
@@ -15,29 +15,27 @@ var Plugin = function() {
 
 inherit(Plugin,G3WObject);
 
-var proto = Plugin.prototype;
+const proto = Plugin.prototype;
 
-//recuperare il servizio associato al plugin
+//return plugin service
 proto.getService = function() {
   return this.service
 };
 
-//settare un servizio
+//set plugin service
 proto.setService = function(service) {
   this.service = service;
 };
 
-//recupero il nome
 proto.getName = function() {
   return this.name;
 };
 
-//setto il nome
 proto.setName = function(name) {
   this.name = name;
 };
 
-//recupero la configurazione del plugin dal registro dei plugins
+//get cplugin configuration
 proto.getConfig = function(name) {
   name = name || this.name;
   return PluginsRegistry.getPluginConfig(name);
@@ -47,13 +45,13 @@ proto.setConfig = function(config) {
   this.config = config;
 };
 
-//verifica la compatibilià con il progetto corrente
+//check if plugin is compatible with current project
 proto.isCurrentProjectCompatible = function(projectId) {
-  var project = ProjectsRegistry.getCurrentProject();
+  const project = ProjectsRegistry.getCurrentProject();
   return projectId == project.getGid();
 };
 
-//registrazione plugin se compatibile con il progetto corrente
+//register the plugin if compatible
 proto.registerPlugin = function(projectId) {
   if (this.isCurrentProjectCompatible(projectId)) {
     PluginsRegistry.registerPlugin(this);
@@ -62,19 +60,16 @@ proto.registerPlugin = function(projectId) {
   return false;
 };
 
-// setup dell'interfaccia
-proto.setupGui = function() {
-  //al momento niente non so se verrà usata
-};
+proto.setupGui = function() {};
 
-// caso di sgancaimento del plugin (caso cambio progetto)
+// unload (case change map)
 proto.unload  = function() {
-  //console.log('UNLOAD deve essere sovrascritto eventalmente dal plugin');
+  //console.log('UNLOAD need to be overwrite by plugin');
 };
 
-// funzione che viene lanciata quando si fa il load del plugin
+// load plugin
 proto.load = function() {
-  //console.log('LOAD deve essere sovrascritto eventalmente dal plugin');
+  //console.log('LOAD  need to be overwrite by plugin');
 };
 
 module.exports = Plugin;

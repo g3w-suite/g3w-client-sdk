@@ -1,4 +1,4 @@
-var Providers = {
+const Providers = {
   geojson: require('./geojsonprovider'),
   kml: require('./kmlprovider'),
   xml: require('./xmlprovider'),
@@ -7,7 +7,7 @@ var Providers = {
   wfs: require('./wfsprovider')
 };
 
-var ProvidersForServerTypes = {
+const ProvidersForServerTypes = {
   'QGIS': {
     'postgres': {
       query: Providers.wms,
@@ -64,8 +64,8 @@ var ProvidersForServerTypes = {
 
 function ProviderFactory() {
   this.build = function(providerType,serverType,sourceType,options) {
-    // ritorna l'sitanza del provider selezionato
-    var providerClass = this.get(providerType,serverType,sourceType);
+    // return instace of seletced provider
+    const providerClass = this.get(providerType,serverType,sourceType);
     if (providerClass) {
       return new providerClass(options);
     }

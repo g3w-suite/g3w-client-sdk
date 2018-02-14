@@ -1,7 +1,7 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var BaseLayer = require('core/layers/baselayers/baselayer');
-var BasesLayers = require('g3w-ol3/src/layers/bases');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const BaseLayer = require('core/layers/baselayers/baselayer');
+const BasesLayers = require('g3w-ol3/src/layers/bases');
 
 function OSMLayer(options){
   base(this,options);
@@ -10,16 +10,15 @@ function OSMLayer(options){
 
 inherit(OSMLayer, BaseLayer);
 
-var proto = OSMLayer.prototype;
+const proto = OSMLayer.prototype;
 
 proto._makeOlLayer = function() {
-  var self = this;
-  var olLayer = BasesLayers.OSM;
-  olLayer.getSource().on('imageloadstart', function() {
-        self.emit("loadstart");
+  const olLayer = BasesLayers.OSM;
+  olLayer.getSource().on('imageloadstart', () => {
+        this.emit("loadstart");
       });
-  olLayer.getSource().on('imageloadend', function() {
-      self.emit("loadend");
+  olLayer.getSource().on('imageloadend', () => {
+      this.emit("loadend");
   });
   return olLayer
 };

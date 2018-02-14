@@ -86,7 +86,7 @@ function NominatimControl(options) {
       },
     jsonp: function jsonp(url, key, callback) {
         // https://github.com/Fresheyeball/micro-jsonp/blob/master/src/jsonp.js
-        var head = document.head,
+      const head = document.head,
           script = document.createElement('script'),
           // generate minimally unique name for callback function
           callbackName = 'f' + Math.round(Math.random() * Date.now());
@@ -131,7 +131,7 @@ function NominatimControl(options) {
 
         if('now' in window.performance === false) {
 
-          var nowOffset = Date.now();
+          let nowOffset = Date.now();
 
           if(performance.timing && performance.timing.navigationStart) {
             nowOffset = performance.timing.navigationStart;
@@ -147,12 +147,12 @@ function NominatimControl(options) {
       flyTo: function flyTo(map, coord, duration, resolution) {
         resolution = resolution || 2.388657133911758;
         duration = duration || 500;
-        var view = map.getView();
+        const view = map.getView();
         view.animate({duration: duration, resolution: resolution},
           {duration: duration, center: coord});
       },
       randomId: function randomId(prefix) {
-        var id = this.now().toString(36);
+        const id = this.now().toString(36);
         return prefix ? prefix + id : id;
       },
       isNumeric: function isNumeric(str) {
@@ -168,7 +168,7 @@ function NominatimControl(options) {
        * @param {Number|undefined} timeout Timeout to remove a class.
        */
       addClass: function addClass(element, classname, timeout) {
-        var this$1 = this;
+        const this$1 = this;
 
         if(Array.isArray(element)) {
           element.forEach(function (each) {
@@ -177,10 +177,10 @@ function NominatimControl(options) {
           return;
         }
 
-        var array = (Array.isArray(classname))
+        const array = (Array.isArray(classname))
           ? classname
           : classname.split(/\s+/);
-        var i = array.length;
+        let i = array.length;
 
         while (i--) {
           if(!this$1.hasClass(element, array[i])) {
@@ -189,7 +189,7 @@ function NominatimControl(options) {
         }
       },
       _addClass: function _addClass(el, klass, timeout) {
-        var this$1 = this;
+        const this$1 = this;
 
         // use native if available
         if(el.classList) {
@@ -211,7 +211,7 @@ function NominatimControl(options) {
        * @param {Number|undefined} timeout Timeout to add a class.
        */
       removeClass: function removeClass(element, classname, timeout) {
-        var this$1 = this;
+        const this$1 = this;
 
         if(Array.isArray(element)) {
           element.forEach(function (each) {
@@ -220,10 +220,10 @@ function NominatimControl(options) {
           return;
         }
 
-        var array = (Array.isArray(classname))
+        const array = (Array.isArray(classname))
           ? classname
           : classname.split(/\s+/);
-        var i = array.length;
+        let i = array.length;
 
         while (i--) {
           if(this$1.hasClass(element, array[i])) {
@@ -232,7 +232,7 @@ function NominatimControl(options) {
         }
       },
       _removeClass: function _removeClass(el, klass, timeout) {
-        var this$1 = this;
+        const this$1 = this;
 
         if(el.classList) {
           el.classList.remove(klass);
@@ -261,7 +261,7 @@ function NominatimControl(options) {
        * @param {String} classname Classe.
        */
       toggleClass: function toggleClass(element, classname) {
-        var this$1 = this;
+        const this$1 = this;
 
         if(Array.isArray(element)) {
           element.forEach(function (each) {
@@ -291,7 +291,7 @@ function NominatimControl(options) {
        */
       find: function find(selector, context, find_all) {
         if(context === void 0) context = window.document;
-        var simpleRe = /^(#?[\w-]+|\.[\w-.]+)$/,
+        let simpleRe = /^(#?[\w-]+|\.[\w-.]+)$/,
           periodRe = /\./g,
           slice = Array.prototype.slice,
           matches = [];
@@ -353,10 +353,10 @@ function NominatimControl(options) {
         });
       },
       anyItemHasValue: function anyItemHasValue(obj, has) {
-        var this$1 = this;
+        const this$1 = this;
         if(has === void 0) has = false;
 
-        var keys = Object.keys(obj);
+        const keys = Object.keys(obj);
         keys.forEach(function (key) {
           if(!this$1.isEmpty(obj[key])) {
             has = true;
@@ -370,7 +370,7 @@ function NominatimControl(options) {
         }
       },
       removeAll: function removeAll(collection) {
-        var node;
+        let node;
         while ((node = collection[0])) {
           node.parentNode.removeChild(node);
         }
@@ -385,10 +385,10 @@ function NominatimControl(options) {
         );
       },
       template: function template(html, row) {
-        var this$1 = this;
+        const this$1 = this;
 
         return html.replace(/\{ *([\w_-]+) *\}/g, function (htm, key) {
-          var value = (row[key] === undefined) ? '' : row[key];
+          const value = (row[key] === undefined) ? '' : row[key];
           return this$1.htmlEscape(value);
         });
       },
@@ -406,7 +406,7 @@ function NominatimControl(options) {
        * @returns obj3 a new object based on obj1 and obj2
        */
       mergeOptions: function mergeOptions(obj1, obj2) {
-        var obj3 = {};
+        const obj3 = {};
         for (var attr1 in obj1) {
           obj3[attr1] = obj1[attr1];
         }
@@ -416,7 +416,7 @@ function NominatimControl(options) {
         return obj3;
       },
       createElement: function createElement(node, html) {
-        var elem;
+        let elem;
         if(Array.isArray(node)) {
           elem = document.createElement(node[0]);
 
@@ -428,9 +428,9 @@ function NominatimControl(options) {
           }
 
           if(node[1].attr) {
-            var attr = node[1].attr;
+            const attr = node[1].attr;
             if(Array.isArray(attr)) {
-              var i = -1;
+              let i = -1;
               while (++i < attr.length) {
                 elem.setAttribute(attr[i].name, attr[i].value);
               }
@@ -442,7 +442,7 @@ function NominatimControl(options) {
           elem = document.createElement(node);
         }
         elem.innerHTML = html;
-        var frag = document.createDocumentFragment();
+        const frag = document.createDocumentFragment();
 
         while (elem.childNodes[0]) {
           frag.appendChild(elem.childNodes[0]);
@@ -462,17 +462,17 @@ function NominatimControl(options) {
       }
     };
 
-    var klasses = vars.cssClasses;
-    var klasses$1 = vars.cssClasses;
+  const klasses = vars.cssClasses;
+  const klasses$1 = vars.cssClasses;
 
   // classe Html //
-  var Html = function Html(base) {
+  const Html = function Html(base) {
     this.options = base.options;
     this.els = this.createControl();
   };
 
   Html.prototype.createControl = function createControl () {
-    var container, containerClass, elements;
+    let container, containerClass, elements;
 
     if (this.options.targetType === targetType.INPUT) {
       containerClass = klasses.namespace + ' ' + klasses.inputText.container;
@@ -538,7 +538,7 @@ function NominatimControl(options) {
 
   // classe OpenStreet //
 
-  var OpenStreet = function OpenStreet() {
+  const OpenStreet = function OpenStreet() {
     this.settings = {
       url: '//nominatim.openstreetmap.org/search/',
       params: {
@@ -595,7 +595,7 @@ function NominatimControl(options) {
 
   // classe Nomitatim //
 
-  var Nominatim = function Nominatim(base, els) {
+  const Nominatim = function Nominatim(base, els) {
     this.Base = base;
     this.options = base.options;
     this.options.provider = this.options.provider.toLowerCase();
@@ -609,13 +609,13 @@ function NominatimControl(options) {
   };
 
   Nominatim.prototype.setListeners = function setListeners () {
-    var this$1 = this;
-    var timeout, lastQuery;
-    var openSearch = function () {
+    const this$1 = this;
+    let timeout, lastQuery;
+    const openSearch = function () {
       utils.hasClass(this$1.els.control, klasses$1.glass.expanded) ?
         this$1.collapse() : this$1.expand();
     };
-    var query = function (evt) {
+    const query = function (evt) {
       var value = evt.target.value.trim();
       var hit = evt.key ? evt.key === 'Enter' :
         evt.which ? evt.which === 13 :
@@ -626,15 +626,15 @@ function NominatimControl(options) {
         this$1.query(value);
       }
     };
-    var reset = function (evt) {
+    const reset = function (evt) {
       this$1.els.input.focus();
       this$1.els.input.value = '';
       this$1.lastQuery = '';
       utils.addClass(this$1.els.reset, klasses$1.hidden);
       this$1.clearResults();
     };
-    var handleValue = function (evt) {
-      var value = evt.target.value.trim();
+    const handleValue = function (evt) {
+      const value = evt.target.value.trim();
 
       value.length
         ? utils.removeClass(this$1.els.reset, klasses$1.hidden)
@@ -659,9 +659,9 @@ function NominatimControl(options) {
   };
 
   Nominatim.prototype.query = function query (q) {
-    var this$1 = this;
-    var ajax = {}, options = this.options;
-    var provider = this.getProvider({
+    const this$1 = this;
+    const ajax = {}, options = this.options;
+    const provider = this.getProvider({
       query: q,
       provider: options.provider,
       key: options.key,
@@ -679,7 +679,7 @@ function NominatimControl(options) {
       .done(function(res) {
         utils.removeClass(this$1.els.reset, klasses$1.spin);
             //will be fullfiled according to provider
-            var res_= res.length ? this$1.OpenStreet.handleResponse(res) : undefined;
+            const res_= res.length ? this$1.OpenStreet.handleResponse(res) : undefined;
             this$1.createList(res_);
             if (res_) {
               this$1.listenMapClick();
@@ -688,7 +688,7 @@ function NominatimControl(options) {
       })
       .fail(function(error){
         utils.removeClass(this$1.els.reset, klasses$1.spin);
-            var li = utils.createElement(
+        const li = utils.createElement(
               'li', '<h5>  Il server non risponde</h5>');
             this$1.els.result.appendChild(li);
       })
@@ -696,11 +696,11 @@ function NominatimControl(options) {
   };
 
   Nominatim.prototype.createList = function createList (response) {
-    var this$1 = this;
-    var ul = this.els.result;
+    const this$1 = this;
+    const ul = this.els.result;
     if (response) {
       response.forEach(function (row) {
-        var addressHtml = this$1.addressTemplate(row.address),
+        const addressHtml = this$1.addressTemplate(row.address),
           html = ['<a href="#">', addressHtml, '</a>'].join(''),
           li = utils.createElement('li', html);
         li.addEventListener('click', function (evt) {
@@ -717,11 +717,11 @@ function NominatimControl(options) {
   };
 
   Nominatim.prototype.chosen = function chosen(place, addressHtml, addressObj, addressOriginal) {
-    var map = this.Base.getMap();
-    var coord_ = [parseFloat(place.lon), parseFloat(place.lat)];
-    var projection = map.getView().getProjection();
-    var coord = ol.proj.transform(coord_, 'EPSG:4326', projection);
-    var address = {
+    const map = this.Base.getMap();
+    const coord_ = [parseFloat(place.lon), parseFloat(place.lat)];
+    const projection = map.getView().getProjection();
+    const coord = ol.proj.transform(coord_, 'EPSG:4326', projection);
+    const address = {
       formatted: addressHtml,
       details: addressObj,
       original: addressOriginal
@@ -735,7 +735,7 @@ function NominatimControl(options) {
   };
 
   Nominatim.prototype.addressTemplate = function addressTemplate (address) {
-    var html = [];
+    const html = [];
     if (address.name) {
       html.push(['<div class="', klasses$1.road, '">{name}</div>'].join(''));
     }
@@ -764,7 +764,7 @@ function NominatimControl(options) {
   };
 
   Nominatim.prototype.expand = function expand () {
-    var this$1 = this;
+    const this$1 = this;
 
     utils.removeClass(this.els.input, klasses$1.spin);
     utils.addClass(this.els.control, klasses$1.glass.expanded);
@@ -784,8 +784,8 @@ function NominatimControl(options) {
     // already registered
     if (this.registeredListeners.mapClick) { return; }
 
-    var this_ = this;
-    var mapElement = this.Base.getMap().getTargetElement();
+    const this_ = this;
+    const mapElement = this.Base.getMap().getTargetElement();
     this.registeredListeners.mapClick = true;
 
     //one-time fire click

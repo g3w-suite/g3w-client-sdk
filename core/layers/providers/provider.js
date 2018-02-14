@@ -42,7 +42,7 @@ proto.getName = function() {
   return this._name;
 };
 
-//serve per estrarre il gml dal multiple nel caso della regione toscana
+// to extract gml from multiple (Tuscany region)
 proto.extractGML = function (response) {
 
   if (response.substr(0,2) != '--') {
@@ -61,9 +61,7 @@ proto.extractGML = function (response) {
   });
 };
 
-// Messo qui generale la funzione che si prende cura della trasformazione dell'xml di risposta
-// dal server così da avere una risposta coerente in termini di formato risultati da presentare
-// nel componente QueryResults
+// Method to transform xml from server to present to queryreult component
 proto.handleQueryResponseFromServer = function(layerName, response) {
   let _fakeLayerName = 'layer';
   let parser;
@@ -81,7 +79,7 @@ proto.handleQueryResponseFromServer = function(layerName, response) {
     default:
       const x2js = new X2JS();
       if (!_.isString(response)) {
-        // vado a convertire il tutto in stringa
+        // convert to string
         response = new XMLSerializer().serializeToString(response)
       }
       try {
@@ -126,20 +124,16 @@ proto.handleQueryResponseFromServer = function(layerName, response) {
   }];
 };
 
-// funzione che serve a far digerire i risultati delle features
+// digest result
 proto.digestFeaturesForLayers = function(featuresForLayers) {
   let id = 0;
-  // variabile che tiene traccia dei layer sotto query
   let layers = [];
   let layerAttributes,
-    layerRelationsAttributes,
     layerTitle,
     layerId;
   featuresForLayers.forEach((featuresForLayer) => {
     featuresForLayer = featuresForLayer;
-    // prendo il layer
     const layer = featuresForLayer.layer;
-    // verifico che tipo ti vector layer ci sono
     layerAttributes = layer.getAttributes();
     layerTitle = layer.getTitle();
     layerId = layer.getId();
@@ -152,31 +146,30 @@ proto.digestFeaturesForLayers = function(featuresForLayers) {
       hasgeometry: false,
       show: true,
       expandable: true,
-      hasImageField: false, // regola che mi permette di vedere se esiste un campo image
+      hasImageField: false, // check if image filed exist
       error: ''
     };
 
-    // verifico che ci siano feature legate a quel layer che sono il risultato della query
+    // check if exist feature related to the layer
     if (featuresForLayer.features && featuresForLayer.features.length) {
-      // prendo solo gli attributi effettivamente ritornati dal WMS (usando la prima feature disponibile)
+      // get aonly attributes returned by WMS (using the first feature availble)
       layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0].getProperties());
-      // faccio una ricerca sugli attributi del layer se esiste un campo image
-      // se si lo setto a true
+      // check if exist image field
       layerObj.attributes.forEach((attribute) => {
         if (attribute.type == 'image') {
           layerObj.hasImageField = true;
         }
       });
-      // a questo punto scorro sulle features selezionate dal risultato della query
+      // loop throught selected features from query result
       featuresForLayer.features.forEach((feature) => {
         const fid = feature.getId() ? feature.getId() : id;
         const geometry = feature.getGeometry();
-        // verifico se il layer ha la geometria
+        // check if feature has geometry
         if (geometry) {
-          // setto che ha geometria mi servirà per le action
+          // set to true it used by action
           layerObj.hasgeometry = true
         }
-        // creo un feature object
+        // create feature object
         const featureObj = {
           id: fid,
           attributes: feature.getProperties(),
@@ -198,7 +191,7 @@ proto.digestFeaturesForLayers = function(featuresForLayers) {
 proto._parseAttributes = function(layerAttributes, featureAttributes) {
   let featureAttributesNames = _.keys(featureAttributes);
   featureAttributesNames = _.filter(featureAttributesNames,function(featureAttributesName) {
-    return ['boundedBy','geom','the_geom','geometry','bbox', 'GEOMETRY'].indexOf(featureAttributesName) == -1;
+    return ['boundedBy', 'geom','the_geom','geometry','bbox', 'GEOMETRY'].indexOf(featureAttributesName) == -1;
   });
   if (layerAttributes && layerAttributes.length) {
     let featureAttributesNames = _.keys(featureAttributes);
@@ -206,9 +199,8 @@ proto._parseAttributes = function(layerAttributes, featureAttributes) {
       return featureAttributesNames.indexOf(attribute.name) > -1;
     })
   }
-  // se layer.attributes è vuoto
-  // (es. quando l'interrogazione è verso un layer esterno di cui non so i campi)
-  // costruisco la struttura "fittizia" usando l'attributo sia come name che come label
+  // if layer.attribute is empty (for exaple remote layer)
+  // build a fake structure using attribute as label as name
   else {
     return _.map(featureAttributesNames, function(featureAttributesName) {
       return {
@@ -220,8 +212,6 @@ proto._parseAttributes = function(layerAttributes, featureAttributes) {
 };
 
 
-// Brutto ma per ora unica soluzione trovata per dividere per layer i risultati di un doc xml wfs.FeatureCollection.
-// OL3 li parserizza tutti insieme non distinguendo le features dei diversi layers
 proto._parseLayerFeatureCollection = function(data, layerName) {
   const layerData = _.cloneDeep(data);
   layerData.FeatureCollection.featureMember = [];
@@ -239,7 +229,6 @@ proto._parseLayerFeatureCollection = function(data, layerName) {
   return parser.readFeatures(layerFeatureCollectionXML);
 };
 
-// mentre con i risultati in msGLMOutput (da Mapserver) il parser può essere istruito per parserizzare in base ad un layer di filtro
 proto._parseLayermsGMLOutput = function(data) {
   const layers = this._layer.getQueryLayerOrigName();
   const parser = new ol.format.WMSGetFeatureInfo({

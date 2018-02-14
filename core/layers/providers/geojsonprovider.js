@@ -1,6 +1,6 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var DataProvider = require('core/layers/providers/provider');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const DataProvider = require('core/layers/providers/provider');
 
 function GEOJSONDataProvider(options) {
   options = options || {};
@@ -10,17 +10,16 @@ function GEOJSONDataProvider(options) {
 
 inherit(GEOJSONDataProvider, DataProvider);
 
-var proto = GEOJSONDataProvider.prototype;
+const proto = GEOJSONDataProvider.prototype;
 
 proto.getFearures = function() {
-  var d = $.Deferred();
+  const d = $.Deferred();
   return d.promise();
 };
 
-// ottiene la configurazione del vettoriale
-// (qui richiesto solo per la definizione degli input)
+// get configuration by vector layer
 proto._getVectorLayerConfig = function(layerApiField) {
-  var d = $.Deferred();
+  const d = $.Deferred();
   // attravercso il layer name e il base url
   // chiedo la server di inviarmi la configurazione editing del laye
   $.get(this._baseUrl+layerApiField+"/?config"+ this._customUrlParameters)
@@ -33,11 +32,11 @@ proto._getVectorLayerConfig = function(layerApiField) {
   return d.promise();
 };
 
-// ottiene il vettoriale in modalità  editing
+// get vector layer in editing mode
 proto._getVectorLayerData = function(vectorLayer, bbox) {
-  var d = $.Deferred();
-  var lock = this.getMode() == 'w' ? true : false;
-  var apiUrl;
+  const d = $.Deferred();
+  const lock = this.getMode() == 'w' ? true : false;
+  let apiUrl;
   if (lock) {
     apiUrl = this._baseUrl+vectorLayer[this._editingApiField]+"/?editing";
   } else {

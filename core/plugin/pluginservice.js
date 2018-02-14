@@ -1,11 +1,9 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var G3WObject = require('core/g3wobject');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const G3WObject = require('core/g3wobject');
 
-// classe utilizzata dai plugin per il servizo
-// al momento inizilaizza il config
 function PluginService(options) {
-  var options = options || {};
+  options = options || {};
   base(this, options);
   this.init = function(config) {
     this.config = config;
@@ -15,7 +13,7 @@ function PluginService(options) {
 
 inherit(PluginService, G3WObject);
 
-var proto = PluginService.prototype;
+const proto = PluginService.prototype;
 
 proto.getConfig = function() {
   return this.config;

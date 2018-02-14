@@ -1,6 +1,6 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils//utils').base;
-var G3WObject = require('core/g3wobject');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils//utils').base;
+const G3WObject = require('core/g3wobject');
 
 function Step(options) {
   base(this);
@@ -9,7 +9,7 @@ function Step(options) {
   this._task = options.task || null;
   this._outputs = options.outputs || null;
 
-  //stato dinamico dello step
+  //dynamic state of step
   this.state = {
     id: options.id || null,
     name: options.name || null,
@@ -22,31 +22,28 @@ function Step(options) {
 
 inherit(Step, G3WObject);
 
-var proto = Step.prototype;
+const proto = Step.prototype;
 
-// metodo chiamato per far partire il task
+// method to start task
 proto.run = function(inputs, context) {
-  var self = this;
-  var d = $.Deferred();
+  const d = $.Deferred();
   if (this._task) {
     try {
-      // metto lo stato dello step a running
+      // change state to running
       this.state.running = true;
-      // al metodo run del task gli viene passato sia
-      // gli inputs che il context
       this._task.run(inputs, context)
-        .then(function(outups) {
-          self.stop(); //ripetuto ma non mi piace
+        .then((outups) => {
+          this.stop();
           d.resolve(outups);
         })
-        .fail(function(err) {
-          self.stop();//ripetuto ma non mi piace
+        .fail((err) => {
+          this.stop();
           d.reject(err);
         })
     }
     catch(err) {
       this.state.error = err;
-      this.state.error = 'Si è verificato un problema ..';
+      this.state.error = 'Problem ..';
       this.stop();
       d.reject(err);
     }
@@ -54,30 +51,28 @@ proto.run = function(inputs, context) {
   return d.promise();
 };
 
-//funzione che mi va  a fare lo spo dello step e in particolare del
-//task associato
+// stop step
 proto.stop = function() {
-  // chiamo lo stop del task così mi pulisce tutte le cose legate al task
+  // stop task
   this._task.stop();
-  // setta lo step a runninf false
+  // running to false
   this.state.running = false;
 };
 
-// faccio il revert del task
+// revert task
 proto.revert = function() {
   if (this._task && this._task.revert) {
    this._task.revert();
   }
 };
 
-//lancio il panic del task
+//panic
 proto.panic = function() {
   if (this._task && this._task.panic){
     this._task.panic();
   }
 };
 
-// id dello step
 proto.getId = function() {
   return this.state.id;
 };

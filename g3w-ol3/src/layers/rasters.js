@@ -1,8 +1,7 @@
-var utils = require('../utils');
-var RasterLayers = {};
+const RasterLayers = {};
 
 RasterLayers.TiledWMSLayer = function(layerObj,extraParams){
-  var options = {
+  const options = {
     layerObj: layerObj,
     extraParams: extraParams || {},
     tiled: true
@@ -11,7 +10,7 @@ RasterLayers.TiledWMSLayer = function(layerObj,extraParams){
 };
 
 RasterLayers.WMSLayer = function(layerObj,extraParams){
-  var options = {
+  const options = {
     layerObj: layerObj,
     extraParams: extraParams || {}
   };
@@ -19,27 +18,27 @@ RasterLayers.WMSLayer = function(layerObj,extraParams){
 };
 
 RasterLayers._WMSLayer = function(options) {
-  var layerObj = options.layerObj;
-  var extraParams = options.extraParams;
-  var tiled = options.tiled || false;
-  var projection = layerObj.projection ? layerObj.projection.getCode() : null;
+  const layerObj = options.layerObj;
+  const extraParams = options.extraParams;
+  const tiled = options.tiled || false;
+  const projection = layerObj.projection ? layerObj.projection.getCode() : null;
 
-  var params = {
+  let params = {
     LAYERS: layerObj.layers || '',
     VERSION: '1.3.0',
     TRANSPARENT: true,
-    SLD_VERSION: '1.1.0'
+    SLD_VERSION: '1.1.0',
   };
 
-  params = utils.merge(params,extraParams);
+  params = Object.assign({},params,extraParams);
 
-  var sourceOptions = {
+  const sourceOptions = {
     url: layerObj.url,
     params: params,
     ratio: 1
   };
 
-  var imageOptions = {
+  const imageOptions = {
     id: layerObj.id,
     name: layerObj.name,
     opacity: layerObj.opacity || 1.0,
@@ -47,8 +46,8 @@ RasterLayers._WMSLayer = function(options) {
     maxResolution: layerObj.maxResolution
   };
 
-  var imageClass;
-  var source;
+  let imageClass;
+  let source;
   if (tiled) {
     source = new ol.source.TileWMS(sourceOptions);
     imageClass = ol.layer.Tile;
@@ -68,10 +67,10 @@ RasterLayers.XYZLayer = function(options){
     return;
   }
 
-  var sourceOptions = {
+  const sourceOptions = {
     url: options.url
   };
-
+  
   if (options.projection){
     sourceOptions.projection = options.projection;
   }
@@ -86,24 +85,6 @@ RasterLayers.XYZLayer = function(options){
     source: new ol.source.XYZ(sourceOptions)
   });
 };
-
-/*RasterLayers.TiledWMSLayer = function(layerObj){
-  var layer = new ol.layer.Tile({
-    name: layerObj.name,
-    opacity: 1.0,
-    source: new ol.source.TileWMS({
-      url: layerObj.url,
-      params: {
-        LAYERS: layerObj.layers || '',
-        VERSION: '1.3.0',
-        TRANSPARENT: true
-      }
-    }),
-    visible: layerObj.visible
-  });
-
-  return layer;
-};*/
 
 module.exports = RasterLayers;
 

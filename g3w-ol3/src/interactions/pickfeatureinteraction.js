@@ -1,16 +1,14 @@
-var PickFeatureEventType = {
+const PickFeatureEventType = {
   PICKED: 'picked'
 };
 
-var PickFeatureEvent = function(type, coordinate, feature) {
+const PickFeatureEvent = function(type, coordinate, feature) {
   this.type = type;
   this.feature = feature;
   this.coordinate = coordinate;
 };
 
-var PickFeatureInteraction = function(options) {
-
-  var self = this;
+const PickFeatureInteraction = function(options) {
   ol.interaction.Pointer.call(this, {
     handleDownEvent: PickFeatureInteraction.handleDownEvent_,
     handleUpEvent: PickFeatureInteraction.handleUpEvent_,
@@ -19,8 +17,8 @@ var PickFeatureInteraction = function(options) {
   this.features_ = options.features || null;
   this.layers_ = options.layers || null;
   this.pickedFeature_ = null;
-  this.layerFilter_ = function(layer) {
-    return _.includes(self.layers_, layer);
+  this.layerFilter_ = (layer) =>  {
+    return _.includes(this.layers_, layer);
   };
 };
 ol.inherits(PickFeatureInteraction, ol.interaction.Pointer);
@@ -42,8 +40,8 @@ PickFeatureInteraction.handleUpEvent_ = function(event) {
 };
 
 PickFeatureInteraction.handleMoveEvent_ = function(event) {
-  var elem = event.map.getTargetElement();
-  var intersectingFeature = this.featuresAtPixel_(event.pixel, event.map);
+  const elem = event.map.getTargetElement();
+  const intersectingFeature = this.featuresAtPixel_(event.pixel, event.map);
   if (intersectingFeature) {
     elem.style.cursor =  'pointer';
   } else {
@@ -52,21 +50,18 @@ PickFeatureInteraction.handleMoveEvent_ = function(event) {
 };
 
 PickFeatureInteraction.prototype.featuresAtPixel_ = function(pixel, map) {
-  var featureFound = null;
-  var self = this;
-  var intersectingFeature = map.forEachFeatureAtPixel(pixel,
-      function(feature) {
-        if (self.features_) {
-          if (self.features_.indexOf(feature) > -1){
+  let featureFound = null;
+  const intersectingFeature = map.forEachFeatureAtPixel(pixel, (feature) => {
+        if (this.features_) {
+          if (this.features_.indexOf(feature) > -1){
             return feature
-          }
-          else{
+          } else {
             return null;
           }
         }
         return feature;
       }, {
-        layerFilter: self.layerFilter_,
+        layerFilter: this.layerFilter_,
         hitTolerance: (isMobile && isMobile.any) ? 10 : 0
       });
   if (intersectingFeature) {
@@ -81,7 +76,7 @@ PickFeatureInteraction.prototype.shouldStopEvent = function(){
 
 PickFeatureInteraction.prototype.setMap = function(map){
   if (!map) {
-    var elem = this.getMap().getTargetElement();
+    const elem = this.getMap().getTargetElement();
     elem.style.cursor = '';
   }
   ol.interaction.Pointer.prototype.setMap.call(this,map);

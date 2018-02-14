@@ -1,17 +1,17 @@
-var inherit = require('core/utils/utils').inherit;
-var resolvedValue = require('core/utils/utils').resolve;
-var G3WObject = require('core/g3wobject');
+const inherit = require('core/utils/utils').inherit;
+const resolvedValue = require('core/utils/utils').resolve;
+const G3WObject = require('core/g3wobject');
 
-var Panel = function(options) {
+const Panel = function(options) {
   this.internalPanel = null;
-  var options = options || {};
+  options = options || {};
   this.id = options.id || null;
   this.title = options.title || '';
 };
 
 inherit(Panel, G3WObject);
 
-var proto = Panel.prototype;
+const proto = Panel.prototype;
 
 proto.getId = function(){
   return this.id;
@@ -29,22 +29,9 @@ proto.setInternalPanel = function(internalPanel) {
   this.internalPanel = internalPanel;
 };
 
-/* HOOKS */
-
-/*
- * Il metodo permette al pannello di montarsi nel DOM
- * parent: elemento DOM padre, su cui inserirsi;
- * ritorna una promise, risolta nel momento in cui sarà terminato il montaggio
-*/
-
-// SONO DUE TIPOLOGIE DI MONTAGGIO CON IL QUALE IL PANNELLO
-// CHE VERRA' MONTATO AL VOLO CON IL METODO MOUNT A SECONDA DEL TIPO DI PANNELLO RICHIESTO
-
-// richiamato quando la GUI chiede di chiudere il pannello. Se ritorna false il pannello non viene chiuso
-
 proto.mount = function(parent) {
-  var panel = this.internalPanel;
-  var iCinstance = panel.$mount();
+  const panel = this.internalPanel;
+  const iCinstance = panel.$mount();
   $(parent).append(iCinstance.$el);
   iCinstance.$nextTick(function(){
     $(parent).localize();
@@ -55,30 +42,20 @@ proto.mount = function(parent) {
   return resolvedValue(true);
 };
 
-/*
- * Metodo richiamato quando si vuole rimuovere il panello.
- * Ritorna una promessa che sarà risolta nel momento in cui il pannello avrà completato la propria rimozione (ed eventuale rilascio di risorse dipendenti)
-*/
+
 proto.unmount = function() {
-  var panel = this.internalPanel;
-  var deferred = $.Deferred();
+  const panel = this.internalPanel;
+  const d = $.Deferred();
   panel.$destroy(true);
   $(panel.$el).remove();
-  // lo setta di nuovo a null
   if (panel.onClose) {
     panel.onClose();
   }
   this.internalComponent = null;
-  deferred.resolve();
-  return deferred.promise();
+  d.resolve();
+  return d.promise();
 };
 
-/*
- * Metodo (opzionale) che offre l'opportunità di ricalcolare proprietà dipendenti dalle dimensioni del padre
- * parentHeight: nuova altezza del parent
- * parentWidth: nuova larghezza del parent
- * richiamato ogni volta che il parent subisce un ridimensionamento
-*/
 proto.onResize = function(parentWidth,parentHeight){};
 
 

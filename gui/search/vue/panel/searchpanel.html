@@ -1,4 +1,5 @@
 <div class="g3w-search-panel form-group">
+  <div v-show="loading" class="bar-loader" style="margin-bottom: 10px; background-color: #ffff;"></div>
   <h4><b>{{ title }}</b></h4>
   <form id="g3w-search-form">
     <template v-for="(forminput, index) in forminputs">

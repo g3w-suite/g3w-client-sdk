@@ -2,7 +2,7 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils//utils').base;
 const G3WObject = require('core/g3wobject');
 
-// Interfaccia per registare i layers
+// Interface fro Layers
 function LayersStore(config) {
   config = config || {};
   this.config = {
@@ -11,17 +11,16 @@ function LayersStore(config) {
     extent: config.extent,
     initextent: config.initextent,
     wmsUrl: config.wmsUrl,
-    //metto caratteristica catalogabile
+    //set catalogable property
     catalog: _.isBoolean(config.catalog) ? config.catalog : true
   };
 
   this.state = {
-    //questo attributo mi server per popolare eventualmente l'abero del catalogo
+    //useful to build layerstree
     layerstree: [],
-    relations: null // mi servirà a costruire il tree delle relazioni paddri figlio
+    relations: null // useful to build tree of relations
   };
 
-  // aggiungo proprietà querable sui layer del layerstore
   this._isQueryable = _.isBoolean(config.queryable) ? config.queryable : true;
 
   this._layers = this.config.layers || {};
@@ -88,8 +87,8 @@ proto._removeLayer = function(layerId) {
 };
 
 proto.removeLayers = function(layersId) {
-  _.forEach(layersId, function(layerId) {
-    self.removeLayer(layer)
+  layersId.forEach((layerId) => {
+    this.removeLayer(layer)
   })
 };
 
@@ -197,7 +196,7 @@ proto.getLayersDict = function(options) {
     });
   }
 
-  // filtra solo i selezionati
+  // return only selected
   if (filterSelectedOrAll) {
     let _layers = layers;
     layers = _.filter(layers,function(layer) {
@@ -206,7 +205,7 @@ proto.getLayersDict = function(options) {
     layers = layers.length ? layers : _layers;
   }
 
-  // filtra solo i quelli non selezionati
+  // return only not selected
   if (filterAllNotSelected) {
     let _layers = layers;
     layers = _.filter(layers,function(layer){
@@ -217,7 +216,7 @@ proto.getLayersDict = function(options) {
   return layers;
 };
 
-// ritorna l'array dei layers (con opzioni di ricerca)
+// return layers array
 proto.getLayers = function(options) {
   const layers = this.getLayersDict(options);
   return _.values(layers);
@@ -363,11 +362,11 @@ proto.getWmsUrl = function() {
   return this.config.wmsUrl;
 };
 
-// funzione che setta il layersstree dei layers del layersstore
+// set layersstree of layers inside the laysstore
 proto.setLayersTree = function(layerstree, name) {
   let traverse = (obj) => {
     Object.entries(obj).forEach(([key, layer]) => {
-      //verifica che il nodo sia un layer e non un folder
+     //heck if lis layer and not a folder
       if (!_.isNil(layer.id)) {
         obj[key] = this.getLayerById(layer.id).getState();
       }
@@ -378,9 +377,6 @@ proto.setLayersTree = function(layerstree, name) {
   };
   if (layerstree.length) {
     traverse(layerstree);
-    // questo server per raggruppare ogni albero dei layer
-    // al proprio gruppo che sia un progetto, un plugin o altro
-    // quando viene creato il layersstore
     this.state.layerstree.splice(0,0,{
       title: name || this.config.id,
       expanded: true,
@@ -389,10 +385,7 @@ proto.setLayersTree = function(layerstree, name) {
   }
 };
 
-// funzione che posso sfruttare dai plugin per costruire un
-// layerstree senza tanto stare acreare  e ricordarmi come creare un layerstrree
-// naturalmente è ad una dimanesione altrimenti c'è da studiare
-// come creare un layers tree cosa innestata forse paasando un layertree nella configurazione
+// used by from plugin (or external code) to build layerstree
 proto.createLayersTree = function(groupName, options) {
   options = options || {};
   const full = options.full || false;

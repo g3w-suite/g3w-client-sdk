@@ -1,36 +1,35 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var Base64 = require('core/utils/utils').Base64;
-var G3WObject = require('core/g3wobject');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const Base64 = require('core/utils/utils').Base64;
+const G3WObject = require('core/g3wobject');
 
 /*
  * RouterService basato su History.js (https://github.com/browserstate/history.js) e Crossroads (https://github.com/millermedeiros/crossroads.js)
- * Il concetto di base è una RouteQuery, del tipo "map?point=21.2,42.1&zoom=12", 
+ * Il concetto di base è una RouteQuery, del tipo "map?point=21.2,42.1&zoom=12",
  * che viene inserito nello stato dell'history del browser e nella URL come parametro querystring in forma codificata (q=map@point!21.2,41.1|zoom!12).
  * Per invocare una RouteQuery:
- * 
+ *
  * RouterService.goto("map?point=21.2,42.1&zoom=12");
- * 
+ *
  * Chiunque voglia rispondere ad una RouteQuery deve aggiungere una route con RouterService.addRoute(pattern, callback). Es.:
- * 
+ *
  * var route = RouterService.addRoute('map/{?query}',function(query){
  *  console.log(query.point);
  *  console.log(query.zoom);
  * });
- * 
+ *
  * Patterns:
  *  "map/{foo}": la porzione "foo" è richiesta, ed viene passata come parametro alla callback
  *  "map/:foo:": la porzione "foo" è opzionale, ed eventualmente viene passata come parametro alla callback
  *  "map/:foo*: tutto quello che viene dopo "map/"
  *  "map/{?querystring}": obbligatoria querystring, passata alla callback come oggetto dei parametri
  *  "map/:?querystring:": eventuale querystring, passata alla callback come oggetto dei parametri
- * 
+ *
  * Per rimuovere una route:
  * RouterService.removeRoute(route);
 */
 
-var RouterService = function(){
-  var self = this;
+const RouterService = function(){
   this._initialLocationQuery;
   this._routeQuery = '';
   this.setters = {
@@ -39,26 +38,26 @@ var RouterService = function(){
       crossroads.parse(routeQuery);
     }
   }
-  
-  History.Adapter.bind(window,'statechange',function(){
-      var state = History.getState();
-      var locationQuery = state.hash;
+
+  History.Adapter.bind(window,'statechange',() =>{
+      const state = History.getState();
+      const locationQuery = state.hash;
       if(state.data && state.data.routequery){
-         self.setRouteQuery(state.data.routequery);
+         this.setRouteQuery(state.data.routequery);
       }
       else {
-        self._setRouteQueryFromLocationQuery(locationQuery);
+        this._setRouteQueryFromLocationQuery(locationQuery);
       }
   });
-  
+
   base(this);
 };
 inherit(RouterService,G3WObject);
 
-var proto = RouterService.prototype;
+const proto = RouterService.prototype;
 
 proto.init = function(){
-  var query = window.location.search;
+  const query = window.location.search;
   this._setRouteQueryFromLocationQuery(query);
 };
 
@@ -86,7 +85,7 @@ proto.goto = function(routeQuery){
   }
   if (routeQuery) {
     encodedRouteQuery = this._encodeRouteQuery(routeQuery);
-    var path = '?'+this._initialLocationQuery + '&q='+encodedRouteQuery;
+    const path = '?'+this._initialLocationQuery + '&q='+encodedRouteQuery;
     History.pushState({routequery:routeQuery},null,path);
   }
 };
@@ -96,21 +95,21 @@ proto.makeQueryString = function(queryParams){};
 proto.slicePath = function(path){
   return path.split('?')[0].split('/');
 };
-  
+
 proto.sliceFirst = function(path){
-  var pathAndQuery = path.split('?');
-  var queryString = pathAndQuery[1];
-  var pathArr = pathAndQuery[0].split('/')
-  var firstPath = pathArr[0];
+  const pathAndQuery = path.split('?');
+  const queryString = pathAndQuery[1];
+  const pathArr = pathAndQuery[0].split('/')
+  const firstPath = pathArr[0];
   path = pathArr.slice(1).join('/');
   path = [path,queryString].join('?')
   return [firstPath,path];
 };
-  
+
 proto.getQueryParams = function(query){
   query = query.replace('?','');
-  var queryParams = {};
-  var queryPairs = [];
+  const queryParams = {};
+  let queryPairs = [];
   if (query != "" && query.indexOf("&") == -1) {
     queryPairs = [query];
   }
@@ -118,10 +117,10 @@ proto.getQueryParams = function(query){
     queryPairs = query.split('&');
   }
   try {
-    _.forEach(queryPairs,function(queryPair){
-      var pair = queryPair.split('=');
-      var key = pair[0];
-      var value = pair[1];
+    queryPairs.forEach((queryPair) => {
+      const pair = queryPair.split('=');
+      const key = pair[0];
+      const value = pair[1];
       queryParams[key] = value;
     });
   }
@@ -134,13 +133,13 @@ proto.getQueryString = function(path){
 };
 
 proto._getQueryPortion = function(query,queryKey){
-  var queryPortion;
+  let queryPortion;
   try {
-    var queryPairs = query.split('&');
-    var queryParams = {};
-    _.forEach(queryPairs,function(queryPair){
-      var pair = queryPair.split('=');
-      var key = pair[0];
+    const queryPairs = query.split('&');
+    const queryParams = {};
+    queryPairs.forEach((queryPair) => {
+      const pair = queryPair.split('=');
+      const key = pair[0];
       if (key == queryKey) {
         queryPortion = queryPair;
       }
@@ -167,9 +166,9 @@ proto._decodeRouteQuery = function(routeQuery) {
 proto._setRouteQueryFromLocationQuery = function(locationQuery) {
   //var pathb64 = this.getQueryParams(locationQuery)['q'];
   //var path = pathb64 ? Base64.decode(pathb64) : '';
-  var encodedRouteQuery = this._getRouteQueryFromLocationQuery(locationQuery);
+  const encodedRouteQuery = this._getRouteQueryFromLocationQuery(locationQuery);
   if (encodedRouteQuery) {
-    var routeQuery = this._decodeRouteQuery(encodedRouteQuery);
+    const routeQuery = this._decodeRouteQuery(encodedRouteQuery);
     this.setRouteQuery(routeQuery);
   }
 };
@@ -179,10 +178,10 @@ proto._getRouteQueryFromLocationQuery = function(locationQuery) {
 };
 
 proto._stripInitialQuery = function(locationQuery) {
-  var previousQuery = this._getQueryPortion(locationQuery,'q');
+  const previousQuery = this._getQueryPortion(locationQuery,'q');
   if (previousQuery) {
-    var previousQueryLength = previousQuery.length;
-    var previousQueryPosition = locationQuery.indexOf(previousQuery);
+    const previousQueryLength = previousQuery.length;
+    const previousQueryPosition = locationQuery.indexOf(previousQuery);
     queryPrefix = _.trimEnd(locationQuery.substring(0,previousQueryPosition),"&");
     querySuffix = locationQuery.substring(previousQueryPosition+previousQueryLength);
     querySuffix = (queryPrefix != "") ? querySuffix : _.trimStart(querySuffix,"&");

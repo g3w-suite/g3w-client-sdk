@@ -1,6 +1,6 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var DataProvider = require('core/layers/providers/provider');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const DataProvider = require('core/layers/providers/provider');
 
 function KMLDataProvider(options) {
   options = options || {};
@@ -10,10 +10,10 @@ function KMLDataProvider(options) {
 
 inherit(KMLDataProvider, DataProvider);
 
-var proto = KMLDataProvider.prototype;
+const proto = KMLDataProvider.prototype;
 
 proto.getData = function() {
-  var d = $.Deferred();
+  const d = $.Deferred();
   return d.promise();
 };
 

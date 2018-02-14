@@ -1,10 +1,9 @@
-var t = require('core/i18n/i18n.service').t;
+const t = require('core/i18n/i18n.service').t;
 
 Vue.directive("disabled",function(el, binding){
     if (binding.value){
       el.setAttribute('disabled','disabled');
-    }
-    else {
+    } else {
       el.removeAttribute('disabled');
     }
   }
@@ -13,8 +12,7 @@ Vue.directive("disabled",function(el, binding){
 Vue.directive("checked",function(el, binding){
     if (binding.value){
       el.setAttribute('checked','checked');
-    }
-    else {
+    } else {
       el.removeAttribute('checked');
     }
   }
@@ -23,13 +21,12 @@ Vue.directive("checked",function(el, binding){
 Vue.directive("selected-first",function(el, binding){
     if (binding.value==0){
       el.setAttribute('selected','');
-    }
-    else {
+    } else {
       el.removeAttribute('selected');
     }
   }
 );
 
-Vue.directive("t",function(el, binding){
+Vue.directive("t", function(el, binding){
   return t(binding.value);
 });

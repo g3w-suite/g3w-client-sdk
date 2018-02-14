@@ -1,30 +1,30 @@
-var geom = {
+const geom = {
   distance: function(c1,c2){
     return Math.sqrt(geom.squaredDistance(c1,c2));
   },
   squaredDistance: function(c1,c2){
-    var x1 = c1[0];
-    var y1 = c1[1];
-    var x2 = c2[0];
-    var y2 = c2[1];
-    var dx = x2 - x1;
-    var dy = y2 - y1;
+    const x1 = c1[0];
+    const y1 = c1[1];
+    const x2 = c2[0];
+    const y2 = c2[1];
+    const dx = x2 - x1;
+    const dy = y2 - y1;
     return dx * dx + dy * dy;
   },
   closestOnSegment: function(coordinate, segment) {
-    var x0 = coordinate[0];
-    var y0 = coordinate[1];
-    var start = segment[0];
-    var end = segment[1];
-    var x1 = start[0];
-    var y1 = start[1];
-    var x2 = end[0];
-    var y2 = end[1];
-    var dx = x2 - x1;
-    var dy = y2 - y1;
-    var along = (dx === 0 && dy === 0) ? 0 :
+    const x0 = coordinate[0];
+    const y0 = coordinate[1];
+    const start = segment[0];
+    const end = segment[1];
+    const x1 = start[0];
+    const y1 = start[1];
+    const x2 = end[0];
+    const y2 = end[1];
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const along = (dx === 0 && dy === 0) ? 0 :
         ((dx * (x0 - x1)) + (dy * (y0 - y1))) / ((dx * dx + dy * dy) || 0);
-    var x, y;
+    let x, y;
     if (along <= 0) {
       x = x1;
       y = y1;

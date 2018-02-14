@@ -1,9 +1,8 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var G3WObject = require('core/g3wobject');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const G3WObject = require('core/g3wobject');
 
 function ToolsService(){
-  var self = this;
   this.config = null;
   this._actions = {};
   this.state = {
@@ -11,19 +10,18 @@ function ToolsService(){
   };
   this.setters = {
     addTools: function(order, groupName, tools) {
-      self._addTools(order, groupName, tools);
+      this._addTools(order, groupName, tools);
     },
     addToolGroup: function(order, group) {
-      self.state.toolsGroups.splice(order, 0, group);
+      this.state.toolsGroups.splice(order, 0, group);
     },
     removeTools:function() {
-      self._removeTools();
+      this._removeTools();
     }
   };
-  
+
   this._addTools = function(order, groupName, tools) {
-    var self = this;
-    var group = this._getToolsGroup(groupName);
+    let group = this._getToolsGroup(groupName);
     if (!group) {
       group = {
         name: groupName,
@@ -31,9 +29,9 @@ function ToolsService(){
       };
       this.addToolGroup(order, group);
     }
-    _.forEach(tools, function(tool){
+    tools.forEach((tool) => {
       group.tools.push(tool);
-      self._addAction(tool);
+      this._addAction(tool);
     });
   };
 
@@ -42,9 +40,8 @@ function ToolsService(){
   };
 
   this._removeTools = function() {
-    var self = this;
-    _.forEach(this.state.toolsGroups, function(toolGroup, toolIdx) {
-      self.state.toolsGroups.splice(0,1);
+    this.state.toolsGroups.forEach((toolGroup, toolIdx) => {
+      this.state.toolsGroups.splice(0,1);
     })
   };
 
@@ -57,13 +54,13 @@ function ToolsService(){
   };
 
   this.fireAction = function(actionId){
-    var action = this._actions[actionId];
+    const action = this._actions[actionId];
     action();
   };
 
   this._getToolsGroup = function(groupName) {
-    var group = null;
-    _.forEach(this.state.toolsGroups,function(_group){
+    let group = null;
+    this.state.toolsGroups.forEach((_group) => {
       if (_group.name == groupName) {
         group = _group;
       }
@@ -72,7 +69,7 @@ function ToolsService(){
   };
 
   this._addAction = function(tool) {
-    var actionId = Math.floor(Math.random() * 1000000)+1;
+    const actionId = Math.floor(Math.random() * 1000000) + 1;
     tool.actionId = actionId;
     this._actions[actionId] = tool.action;
   };

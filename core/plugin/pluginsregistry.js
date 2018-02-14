@@ -1,99 +1,78 @@
-var base = require('core/utils/utils').base;
-var inherit = require('core/utils/utils').inherit;
-var G3WObject = require('core/g3wobject');
-var GUI = require('gui/gui');
-var sdk = require('sdk');
+const base = require('core/utils/utils').base;
+const inherit = require('core/utils/utils').inherit;
+const G3WObject = require('core/g3wobject');
+const GUI = require('gui/gui');
 
 function PluginsRegistry() {
-  var self = this;
   this.config = null;
-  // un domani questo sarà dinamico
   this._plugins = {};
   this._loadedPluginUrls = [];
   this.setters = {
-    //setters che server per registrare il plugin
+    //setters to register plugin
     registerPlugin: function(plugin) {
-      if (!self._plugins[plugin.name]) {
-        self._plugins[plugin.name] = plugin;
+      if (!this._plugins[plugin.name]) {
+        this._plugins[plugin.name] = plugin;
       }
     }
   };
   base(this);
 
-  // funzione di inizializzazione dei plugin
+  // initilize plugin
   this.init = function(options) {
-    var d = $.Deferred();
-    var self = this;
+    const d = $.Deferred();
     this.pluginsBaseUrl = options.pluginsBaseUrl;
-    // oggetto contenente la configuarzione dei vvari plugins (che sono le chiavi dell'oggetto)
+    // plugin configurations
     this.pluginsConfigs = options.pluginsConfigs;
-    // configurazione altri plugin
+    // cother plugins that aren't in configuration server
     this.otherPluginsConfig = options.otherPluginsConfig;
     this.setOtherPlugins();
-        //ciclo sull'oggetto plugins per fare il setup dei vari plugin legati al progetto
-    _.forEach(this.pluginsConfigs, function(pluginConfig, name) {
-      self._setup(name, pluginConfig);
+    Object.entries(this.pluginsConfigs).forEach(([name, pluginConfig]) => {
+      this._setup(name, pluginConfig);
     });
 
     return d.promise();
   };
 
   this.setOtherPlugins = function() {
-    //da vedere poi come cutomizzare il law plugin
     if (this.otherPluginsConfig && this.otherPluginsConfig.law && this.otherPluginsConfig.law.length) {
+      // law plugin
       this.pluginsConfigs['law'] =  this.otherPluginsConfig.law;
     }
   };
 
-  // funzione che serve per fare il reload dei plugins
+  // reaload plugin in case of change map
   this.reloadPlugins = function(project) {
-    var self = this;
-    var ApplicationService = require('core/applicationservice');
-    //forzo la varibile globale initConfig a null affinche venga ricaricato
-    // la configurazione iniziale
+    const ApplicationService = require('core/applicationservice');
+    // set initCongi to null to force to get new init configuration from server
     window.initConfig = null;
-    //vado a riottenere l'initConfig
+    //get new initConfig from server
     ApplicationService.obtainInitConfig()
-      .then(function(initConfig) {
-        // prendo vado a rimuovere i tools
+      .then((initConfig) => {
+        //remove tools
         GUI.getComponent('tools').getService().removeTools();
-        // setto il pluginsConfig
-        self.setPluginsConfig(initConfig.group.plugins);
-        // devo ricaricare quelli con custom
-        self.setOtherPlugins();
-        // prendo dal documento tutti gli scripts
-        var scripts = $('script');
-        // va do a scorrere sui plugin registrati e verifico se il plugin esisteva oppure  no
-        // se non esiste devo chiamare il metodo unload per sganciare tutte le sue cose (se previsto)
-        // e implementato dal plugin
-        _.forEach(self.getPlugins(), function(plugin, pluginName) {
-          // verifico che il plugin non sia presente nella nuoav configurazione dei plugin
-          //e quindi chieamo l'unload (se implementato) del plugin prima di
-          // rimuovere lo script
-          if (_.keys(self.pluginsConfigs).indexOf(pluginName) == -1) {
-            // chaimo il metodo unload del plugin
+        this.setPluginsConfig(initConfig.group.plugins);
+        this.setOtherPlugins();
+        const scripts = $('script');
+        Object.entries(this.getPlugins()).forEach(([pluginName, plugin]) => {
+          if (_.keys(this.pluginsConfigs).indexOf(pluginName) == -1) {
             plugin.unload();
-            // rimuovo il plugin anche dai pugin registrati
-            delete self._plugins[pluginName];
-            // cliclo sugli script vado a togliere gli script che contengono plugin
-            _.forEach(scripts, function(scr) {
-              _.forEach(self._loadedPluginUrls, function(pluginUrl, idx) {
+            delete this._plugins[pluginName];
+            scripts.forEach((scr) => {
+              this._loadedPluginUrls.forEach((pluginUrl, idx) => {
                 if (scr.getAttribute('src') == pluginUrl && pluginUrl.indexOf(pluginName) != -1) {
                   scr.parentNode.removeChild( scr );
-                  //vado a cancellare lo script associato a quel plugin
-                  self._loadedPluginUrls.splice(idx, 1);
+                  this._loadedPluginUrls.splice(idx, 1);
                   return false;
                 }
               })
             });
           } else {
             plugin.load();
-            // lo devo togliere dalla configurazione
-            delete self.pluginsConfigs[pluginName];
+            delete this.pluginsConfigs[pluginName];
           }
         });
-        _.forEach(self.pluginsConfigs, function(pluginConfig, pluginName) {
-          self._setup(pluginName, pluginConfig);
+        Object.entries(this.pluginsConfigs).forEach(([pluginName, pluginConfig]) => {
+          this._setup(pluginName, pluginConfig);
         })
       });
   };
@@ -102,21 +81,15 @@ function PluginsRegistry() {
     this.pluginsConfigs = config;
   };
 
-  //funzione che permette il caricamento dello script del plugin
+  //load plugin script
   this._setup = function(name, pluginConfig) {
-    // verifico che il plugin config la configurazione del
-    // plugin non sia nulla per caricare il plugin
+
     if (!_.isNull(pluginConfig)) {
-      var baseUrl = this.pluginsBaseUrl+name;
-      var scriptUrl = baseUrl + '/js/plugin.js?'+Date.now();
-      var url = this.pluginsBaseUrl+name+'/js/plugin.js?'+Date.now();
-      //vado ad aggiungere il pluginbas ur alla configurazione del plugin
-      // in questo modo posso utilizzare tale url dal plugin stesso magari caricando dinamicamente
-      // un css associato
+      const baseUrl = this.pluginsBaseUrl+name;
+      const scriptUrl = baseUrl + '/js/plugin.js?'+Date.now();
+      const url = this.pluginsBaseUrl+name+'/js/plugin.js?'+Date.now();
       pluginConfig.baseUrl= this.pluginsBaseUrl;
-      // vado a caricare lo script
       $script(scriptUrl);
-      // vado ad aggiunguere il plugin all'array dei plugin caricati
       this._loadedPluginUrls.push(url);
     }
   };

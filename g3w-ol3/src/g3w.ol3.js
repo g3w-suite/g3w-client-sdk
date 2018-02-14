@@ -1,5 +1,5 @@
-var utils = require('./utils');
-var maphelpers = require('./map/maphelpers');
+const utils = require('./utils');
+const maphelpers = require('./map/maphelpers');
 
 (function (name, root, factory) {
   if (typeof define === 'function' && define.amd) {
@@ -13,8 +13,8 @@ var maphelpers = require('./map/maphelpers');
   }
 })('g3wol3', this, function () {
   'use strict';
-  
-  var helpers = utils.merge({},maphelpers);
+
+  const helpers = utils.merge({},maphelpers);
   
   return {
     helpers: helpers

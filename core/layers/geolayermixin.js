@@ -1,6 +1,5 @@
 const Projections = require('g3w-ol3/src/projection/projections');
 
-
 function GeoLayerMixin(config) {}
 
 const proto = GeoLayerMixin.prototype;
@@ -12,8 +11,8 @@ proto.setup = function(config) {
   }
   this.config.multilayerid = config.multilayer;
 
-  // estendo lo stato del layer settando la proprietà
-  // geolayer a true e aggiungendo le informazioni del bbox alla proprietà bbox
+  // state extend of layer setting geolayer property to true
+  // and adding informations of bbox
   _.extend(this.state, {
     geolayer: true,
     bbox: config.bbox || null,

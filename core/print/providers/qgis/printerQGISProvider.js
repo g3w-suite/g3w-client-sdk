@@ -1,20 +1,19 @@
-var inherit = require('core/utils/utils').inherit;
-var resolve = require('core/utils/utils').resolve;
-var base = require('core/utils/utils').base;
-var G3WObject = require('core/g3wobject');
-var ProjectsRegistry = require('core/project/projectsregistry');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const G3WObject = require('core/g3wobject');
+const ProjectsRegistry = require('core/project/projectsregistry');
 
 
 function PrinterQGISProvider() {
   base(this);
 
   this._getPrintUrl = function(options) {
-    var options = options || {};
-    var layersStore =   ProjectsRegistry.getCurrentProject().getLayersStore();
-    var templateMap = options.map || 'map0';
-    var url = layersStore.getWmsUrl();
-    // devo fare il reverse perchè l'odine conta sulla visualizzazione del print
-    var layers = _.reverse(layersStore.getLayers({
+    options = options || {};
+    const layersStore =   ProjectsRegistry.getCurrentProject().getLayersStore();
+    const templateMap = options.map || 'map0';
+    let url = layersStore.getWmsUrl();
+    // reverse of layer because the order is important
+    let layers = _.reverse(layersStore.getLayers({
       ACTIVE: true,
       VISIBLE: true,
       SERVERTYPE: 'QGIS'
@@ -22,7 +21,7 @@ function PrinterQGISProvider() {
     layers = _.map(layers,function(layer){
       return layer.getQueryLayerName()
     });
-    var params = {
+    const params = {
       SERVICE: 'WMS',
       VERSION: '1.3.0',
       REQUEST: 'GetPrint',
@@ -41,13 +40,7 @@ function PrinterQGISProvider() {
   };
 
   this.print = function(options) {
-    /* options è un oggetto che contiene:
-     type: tipo di printer server
-     url: url a cui effettuare la richiesta
-     params : oggetto contenete i parametri necessari alla creazione della richiesta
-     come ad esempio filter etc ..
-     */
-    var options = options || {};
+    options = options || {};
     return this._getPrintUrl(options);
   };
 }

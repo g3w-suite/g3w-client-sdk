@@ -138,7 +138,8 @@ var vueComponentOptions = {
         if (viewPortWidth) {
           // qui dovrei andare a vedere la posizione dei controlli
           _.forEach(mapService.getMapControls(), function(control) {
-            control.control.changelayout(map);
+            if (control.control.changelayout)
+              control.control.changelayout(map);
           })
         }
       })

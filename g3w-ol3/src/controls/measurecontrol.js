@@ -1,6 +1,6 @@
-var InteractionControl = require('./interactioncontrol');
+const InteractionControl = require('./interactioncontrol');
 
-var MeasureControl = function(options) {
+const MeasureControl = function(options) {
   this._map = null;
   this._projection = null;
   InteractionControl.call(this, options);
@@ -8,7 +8,7 @@ var MeasureControl = function(options) {
 
 ol.inherits(MeasureControl, InteractionControl);
 
-var proto = MeasureControl.prototype;
+const proto = MeasureControl.prototype;
 
 proto.setMap = function(map) {
   InteractionControl.prototype.setMap.call(this, map);
@@ -17,8 +17,7 @@ proto.setMap = function(map) {
 proto.toggle = function(toggle) {
   InteractionControl.prototype.toggle.call(this, toggle);
   if (!this.isToggled()) {
-    //vado a fare il clen del measure control che erara stato eventualmente acceso
-    // esempio area se attivo su lenght e viceversa
+    //clean of the measure control if it was activated
     this.getIteraction().clear();
   }
 };

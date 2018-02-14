@@ -2,8 +2,7 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils//utils').base;
 const G3WObject = require('core/g3wobject');
 
-// classe Editor che ha lo scopo di comunicare con il layer e
-// di svolgere azioni primarie
+// class Editor bind editor to layer to do main actions
 function Editor(options) {
   options = options || {};
   this.setters = {
@@ -27,9 +26,9 @@ function Editor(options) {
     }
   };
   base(this);
-  //deve far riferimento necessariamente ad un layer
+  // referred layer
   this._layer = options.layer;
-  // attributo che mi dice se l'editor è attivo o no
+  // editor is active or not
   this._started = false;
 }
 
@@ -46,7 +45,7 @@ proto.setLayer = function(layer) {
   return this._layer;
 };
 
-// funzione per il recupero delle get features
+// fget features methods
 proto._getFeatures = function(options) {
   const d = $.Deferred();
   this._layer.getFeatures(options)
@@ -63,38 +62,37 @@ proto._getFeatures = function(options) {
   return d.promise();
 };
 
-// funzione che viene lanciata dopo che è stato salvato
-// il nuovo stato del layer definitivamente sul server
+// run after server apply chaged to origin resource
 proto.commit = function(commitItems, featurestore) {
   const d = $.Deferred();
   this._layer.commit(commitItems, featurestore)
-    .then(function (promise) {
+    .then((promise) => {
       promise
-        .then(function(response) {
-          // vado ad aggiornare le features nel caso di nuovi insrimenti
+        .then((response) => {
+          // update features after new insert
           return d.resolve(response);
         })
-        .fail(function (err) {
+        .fail((err) => {
         return d.reject(err);
       })
     })
-    .fail(function (err) {
+    .fail((err) => {
       d.reject(err);
     });
   return d.promise();
 };
 
-//funzione che fa partire lo start editing
+//start editing function
 proto.start = function(options) {
   const d = $.Deferred();
-  // carica le features del layer in base al tipo di filtro (da vedere come)
+  // load features of layer based on filter type
   this.getFeatures(options)
     .then((promise) => {
       promise
         .then((features) => {
-          // le features ono già dentro il featuresstore del layer
+          // the features are already inside featuresstore
           d.resolve(features);
-          // se andato tutto bene setto a true la proprietà
+          //if all ok set to started
           this._started = true;
         })
         .fail((err) => {
@@ -108,7 +106,7 @@ proto.start = function(options) {
   return d.promise()
 };
 
-//qui sono le azioni che agiscono direttamente sul layer
+//action to layer
 
 proto._addFeature = function(feature) {
   this._layer.addFeature(feature);
@@ -140,7 +138,7 @@ proto.stop = function() {
   return d.promise();
 };
 
-//metodo save che non fa altro che lanciare il save del layer
+//run save layer
 proto._save = function() {
   this._layer.save();
 };

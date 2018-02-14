@@ -1,9 +1,9 @@
-var utils = require('../utils');
-var LenghtIteraction = require('../interactions/lengthinteraction');
-var MeasureControl = require('./measurecontrol');
+const utils = require('../utils');
+const LenghtIteraction = require('../interactions/lengthinteraction');
+const MeasureControl = require('./measurecontrol');
 
-var LengthControl = function(options) {
-  var _options = {
+const LengthControl = function(options) {
+  const _options = {
     name: "Lunghezza",
     label: "\ue908",
     interactionClass: LenghtIteraction

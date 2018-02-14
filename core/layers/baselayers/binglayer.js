@@ -1,7 +1,7 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var BaseLayer = require('core/layers/baselayers/baselayer');
-var BasesLayers = require('g3w-ol3/src/layers/bases');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const BaseLayer = require('core/layers/baselayers/baselayer');
+const BasesLayers = require('g3w-ol3/src/layers/bases');
 
 function BingLayer(options){
   base(this,options);
@@ -9,12 +9,11 @@ function BingLayer(options){
 
 inherit(BingLayer, BaseLayer);
 
-var proto = BingLayer.prototype;
+const proto = BingLayer.prototype;
 
 proto._makeOlLayer = function(){
-  var self = this;
-  var olLayer;
-  var subtype = this.config.source ? this.config.source.subtype : null;
+  let olLayer;
+  const subtype = this.config.source ? this.config.source.subtype : null;
   switch(subtype) {
     case 'streets':
       olLayer = BasesLayers.BING.Road;
@@ -29,11 +28,11 @@ proto._makeOlLayer = function(){
       olLayer = BasesLayers.BING.Aerial;
       break;
   }
-  olLayer.getSource().on('imageloadstart', function() {
-        self.emit("loadstart");
+  olLayer.getSource().on('imageloadstart', () => {
+        this.emit("loadstart");
       });
-  olLayer.getSource().on('imageloadend', function() {
-      self.emit("loadend");
+  olLayer.getSource().on('imageloadend', () => {
+      this.emit("loadend");
   });
 
   return olLayer

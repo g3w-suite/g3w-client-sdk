@@ -3,7 +3,7 @@ const base = require('core/utils/utils').base;
 const utils = require('core/utils/utils');
 const geoutils = require('g3w-ol3/src/utils/utils');
 const DataProvider = require('core/layers/providers/provider');
-//vado a sovrascrivere il metodo per leggere le feature
+//overwrite method to read feature
 // da un geojson
 const PIXEL_TOLERANCE = 10;
 const GETFEATUREINFO_IMAGE_SIZE = [101, 101];
@@ -43,7 +43,7 @@ proto._getRequestUrl = function(url, extent, size, pixelRatio, projection, param
   return utils.appendParams(url, params);
 };
 
-// funzione che deve esserere "estratta dal mapservice"
+// exttrac from mapserveice
 proto._getGetFeatureInfoUrlForLayer = function(url, coordinates,resolution, params) {
   const extent = geoutils.getExtentForViewAndSize(coordinates, resolution, 0, GETFEATUREINFO_IMAGE_SIZE);
   const baseParams = {
@@ -86,7 +86,7 @@ proto.query = function(options) {
     QUERY_LAYERS: this._layerName,
     INFO_FORMAT: this._infoFormat,
     FEATURE_COUNT: 10,
-    // PARAMETRI DI TOLLERANZA PER QGIS SERVER
+    // TOLLERANCE PARAMETERS FOR QGIS
     FI_POINT_TOLERANCE: PIXEL_TOLERANCE,
     FI_LINE_TOLERANCE: PIXEL_TOLERANCE,
     FI_POLYGON_TOLERANCE: PIXEL_TOLERANCE,

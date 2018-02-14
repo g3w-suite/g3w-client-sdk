@@ -1,6 +1,5 @@
-// classe Filtro per poter creare filtri
-// chiesti principalmente dai providers per poter
-// effettuare richieste di dati
+// class Filter to build filter
+// useful by provider providers to get data
 function Filter() {
   this._filter = null;
   this._type = null;
@@ -10,10 +9,10 @@ const proto = Filter.prototype;
 
 proto.getAll = function() {
   this._type = Filter.TYPES.all;
-  this._filter = null 
+  this._filter = null
 };
 
-// server per creare un filtro complesso
+// to create complex filter
 proto.setExpression = function(expression) {
   this._type = Filter.TYPES.expression;
   this._filter = expression;
@@ -41,7 +40,7 @@ proto.serialize = function() {
   return JSON.stringify(this);
 };
 
-// funzione che server per recuperare il valore del filtro
+// get filter value
 proto.get = function() {
   return this._filter;
 };

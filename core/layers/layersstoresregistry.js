@@ -1,14 +1,12 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils//utils').base;
-var G3WObject = require('core/g3wobject');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils//utils').base;
+const G3WObject = require('core/g3wobject');
 
-// Interfaccia per registare i layers
+// Registy Layers
 function LayersStoresRegistry() {
-  var self = this;
   this.stores = {};
   this.storesArray = [];
-  // questi setters mi servono per far reagire  le varie parti dell'applicazione
-  // che dipendono o sono legate ai layersStores
+  // to react some application components that are binding to Layerstore
   this.setters = {
     addLayersStore: function(layersStore, idx) {
       this._addLayersStore(layersStore, idx);
@@ -26,18 +24,18 @@ function LayersStoresRegistry() {
 
 inherit(LayersStoresRegistry, G3WObject);
 
-proto = LayersStoresRegistry.prototype;
+const proto = LayersStoresRegistry.prototype;
 
 proto.getLayers = function(filter) {
-  var layers = [];
-  _.forEach(this.stores, function(layersStore, storeId) {
+  let layers = [];
+  Object.entries(this.stores).forEach(([storeId, layersStore]) => {
     layers = layers.concat(layersStore.getLayers(filter))
   });
   return layers;
 };
 
 proto.getQuerableLayersStores = function() {
-  return _.filter(this.getLayersStores(), function(layersStore) {
+  return this.getLayersStores().filter((layersStore) => {
     return layersStore.isQueryable();
   })
 };
@@ -47,20 +45,15 @@ proto.getLayersStore = function(id) {
 };
 
 proto.getLayersStores = function() {
-  var self = this;
-  var stores = [];
-
-  _.forEach(this.storesArray,function(storeId){
-    stores.push(self.stores[storeId]);
+  const stores = [];
+  this.storesArray.forEach((storeId) => {
+    stores.push(this.stores[storeId]);
   });
-
   return stores;
 };
 
-// funzione che aggiunge un layersstore al registro della
 proto._addLayersStore = function(layersStore, idx) {
-  // usiamo un array per garantire ordine di inserimento, poi potremo gestire richieste di inserimento in una specifica posizione
-  var storeId = layersStore.getId();
+  const storeId = layersStore.getId();
   this.stores[storeId] = layersStore;
   if (!_.isNil(idx)) {
     this.storesArray.splice(idx,0, storeId);
@@ -71,16 +64,15 @@ proto._addLayersStore = function(layersStore, idx) {
 
 proto._removeLayersStore = function(layerStore) {
   if (layerStore) {
-    var storeId = layerStore.getId();
-    var idx = this.storesArray.indexOf(storeId);
+    const storeId = layerStore.getId();
+    const idx = this.storesArray.indexOf(storeId);
     delete this.stores[storeId];
     this.storesArray.splice(idx, 1);
   }
 };
 
-// rimuove tutti i layersstore salvati
 proto._removeLayersStores = function() {
-  var length = this.storesArray.length;
+  const length = this.storesArray.length;
   this.storesArray.splice(0, length);
   this.stores = {};
 };

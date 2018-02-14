@@ -2,7 +2,7 @@
 
 /* GET LAYER BY NAME */
 _gis3wlib._layer.prototype.addLayer = function(type,layerObj){
-  var layer = this.buildLayer(type,layerObj);
+  const layer = this.buildLayer(type,layerObj);
   this.map.addLayer(layer);
 };
 
@@ -12,14 +12,14 @@ _gis3wlib._layer.prototype.buildLayer = function(type,layerObj){
     'vector': Vector Layer;
     'raster': raster Layer;
   */
-  var layer = this['build'+type+'Layer'](layerObj);
+  const layer = this['build'+type+'Layer'](layerObj);
   return layer;
 };
 
 _gis3wlib._layer.prototype.getLayerByName = function(layer_name) {
-  var layers = this.map.getLayers();
-  var length = layers.getLength();
-  for (var i = 0; i < length; i++) {
+  const layers = this.map.getLayers();
+  const length = layers.getLength();
+  for (let i = 0; i < length; i++) {
     if (layer_name === layers.item(i).get('name')) {
       return layers.item(i);
     }
@@ -29,16 +29,16 @@ _gis3wlib._layer.prototype.getLayerByName = function(layer_name) {
 
 /* REMOVE NAME BY NAME */
 _gis3wlib._layer.prototype.removeLayerByName = function(layer_name){
-  var layer = this.getLayerByName(layer_name);
+  const layer = this.getLayerByName(layer_name);
   if (layer){
     this.map.removeLayer(layer);
   }
 };
 
 _gis3wlib._layer.prototype.getActiveLayers = function(){
-  var activelayers = [];
-  this.map.getLayers().forEach(function(layer) {
-    var props = layer.getProperties();
+  const activelayers = [];
+  this.map.getLayers().forEach((layer) => {
+    const props = layer.getProperties();
     if (props.basemap != true && props.visible){
        activelayers.push(layer);
     }
@@ -48,9 +48,9 @@ _gis3wlib._layer.prototype.getActiveLayers = function(){
 };
 
 _gis3wlib._layer.prototype.getLayersNoBase = function(){
-  var layers = [];
-  this.map.getLayers().forEach(function(layer) {
-    var props = layer.getProperties();
+  const layers = [];
+  this.map.getLayers().forEach((layer) => {
+    const props = layer.getProperties();
     if (props.basemap != true){
       layers.push(layer);
     }

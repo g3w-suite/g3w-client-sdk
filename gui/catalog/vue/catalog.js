@@ -17,19 +17,19 @@ const vueComponentOptions = {
   data: function() {
     return {
       state: null,
-      //oggetto per la visualizzazione del contextmenu
-      // tasto destro
+      // to show context menu right click
       layerMenu: {
         show: false,
         top:0,
         left:0,
         name: '',
         layer: null,
+        loading_data_table : false,
         items: {
           zoomtolayer: t("catalog_items.contextmenu.zoomtolayer"),
           open_attribute_table:t("catalog_items.contextmenu.open_attribute_table")
         },
-        //oggetto colorMenu
+        //colorMenu
         colorMenu: {
           show: false,
           top:0,
@@ -41,7 +41,7 @@ const vueComponentOptions = {
     }
   },
   directives: {
-    //creo la direttiva per il click fuori dal contextmenu
+    //create a vue directive fro click outside contextmenu
     'click-outside-layer-menu': {
       bind: function (el, binding, vnode) {
         this.event = function (event) {
@@ -49,7 +49,7 @@ const vueComponentOptions = {
             vnode.context[binding.expression](event);
           }
         };
-        //aggiungo event listener click
+        //add event listener click
         document.body.addEventListener('click', this.event)
       },
       unbind: function (el) {
@@ -108,6 +108,7 @@ const vueComponentOptions = {
       this.layerMenu.show = false;
     },
     showAttributeTable: function() {
+      GUI.closeContent()
       let layer;
       let features;
       const catallogLayersStores = CatalogLayersStoresRegistry.getLayersStores();
@@ -118,6 +119,7 @@ const vueComponentOptions = {
           return false;
         }
       });
+      this.layerMenu.loading_data_table = true;
       layer.getDataTable()
         .then((data) => {
           GUI.showContent({
@@ -132,8 +134,11 @@ const vueComponentOptions = {
           });
         })
         .fail((err) => {
+        })
+        .always(() => {
+          this.layerMenu.loading_data_table = false;
+          this.layerMenu.show = false;
         });
-      this.layerMenu.show = false;
     },
     startEditing: function() {
       let layer;
@@ -224,7 +229,7 @@ const vueComponentOptions = {
       let layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(node.id);
       if (!layer.isSelected()) {
         CatalogLayersStoresRegistry.getLayersStore(storeid).selectLayer(node.id);
-        // emetto il segnale layer selezionato dal catalogo
+        // emit signal of select layer from catalog
         mapservice.emit('cataloglayerselected', layer);
       } else {
         CatalogLayersStoresRegistry.getLayersStore(storeid).unselectLayer(node.id);
@@ -259,14 +264,12 @@ const vueComponentOptions = {
   }
 };
 
-// se lo voglio istanziare manualmente
 const InternalComponent = Vue.extend(vueComponentOptions);
 
-// se lo voglio usare come componente come elemento html
 Vue.component('g3w-catalog', vueComponentOptions);
 
 
-/* COMPONENTI FIGLI */
+/* CHILDREN COMPONENTS */
 // tree component
 Vue.component('tristate-tree', {
   template: require('./tristate-tree.html'),
@@ -290,7 +293,7 @@ Vue.component('tristate-tree', {
       let _childsLength = 0;
       const isFolder = !!this.layerstree.nodes;
       if (isFolder) {
-        // function that count numbero of layers of each folder and visible layers
+        // function that count number of layers of each folder and visible layers
         let countLayersVisible = (layerstree) => {
           //if mutually exclusive count 1
           if (layerstree.mutually_exclusive) {

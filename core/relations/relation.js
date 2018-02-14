@@ -1,10 +1,10 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils//utils').base;
-var G3WObject = require('core/g3wobject');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils//utils').base;
+const G3WObject = require('core/g3wobject');
 
 function Relation(config) {
   config = config || {};
-  var uniqueSuffix = Date.now();
+  const uniqueSuffix = Date.now();
   // config per le pari statiche
   this.state = {
     id: config.id || 'id_' + uniqueSuffix ,
@@ -21,7 +21,7 @@ function Relation(config) {
 
 inherit(Relation, G3WObject);
 
-var proto = Relation.prototype;
+const proto = Relation.prototype;
 
 proto.getId = function() {
   return this.state.id;
@@ -56,7 +56,7 @@ proto.getType = function() {
 };
 
 proto.getFields = function() {
-  var fields = {
+  const fields = {
     father: this.state.fatherField,
     child: this.state.childField
   };

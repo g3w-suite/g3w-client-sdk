@@ -1,12 +1,12 @@
 /* MAP FUNCTIONS */
 _gis3wlib._map.prototype.setMap = function(mapOpts) {
-  var attribution = new ol.control.Attribution({
+  const attribution = new ol.control.Attribution({
     collapsible: false
   });
-  var controls = ol.control.defaults({
+  const controls = ol.control.defaults({
     attribution: false
   }).extend([attribution, new ol.control.Zoom()]);
-  var map  = new ol.Map({
+  const map  = new ol.Map({
     controls: controls,
     interactions: ol.interaction.defaults().extend([
       new ol.interaction.DragRotate()
@@ -27,12 +27,12 @@ _gis3wlib._map.prototype.getMap = function(){
 };
 
 _gis3wlib._map.prototype.setCenter = function(coordinates, zoom){
-  var view = this.map.getView();
+  const view = this.map.getView();
   view.setCenter(coordinates);
   view.setZoom(zoom);
 };
 
 _gis3wlib._map.prototype.getZoom = function(){
-  var view = this.map.getView();
+  const view = this.map.getView();
   return view.getZoom();
 };

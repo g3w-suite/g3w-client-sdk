@@ -4,11 +4,10 @@ const VectorLayer = require('./vectorlayer');
 const ImageLayer = require('./imagelayer');
 const BaseLayers = require('./baselayers/baselayers');
 
-// oggetto che ha il compito di costruire
-// l'istanza Layer a seconda della configurazione
+// Class to build layer based on configuration
 function LayerFactory() {
   this.build = function(config, options) {
-    // ritorna l'istanza del layer in base alla configurazione
+    // return the layer instance
     const layerClass = this.get(config);
     if (layerClass) {
       return new layerClass(config, options);
@@ -20,14 +19,11 @@ function LayerFactory() {
     let LayerClass;
     const serverType = config.servertype;
     if(serverType == 'QGIS') {
-      // imposto subito a ImageLayer
       LayerClass = ImageLayer;
-      // poi vado a verificare
       if(config.source && config.geometrytype) {
         if([Layer.SourceTypes.POSTGIS, Layer.SourceTypes.SPATIALITE, Layer.SourceTypes.CSV].indexOf(config.source.type) > -1) {
           if(config.geometrytype && config.geometrytype == 'No geometry') {
-            // se non è stato definito il tipo geometrico allora assesgno classe
-            // TableLayer
+            // if no geometry retun Table Layer
             LayerClass = TableLayer;
           }
         }

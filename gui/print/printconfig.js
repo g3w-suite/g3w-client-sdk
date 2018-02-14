@@ -1,4 +1,4 @@
-var scale = [
+const scale = [
   {
     value:500,
     label:'1:500'
@@ -52,7 +52,8 @@ var scale = [
     label:'1:5.000.000'
   }
 ];
-var dpis = [150, 300];
+
+const dpis = [150, 300];
 
 module.exports = {
   scale: scale,

@@ -1,24 +1,22 @@
-// oggetto base per che definisce i metodi comuni per tutti gli inputs
+// Base object that has common  inputs methods
 const Service = require('./service');
-//Definisco un baseInput object per permetterere all'input di ereditare
-// metododi etc .. da questo
+
 const BaseInput = {
   props: ['state'],
   data: function() {
     return {
-      // definisco il service per chi non lo sovrascrive
       service: new Service({
-        state: this.state // passo lo state
+        state: this.state 
       })
     }
   },
   template: require('./baseinput.html'),
   methods: {
-    // metodo che viene scaturito quando cambia il valore dell'input
+    // called when input value chage
     change: function(options) {
-      //vado a validare il valore
+      // validsate input
       this.service.validate(options);
-      // emette il segnale che è cambiato un input
+      // emit change input
       this.$emit('changeinput', this.state);
     },
     isEditable: function() {
@@ -28,20 +26,16 @@ const BaseInput = {
 
     }
   },
-  // vado a emettere l'evento addinput
   mounted: function() {
-    // setto la proprietà reattiva valid
     Vue.set(this.state.validate, 'valid', true);
     Vue.set(this.state.validate, 'message', null);
     this.change();
     this.$nextTick(() => {
-      // emetto il segnale di aggiunta input e passo l'oggetto validate
       this.$emit('addinput', this.state);
     })
   }
 };
 
-//vado a definire un componente BaseInput che sarà parte del componente input
 const BaseInputComponent = Vue.extend({
   mixins: [BaseInput]
 });

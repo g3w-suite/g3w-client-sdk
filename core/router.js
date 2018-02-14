@@ -1,42 +1,39 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var Base64 = require('core/utils/utils').Base64;
-var G3WObject = require('core/g3wobject');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const Base64 = require('core/utils/utils').Base64;
+const G3WObject = require('core/g3wobject');
 
 /*
- * RouterService basato su History.js (https://github.com/browserstate/history.js) e Crossroads (https://github.com/millermedeiros/crossroads.js)
- * Il concetto di base è una RouteQuery, del tipo "map?point=21.2,42.1&zoom=12", 
- * che viene inserito nello stato dell'history del browser e nella URL come parametro querystring in forma codificata (q=map@point!21.2,41.1|zoom!12).
- * Per invocare una RouteQuery:
- * 
+ * RouterService based on  History.js (https://github.com/browserstate/history.js) e Crossroads (https://github.com/millermedeiros/crossroads.js)
+ * Base concept is RouteQuery, example "map?point=21.2,42.1&zoom=12",
+ * it inserts into browser and URL as quesrystring (q=map@point!21.2,41.1|zoom!12).
+ * To run RouteQuery:
+ *
  * RouterService.goto("map?point=21.2,42.1&zoom=12");
- * 
- * Chiunque voglia rispondere ad una RouteQuery deve aggiungere una route con RouterService.addRoute(pattern, callback). Es.:
- * 
+ *
+ *To listen to router has to be add  RouterService.addRoute(pattern, callback). Es.:
+ *
  * var route = RouterService.addRoute('map/{?query}',function(query){
  *  console.log(query.point);
  *  console.log(query.zoom);
  * });
- * 
+ *
  * Patterns:
- *  "map/{foo}": la porzione "foo" è richiesta, ed viene passata come parametro alla callback
- *  "map/:foo:": la porzione "foo" è opzionale, ed eventualmente viene passata come parametro alla callback
- *  "map/:foo*: tutto quello che viene dopo "map/"
- *  "map/{?querystring}": obbligatoria querystring, passata alla callback come oggetto dei parametri
- *  "map/:?querystring:": eventuale querystring, passata alla callback come oggetto dei parametri
- * 
- * Per rimuovere una route:
+ *  "map/{foo}": la porzione "foo" is request, and is passed as parameter in callback
+ *  "map/:foo:": la porzione "foo" è optional, 
+ *  "map/:foo*: 
+ *  "map/{?querystring}": mandatory
+ *  "map/:?querystring:": optionals
+ *
+ * to remove  route:
  * RouterService.removeRoute(route);
 */
 
-// altrimenti due chiamate successive alla stessa route verrebbero ignorate
-// e può capitare di tornare a chiamare la stessa route senza averne chiamate prima (perché non tutta la GUI è comandata tramite Router)
 crossroads.ignoreState = true;
-// tutte le route vengono innescate da un url, invece di feramrsi alla prima (com'è di default)
 crossroads.greedy = true;
 
-var RouterService = function(){
-  var self = this;
+const RouterService = function(){
+
   this._initialLocationQuery;
   this._routeQuery = '';
   this.setters = {
@@ -45,16 +42,16 @@ var RouterService = function(){
       crossroads.parse(routeQuery);
     }
   };
-  
+
   base(this);
 };
 inherit(RouterService, G3WObject);
 
-var proto = RouterService.prototype;
+const proto = RouterService.prototype;
 
 proto.init = function() {
   //Return the querystring part of a URL
-  var query = window.location.search;
+  const query = window.location.search;
   this._setRouteQueryFromLocationQuery(query);
 };
 
@@ -87,7 +84,7 @@ proto.makePermalink = function(routeQuery) {
   if (!this._initialQuery) {
     this._initialLocationQuery = this._stripInitialQuery(location.search.substring(1));
   }
-  var encodedRouteQuery = this._encodeRouteQuery(routeQuery);
+  const encodedRouteQuery = this._encodeRouteQuery(routeQuery);
   //encodedRouteQuery = Base64.encode(encodedRouteQuery);
   return '?'+this._initialLocationQuery + '&q='+this._encodeRouteQuery(routeQuery);
 };
@@ -97,21 +94,21 @@ proto.makeQueryString = function(queryParams){};
 proto.slicePath = function(path){
   return path.split('?')[0].split('/');
 };
-  
+
 proto.sliceFirst = function(path){
-  var pathAndQuery = path.split('?');
-  var queryString = pathAndQuery[1];
-  var pathArr = pathAndQuery[0].split('/');
-  var firstPath = pathArr[0];
+  const pathAndQuery = path.split('?');
+  const queryString = pathAndQuery[1];
+  const pathArr = pathAndQuery[0].split('/');
+  const firstPath = pathArr[0];
   path = pathArr.slice(1).join('/');
   path = [path,queryString].join('?');
   return [firstPath,path];
 };
-  
+
 proto.getQueryParams = function(query) {
   query = query.replace('?','');
-  var queryParams = {};
-  var queryPairs = [];
+  const queryParams = {};
+  let queryPairs = [];
   if (query != "" && query.indexOf("&") == -1) {
     queryPairs = [query];
   }

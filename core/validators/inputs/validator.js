@@ -1,6 +1,6 @@
 function InputValidator() {
   this.validate = function() {
-    return true; // risponde sempre true
+    return true; // always true. Generic validator
   }
 }
 

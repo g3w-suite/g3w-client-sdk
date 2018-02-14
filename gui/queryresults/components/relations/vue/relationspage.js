@@ -1,21 +1,26 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var Component = require('gui/vue/component');
-var Service = require('../relationsservice');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const Component = require('gui/vue/component');
+const Service = require('../relationsservice');
 
 
 
 /* Lista delle relationi associate  */
-var relationsComponent = {
+const relationsComponent = {
   template: require('./relations.html'),
   props: ['relations', 'feature'],
+  computed: {
+    isOneRelation() {
+      return this.relations.length == 1 && this.relations[0].type == 'ONE'
+    }
+  },
   methods: {
     showRelation: function(relation) {
       this.$parent.showRelation(relation);
     },
     featureInfo: function() {
-      var infoFeatures = [];
-      var index = 0;
+      let infoFeatures = [];
+      let index = 0;
       _.forEach(this.feature.attributes, function(value, key) {
         if (index > 2) return false;
         if (value && _.isString(value) && value.indexOf('/') == -1 ) {
@@ -34,19 +39,24 @@ var relationsComponent = {
 /*-----------------------------------*/
 
 /* Tabella relation */
-var relationComponent = {
+const relationComponent = {
   template: require('./relation.html'),
   props: ['table', 'relation'],
+  computed: {
+    one () {
+      return this.relation.type == 'ONE'
+    }
+  },
   methods: {
     back: function() {
       this.$parent.setRelationsList();
     },
     getFieldType: function (value) {
-      var Fields = {};
+      const Fields = {};
       Fields.SIMPLE = 'simple';
       Fields.LINK = 'link';
 
-      var URLPattern = /^(https?:\/\/[^\s]+)/g;
+      const URLPattern = /^(https?:\/\/[^\s]+)/g;
       if (_.isNil(value)) {
         return Fields.SIMPLE;
       }
@@ -59,17 +69,31 @@ var relationComponent = {
       return Fields.SIMPLE;
     },
     fieldIs: function(type, value) {
-      var fieldType = this.getFieldType(value);
+      const fieldType = this.getFieldType(value);
       return fieldType === type;
     },
     is: function(type,value) {
       return this.fieldIs(type, value);
     }
+  },
+  mounted () {
+    this.$nextTick(() => {
+      if (!this.one) {
+        const tableHeight = $(".content").height();
+        $('#relationtable').DataTable( {
+          "pageLength": 10,
+          "bLengthChange": false,
+          "scrollY": tableHeight / 2 +  "px",
+          "scrollCollapse": true,
+          "order": [ 0, 'asc' ]
+        } )
+      }
+    });
   }
 };
 /*-----------------------------------*/
 
-var InternalComponent = Vue.extend({
+const InternalComponent = Vue.extend({
   template: require('./relationspage.html'),
   data: function() {
     return {
@@ -86,38 +110,47 @@ var InternalComponent = Vue.extend({
     'relation': relationComponent
   },
   methods: {
+    isOneRelation() {
+      return this.relations.length == 1 && this.relations[0].type == 'ONE'
+    },
     showRelation: function(relation) {
-      var self = this;
       this.relation = relation;
-      var field = relation.fieldRef.referencedField;
-      var value = this.feature.attributes[field];
+      const field = relation.fieldRef.referencedField;
+      const value = this.feature.attributes[field];
       this.$options.service.getRelations({
         id: relation.id,
         value: value
-      }).then(function(relations) {
-        self.table = self.$options.service.buildRelationTable(relations);
-        self.currentview = 'relation';
-        Vue.nextTick(function() {
+      }).then((relations) => {
+        this.table = this.$options.service.buildRelationTable(relations);
+        this.currentview = 'relation';
+        Vue.nextTick(() => {
           $(".nano").nanoScroller();
         })
+      }).fail((err) => {
+        console.log(err)
       })
     },
     setRelationsList: function() {
       this.currentview = 'relations';
     }
-  }
+  },
+  beforeMount () {
+    if (this.isOneRelation()) {
+      this.showRelation(this.relations[0])
+    }
+  },
 });
 
-var RelationsPage = function(options) {
+const RelationsPage = function(options) {
   base(this);
-  var options = options || {};
-  var service = options.service || new Service({});
-  var relations = options.relations || [];
-  var feature = options.feature || null;
+  options = options || {};
+  const service = options.service || new Service({});
+  const relations = options.relations || [];
+  const feature = options.feature || null;
   // istanzio il componente interno
   this.setService(service);
   // istanzio il componente interno
-  var internalComponent = new InternalComponent({
+  const internalComponent = new InternalComponent({
     service: service,
     relations: relations,
     feature: feature

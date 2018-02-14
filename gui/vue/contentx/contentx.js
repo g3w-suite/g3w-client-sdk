@@ -1,16 +1,14 @@
-var t = require('core/i18n/i18n.service').t;
-var GUI = require('gui/gui');   
-var RouterService = require('core/router');
-var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
+const t = require('core/i18n/i18n.service').t;
+const GUI = require('gui/gui');
+const RouterService = require('core/router');
+const ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 
-var ContentxViewComponent = Vue.component('g3w-contentx',{
+const ContentxViewComponent = Vue.component('g3w-contentx',{
   template: require('./contentx.html'),
 });
 
 function ContentxView() {
-  var self = this;
-  var _viewComponent;
-  
+  let _viewComponent;
   this.getViewComponent = function(){
     if (!_viewComponent) {
       _viewComponent = new ContentxViewComponent;
@@ -19,15 +17,14 @@ function ContentxView() {
   };
   
   this.show = function(path){
-    var view = RouterService.sliceFirst(path)[0];
+    const view = RouterService.sliceFirst(path)[0];
     if (view == 'content') {
-      var query = RouterService.getQueryParams(path);
-      //
+      const query = RouterService.getQueryParams(path);
     }
   };
   
-  RouterService.onafter('setRoute',function(path){
-    self.show(path);
+  RouterService.onafter('setRoute',(path) => {
+    this.show(path);
   });
 }
 

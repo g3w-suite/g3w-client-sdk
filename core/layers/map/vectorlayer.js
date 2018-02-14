@@ -1,9 +1,9 @@
-var inherit = require('core/utils/utils').inherit;
-var resolve = require('core/utils/utils').resolve;
-var G3WObject = require('core/g3wobject');
+const inherit = require('core/utils/utils').inherit;
+const resolve = require('core/utils/utils').resolve;
+const G3WObject = require('core/g3wobject');
 
 function VectorLayer(config) {
-  var config = config || {};
+  config = config || {};
   this.geometrytype = config.geometrytype || null;
   this.format = config.format || null;
   this.crs = config.crs  || null;
@@ -20,15 +20,15 @@ function VectorLayer(config) {
   });
   this._isReady = false;
   /*
-   * Array di oggetti:
+   * Array objects:
    * {
-   *  name: Nome dell'attributo,
+   *  name: Attribute name,
    *  type: integer | float | string | boolean | date | time | datetime,
    *  input: {
-   *    label: Nome del campo di input,
+   *    label: Label fild input,
    *    type: select | check | radio | coordspicker | boxpicker | layerpicker | fielddepend,
    *    options: {
-   *      Le opzioni per lo spcifico tipo di input (es. "values" per la lista di valori di select, check e radio)
+   *      type of inputso di input (es. "values" select, radio, etc ..)
    *    }
    *  }
    * }
@@ -49,32 +49,31 @@ inherit(VectorLayer,G3WObject);
 
 module.exports = VectorLayer;
 
-var proto = VectorLayer.prototype;
+const proto = VectorLayer.prototype;
 
 proto.getPk = function() {
   return this.pk;
 };
 
 proto.setData = function(featuresData) {
-  var self = this;
-  var Ids = [];
-  var features;
+  const Ids = [];
+  let features;
   if (this.format) {
     switch (this.format){
       case "GeoJSON":
-        var geojson = new ol.format.GeoJSON({
+        const geojson = new ol.format.GeoJSON({
           geometryName: "geometry"
         });
         features = geojson.readFeatures(featuresData, {
-          dataProjection: self.crsLayer,
-          featureProjection: self.crs
+          dataProjection: this.crsLayer,
+          featureProjection: this.crs
         });
         break;
     }
     if (this._editingMode && this._featureLocks) {
-      features = _.filter(features, function(feature) {
-        var hasFeatureLock = false;
-        _.forEach(self._featureLocks,function(featureLock){
+      features = features.filter((feature) => {
+        let hasFeatureLock = false;
+        this._featureLocks.forEach((featureLock) =>{
           if (featureLock.featureid == feature.getId()) {
             hasFeatureLock = true;
             Ids.push(feature.getId());
@@ -83,20 +82,20 @@ proto.setData = function(featuresData) {
         return hasFeatureLock;
       })
     }
-    
+
     if (features && features.length) {
       if (!_.isNull(this._featuresFilter)){
-        features = _.map(features,function(feature){
-          return self._featuresFilter(feature);
+        features = features.map((feature) => {
+          return this._featuresFilter(feature);
         });
       }
-      var featuresToLoad = _.filter(features,function(feature) {
-        return !_.includes(self._loadedIds,feature.getId());
+      const featuresToLoad = features.filter((feature) => {
+        return !_.includes(this._loadedIds, feature.getId());
       });
 
       this._olSource.addFeatures(featuresToLoad);
-      // verifico, prendendo la prima feature, se la PK è presente o meno tra gli attributi
-      var attributes = this.getSource().getFeatures()[0].getProperties();
+      // check, get firts feature, if there is PK into the attributes
+      const attributes = this.getSource().getFeatures()[0].getProperties();
       this._PKinAttributes = _.get(attributes,this.pk) ? true : false;
       this._loadedIds = _.union(this._loadedIds, Ids);
     }
@@ -130,9 +129,9 @@ proto.addFeatures = function(features) {
 };
 
 proto.modifyFeatureGeometry = function(featureId, geometry) {
-  var features = this.getFeatures();
-  var feature = null;
-  _.forEach(features, function(feature, index) {
+  const features = this.getFeatures();
+  let feature = null;
+  features.forEach((feature, index) => {
     if (feature.getId() == featureId) {
       features[index].setGeometry(geometry);
       feature = feature[index];
@@ -159,14 +158,12 @@ proto.getCrs = function() {
 };
 
 proto.setPkField = function(){
-  var self = this;
-  var pkfieldSet = false;
-  _.forEach(this._fields,function(field){
-    if (field.name == self.pk ){
+  let pkfieldSet = false;
+  this._fields.forEach((field) => {
+    if (field.name == this.pk ){
       pkfieldSet = true;
     }
   });
-  
   if (!pkfieldSet) {
     this._fields;
   }
@@ -177,16 +174,16 @@ proto.getFeatures = function() {
 };
 
 proto.getFeatureIds = function(){
-  var featureIds = _.map(this.getSource().getFeatures(), function(feature){
+  const featureIds = _.map(this.getSource().getFeatures(), function(feature){
     return feature.getId();
   });
   return featureIds
 };
 
-// funzione che recurepa le feature del vector layer in base alla geometria passata
+// get feature from layer by geometry intersect
 proto.getIntersectedFeatures = function(geometry) {
-  var features = [];
-  _.forEach(this.getFeatures(), function(feature) {
+  const features = [];
+  this.getFeatures().forEach((feature) => {
     if (geometry.intersectsExtent(feature.getGeometry().getExtent())) {
       features.push(feature);
     }
@@ -199,7 +196,7 @@ proto.getFields = function(){
   return _.cloneDeep(this._fields);
 };
 
-// funzione che mi server per la query result nel caso di vector layer
+// get atrributes
 proto.getAttributes = function() {
   return this._fields;
 };
@@ -209,34 +206,32 @@ proto.getFieldsNames = function(){
     return field.name;
   });
 };
-// funzione che serve ad esempio all'openEditorFor per popolare
-// il form con i campi della feature e i relativi valori (nel caso di editing di una feature esistente)
+
+//used by for example before open a form
 proto.getFieldsWithValues = function(obj) {
-  var self = this;
-  // clono i fields in quanto non voglio modificare i valori originali
-  var fields = _.cloneDeep(this._fields);
-  var feature, attributes;
-  // il metodo accetta sia feature che fid
+  // clone fields without modify the original
+  const fields = _.cloneDeep(this._fields);
+  let feature, attributes;
   if (obj instanceof ol.Feature){
     feature = obj;
   }
   else if (obj){
     feature = this.getFeatureById(obj);
   }
-  // se c'è una feature ne prendo le proprietà
+  // get proprety feature
   if (feature) {
     attributes = feature.getProperties();
   }
-  _.forEach(fields, function(field){
+  fields.forEach((field) => {
     if (feature){
-      if (!this._PKinAttributes && field.name == self.pk) {
-        if (self.isNewFeature(feature.getId())) {
+      if (!this._PKinAttributes && field.name == this.pk) {
+        if (this.isNewFeature(feature.getId())) {
           field.value = null;
         } else {
           field.value = feature.getId();
         }
       } else {
-        
+
         field.value = attributes[field.name];
       }
     }
@@ -244,45 +239,43 @@ proto.getFieldsWithValues = function(obj) {
       field.value = null;
     }
   });
-
   return fields;
 };
 
-// funzione che setta e relazione del layer vettoriale
+// set realtions
 proto.setRelations = function(relations) {
-  // assegno al valore _relations l'array relazioni
   this._relations = relations;
-  // è un array contenete le relazioni con altri layers
-  _.forEach(relations, function(relation) {
-    // per ogni relazione scorro sull'attributo fields (array) di oggetti
-    // che descrivono  i campi del layer relazione
-    _.forEach(relation.fields, function(field, idx) {
+  // array that store relation with others layers
+  relations.forEach((relation) => {
+    // for each relation loop on each attributes (array) of objects
+    // that describe the relation
+    relation.fields.forEach((field, idx) => {
       if (field.name == relation.pk) {
-        // aggiung ll'atributo pkFieldIndex
-        // che mi servirà per recuperare il campo
-        // primary del layer relazione
-        // setto indice del campo chiave primaria
+       // add pkFieldIndex
+        // usefultto get the field
+        // primary of the layer relation
+        // and set primary key
         relation.pkFieldIndex = idx
       }
     })
   })
 };
-// resituisce le relazioni
+// get Realations
 proto.getRelations = function() {
   return this._relations;
 };
 
-// retituisce un oggetto contenente nome relazione e fileds(attributi) associati
+// get relations attributes
 proto.getRelationsAttributes = function() {
-  var fields = {};
-  _.forEach(this._relations, function(relation) {
+  const fields = {};
+  this._relations.forEach((relation) => {
     fields[relation.name] = relation.fields;
   });
   return fields;
 };
 proto.getRelation = function(relationName) {
-  var relation;
-  _.forEach(this._relations,function(_relation){
+  let relation;
+  this._relations.forEach((_relation) => {
     if (_relation.name == relationName) {
       relation = _relation;
     }
@@ -295,8 +288,8 @@ proto.hasRelations = function() {
 };
 
 proto.getRelationPkFieldIndex = function(relation) {
-  var pkFieldIndex;
-  _.forEach(relation.fields,function(field,idx){
+  let pkFieldIndex;
+  relation.fields.forEach((field,idx) => {
     if (field.name == relation.pk) {
       pkFieldIndex = idx;
     }
@@ -305,13 +298,13 @@ proto.getRelationPkFieldIndex = function(relation) {
 };
 
 proto.getRelationElementPkValue = function(relation,element) {
-  var pkFieldIndex = this.getRelationPkFieldIndex(relation);
+  const pkFieldIndex = this.getRelationPkFieldIndex(relation);
   return element.fields[pkFieldIndex].value;
 };
 
 proto.getRelationsFksKeys = function(){
-  var fks = [];
-  _.forEach(this._relations,function(relation){
+  const fks = [];
+  this._relations.forEach((relation) => {
     fks.push(relation.fk);
   });
   return fks;
@@ -327,37 +320,30 @@ proto.getRelationFieldsNames = function(relation){
   });
 };
 
-// ottengo le relazioni a partire dal fid di una feature esistente
+// get realtion by fid of the existing feature
 proto.getRelationsWithValues = function(fid) {
-  var self = this;
   if (!this._relations) {
-    // se non ha nessuna relazione
-    // rirotno array vuoto
+    // if no one relation reture empty array
     resolve([]);
   }
-  // altrimenti creo un clone dell'attributo relations
-  var relations = _.cloneDeep(this._relations);
-  // se non è stato settao l'id della feature e quindi la feature non esiste
-  // vado a creare la strutture lelations element (array)
+  // otherwise  clone relations
+  const relations = _.cloneDeep(this._relations);
   if (!fid && !this.getFeatureById(fid)) {
-    _.forEach(relations, function(relation) {
+    relations.forEach((relation) => {
       relation.elements = [];
     });
     return resolve(relations);
   }
   else {
     if (this.lazyRelations) {
-      //verifico se sono già state caricate le relazioni di quella feature
-      if (!self._relationsDataLoaded[fid]) {
-        var deferred = $.Deferred();
-        var attributes = this.getFeatureById(fid).getProperties();
-        var fks = {};
-        _.forEach(relations, function(relation) {
-          var keyVals = [];
-          _.forEach(relation.fk, function(fkKey) {
-            // verifico che la foreingkey sia la primary key del layer e a questo punto
-            // prendo il fid altrimenti prendo il valore dell'attributo della feature
-            if (fkKey == self.pk)  {
+      // check if are loaded relation
+      if (!this._relationsDataLoaded[fid]) {
+        const d = $.Deferred();
+        const attributes = this.getFeatureById(fid).getProperties();
+        const fks = {};
+        relations.forEach((relation) => {
+          _.forEach(relation.fk, (fkKey) => {
+            if (fkKey == this.pk)  {
               fks[fkKey] = fid;
             } else {
               fks[fkKey] = attributes[fkKey];
@@ -365,53 +351,51 @@ proto.getRelationsWithValues = function(fid) {
           });
         });
         this.getRelationsWithValuesFromFks(fks)
-          .then(function(relationsResponse){
-            self._relationsDataLoaded[fid] = relationsResponse;
-            deferred.resolve(relationsResponse);
+          .then((relationsResponse) => {
+            this._relationsDataLoaded[fid] = relationsResponse;
+            d.resolve(relationsResponse);
           })
           .fail(function(){
-            deferred.reject();
+            d.reject();
           });
-        return deferred.promise();
+        return d.promise();
       }
       else {
         return resolve(this._relationsDataLoaded[fid]);
       }
     }
     else {
-      return resolve(this._relations); // vuol dire che gli elementi delle relazioni sono stati già inseriti in fase di creazione del vettoriale
+      return resolve(this._relations);
     }
   }
 };
 
-// ottengo le relazioni valorizzate a partire da un oggetto con le chiavi FK come keys e i loro valori come values
+// get realtions with values
 proto.getRelationsWithValuesFromFks = function(fks, newRelation) {
-  var self = this;
-  var relations = _.cloneDeep(this._relations);
-  var relationsRequests = [];
-
-  _.forEach(relations,function(relation){
-    relation.elements = []; // creo la proprietà che accoglierà gli elementi della relazione ( e che quindi li cacherà)
-    var url = relation.url;
-    var keyVals = [];
+  const relations = _.cloneDeep(this._relations);
+  const relationsRequests = [];
+  relations.forEach((relation) => {
+    relation.elements = [];
+    let url = relation.url;
+    const keyVals = [];
     _.forEach(relation.fk,function(fkKey){
-      var fkValue = fks[fkKey];
+      const fkValue = fks[fkKey];
       keyVals.push(fkKey+"="+fkValue);
     });
-    var fkParams = _.join(keyVals,"&");
+    const fkParams = _.join(keyVals,"&");
     url += "?"+fkParams;
     relationsRequests.push($.get(url)
-      .then(function(relationsElements){
+      .then((relationsElements) => {
         if (relationsElements.length) {
-          _.forEach(relationsElements,function(relationElement){
-            var element = {};
-            element.fields = _.cloneDeep(relation.fields); // i campi li metto anche in ogni elemento, in modo da poterne assegnarne i valori
-            _.forEach(element.fields,function(field){ // assegno i valori ai campi
+          relationsElements.forEach((relationElement) => {
+            const element = {};
+            element.fields = _.cloneDeep(relation.fields);
+            element.fields.forEach((field) => {
               field.value = relationElement[field.name];
               if (field.name == relation.pk) {
-                element.id = field.value; // aggiungo element.id dandogli il valore della chiave primaria della relazione
-                var state = newRelation ? 'NEW' : 'OLD';
-                element.state = state; // flag usato per identificare elemento: 'NEW', 'OLD', 'DELETED'
+                element.id = field.value;
+                const state = newRelation ? 'NEW' : 'OLD';
+                element.state = state; // flag to identify element: 'NEW', 'OLD', 'DELETED'
               }
             });
             relation.elements.push(element);
@@ -420,10 +404,10 @@ proto.getRelationsWithValuesFromFks = function(fks, newRelation) {
       })
     )
   });
-  
+
   return $.when.apply(this,relationsRequests)
-  .then(function(){
-    return relations; // le relazioni e i loro elementi sono immutabili; le modifiche vanno nei RelationEditBuffer
+  .then(() => {
+    return relations;
   });
 };
 
@@ -431,28 +415,26 @@ proto.getNewRelationsWithValuesFromFks = function(fks){
   return this.getRelationsWithValuesFromFks(fks, true)
 };
 
-// data una feature verifico se ha tra gli attributi i valori delle FK delle (eventuali) relazioni
 proto.featureHasRelationsFksWithValues = function(feature){
-  var attributes = feature.getProperties();
-  var fksKeys = this.getRelationsFksKeys();
-  return _.every(fksKeys,function(fkKey){
-    var value = attributes[fkKey];
+  const attributes = feature.getProperties();
+  const fksKeys = this.getRelationsFksKeys();
+  return _.every(fksKeys, (fkKey) => {
+    const value = attributes[fkKey];
     return (!_.isNil(value) && value != '');
   })
 };
 
-// data una feature popolo un oggetto con chiavi/valori delle FK delle (eventuali) relazione
 proto.getRelationsFksWithValuesForFeature = function(feature){
-  var attributes = feature.getProperties();
-  var fks = {};
-  var fksKeys = this.getRelationsFksKeys();
-  _.forEach(fksKeys,function(fkKey){
+  const attributes = feature.getProperties();
+  const fks = {};
+  const fksKeys = this.getRelationsFksKeys();
+  _.forEach(fksKeys, (fkKey) => {
     fks[fkKey] = attributes[fkKey];
   });
   return fks;
 };
 
-//vado a settare le nuove relaioni dopo che ho fatto save del form
+
 proto.setRelationsData = function (fid, relationsData) {
   this._relationsDataLoaded[fid] = relationsData;
 };

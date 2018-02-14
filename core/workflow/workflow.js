@@ -1,35 +1,29 @@
-var resolve = require('core/utils/utils').resolve;
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils//utils').base;
-var G3WObject = require('core/g3wobject');
-var Flow = require('./flow');
-var WorkflowsStack = require('./workflowsstack');
-//classe che ha lo scopo generico di gestire un flusso
-// ordinato di passi (steps)
+const resolve = require('core/utils/utils').resolve;
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils//utils').base;
+const G3WObject = require('core/g3wobject');
+const Flow = require('./flow');
+const WorkflowsStack = require('./workflowsstack');
+//Class to manage flow of steps
 function Workflow(options) {
   base(this);
   options = options || {};
-  // oggetto che conterrà tutti
-  // i dati necessari a lavorare con l'editing
+  // inputs mandatory to work with editing
   this._inputs = options.inputs || null;
-  //oggetto che determina il contesto in cui
-  // opera il workflow
   this._context = options.context || null;
-  // flow oggetto che mi permette di stabilile come
-  // mi devo muovere all'interno del worflow
+  // flow object to control the flow
   this._flow = options.flow || new Flow();
-  // sono i vari passi con i relativi task
-  // nei quali l'inpust verranno aggiornati
+  // all steps of flow
   this._steps = options.steps || [];
-  // qui viene messo il child del workflow
+  // if is child of another workflow
   this._child = null;
-  // indice dello stack dei workflow
+  // stack workflowindex
   this._stackIndex = null;
 }
 
 inherit(Workflow, G3WObject);
 
-var proto = Workflow.prototype;
+const proto = Workflow.prototype;
 
 proto.getStackIndex = function() {
   return this._stackIndex;
@@ -45,7 +39,7 @@ proto.addChild = function(workflow) {
 
 proto.removeChild = function() {
   if (this._child) {
-    var index = this._child.getStackIndex();
+    const index = this._child.getStackIndex();
     WorkflowsStack.removeAt(index);
   }
 
@@ -93,7 +87,7 @@ proto.getStep = function(index) {
 };
 
 proto.getLastStep = function() {
-  var length = this._steps.length;
+  const length = this._steps.length;
   if (length) {
     return this._steps[length]
   }
@@ -101,8 +95,8 @@ proto.getLastStep = function() {
 };
 
 proto.getRunningStep = function() {
-  var runningStep = null;
-  _.forEach(this._steps, function(step) {
+  let runningStep = null;
+  this._steps.forEach((step) => {
     if (step.isRunning()) {
       runningStep = step;
     }
@@ -110,53 +104,50 @@ proto.getRunningStep = function() {
   return runningStep;
 };
 
-//funzione cha va a stoppare tutti i figli del worflow
+//stop all workflow children
 proto._stopChild = function() {
   return this._child ? this._child.stop(): resolve();
 };
 
-// metodo principale al lancio del workflow
+// start workflow
 proto.start = function(options) {
   options = options || {};
-  var d = $.Deferred();
+  const d = $.Deferred();
   this._inputs = options.inputs;
-  //oggetto che mi server per operare su elementi utili
   this._context = options.context || {};
-  // verifico se ci sono workflow già presenti in corso
+  //check if are workflow running
   if (WorkflowsStack.getLength() && WorkflowsStack.getLast() != this)
     WorkflowsStack.getLast().addChild(this);
   this._stackIndex = WorkflowsStack.push(this);
   this._flow = options.flow || this._flow;
   this._steps = options.steps || this._steps;
   this._flow.start(this)
-    .then(function(outputs) {
-      // ritorna l'outputs
+    .then((outputs) => {
+      // retunr output
       d.resolve(outputs);
     })
-    .fail(function(error) {
+    .fail((error) => {
       d.reject(error);
     });
   return d.promise();
 };
 
-// metodo stop utilizzato per eventualmente stoppare
-// il workflow durante il suo flusso
+// stop workflow during flow
 proto.stop = function() {
-  var self = this;
   ////console.log('Workflow stopping .... ');
-  var d = $.Deferred();
-  // chiamo lo stop del child workflow che arà una sua vita  indipendente dal padre
+  const d = $.Deferred();
+  // stop child workflow indpendent from father workflow
   this._stopChild()
-    // in ogni caso faccio il removechild
-    .always(function() {
-      self.removeChild();
-      WorkflowsStack.removeAt(self.getStackIndex());
-      // vado a chiamare lo stop del flow
-      self._flow.stop() // ritorna una promessa
-        .then(function() {
+    // in every case remove child
+    .always(() => {
+      this.removeChild();
+      WorkflowsStack.removeAt(this.getStackIndex());
+      // call stop flow
+      this._flow.stop() // ritorna una promessa
+        .then(() => {
           d.resolve()
         })
-        .fail(function(err) {
+        .fail((err) => {
           // mi serve per capire cosa fare
           d.reject(err)
         });

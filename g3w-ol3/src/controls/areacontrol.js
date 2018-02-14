@@ -1,9 +1,9 @@
-var utils = require('../utils');
-var AreaIteraction = require('../interactions/areainteraction');
-var MeasureControl = require('./measurecontrol');
+const utils = require('../utils');
+const AreaIteraction = require('../interactions/areainteraction');
+const MeasureControl = require('./measurecontrol');
 
-var AreaControl = function(options) {
-  var _options = {
+const AreaControl = function(options) {
+  const _options = {
     name: "Area",
     label: "\ue909",
     interactionClass: AreaIteraction

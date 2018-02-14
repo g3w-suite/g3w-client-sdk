@@ -1,4 +1,4 @@
-var ProjectTypes = {
+const ProjectTypes = {
   QDJANGO: 'qdjango',
   OGR: 'ogr'
 };

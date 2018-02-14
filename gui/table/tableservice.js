@@ -10,7 +10,8 @@ const TableService = function(options) {
     features: features,
     title: options.title,
     headers: headers,
-    geometry: hasGeometry
+    geometry: hasGeometry,
+    loading: false
   };
   if (hasGeometry)
     this._addPkProperties(features);
@@ -52,6 +53,12 @@ proto.zoomAndHighLightSelectedFeature = function(feature, zoom=true) {
   mapService.highlightGeometry(geometry , {
     zoom: zoom
   });
+};
+
+proto.showAttribute = function(feature, attribute) {
+  console.log(attribute)
+  console.log(feature.attributes ? feature.attributes[attribute] : feature.properties[attribute])
+  return feature.attributes ? feature.attributes[attribute] : feature.properties[attribute]
 };
 
 

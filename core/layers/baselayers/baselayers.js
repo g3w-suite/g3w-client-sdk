@@ -1,4 +1,4 @@
-var BaseLayers = {
+const BaseLayers = {
   'OSM': require('./osmlayer'),
   'Bing': require('./binglayer')
 };

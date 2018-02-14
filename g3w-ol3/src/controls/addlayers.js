@@ -1,6 +1,6 @@
-var Control = require('./control');
+const Control = require('./control');
 function AddLayersControl() {
-  var options = {
+  const options = {
     name: "addlayer",
     tipLabel: "AddLayer",
     label: "\ue907"
@@ -11,13 +11,12 @@ function AddLayersControl() {
 
 ol.inherits(AddLayersControl, Control);
 
-var proto = AddLayersControl.prototype;
+const proto = AddLayersControl.prototype;
 
 proto.setMap = function(map) {
-  var self = this;
   Control.prototype.setMap.call(this,map);
-  $(this.element).on('click', function() {
-    self.dispatchEvent('addlayer');
+  $(this.element).on('click', ()  =>{
+    this.dispatchEvent('addlayer');
   })
 };
 

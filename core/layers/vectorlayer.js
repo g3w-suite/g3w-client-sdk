@@ -8,8 +8,7 @@ const GeoLayerMixin = require('./geolayermixin');
 function VectorLayer(config) {
   base(this, config);
   this.type = Layer.LayerTypes.VECTOR;
-  // mi server un layer ol per la visualizzazionei
-  // vado a modificare lo state aggiungendo il bbox e l'informazione geolayer
+  // need a ol layer for add to map
   this.setup(config);
 }
 

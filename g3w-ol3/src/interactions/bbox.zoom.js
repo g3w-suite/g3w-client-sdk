@@ -1,6 +1,6 @@
 _gis3wlib._interaction.prototype.zoomToBox = function(){
-  var map = this.map;
-  var zoomToBox = new ol.interaction.DragBox({
+  const map = this.map;
+  const zoomToBox = new ol.interaction.DragBox({
     condition: ol.events.condition.always,
     style: new ol.style.Style({
       stroke: new ol.style.Stroke({
@@ -12,17 +12,17 @@ _gis3wlib._interaction.prototype.zoomToBox = function(){
 
   map.addInteraction(zoomToBox);
   zoomToBox.key = zoomToBox.on('boxend', function(e){
-    var polygon = zoomToBox.getGeometry().getExtent();
+    const polygon = zoomToBox.getGeometry().getExtent();
     map.getView().fit(polygon, map.getSize());
   });
   
   return zoomToBox;
 };
 
-_gis3wlib._interaction.prototype.drawBBox = function(callback){
-  //prende come parametro una funzione a cui passa il bbox del rettangolo disegnato //
-  var map = this.map;
-  var selectBBox = new ol.interaction.DragBox({
+_gis3wlib._interaction.prototype.drawBBox = function(callback) {
+  //get callback parameter and call it with bbox as argument
+  const map = this.map;
+  const selectBBox = new ol.interaction.DragBox({
     condition: ol.events.condition.always,
     style: new ol.style.Style({
       stroke: new ol.style.Stroke({
@@ -33,8 +33,8 @@ _gis3wlib._interaction.prototype.drawBBox = function(callback){
   });
 
   map.addInteraction(selectBBox);
-  selectBBox.key = selectBBox.on('boxend', function(e){
-    var polygon = selectBBox.getGeometry().getExtent();
+  selectBBox.key = selectBBox.on('boxend', (e) => {
+    const polygon = selectBBox.getGeometry().getExtent();
     callback(polygon);
   });
   

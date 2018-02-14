@@ -5,6 +5,7 @@ var Service = require('gui/inputs/service');
 
 function DateTimePickerService(options) {
   options = options || {};
+  this.validatorOptions = {};
   base(this, options);
 }
 
@@ -25,5 +26,9 @@ proto.convertQGISDateTimeFormatToMoment = function(datetimeformat) {
   }
   return datetimeformat
 };
+
+proto.setValidatorOptions = function(options) {
+  this.validatorOptions = options;
+}
 
 module.exports = DateTimePickerService;

@@ -1,24 +1,19 @@
-var G3WObject = require('core/g3wobject');
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
+const G3WObject = require('core/g3wobject');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
 
-//classe Componet Registry (singleton)
-// ha lo scopo di salvare tutti i componenti aggiunti
+//class Componet Registry (singleton)
+// store all components added
 function ComponentsRegistry() {
-  // attributo componets che tiene traccia
-  // dei componenti registrati
+  
   this.components = {};
-  // funzione per refgistrare il componente
   this.registerComponent = function(component) {
-    // recupera l'id del componente
-    var id = component.getId();
-    // se non è stato precedentemente registrato
+    const id = component.getId();
     if (!this.components[id]) {
       this.components[id] = component;
       this.emit('componentregistered', component);
     }
   };
-  //funzione che retituisce il componente in base all'id
   this.getComponent = function(id) {
     return this.components[id];
   };
@@ -26,21 +21,12 @@ function ComponentsRegistry() {
   this.getComponents = function() {
     return this.components;
   };
-
-  // toglie dal registro dei componenti il componete che si vuole eliminare
   this.unregisterComponent = function(id) {
-    var component = this._components[id];
-    // verifica che sia presente il componete con l'id passato
+    const component = this._components[id];
     if (component) {
-      //verifico che estista la funzione destroy dell'oggetto componente
       if (_.isFunction(component.destroy)) {
-        // nel caso lo ditruggo (togliendolo anche visivamente)
         component.destroy();
       }
-      //elimino il componente e lo setto a null per evitare
-      // che se in un secondo momento lo registro di nuovo
-      // questa venga ignorato
-      //delete component;
       this._components[id] = null;
     }
   };

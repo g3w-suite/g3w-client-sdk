@@ -1,4 +1,4 @@
-var HeaderFormComponent = Vue.extend({
+const HeaderFormComponent = Vue.extend({
   template: require('./header.html'),
   props: ['state']
 });
