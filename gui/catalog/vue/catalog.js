@@ -350,7 +350,6 @@ Vue.component('tristate-tree', {
       return isSelected;
     },
     isHighLight: function() {
-      // da sostituire con una proprietà precalcolata nello state del layer
       let layer;
       const catalogLayers = CatalogLayersStoresRegistry.getLayers();
       catalogLayers.some((lyr) => {
@@ -463,9 +462,7 @@ Vue.component('layerslegend',{
     template: require('./legend.html'),
     props: ['layerstree'],
     data: function() {
-      return {
-        //data qui
-      }
+      return {}
     },
     computed: {
       visiblelayers: function(){
@@ -473,7 +470,6 @@ Vue.component('layerslegend',{
         const layerstree = this.layerstree.tree;
         let traverse = (obj) => {
         Object.entries(obj).forEach(([key, layer]) => {
-              //verifica che il valore dell'id non sia nullo, che il layer sia visibile e che non sia escluso dalla legenda
               if (!_.isNil(layer.id) && layer.visible && !layer.exclude_from_legend) {
                   _visiblelayers.push(layer);
               }
@@ -488,9 +484,7 @@ Vue.component('layerslegend',{
     },
     watch: {
       'layerstree': {
-        handler: function(val, old){
-          //codice qui
-        },
+        handler: function(val, old){},
         deep: true
       }
     },
@@ -505,7 +499,7 @@ Vue.component('layerslegend-item',{
   template: require('./legend_item.html'),
   props: ['layer'],
   computed: {
-    legendurl: function(){
+    legendurl: function() {
       let _legendurl;
       const catalogLayers = CatalogLayersStoresRegistry.getLayersStores();
       catalogLayers.forEach((layerStore) => {
@@ -524,9 +518,7 @@ Vue.component('layerslegend-item',{
   }
 });
 
-/* FINE COMPONENTI FIGLI */
 
-/* INTERFACCIA PUBBLICA */
 function CatalogComponent(options) {
   base(this);
   this.id = "catalog-component";
@@ -559,7 +551,6 @@ function CatalogComponent(options) {
       listenToMapVisibility(map)
     }
   }
-  //mergio opzioni con proprità di default del componente
   merge(this, options);
 }
 

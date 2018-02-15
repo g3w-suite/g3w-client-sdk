@@ -1,5 +1,6 @@
 const Projections = require('g3w-ol3/src/projection/projections');
-
+const resToScale = require('core/utils/geo').resToScale;
+const GUI = require('gui/gui')
 function GeoLayerMixin(config) {}
 
 const proto = GeoLayerMixin.prototype;
@@ -10,13 +11,16 @@ proto.setup = function(config) {
     return;
   }
   this.config.multilayerid = config.multilayer;
-
   // state extend of layer setting geolayer property to true
   // and adding informations of bbox
   _.extend(this.state, {
     geolayer: true,
     bbox: config.bbox || null,
     visible: config.visible,
+    hidden: config.hidden || false,
+    scalebasedvisibility: config.scalebasedvisibility || false,
+    minscale: config.minscale,
+    maxscale: config.maxscale,
     exclude_from_legend: config.exclude_from_legend
   });
   if (config.projection) {
@@ -35,6 +39,17 @@ proto.setup = function(config) {
     this.config.attributions = config.attributions;
   }
 };
+
+
+proto.isDisabled = function() {
+  if (this.state.scalebasedvisibility) {
+    const mapservice = GUI.getComponent('map').getService();
+    const mapScale = resToScale(mapservice.getResolution());
+    this.state.disabled = !(this.state.minscale >= mapScale && this.state.maxscale <= mapScale)
+    return this.state.disabled
+  }
+  return false
+}
 
 proto.getConfig = function() {
   return this.config;
@@ -74,7 +89,7 @@ proto.isCached = function() {
   return this.config.cache_url && this.config.cache_url != '';
 };
 
-proto.getCacheUrl = function(){
+proto.getCacheUrl = function() {
   if (this.isCached()) {
     return this.config.cache_url;
   }

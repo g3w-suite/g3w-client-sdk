@@ -110,6 +110,7 @@ proto.getLayersDict = function(options) {
   const filterBaseLayer = options.BASELAYER;
   const filterGeoLayer = options.GEOLAYER;
   const filterHidden = options.HIDDEN;
+  const filterDisabled = options.DISABLED;
   if (_.isUndefined(filterQueryable)
     && _.isUndefined(filterFilterable)
     && _.isUndefined(filterEditable)
@@ -121,6 +122,7 @@ proto.getLayersDict = function(options) {
     && _.isUndefined(filterServerType)
     && _.isUndefined(filterGeoLayer)
     && _.isUndefined(filterHidden)
+    && _.isUndefined(filterDisabled)
     && _.isUndefined(filterBaseLayer)) {
     return this._layers;
   }
@@ -186,7 +188,13 @@ proto.getLayersDict = function(options) {
 
   if (typeof filterHidden == 'boolean') {
     layers = _.filter(layers,function(layer) {
-      return filterHidden == layer.isDisabled();
+      return filterHidden == layer.isHidden();
+    });
+  }
+
+  if (typeof filterDisabled == 'boolean') {
+    layers = _.filter(layers,function(layer) {
+      return filterDisabled == layer.isDisabled();
     });
   }
 

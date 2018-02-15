@@ -40,7 +40,6 @@ function Layer(config) {
     title: config.title,
     selected: config.selected | false,
     disabled: config.disabled | false,
-    hidden: config.hidden || false,
     openattributetable: this.canShowTable()
   };
   // server type

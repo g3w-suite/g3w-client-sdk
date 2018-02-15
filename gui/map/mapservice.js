@@ -82,6 +82,7 @@ function MapService(options) {
       this.state.bbox = bbox;
       this.state.resolution = resolution;
       this.state.center = center;
+      this._setupLayers();
       this.updateMapLayers(this._mapLayers);
     },
     setHidden: function(bool) {
@@ -871,7 +872,7 @@ proto._setupViewer = function(width,height) {
 
   this.viewer.map.getView().setResolution(initResolution);
 
-  this.viewer.map.on('moveend',(e) =>{
+  this.viewer.map.on('moveend',(e) => {
     this._setMapView();
   });
 
@@ -997,7 +998,9 @@ proto._setupLayers = function(){
   this._resetMapLayers();
   this._setupBaseLayers();
   const layers = this.getLayers({
-    BASELAYER:false
+    BASELAYER: false,
+    VISIBLE: true,
+    DISABLED: false
   });
   //grup layer by mutilayer
   const multiLayers = _.groupBy(layers, function(layer){
@@ -1042,7 +1045,7 @@ proto.getOverviewMapLayers = function(project) {
   const projectLayers = project.getLayersStore().getLayers({
     VISIBLE: true,
     GEOLAYER: true,
-    HIDDEN: false
+    DISABLED: false
   });
 
   const multiLayers = _.groupBy(projectLayers,function(layer){
