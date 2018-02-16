@@ -32,7 +32,7 @@ function ProjectsRegistry() {
       MapLayersStoresRegistry.addLayersStore(projectLayersStore, 0);
     }
   };
-  
+
   this.state = {
     baseLayers: {},
     minScale: null,
@@ -122,9 +122,10 @@ proto.getListableProjects = function() {
     if (!_.isNil(project.listable)) {
       return project.listable;
     }
-    if ((project.id != currentProjectId) && (project.overviewprojectgid && project.gid != project.overviewprojectgid.gid && project.id != currentProjectId)) {
-      return project;
+    if (project.id == currentProjectId || (project.overviewprojectgid && project.gid == project.overviewprojectgid.gid)) {
+      return false
     }
+    return project;
   }), 'title')
 };
 
