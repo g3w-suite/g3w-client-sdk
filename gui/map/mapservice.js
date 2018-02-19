@@ -621,7 +621,7 @@ proto.setupControls = function(){
               this.showMarker(evt.coordinates);
             });
             control.on('error', (e) => {
-              GUI.notify.error(t("mapcontrols.geolocation.error"))
+              GUI.notify.error(t("mapcontrols.geolocations.error"))
             });
             this.addControl(controlType, control);
           }
