@@ -433,6 +433,7 @@ Layer.SourceTypes = {
   POSTGIS: 'postgres',
   SPATIALITE: 'spatialite',
   CSV: 'delimitedtext',
+  OGR: 'ogr',
   WMS: 'wms',
   GEOJSON: "geojson"
 };
