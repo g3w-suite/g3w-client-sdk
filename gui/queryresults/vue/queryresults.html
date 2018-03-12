@@ -2,7 +2,7 @@
   <div v-show="state.loading" class="bar-loader"></div>
   <div class="queryresults-container">
     <template v-if="!state.loading">
-      <ul v-if="hasResults" class="queryresults" id="queryresults">
+      <ul v-if="hasLayers" class="queryresults" id="queryresults" style="position: relative">
         <li v-if="layerHasFeatures(layer) && layer.show" v-for="layer in state.layers">
           <div class="box box-primary">
             <div class="box-header with-border" data-widget="collapse">
@@ -136,8 +136,11 @@
             </div>
           </div>
         </li>
+        <li v-for="component in state.components">
+          <component @showresults="showResults()" :is="component"></component>
+        </li>
       </ul>
-      <h4 v-else>{{ noresultmessage }}</h4>
+      <h4 v-if="!hasResults">{{ noresultmessage }}</h4>
     </template>
   </div>
 </div>

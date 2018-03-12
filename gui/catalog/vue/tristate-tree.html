@@ -23,7 +23,7 @@
   <span v-else
     v-show="!layerstree.hidden"
     @click.stop="!layerstree.uncheckable ? toggle(false) : null"
-    :class="[layerstree.visible  ? 'fa-check-square-o': 'fa-square-o',layerstree.disabled  ? 'disabled': '',  parentFolder ? 'child' : 'root' ]"
+    :class="[layerstree.visible  ? 'fa-check-square-o': 'fa-square-o', layerstree.disabled  ? 'disabled': '',  parentFolder ? 'child' : 'root' ]"
     class="fa checkbox-layer">
   </span>
 
@@ -32,11 +32,10 @@
     :class="{'bold': isFolder, 'disabled': layerstree.disabled, 'highlightlayer': isHighLight }"> {{ layerstree.title }}
   </span>
 
-  <i v-if="layerstree.external"
+  <i v-if="layerstree.external && layerstree.removable"
     class="glyphicon glyphicon glyphicon-trash link trash pull-right"
     @click="removeExternalLayer(layerstree.name)">
   </i>
-
   <ul v-if="isFolder" v-show="layerstree.expanded">
     <tristate-tree
       :root="false"
@@ -50,5 +49,4 @@
       v-for="_layerstree in layerstree.nodes" :key="layerstree.id">
     </tristate-tree>
   </ul>
-
 </li>

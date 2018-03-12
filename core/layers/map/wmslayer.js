@@ -10,7 +10,8 @@ function WMSLayer(options, extraParams) {
     MULTILAYER: 'multilayer'
   };
   this.extraParams = extraParams;
-  this.layers = [];
+  this.layers = []; // store all enabled layers
+  this.allLayers = []; // store all layers
 
   base(this,options);
 }
@@ -44,7 +45,18 @@ proto.getLayerConfigs = function(){
 };
 
 proto.addLayer = function(layer) {
-  this.layers.push(layer);
+  if (!this.allLayers.find((_layer) => { return layer === _layer})) {
+    this.allLayers.push(layer);
+  }
+  if (!this.layers.find((_layer) => { return layer === _layer})) {
+    this.layers.push(layer);
+  }
+};
+
+proto.removeLayer = function(layer) {
+  this.layers = this.layers.filter((_layer) => {
+    return layer != _layer;
+  })
 };
 
 proto.toggleLayer = function(layer) {
@@ -90,7 +102,6 @@ proto._getVisibleLayers = function(mapState) {
     if (layer.config.maxscale) {
       visible = visible && (layer.config.maxscale < scale);
     }
-    // var resolutionBasedVisibility = layer.state.maxresolution ? (layer.state.maxresolution && layer.state.maxresolution > mapState.resolution) : true;
     if (layer.state.visible && visible) {
       visibleLayers.push(layer);
     }
@@ -111,7 +122,7 @@ proto._makeOlLayer = function(withLayers) {
     });
   }
 
-  const representativeLayer = this.layers[0]; 
+  const representativeLayer = this.layers[0];
 
   if (representativeLayer.state.source && representativeLayer.state.source.type == 'wms' && representativeLayer.state.source.url){
     wmsConfig.url = representativeLayer.state.source.url;
@@ -128,27 +139,26 @@ proto._makeOlLayer = function(withLayers) {
   return olLayer
 };
 
+//
 proto.checkLayerDisabled = function(layer,resolution) {
-  let enabled = true;
-  if (layer.config.scalebasedvisibility) {
-    const scale = geo.resToScale(resolution);
-    if (layer.config.minscale) {
-      enabled = enabled && (layer.config.minscale > scale);
-    }
-    if (layer.config.maxscale) {
-      enabled = enabled && (layer.config.maxscale < scale);
-    }
+  layer.setDisabled(resolution);
+  if (layer.isDisabled()) {
+    this.removeLayer(layer)
+  } else {
+    this.addLayer(layer)
   }
-  layer.state.disabled = !enabled;
 };
 
+// check which layers has to be disabled
 proto.checkLayersDisabled = function(resolution){
-  this.layers.forEach((layer) => {
+  this.allLayers.forEach((layer) => {
     this.checkLayerDisabled(layer, resolution);
   });
 };
 
-proto._updateLayers = function(mapState,extraParams){
+//update Layers
+proto._updateLayers = function(mapState, extraParams) {
+  //checsk disabled layers
   this.checkLayersDisabled(mapState.resolution);
   const visibleLayers = this._getVisibleLayers(mapState);
   if (visibleLayers.length > 0) {

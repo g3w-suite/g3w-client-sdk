@@ -30,8 +30,7 @@ function Project(projectConfig) {
 
   this.setters = {
     setBaseLayer: function(id) {
-      const baseLayers = this.state.baselayers;
-      baseLayers.forEach((baseLayer) => {
+      this.state.baselayers.forEach((baseLayer) => {
         this._layersStore.getLayerById(baseLayer.id).setVisible(baseLayer.id == id);
       })
     }

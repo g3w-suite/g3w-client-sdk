@@ -45,18 +45,18 @@ const ApplicationService = function() {
   };
 
   this.obtainInitConfig = function(initConfigUrl) {
+    const d = $.Deferred();
     if (!this._initConfigUrl) {
       this._initConfigUrl = initConfigUrl;
+    } else {
+      this.clearInitConfig();
     }
-    const d = $.Deferred();
     // if exist a global initiConfig (in production)
-
     if (window.initConfig) {
       this._initConfig = window.initConfig;
       return d.resolve(window.initConfig);
-    }
-    // case development need to ask to api
-    else {
+      // case development need to ask to api
+    } else {
       let projectPath;
       let queryTuples;
       if (location.search) {
@@ -68,13 +68,12 @@ const ApplicationService = function() {
           }
         });
       } else {
-        // when relaod
         projectPath = location.pathname.split('/').splice(-4,3).join('/');
       }
       if (projectPath) {
         let initUrl = this._initConfigUrl;
         if (projectPath) {
-          initUrl = initUrl + '/' + projectPath;
+          initUrl =  '/' + initUrl + '/' + projectPath;
         }
         //get configuration from server
         $.get(initUrl)
@@ -167,6 +166,10 @@ const ApplicationService = function() {
 
   this.errorHandler = function(error) {
     console.log(error);
+  };
+
+  this.clearInitConfig = function() {
+    window.initConfig = null;
   }
 
 };

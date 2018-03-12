@@ -73,12 +73,19 @@ const vueComponentOptions = {
     hasBaseLayers: function(){
       return this.project.state.baselayers.length>0;
     },
+    showLegend: function() {
+      let layerstresslength = 0;
+      _.forEach(this.state.layerstrees, function(layerstree) {
+        layerstresslength+=layerstree.tree.length;
+      });
+      return layerstresslength >0
+    },
     hasLayers: function() {
       let layerstresslength = 0;
       _.forEach(this.state.layerstrees, function(layerstree) {
         layerstresslength+=layerstree.tree.length;
       });
-      return this.state.externallayers.length>0 || layerstresslength>0 ;
+      return this.state.externallayers.length > 0 || layerstresslength >0 || this.state.layersgroups.length > 0 ;
     },
     hasBaseLayersVisible: function() {
       let visible = false;
@@ -94,9 +101,6 @@ const vueComponentOptions = {
   methods: {
     setBaseLayer: function(id) {
       this.project.setBaseLayer(id);
-    },
-    setBaseLayersNotVisible: function() {
-      this.project.setBaseLayer(null);
     },
     zoomToLayer: function() {
       let bbox;
@@ -181,6 +185,7 @@ const vueComponentOptions = {
         CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayer(node.id, null, parent_mutually_exclusive);
       }
     });
+
     // event that set all visible or not all children layer of the folder and if parent is mutually exclusive turn off all layer
     CatalogEventHub.$on('treenodestoogled', (storeid, nodes, isFolderChecked) => {
       let layersIds = [];
@@ -269,22 +274,27 @@ const InternalComponent = Vue.extend(vueComponentOptions);
 Vue.component('g3w-catalog', vueComponentOptions);
 
 
+Vue.component('layers-group', {
+  template: require('./layersgroup.html'),
+  props: {
+    layersgroup: {
+      type: Object
+    }
+  }
+});
+
+
 /* CHILDREN COMPONENTS */
 // tree component
 Vue.component('tristate-tree', {
   template: require('./tristate-tree.html'),
   props : ['layerstree', 'storeid', 'highlightlayers', 'parent_mutually_exclusive', 'parentFolder', 'externallayers', 'root', "parent"],
-  data: function (){
+  data: function () {
     return {
       expanded: this.layerstree.expanded,
       isFolderChecked: true,
       controltoggled: false,
       n_childs: null,
-    }
-  },
-  watch: {
-    'checked': function(val) {
-      this.layerstree.visible = val;
     }
   },
   computed: {

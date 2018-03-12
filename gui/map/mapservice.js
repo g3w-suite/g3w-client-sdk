@@ -11,10 +11,12 @@ const WFSProvider = require('core/layers/providers/wfsprovider');
 const ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 const WMSLayer = require('core/layers/map/wmslayer');
 const XYZLayer = require('core/layers/map/xyzlayer');
+const GEOJSONLayer = require('core/layers/map/geojson');
 const ControlsFactory = require('gui/map/control/factory');
 const StreetViewService = require('gui/streetview/streetviewservice');
 const ControlsRegistry = require('gui/map/control/registry');
 const Projections = require('g3w-ol3/src/projection/projections');
+const VectorLayer = require('core/layers/vectorlayer');
 
 function MapService(options) {
   this.viewer = null;
@@ -55,7 +57,7 @@ function MapService(options) {
     this._howManyAreLoading += 1;
   };
 
-  this._decrementLoaders = function(){
+  this._decrementLoaders = function() {
     this._howManyAreLoading -= 1;
     if (this._howManyAreLoading == 0){
       this.emit('loadend');
@@ -67,23 +69,25 @@ function MapService(options) {
     this.project = options.project;
   } else {
     this.project = ProjectsRegistry.getCurrentProject();
+    //on after setting current project
     ProjectsRegistry.onafter('setCurrentProject',(project) => {
+      this.viewer.removeLayers();
       this._removeListeners();
       this.project = project;
-      this._setupLayers();
       this._resetView();
+      //call a function to setup alla layers of maps
+      this._setupLayers()
     })
   }
   this._setupListeners();
   this._marker = null;
 
   this.setters = {
-    setMapView: function(bbox, resolution, center) {
+    updateMapView: function(bbox, resolution, center) {
       this.state.bbox = bbox;
       this.state.resolution = resolution;
       this.state.center = center;
-      this._setupLayers();
-      this.updateMapLayers(this._mapLayers);
+      this.updateMapLayers();
     },
     setHidden: function(bool) {
       this.state.hidden = bool;
@@ -128,6 +132,14 @@ function MapService(options) {
         mapcontrol.control.setEnable(false);
       }
     })
+  });
+
+  this.on('extraParamsSet',(extraParams, update) => {
+    if (update) {
+      this.getMapLayers().forEach((mapLayer) => {
+        mapLayer.update(this.state,extraParams);
+      })
+    }
   });
 
   MapLayersStoreRegistry.getLayersStores().forEach((layerStore) => {
@@ -278,6 +290,55 @@ proto.getLayerById = function(id) {
     }
   });
   return layer;
+};
+
+// method do get all feature from vector layer based on coordinates
+proto.getVectorLayerFeaturesFromCoordinates = function(layerId, coordinates) {
+  let intersectGeom;
+  let features = [];
+  const map = this.getMap();
+  const vectorLayer = this.getLayerById(layerId);
+  if (Array.isArray(coordinates)) {
+    if (coordinates.length == 2) {
+      const pixel = map.getPixelFromCoordinate(coordinates);
+      map.forEachFeatureAtPixel(pixel, function (feature) {
+        features.push(feature);
+        },  {
+        layerFilter: function(layer) {
+          return layer === vectorLayer;
+          }
+      });
+    } else if (coordinates.length == 4) {
+      intersectGeom = ol.geom.Polygon.fromExtent(coordinates);
+      switch (vectorLayer.constructor) {
+        case VectorLayer:
+          features = vectorLayer.getIntersectedFeatures(intersectGeom);
+          break;
+        case ol.layer.Vector:
+          _.forEach(vectorLayer.getSource().getFeatures(), function(feature) {
+            if (intersectGeom.intersectsExtent(feature.getGeometry().getExtent())) {
+              features.push(feature);
+              }
+          });
+          break;
+      }
+    }
+  } else if (coordinates instanceof ol.geom.Polygon || coordinates instanceof ol.geom.MultiPolygon) {
+    intersectGeom = coordinates;
+    switch (vectorLayer.constructor) {
+      case VectorLayer:
+        features = vectorLayer.getIntersectedFeatures(intersectGeom);
+        break;
+      case ol.layer.Vector:
+        _.forEach(vectorLayer.getSource().getFeatures(), function(feature) {
+          if (intersectGeom.intersectsExtent(feature.getGeometry().getExtent())) {
+            features.push(feature);
+          }
+        });
+        break;
+    }
+  }
+  return features;
 };
 
 proto.getQueryLayersPromisesByCoordinates = function(layerFilterObject, coordinates) {
@@ -664,7 +725,7 @@ proto.getLayers = function(filter) {
   const mapFilter = {
     GEOLAYER: true
   };
-  filter = _.merge(filter, mapFilter);
+  Object.assign(filter, mapFilter);
   let layers = [];
   _.forEach(MapLayersStoreRegistry.getQuerableLayersStores(), function(layerStore) {
     _.merge(layers, layerStore.getLayers(filter));
@@ -777,8 +838,15 @@ proto._unToggleControls = function() {
 
 };
 
+proto.addMapLayers = function(mapLayers) {
+  mapLayers.reverse().forEach((mapLayer) => {
+    this.addMapLayer(mapLayer)
+  })
+};
+
 proto.addMapLayer = function(mapLayer) {
   this._mapLayers.push(mapLayer);
+  this.viewer.map.addLayer(mapLayer.getOLLayer());
 };
 
 proto.getMapLayers = function() {
@@ -872,8 +940,9 @@ proto._setupViewer = function(width,height) {
 
   this.viewer.map.getView().setResolution(initResolution);
 
-  this.viewer.map.on('moveend',(e) => {
-    this._setMapView();
+  // on change resolution call update of each mapLayers
+  this.viewer.map.getView().on("change:resolution", (evt) => {
+    this._updateMapView();
   });
 
   this._marker = new ol.Overlay({
@@ -918,7 +987,7 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
         const layer = layerStore.getLayerById(layerId);
         return this.getMapLayerForLayer(layer);
       });
-      this.updateMapLayers(mapLayers);
+      this.updateMapLayers();
     });
     this._layersStoresEventKeys[layerStore.getId()].push({
       setLayersVisible:layerVisibleKey
@@ -931,7 +1000,7 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
         const olLayer = this.createOlLayer({
           id: layer.getId(),
           geometryType: layer.getGeometryType(),
-          color: layer.getColor()
+          color: layer.getColor(),
         });
         this.viewer.map.addLayer(olLayer);
       }
@@ -957,7 +1026,7 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
 
 proto._setupListeners = function() {
   this._setBaseLayerListenerKey = this.project.onafter('setBaseLayer',() => {
-    this.updateMapLayers(this.mapBaseLayers);
+    this.updateMapLayers();
   });
 };
 
@@ -983,7 +1052,7 @@ proto._setupBaseLayers = function(){
       baseLayer = layer;
       baseLayer.setLayer(layer);
     }
-    this.registerListeners(baseLayer);
+    this.registerMapLayerListeners(baseLayer);
     this.mapBaseLayers[layer.getId()] = baseLayer;
   });
   const reverseBaseLayers = Object.values(this.mapBaseLayers).reverse();
@@ -993,19 +1062,51 @@ proto._setupBaseLayers = function(){
   });
 };
 
-proto._setupLayers = function(){
-  this.viewer.removeLayers();
-  this._resetMapLayers();
+// setup all layers needed to map
+proto._setupLayers = function() {
   this._setupBaseLayers();
+  const mapLayers = this._setupMapLayers();
+  this.addMapLayers(mapLayers);
+  this.updateMapLayers();
+  this._setupVectorLayers();
+};
+
+
+proto._setupVectorLayers = function() {
+  const layers = this.getLayers({
+    VECTORLAYER: true
+  });
+  const QueryResultService = GUI.getComponent('queryresults').getService();
+  layers.forEach((layer) => {
+    const source = layer.getSource();
+    switch (source.type) {
+      case 'geojson':
+        const options = {
+          url: source.url,
+          mapProjection: this.getProjection().getCode(),
+          id: layer.getId(),
+          name: layer.getName(),
+          style: layer.get('style')
+        };
+        const geojsonLayer = new GEOJSONLayer(options);
+        const olLayer = geojsonLayer.getOLLayer();
+        this.getMap().addLayer(olLayer);
+        //QueryResultService.registerVectorLayer(olLayer)
+        break;
+    }
+  })
+};
+
+proto._setupMapLayers = function() {
   const layers = this.getLayers({
     BASELAYER: false,
-    VISIBLE: true,
-    DISABLED: false
+    VECTORLAYER: false
   });
-  //grup layer by mutilayer
-  const multiLayers = _.groupBy(layers, function(layer){
+  //group layer by mutilayer
+  const multiLayers = _.groupBy(layers, function(layer) {
     return layer.getMultiLayerId();
   });
+  let mapLayers = [];
   Object.entries(multiLayers).forEach(([id, layers]) => {
     const multilayerId = 'layer_'+id;
     let mapLayer;
@@ -1015,37 +1116,29 @@ proto._setupLayers = function(){
         id: multilayerId,
         projection: this.getProjection()
       });
-      this.addMapLayer(mapLayer);
-      this.registerListeners(mapLayer);
+      this.registerMapLayerListeners(mapLayer);
       mapLayer.addLayer(layer);
-    }
-    //  multilayers
-    else {
+      mapLayers.push(mapLayer)
+    } else {
       mapLayer = new WMSLayer({
         url: layer.getWmsUrl(),
         id: multilayerId,
         projection: this.getProjection()
       }, this.layersExtraParams);
-      this.addMapLayer(mapLayer);
-      this.registerListeners(mapLayer);
+      this.registerMapLayerListeners(mapLayer);
       layers.reverse().forEach((sub_layer) => {
         mapLayer.addLayer(sub_layer);
       });
+      mapLayers.push(mapLayer)
     }
   });
 
-  this.getMapLayers().reverse().forEach((mapLayer) => {
-    this.viewer.map.addLayer(mapLayer.getOLLayer());
-    mapLayer.update(this.state, this.layersExtraParams);
-  });
-  return this.mapLayers;
+  return mapLayers;
 };
 
 proto.getOverviewMapLayers = function(project) {
   const projectLayers = project.getLayersStore().getLayers({
-    VISIBLE: true,
-    GEOLAYER: true,
-    DISABLED: false
+    GEOLAYER: true
   });
 
   const multiLayers = _.groupBy(projectLayers,function(layer){
@@ -1071,27 +1164,23 @@ proto.getOverviewMapLayers = function(project) {
   return overviewMapLayers.reverse();
 };
 
-proto.updateMapLayers = function(mapLayers) {
-  Object.entries(mapLayers).forEach(([key,mapLayer]) => {
-    mapLayer.update(this.state, this.layersExtraParams);
+// run update function on ech mapLayer
+proto.updateMapLayers = function() {
+  this.getMapLayers().forEach((mapLayer) => {
+    mapLayer.update(this.state, this.getResolution())
   })
 };
 
-// register listeners of mapLayers creation
-proto.registerListeners = function(mapLayer) {
+// register map Layer listeners of creation
+proto.registerMapLayerListeners = function(mapLayer) {
+  mapLayer.on('loadstart', this._incrementLoaders);
+  mapLayer.on('loadend', this._decrementLoaders);
+};
 
-  mapLayer.on('loadstart', () => {
-    this._incrementLoaders();
-  });
-  mapLayer.on('loadend', () => {
-    this._decrementLoaders(false);
-  });
-
-  this.on('extraParamsSet',(extraParams, update) => {
-    if (update) {
-      mapLayer.update(this.state,extraParams);
-    }
-  })
+// unregister listeners of mapLayers creation
+proto.unregisterMapLayerListeners = function(mapLayer) {
+  mapLayer.un('loadstart', this._incrementLoaders);
+  mapLayer.un('loadend', this._decrementLoaders);
 };
 
 proto.setTarget = function(elId){
@@ -1157,7 +1246,7 @@ proto.getResolutionForMeters = function(meters) {
 let highlightLayer = null;
 let animatingHighlight = false;
 
-proto.highlightGeometry = function(geometryObj,options) {
+proto.highlightGeometry = function(geometryObj, options) {
   this.clearHighlightGeometry();
   options = options || {};
   let zoom = (typeof options.zoom == 'boolean') ? options.zoom : true;
@@ -1166,16 +1255,10 @@ proto.highlightGeometry = function(geometryObj,options) {
   let geometry;
   if (geometryObj instanceof ol.geom.Geometry){
     geometry = geometryObj;
-  }
-  else {
+  } else {
     let format = new ol.format.GeoJSON;
     geometry = format.readGeometry(geometryObj);
   }
-
-  if (options.fromWGS84) {
-    geometry.transform('EPSG:4326','EPSG:'+ProjectService.state.project.crs);
-  }
-
   const geometryType = geometry.getType();
   if (zoom) {
     if (geometryType == 'Point' || (geometryType == 'MultiPoint' && geometry.getPoints().length == 1)) {
@@ -1183,14 +1266,12 @@ proto.highlightGeometry = function(geometryObj,options) {
       if (this.project.state.crs != 4326 && this.project.state.crs != 3857) {
         const res = this.getResolutionForMeters(100);
         this.goToRes(coordinates,res);
-      }
-      else {
+      } else {
         zoom = this.viewer.map.getView().getZoom() > 6 ? this.viewer.map.getView().getZoom() : 6;
         this.goTo(coordinates, zoom);
       }
-    }
-    else {
-      this.viewer.fit(geometry,options);
+    } else {
+      this.viewer.fit(geometry, options);
     }
   }
 
@@ -1277,11 +1358,16 @@ proto.layout = function(width, height) {
   if (this.viewer) {
     this.setHidden((width == 0 || height == 0));
     this.getMap().updateSize();
-    this._setMapView();
+    this._updateMapView();
   }
 };
 
-proto._resetMapLayers = function() {
+// function to remove maplayers
+proto._removeMapLayers = function() {
+  this.getMapLayers().forEach((mapLayer) => {
+    this.unregisterMapLayerListeners(mapLayer);
+    this.viewer.map.removeLayer(mapLayer.getOLLayer());
+  });
   this._mapLayers = [];
 };
 
@@ -1289,11 +1375,11 @@ proto.getMapBBOX = function() {
   return this.viewer.getBBOX();
 };
 
-proto._setMapView = function() {
+proto._updateMapView = function() {
   const bbox = this.viewer.getBBOX();
   const resolution = this.viewer.getResolution();
   const center = this.viewer.getCenter();
-  this.setMapView(bbox, resolution, center);
+  this.updateMapView(bbox, resolution, center);
 };
 
 proto.getMapSize = function() {
@@ -1459,7 +1545,7 @@ proto.addExternalLayer = function(externalLayer) {
       source: vectorSource,
       name: name
     });
-    vectorLayer.setStyle(this.setExternalLayerColor(color));
+    vectorLayer.setStyle(this.setExternalLayerStyle(color));
     extent = vectorLayer.getSource().getExtent();
     externalLayer.bbox = {
       minx: extent[0],
@@ -1507,11 +1593,11 @@ proto.addExternalLayer = function(externalLayer) {
         break;
     }
   } else {
-    GUI.notify.info('Layer già aggiunto');
+    GUI.notify.info(t("layer_is_added"));
   }
 };
 
-proto.setExternalLayerColor = function(color) {
+proto.setExternalLayerStyle = function(color) {
   color = color.rgba;
   color = 'rgba(' + color.r + ',' + color.g + ',' + color.b + ','  + color.a + ')';
   const defaultStyle = {

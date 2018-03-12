@@ -3,6 +3,7 @@ const TableLayer = require('./tablelayer');
 const VectorLayer = require('./vectorlayer');
 const ImageLayer = require('./imagelayer');
 const BaseLayers = require('./baselayers/baselayers');
+const GeojsonLayer = require('./geojson');
 
 // Class to build layer based on configuration
 function LayerFactory() {
@@ -18,34 +19,52 @@ function LayerFactory() {
   this.get = function(config) {
     let LayerClass;
     const serverType = config.servertype;
-    if(serverType == 'QGIS') {
-      LayerClass = ImageLayer;
-      if(config.source && config.geometrytype) {
-        if([Layer.SourceTypes.POSTGIS, Layer.SourceTypes.SPATIALITE, Layer.SourceTypes.CSV].indexOf(config.source.type) > -1) {
-          if(config.geometrytype && config.geometrytype == 'No geometry') {
-            // if no geometry retun Table Layer
-            LayerClass = TableLayer;
+    switch (serverType) {
+      case Layer.ServerTypes.QGIS:
+        LayerClass = ImageLayer;
+        if(config.source && config.geometrytype) {
+          if([Layer.SourceTypes.POSTGIS, Layer.SourceTypes.SPATIALITE, Layer.SourceTypes.CSV].indexOf(config.source.type) > -1) {
+            if(config.geometrytype && config.geometrytype == 'No geometry') {
+              // if no geometry retun Table Layer
+              LayerClass = TableLayer;
+            }
           }
         }
-      }
-    } else if(serverType == 'OGC') {
-      if(config.source) {
-        const type = config.source.type;
-        switch (type) {
-          case 'wms':
-            LayerClass = ImageLayer;
-            break;
-          case 'wfs':
-            LayerClass = VectorLayer;
+        break;
+      case Layer.ServerTypes.OGC:
+        if(config.source) {
+          const type = config.source.type;
+          switch (type) {
+            case 'wms':
+              LayerClass = ImageLayer;
+              break;
+            case 'wfs':
+              LayerClass = VectorLayer;
+          }
         }
-      }
-    } else if(serverType == 'Local') {
-      LayerClass = VectorLayer;
-    } else if(serverType == 'OSM' || serverType == 'Bing') {
-      LayerClass = BaseLayers[serverType]
+        break;
+      case Layer.ServerTypes.LOCAL:
+        LayerClass = VectorLayer;
+        break;
+      case Layer.ServerTypes.OSM:
+      case Layer.ServerTypes.BING:
+        LayerClass = BaseLayers[serverType];
+        break;
+      case Layer.ServerTypes.G3WSUITE:
+        layerClass = VectorLayer;
+        if (config.source) {
+          switch (config.source.type) {
+            case 'geojson':
+              LayerClass = GeojsonLayer;
+              break;
+          }
+        }
+        break;
     }
     return LayerClass;
   }
 }
+
+
 
 module.exports = new LayerFactory();

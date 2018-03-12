@@ -16,7 +16,9 @@ function QueryResultsService() {
     'highlightgeometry': QueryResultsService.highlightGeometry,
     'clearHighlightGeometry': QueryResultsService.clearHighlightGeometry
   };
-  this.state = {};
+  this.state = {
+    components: []
+  };
   this.init = function() {
     this.clearState();
   };
@@ -34,8 +36,12 @@ function QueryResultsService() {
       this.state.layers =  layers;
       this.setActionsForLayers(layers);
     },
+    addComponent: function(component) {
+      this._addComponent(component)
+    },
     addActionsForLayers: function(actions) {},
-    postRender: function(element) {}
+    postRender: function(element) {},
+    closeComponent: function() {}
   };
   this.clearState = function() {
     this.state.layers = [];
@@ -94,7 +100,7 @@ function QueryResultsService() {
     const fieldType = this.getFieldType(layer,attributeName,attributeValue);
     return fieldType === TYPE;
   };
-  
+
   this._digestFeaturesForLayers = function(featuresForLayers) {
     let id = 0;
     featuresForLayers = featuresForLayers || [];
@@ -131,7 +137,7 @@ function QueryResultsService() {
         relationsattributes: layerRelationsAttributes,
         error: ''
       };
-      
+
       if (featuresForLayer.features && featuresForLayer.features.length) {
         layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0].getProperties());
         layerObj.attributes.forEach((attribute) => {
@@ -182,7 +188,7 @@ function QueryResultsService() {
       })
     }
   };
-  
+
   this.setActionsForLayers = function(layers) {
     layers.forEach((layer) => {
       if (!this.state.layersactions[layer.id]) {
@@ -263,9 +269,6 @@ function QueryResultsService() {
 
   this.registerVectorLayer = function(vectorLayer) {
     if (this._vectorLayers.indexOf(vectorLayer) == -1) {
-      vectorLayer.state = {};
-      vectorLayer.state.title = vectorLayer.name;
-      vectorLayer.state.id = vectorLayer.id;
       this._vectorLayers.push(vectorLayer);
     }
   };
@@ -297,16 +300,13 @@ function QueryResultsService() {
         if (_.isArray(coordinates)) {
           if (coordinates.length == 2) {
             const pixel = mapService.viewer.map.getPixelFromCoordinate(coordinates);
-            feature = mapService.viewer.map.forEachFeatureAtPixel(pixel, function (feature, layer) {
-              return feature;
+            mapService.viewer.map.forEachFeatureAtPixel(pixel, function (feature, layer) {
+              features.push(feature);
             },  {
               layerFilter: function(layer) {
                 return layer === vectorLayer;
               }
             });
-            if (feature) {
-              features.push(feature);
-            }
           } else if (coordinates.length == 4) {
             intersectGeom = ol.geom.Polygon.fromExtent(coordinates);
             switch (vectorLayer.constructor) {
@@ -346,25 +346,34 @@ function QueryResultsService() {
     });
   };
 
+  //function to add c custom componet in query result
+  this._addComponent = function(component) {
+    this.state.components.push(component)
+  };
+
   base(this);
   this._addVectorLayersDataToQueryResponse();
 }
 
-QueryResultsService.zoomToElement = function(layer,feature) {
+QueryResultsService.zoomToElement = function(layer, feature) {
   //TODO
 };
 
-QueryResultsService.goToGeometry = function(layer,feature) {
+QueryResultsService.goToGeometry = function(layer, feature) {
   if (feature.geometry) {
     const mapService = ComponentsRegistry.getComponent('map').getService();
-    mapService.highlightGeometry(feature.geometry, {duration: 4000});
+    mapService.highlightGeometry(feature.geometry, {
+      duration: 1500
+    });
   }
 };
 
-QueryResultsService.highlightGeometry = function(layer,feature) {
+QueryResultsService.highlightGeometry = function(layer, feature) {
   if (feature.geometry) {
     const mapService = ComponentsRegistry.getComponent('map').getService();
-    mapService.highlightGeometry(feature.geometry,{zoom: false});
+    mapService.highlightGeometry(feature.geometry, {
+      zoom: false
+    });
   }
 };
 

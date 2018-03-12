@@ -1,5 +1,6 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
+const geoutils = require('g3w-ol3/src/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 function Provider(options) {
@@ -62,7 +63,7 @@ proto.extractGML = function (response) {
 };
 
 // Method to transform xml from server to present to queryreult component
-proto.handleQueryResponseFromServer = function(layerName, response) {
+proto.handleQueryResponseFromServer = function(layerName, response, projection) {
   let _fakeLayerName = 'layer';
   let parser;
   this._layer.getInfoFormat();
@@ -74,7 +75,7 @@ proto.handleQueryResponseFromServer = function(layerName, response) {
     case 'json':
       parser = this._parseLayerGeoJSON;
       data = response.vector.data;
-      features = parser.call(self, data, ogcservice);
+      features = parser.call(this, data, ogcservice);
       break;
     default:
       const x2js = new X2JS();
@@ -107,7 +108,8 @@ proto.handleQueryResponseFromServer = function(layerName, response) {
         case 'FeatureCollection':
           parser = this._parseLayerFeatureCollection;
           data = jsonresponse;
-          features = parser.call(self, data, _fakeLayerName);
+          const invertedAxis = this._layer.hasAxisInverted();
+          features = parser.call(this, data, _fakeLayerName, invertedAxis);
           break;
         case "msGMLOutput":
           const layers = this._layer.getQueryLayerOrigName();
@@ -211,8 +213,7 @@ proto._parseAttributes = function(layerAttributes, featureAttributes) {
   }
 };
 
-
-proto._parseLayerFeatureCollection = function(data, layerName) {
+proto._parseLayerFeatureCollection = function(data, layerName, invertedAxis) {
   const layerData = _.cloneDeep(data);
   layerData.FeatureCollection.featureMember = [];
   let featureMembers = data.FeatureCollection.featureMember;
@@ -224,9 +225,22 @@ proto._parseLayerFeatureCollection = function(data, layerName) {
     }
   });
   const x2js = new X2JS();
-  const layerFeatureCollectionXML = x2js.json2xml_str(layerData);
+  let layerFeatureCollectionXML = x2js.json2xml_str(layerData);
   const parser = new ol.format.WMSGetFeatureInfo();
-  return parser.readFeatures(layerFeatureCollectionXML);
+
+  let features = parser.readFeatures(layerFeatureCollectionXML);
+  if (invertedAxis) {
+    features = this._reverseFeaturesCoordinates(features)
+  }
+  return features
+};
+
+proto._reverseFeaturesCoordinates = function(features) {
+  features.forEach((feature) => {
+    let geometry = feature.getGeometry();
+    feature.setGeometry(geoutils.reverseGeometry(geometry))
+  });
+  return features
 };
 
 proto._parseLayermsGMLOutput = function(data) {

@@ -82,12 +82,13 @@ proto.addLayers = function(layers) {
   });
 };
 
-proto._removeLayer = function(layerId) {
+proto._removeLayer = function(layer) {
+  const layerId = layer.getId();
   delete this._layers[layerId];
 };
 
-proto.removeLayers = function(layersId) {
-  layersId.forEach((layerId) => {
+proto.removeLayers = function() {
+  Object.entries(this._layers).forEach(([layerId, layer]) => {
     this.removeLayer(layer)
   })
 };
@@ -109,6 +110,7 @@ proto.getLayersDict = function(options) {
   const filterServerType = options.SERVERTYPE;
   const filterBaseLayer = options.BASELAYER;
   const filterGeoLayer = options.GEOLAYER;
+  const filterVectorLayer = options.VECTORLAYER;
   const filterHidden = options.HIDDEN;
   const filterDisabled = options.DISABLED;
   if (_.isUndefined(filterQueryable)
@@ -123,14 +125,15 @@ proto.getLayersDict = function(options) {
     && _.isUndefined(filterGeoLayer)
     && _.isUndefined(filterHidden)
     && _.isUndefined(filterDisabled)
-    && _.isUndefined(filterBaseLayer)) {
+    && _.isUndefined(filterBaseLayer)
+    && _.isUndefined(filterVectorLayer)
+  ) {
     return this._layers;
   }
   let layers = [];
   _.forEach(this._layers, function(layer, key) {
     layers.push(layer);
   });
-
 
   if (typeof filterActive == 'boolean') {
     layers = _.filter(layers, function(layer) {
@@ -183,6 +186,12 @@ proto.getLayersDict = function(options) {
   if (typeof filterGeoLayer == 'boolean') {
     layers = _.filter(layers,function(layer) {
       return filterGeoLayer == layer.state.geolayer;
+    });
+  }
+
+  if (typeof filterVectorLayer == 'boolean') {
+    layers = _.filter(layers, function(layer) {
+      return filterVectorLayer == layer.isType('vector');
     });
   }
 

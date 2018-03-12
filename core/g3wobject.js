@@ -50,14 +50,14 @@ proto.onbeforeasync = function(setter, listener, priority) {
   return this._onsetter('before', setter, listener, true, priority);
 };
 
-proto.un = function(setter, key){
-  this.settersListeners.forEach((settersListeners) => {
+proto.un = function(setter, key) {
+  Object.entries(this.settersListeners).forEach(([_key, settersListeners]) => {
     settersListeners[setter].forEach((setterListener, idx) => {
-      if(setterListener.key == key) {
-        settersListeners[setter].slice(idx, 1);
+      if (setterListener.key == key) {
+        settersListeners[setter].splice(idx, 1);
       }
     })
-  })
+  });
 };
 
 // funzione che si occupa di settare le funzioni legate al setter in base alla tipologia
@@ -211,17 +211,6 @@ proto._setupListenersChain = function(setters) {
       // la presenza ritorneà una promise
       return deferred.promise();
     }
-  })
-};
-
-// funzione che unregistra la chiave del listener
-proto.un = function(listenerKey) {
-  _.forEach(this.settersListeners, function(setterListeners) {
-      _.forEach(setterListeners,function(listener,idx){
-        if (listener.key == listenerKey) {
-          setterListeners.splice(idx,1);
-        }
-      })
   })
 };
 

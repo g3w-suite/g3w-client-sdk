@@ -23,17 +23,15 @@ const proto = WMSDataProvider.prototype;
 
 
 proto._getRequestUrl = function(url, extent, size, pixelRatio, projection, params) {
-  const axisOrientation = projection.getAxisOrientation ? projection.getAxisOrientation() : "enu";
   let bbox;
   params['CRS'] = projection.getCode();
   if (!('STYLES' in params)) {
     params['STYLES'] = '';
   }
-
   params['DPI'] = 90 * pixelRatio;
   params['WIDTH'] = size[0];
   params['HEIGHT'] = size[1];
-  if (axisOrientation.substr(0, 2) == 'ne') {
+  if (this._layer.hasAxisInverted()) {
     bbox = [extent[1], extent[0], extent[3], extent[2]];
   } else {
     bbox = extent;
@@ -50,8 +48,6 @@ proto._getGetFeatureInfoUrlForLayer = function(url, coordinates,resolution, para
     'SERVICE': 'WMS',
     'VERSION': '1.3.0',
     'REQUEST': 'GetFeatureInfo',
-    'FORMAT': 'image/png',
-    'TRANSPARENT': true,
     'QUERY_LAYERS': this._layerName
   };
 
@@ -95,7 +91,6 @@ proto.query = function(options) {
   const getFeatureInfoUrl = this._getGetFeatureInfoUrlForLayer(url, coordinates, resolution, params);
   const queryString = getFeatureInfoUrl.split('?')[1];
   url += '?'+queryString + sourceParam;
-
   this.makeQueryForLayer(url, coordinates, resolution)
     .then(function(response) {
       d.resolve(response)

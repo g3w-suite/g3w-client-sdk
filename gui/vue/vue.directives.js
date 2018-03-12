@@ -27,6 +27,8 @@ Vue.directive("selected-first",function(el, binding){
   }
 );
 
-Vue.directive("t", function(el, binding){
-  return t(binding.value);
+Vue.directive("t", {
+  bind: function (el, binding) {
+    el.innerHTML = el.innerHTML + t(binding.value)
+  }
 });

@@ -1,14 +1,13 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var merge = require('core/utils/utils').merge;
-var Component = require('gui/vue/component');
-var MapService = require('../mapservice');
-//componente vue.color
-var ChromeComponent = VueColor.Chrome;
-// setto la funzione mounted così tutti i componenti erediteranno da questo
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const merge = require('core/utils/utils').merge;
+const Component = require('gui/vue/component');
+const MapService = require('../mapservice');
+//Vue color componet
+const ChromeComponent = VueColor.Chrome;
 ChromeComponent.mounted =  function() {
   this.$nextTick(function() {
-    //vado a rimuovere elementi che non mi servono
+    // remove all the tihing that aren't useful
     $('.vue-color__chrome__toggle-btn').remove();
     $('.vue-color__editable-input__label').remove();
     $('.vue-color__chrome__saturation-wrap').css('padding-bottom','100px');
@@ -19,7 +18,7 @@ ChromeComponent.mounted =  function() {
   });
 };
 
-var AddLayerComponent = {
+const AddLayerComponent = {
   template: require('./addlayer.html'),
   props: ['service'],
   data: function() {
@@ -60,20 +59,19 @@ var AddLayerComponent = {
       this.layer.color = val;
     },
     onAddLayer: function(evt) {
-      var self = this;
-      var reader = new FileReader();
-      var name = evt.target.files[0].name;
+      const reader = new FileReader();
+      const name = evt.target.files[0].name;
       this.layer.name = name;
       this.layer.title = name;
       this.layer.id = name;
-      var type = evt.target.files[0].name.split('.');
+      const type = evt.target.files[0].name.split('.');
       this.layer.type = type[type.length-1].toLowerCase();
       if (this.layer.type == 'zip') {
-        self.layer.data = evt.target.files[0];
+        this.layer.data = evt.target.files[0];
         $('input:file').val(null);
       } else {
-        reader.onload = function(evt) {
-          self.layer.data = evt.target.result;
+        reader.onload = (evt) => {
+          this.layer.data = evt.target.result;
           // vado a rimuovere il valore del layer ultimo aggiunto per
           // fare in mdo che l'evento change possa scattare
           $('input:file').val(null);
@@ -85,7 +83,7 @@ var AddLayerComponent = {
       if (this.layer.name) {
         //devo fare il cloen al fine di evitare che quando
         // riapro la modale ci si sempre il
-        var layer = _.cloneDeep(this.layer);
+        const layer = _.cloneDeep(this.layer);
         this.service.addExternalLayer(layer);
         $('#modal-addlayer').modal('hide');
         this.clearLayer();
@@ -112,8 +110,8 @@ var AddLayerComponent = {
   }
 };
 
-// componente vue della mappa
-var vueComponentOptions = {
+// map vue component
+const vueComponentOptions = {
   template: require('./map.html'),
   data: function() {
     return {
@@ -125,37 +123,35 @@ var vueComponentOptions = {
     'addlayer': AddLayerComponent
   },
   mounted: function() {
-    var self = this;
-    var mapWidth;
-    var mapService = this.$options.mapService;
+    let mapWidth;
+    const mapService = this.$options.mapService;
     this.crs = mapService.getCrs();
-    this.$on('changelayout', function(width) {
+    this.$on('changelayout', (width) => {
       mapWidth = width;
-      self.$nextTick(function() {
-        var map = mapService.getMap();
-        var viewPort = map.getViewport();
-        var viewPortWidth = $(viewPort).width();
+      this.$nextTick(() => {
+        const map = mapService.getMap();
+        const viewPort = map.getViewport();
+        const viewPortWidth = $(viewPort).width();
         if (viewPortWidth) {
-          // qui dovrei andare a vedere la posizione dei controlli
-          _.forEach(mapService.getMapControls(), function(control) {
+          mapService.getMapControls().forEach((control) => {
             if (control.control.changelayout)
               control.control.changelayout(map);
           })
         }
       })
     });
-    this.$nextTick(function() {
-      mapService.setTarget(self.$el.id);
+    this.$nextTick(() => {
+      mapService.setTarget(this.$el.id);
     });
-    // questo serve per quando viene cambiato progetto/vista cartografica,
-    // in cui viene ricreato il viewer (e quindi la mappa)
-    mapService.onafter('setupViewer',function() {
-      mapService.setTarget(self.$el.id);
+    // it useful when a map is changed by chage map button
+    mapService.onafter('setupViewer',() => {
+      mapService.setTarget(this.$el.id);
     });
   },
   methods: {
     showHideControls: function () {
-      _.forEach(this.$options.mapService.getMapControls(), function (control) {
+      const mapControls = this.$options.mapService.getMapControls();
+      mapControls.forEach((control) => {
         if (control.type != "scaleline")
           control.control.showHide();
       })
@@ -165,14 +161,13 @@ var vueComponentOptions = {
     }
   }
 };
-// registro internamente
-var InternalComponent = Vue.extend(vueComponentOptions);
-// viene definito il componte map
+// interanl registration
+const InternalComponent = Vue.extend(vueComponentOptions);
+
 Vue.component('g3w-map', vueComponentOptions);
-//componente mappa
+
 function MapComponent(options) {
   base(this, options);
-  var self = this;
   this.id = "map-component";
   this.title = "Catalogo dati";
   this.target = options.target || 'map';
@@ -186,16 +181,12 @@ function MapComponent(options) {
 
 inherit(MapComponent, Component);
 
-var proto = MapComponent.prototype;
+const proto = MapComponent.prototype;
 
-// funzione che ne definisce il layout della mappa
-// ed è chamata dall viewport per risettare le size delle due view
 proto.layout = function(width, height) {
-  // setto alterzza e larghezza nuove
   $('#'+this.target).height(height);
   $('#'+this.target).width(width);
   this._service.layout(width, height);
-  // vado ad emettere un change layout
   this.internalComponent.$emit('changelayout', width);
 };
 

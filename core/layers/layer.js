@@ -27,6 +27,7 @@ function Layer(config) {
     servertype: config.servertype || null,
     source: config.source || null,
     geolayer: false,
+    baseLayer: false,
     fields: config.fields || {},
     urls: {
       query: config.infourl && config.infour != '' || config.wmsUrl
@@ -40,7 +41,8 @@ function Layer(config) {
     title: config.title,
     selected: config.selected | false,
     disabled: config.disabled | false,
-    openattributetable: this.canShowTable()
+    openattributetable: this.canShowTable(),
+    source: config.source
   };
   // server type
   const serverType = this.config.servertype;
@@ -179,6 +181,11 @@ proto.query = function(options) {
   return d.promise();
 };
 
+// generel way to get an attribute
+proto.get = function(property) {
+  return this.config[property] ? this.config[property] : this.state[property];
+};
+
 proto.getFields = function() {
   return this.config.fields
 };
@@ -193,6 +200,10 @@ proto.getConfig = function() {
 
 proto.getState = function() {
   return this.state;
+};
+
+proto.getSource = function() {
+  return this.state.source
 };
 
 proto.getEditingLayer = function() {
@@ -240,12 +251,20 @@ proto.getType = function() {
   return this.type;
 };
 
+proto.isType = function(type) {
+  return this.getType() == type;
+};
+
 proto.setType = function(type) {
   this.type = type;
 };
 
 proto.isSelected = function() {
   return this.state.selected;
+};
+
+proto.setDisabled = function(bool) {
+  this.stets.disabled = bool
 };
 
 proto.isDisabled = function() {
@@ -403,8 +422,10 @@ Layer.ServerTypes = {
   Geoserver: "Geoserver",
   ArcGIS: "ArcGIS",
   OSM: "OSM",
-  Bing: "Bing",
-  Local: "Local"
+  BING: "Bing",
+  LOCAL: "Local",
+  G3WSUITE: "G3WSUITE"
+
 };
 
 // Source Types
@@ -412,7 +433,8 @@ Layer.SourceTypes = {
   POSTGIS: 'postgres',
   SPATIALITE: 'spatialite',
   CSV: 'delimitedtext',
-  WMS: 'wms'
+  WMS: 'wms',
+  GEOJSON: "geojson"
 };
 
 // Layer Capabilities

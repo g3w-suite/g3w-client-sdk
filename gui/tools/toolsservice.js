@@ -40,9 +40,7 @@ function ToolsService(){
   };
 
   this._removeTools = function() {
-    this.state.toolsGroups.forEach((toolGroup, toolIdx) => {
-      this.state.toolsGroups.splice(0,1);
-    })
+    this.state.toolsGroups = []
   };
 
   this.updateToolsGroup = function(order, groupConfig) {

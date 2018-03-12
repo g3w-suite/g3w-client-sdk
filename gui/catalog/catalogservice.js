@@ -9,11 +9,34 @@ function CatalogService() {
     prstate: ProjectsRegistry.state,
     highlightlayers: false,
     externallayers:[],
-    layerstrees: []
+    layerstrees: [],
+    layersgroups: []
   };
   this.setters = {};
   this.addExternalLayer = function(layer) {
+    layer.removable = true;
     this.state.externallayers.push(layer);
+  };
+
+  this.createLayersGroup = function({title = 'Layers Group', layers =[]} = {}) {
+    const nodes = [];
+    layers.forEach((layer) => {
+      nodes.push(Object.assign({}, layer, {
+        geolayer: true,
+        external: true,
+        removable: false,
+        title: layer.name,
+        visible: true
+      }))
+    });
+    return {
+      title,
+      nodes
+    }
+  };
+  // method to add a custom layers group
+  this.addLayersGroup = function(layersGroup) {
+    this.state.layersgroups.push(layersGroup);
   };
   this.removeExternalLayer = function(name) {
     this.state.externallayers.forEach((layer, index) => {

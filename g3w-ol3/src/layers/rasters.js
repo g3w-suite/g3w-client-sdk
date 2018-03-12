@@ -35,7 +35,8 @@ RasterLayers._WMSLayer = function(options) {
   const sourceOptions = {
     url: layerObj.url,
     params: params,
-    ratio: 1
+    ratio: 1,
+    ptojection: projection
   };
 
   const imageOptions = {
@@ -70,7 +71,7 @@ RasterLayers.XYZLayer = function(options){
   const sourceOptions = {
     url: options.url
   };
-  
+
   if (options.projection){
     sourceOptions.projection = options.projection;
   }

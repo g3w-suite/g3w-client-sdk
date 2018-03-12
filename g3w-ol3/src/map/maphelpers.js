@@ -77,20 +77,21 @@ _Viewer.prototype.goTo = function(coordinates, options) {
   const zoom = options.zoom || false;
   const view = this.map.getView();
   let panAnimation;
+  const duration = 300;
   let zoomAnimation;
   if (animate) {
     panAnimation = {
-      duration: 500,
+      duration,
       center: coordinates
     };
     if (zoom) {
       zoomAnimation = {
-        duration: 500,
-        zoom: zoom
+        duration,
+        zoom
       };
     } else {
       zoomAnimation = {
-        duration: 500,
+        duration,
         resolution: view.getResolution()
       };
     }
@@ -112,11 +113,11 @@ _Viewer.prototype.goToRes = function(coordinates, options){
   let zoomAnimation;
   if (animate) {
     panAnimation = {
-      duration: 300,
+      duration: 200,
       center: coordinates
     };
     zoomAnimation = {
-      duration: 300,
+      duration: 200,
       resolution: resolution
     };
     view.animate(panAnimation,zoomAnimation);
@@ -132,13 +133,14 @@ _Viewer.prototype.fit = function(geometry, options){
   const animate = options.animate || true;
   let panAnimation;
   let zoomAnimation;
+  const duration = 200;
   if (animate) {
     panAnimation = view.animate({
-      duration: 300,
+      duration,
       center: view.getCenter()
     });
     zoomAnimation = view.animate({
-      duration: 300,
+      duration,
       resolution: view.getResolution()
     });
   }
@@ -202,7 +204,7 @@ _Viewer.prototype.getActiveLayers = function(){
   return activelayers;
 };
 
-_Viewer.prototype.removeLayers = function(){
+_Viewer.prototype.removeLayers = function() {
   this.map.getLayers().clear();
 };
 

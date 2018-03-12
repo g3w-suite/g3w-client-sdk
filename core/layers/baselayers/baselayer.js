@@ -47,7 +47,11 @@ proto.getOLLayer = function(){
 };
 
 proto._updateLayer = function() {
-  this._olLayer.setVisible(this.layer.isVisible());
+  this.setVisible(this.layer.isVisible());
+};
+
+proto.setVisible = function(bool) {
+  this._olLayer.setVisible(bool)
 };
 
 

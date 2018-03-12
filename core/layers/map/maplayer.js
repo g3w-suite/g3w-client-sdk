@@ -18,4 +18,8 @@ proto.getId = function(){
   return this.id;
 };
 
+proto.getOLLayer = function() {
+  console.log('every sub classes has to be override')
+};
+
 module.exports = MapLayer;

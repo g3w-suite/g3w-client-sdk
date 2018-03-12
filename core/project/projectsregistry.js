@@ -116,6 +116,10 @@ proto.getProjects = function() {
   return this._pendingProjects;
 };
 
+proto.clearProjects = function() {
+  this._pendingProjects = [];
+};
+
 proto.getListableProjects = function() {
   const currentProjectId = this.getCurrentProject().getId();
   return _.sortBy(_.filter(this.getProjects(), (project) => {
@@ -128,6 +132,8 @@ proto.getListableProjects = function() {
     return project;
   }), 'title')
 };
+
+
 
 proto.getCurrentProject = function(){
   return this.state.currentProject;
@@ -162,6 +168,12 @@ proto.getProject = function(projectGid) {
       return d.reject();
     })
   }
+};
+
+proto.getProjectConfigByGid = function(gid) {
+  return this._pendingProjects.find((projectConfig) => {
+    return projectConfig.gid = gid;
+  })
 };
 
 proto._getProjectFullConfig = function(projectBaseConfig) {

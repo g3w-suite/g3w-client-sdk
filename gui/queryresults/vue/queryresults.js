@@ -16,6 +16,7 @@ const vueComponentOptions = {
     return {
       state: this.$options.queryResultsService.state,
       layersFeaturesBoxes: {},
+      hasResults: false,
       headerExpandActionCellWidth: headerExpandActionCellWidth,
       headerActionsCellWidth: headerActionsCellWidth,
       noresultmessage: t("info.no_results"),
@@ -23,11 +24,14 @@ const vueComponentOptions = {
     }
   },
   computed: {
-    hasResults: function() {
-      return !!this.state.layers.length;
+    hasLayers: function() {
+      return !!this.state.layers.length || !!this.state.components.length;
     }
   },
   methods: {
+    showResults() {
+      this.hasResults = true;
+    },
     isArray: function (value) {
       return _.isArray(value);
     },
@@ -175,11 +179,9 @@ const vueComponentOptions = {
     }
   },
   watch: {
-    // i listeners del queryResultsService.postRender
-    // potrebbero avere bisogno di modificare il DOM dopo che sono cambiati
-    // (per qualsiasi motivo) i dati e quindi Vue rirenderizza il DOM
     'state.layers': function(layers) {
       if (layers.length) {
+        this.hasResults = true;
         this.$nextTick(() => {
           this.$options.queryResultsService.postRender(this.$el);
         })
@@ -188,13 +190,11 @@ const vueComponentOptions = {
   },
   mounted: function() {
     Vue.nextTick(() => {
-      // vado a settare i tooltip
       $('[data-toggle="tooltip"]').tooltip();
     })
   }
 };
 
-// se lo voglio istanziare manualmente
 const InternalComponent = Vue.extend(vueComponentOptions);
 
 function QueryResultsComponent(options) {
@@ -202,7 +202,6 @@ function QueryResultsComponent(options) {
   this.id = "queryresults";
   this.title = "Query Results";
   this._service = new QueryResultsService();
-  //usato quando è stato distrutto
   this.setInternalComponent = function() {
     this.internalComponent = new InternalComponent({
       queryResultsService: this._service
@@ -230,13 +229,10 @@ function QueryResultsComponent(options) {
     const layersFeaturesBoxes = {};
     const layers = this._service.state.layers;
     layers.forEach((layer) => {
-      //da rivedere meglio
       if (layer.attributes.length <= maxSubsetLength && !layer.hasImageField) {
         layer.expandable = false;
       }
       layer.features.forEach((feature, index) => {
-        // se è la prima feature e il layer ha più di maxSubsetLength attributi, allora la espando già in apertura
-        //var collapsed = (index == 0 && layer.attributes.length > maxSubsetLength) ? false : true;
         let collapsed = true;
         let boxid = layer.id+'_'+feature.id;
         layersFeaturesBoxes[boxid] = {
@@ -259,15 +255,13 @@ function QueryResultsComponent(options) {
     });
     this.internalComponent.layersFeaturesBoxes = layersFeaturesBoxes;
   };
-  // sovracrive il metodo pader mount del component
-  /*this.mount = function(parent, append) {
-    var self = this;
-    // richiama il mont padre
-    return base(this, 'mount', parent, append)
-  };*/
 
   this.layout = function(width,height) {
     //TODO
+  };
+  this.unmount = function() {
+    this.getService().closeComponent();
+    return base(this, 'unmount')
   }
 }
 inherit(QueryResultsComponent, Component);

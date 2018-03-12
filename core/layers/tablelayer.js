@@ -81,7 +81,7 @@ function TableLayer(config, options) {
    *
   */
   this.type = Layer.LayerTypes.TABLE;
-  // creare an istance of edito
+  // creare an instace of editor
   this._editor = new Editor({
     layer: this
   });
@@ -415,7 +415,7 @@ proto.getFieldsWithValues = function(obj, options) {
   options = options || {};
   const exclude = options.exclude || [];
   const relation = options.relation || false;
-  // colne fields 
+  // colne fields
   let fields = _.cloneDeep(this.getFields());
   let feature, attributes;
   if (obj instanceof Feature){

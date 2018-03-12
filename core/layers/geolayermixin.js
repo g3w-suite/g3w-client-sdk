@@ -1,6 +1,5 @@
 const Projections = require('g3w-ol3/src/projection/projections');
 const resToScale = require('core/utils/geo').resToScale;
-const GUI = require('gui/gui')
 function GeoLayerMixin(config) {}
 
 const proto = GeoLayerMixin.prototype;
@@ -25,13 +24,11 @@ proto.setup = function(config) {
   });
   if (config.projection) {
     this.config.projection = config.projection;
-  }
-  else if (config.crs) {
+  } else if (config.crs) {
     if (config.project) {
       if (config.project.getProjection().getCode() != config.crs) {
-        Projections.get(config.crs,config.proj4);
-      }
-      else {
+        this.config.projection = Projections.get(config.crs,config.proj4);
+      } else {
         this.config.projection = config.project.getProjection();
       }
     }
@@ -40,23 +37,17 @@ proto.setup = function(config) {
   }
 };
 
-
 proto.isDisabled = function() {
-  if (this.state.scalebasedvisibility) {
-    const mapservice = GUI.getComponent('map').getService();
-    const mapScale = resToScale(mapservice.getResolution());
-    this.state.disabled = !(this.state.minscale >= mapScale && this.state.maxscale <= mapScale)
-    return this.state.disabled
-  }
-  return false
-}
-
-proto.getConfig = function() {
-  return this.config;
+  return this.state.disabled
 };
 
-proto.getState = function() {
-  return this.state;
+proto.setDisabled = function(resolution) {
+  if (this.state.scalebasedvisibility) {
+    const mapScale = resToScale(resolution);
+    this.state.disabled = !(this.state.minscale >= mapScale && this.state.maxscale <= mapScale);
+  } else {
+    this.state.disabled = false
+  }
 };
 
 proto.getMultiLayerId = function() {
@@ -93,6 +84,13 @@ proto.getCacheUrl = function() {
   if (this.isCached()) {
     return this.config.cache_url;
   }
+};
+
+// return if layer has inverted axis
+proto.hasAxisInverted = function() {
+  const projection = this.getProjection();
+  const axisOrientation = projection.getAxisOrientation ? projection.getAxisOrientation() : "enu";
+  return axisOrientation.substr(0, 2) == 'ne';
 };
 
 module.exports = GeoLayerMixin;

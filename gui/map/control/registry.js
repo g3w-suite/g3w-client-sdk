@@ -1,7 +1,7 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var G3WObject = require('core/g3wobject');
-var GUI = require('gui/gui');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const G3WObject = require('core/g3wobject');
+const GUI = require('gui/gui');
 
 function ControlsRegistry() {
 
@@ -25,9 +25,9 @@ function ControlsRegistry() {
   };
 
   this.unregisterControl = function(id) {
-    var control = this.getControl(id);
-    var mapService = GUI.getComponet('map').getService();
-    var map = mapService.getMap();
+    const control = this.getControl(id);
+    const mapService = GUI.getComponet('map').getService();
+    const map = mapService.getMap();
     if (control) {
       map.removeControl(control);
       delete this._controls[id];

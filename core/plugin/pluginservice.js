@@ -7,7 +7,6 @@ function PluginService(options) {
   base(this, options);
   this.init = function(config) {
     this.config = config;
-    //TODO
   }
 }
 
