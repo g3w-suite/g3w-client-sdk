@@ -190,6 +190,9 @@ proto.getFeatures = function(options) {
           pk: vector.pk
         })
       })
+      .fail((err) => {
+        d.reject(err)
+      })
   }
 
   return d.promise();

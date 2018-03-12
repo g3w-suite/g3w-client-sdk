@@ -26,6 +26,7 @@ function QueryResultsService() {
   this._vectorLayers = [];
   this.setters = {
     setQueryResponse: function(queryResponse, coordinates, resolution ) {
+      console.log('lalloLo')
       this.clearState();
       this.state.query = queryResponse.query;
       const layers = this._digestFeaturesForLayers(queryResponse.data);

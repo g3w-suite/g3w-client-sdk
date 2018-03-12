@@ -1,7 +1,6 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils//utils').base;
 const G3WObject = require('core/g3wobject');
-const Feature = require('core/layers/features/feature');
 
 function History(options) {
   options = options || {};
@@ -36,7 +35,7 @@ function History(options) {
     undo:false,
     redo: false
   };
-  this._current = null;
+  this._current = null; // store the current state of history (useful for undo /redo)
 }
 
 inherit(History, G3WObject);
@@ -53,10 +52,10 @@ proto.add = function(uniqueId, items) {
   //If we are in the middle of undo, delete all changes in the histroy from the current "state"
   // so i can create a new history
   if (this._states.length && this._current != this.getLastState().id) {
-    this._states.forEach((state, idx) => {
+    this._states.find((state, idx) => {
       if (this._current == state.id) {
         currentStateIndex = idx;
-        return false;
+        return true;
       }
     });
     //substitute new state
@@ -74,27 +73,27 @@ proto.add = function(uniqueId, items) {
   return d.promise();
 };
 
-// funzione interna che viene sfruttatat per cambiare lo state della history quando si
-// verifica una chiamata ad una funzione che modifica lo stato della history
+// internal method to change the state of the  history when we check
+// a call to a function that modify the hsitory state
 proto._setState = function() {
   this.canUndo();
   this.canCommit();
   this.canRedo();
 };
 
-//funzione che verifica se c'è stato un update (gli update sono formati da un array di due valori , il vecchio e il nuovo)
+//check if was did an update (update are array contains two items , old e new value)
 proto._checkItems = function(items, action) {
   /**
    * action: 0 per uno; 1: redo reffererd to array index
    */
   const newItems = {
-    own: [], //array di modifiche da applicare al layer della sessione
-    dependencies: {} // qui vengono raccolte le dependencies
+    own: [], //array of changes of layer of the current session
+    dependencies: {} // dependencies
   };
   items.forEach((item) => {
     if (_.isArray(item))
       item = item[action];
-    // vado a verificare se appartiene alla sessione
+    // check if belong to session
     if (this.id == item.layerId) {
       newItems.own.push(item)
     } else {
@@ -109,20 +108,18 @@ proto._checkItems = function(items, action) {
   return newItems;
 };
 
-// funzione undo
+// mehtod undo
 proto.undo = function() {
   let items;
   if (this._current == this.getFirstState().id) {
-    // setto a negativo il current il che significa che posso solo andare avanti
     this._current = null;
-    // restituisco l'unico stata presente
     items = this._states[0].items;
   } else {
-    this._states.forEach((state, idx) => {
+    this._states.find((state, idx) => {
       if (state.id == this._current) {
         items = this._states[idx].items;
         this._current = this._states[idx-1].id;
-        return false;
+        return true;
       }
     })
   }
@@ -140,11 +137,11 @@ proto.redo = function() {
     this._current = this._states[0].id;
     stateIdx = 1;
   } else {
-    this._states.forEach((state, idx) => {
+    this._states.find((state, idx) => {
       if (this._current == state.id) {
         this._current = this._states[idx+1].id;
         items = this._states[idx+1].items;
-        return false;
+        return true;
       }
     })
   }

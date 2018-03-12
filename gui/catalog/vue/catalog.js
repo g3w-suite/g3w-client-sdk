@@ -111,8 +111,9 @@ const vueComponentOptions = {
       mapService.goToBBox(bbox);
       this.layerMenu.show = false;
     },
-    showAttributeTable: function() {
-      GUI.closeContent()
+    showAttributeTable: function(layerId) {
+      this.layerMenu.loading_data_table = false;
+      GUI.closeContent();
       let layer;
       let features;
       const catallogLayersStores = CatalogLayersStoresRegistry.getLayersStores();

@@ -6,8 +6,7 @@ function IntegerValidator() {
   base(this);
   this.validate = function(value) {
     const integer = 1*value;
-    return !_.isNaN(integer) ? _.isNumber(1*value) : false;
-
+    return !_.isNaN(integer) ? Number.isSafeInteger(integer) && (integer <= 2147483647) : false;
   }
 }
 

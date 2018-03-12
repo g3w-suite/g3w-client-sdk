@@ -1,8 +1,8 @@
 // oggetto base utilizzato per i mixins
-var Input = require('gui/inputs/input');
-var Service = require('../service');
+const Input = require('gui/inputs/input');
+const Service = require('../service');
 
-var IntegerInput = Vue.extend({
+const IntegerInput = Vue.extend({
   mixins: [Input],
   data: function() {
     return {

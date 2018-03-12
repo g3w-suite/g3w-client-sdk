@@ -1,3 +1,5 @@
+const t = require('core/i18n/i18n.service').t;
+
 const serverErrorParser = function(options) {
   this._error = options.error;
 };
@@ -23,10 +25,10 @@ proto.parse = function() {
   if (error_obj) {
     error_message = "";
     traverseErrorMessage(error_obj);
-    error_message = "<h4>Errore nel salvataggio sul server</h4>" +
+    error_message = "<h4>"+ t("server_saver_error") + "</h4>" +
     "<h5>" + error_message + "</h5>"
   } else {
-    error_message = "Errore nel salvataggio sul server";
+    error_message = t("server_saver_error");
   }
   return error_message;
 };

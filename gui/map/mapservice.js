@@ -940,10 +940,6 @@ proto._setupViewer = function(width,height) {
 
   this.viewer.map.getView().setResolution(initResolution);
 
-  // on change resolution call update of each mapLayers
-  this.viewer.map.getView().on("change:resolution", (evt) => {
-    this._updateMapView();
-  });
 
   this._marker = new ol.Overlay({
     position: undefined,
@@ -1069,6 +1065,10 @@ proto._setupLayers = function() {
   this.addMapLayers(mapLayers);
   this.updateMapLayers();
   this._setupVectorLayers();
+  // on change resolution call update of each mapLayers
+  this.viewer.map.getView().on("change:resolution", (evt) => {
+    this._updateMapView();
+  });
 };
 
 
