@@ -1,13 +1,12 @@
 <div class="query-relation">
   <div v-if="!one" class="back-btn" @click="back">
     <span class="back-link">
-      <span class="glyphicon glyphicon-chevron-left"></span>
-      Ritorna alle Relazioni
+      <span class="glyphicon glyphicon-chevron-left" v-t="'back_to_relations'"></span>
     </span>
   </div>
   <div class="header">
     <div>
-      Dati relativi alla relazione <b>{{ relation.name }}</b>
+      <span v-t="'relation_data'"></span> <b>{{ relation.name }}</b>
     </div>
   </div>
   <div class="nano" v-if="table.rows.length">
@@ -29,5 +28,5 @@
         </table>
     </div>
   </div>
-  <div v-else> Non ci sono relazioni </div>
+  <div v-else v-t="'no_relations_found'"></div>
 </div>

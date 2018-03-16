@@ -78,7 +78,7 @@ function SearchPanel(options) {
     this.internalPanel.fillFilterInputsWithValues = this.fillFilterInputsWithValues;
     this.internalPanel.title = this.name;
   };
- 
+
   this.fillInputsFormFromFilter = function() {
     let id = 0;
     let formValue;
@@ -86,6 +86,7 @@ function SearchPanel(options) {
       _.forEach(v, (input) => {
         formValue = {};
         input.id = id;
+        input.input.type = input.input.type || 'textfield';
         formValue.type = input.input.type;
         formValue.value = null;
         this.internalPanel.formInputValues.push(formValue);
@@ -94,7 +95,7 @@ function SearchPanel(options) {
       });
     });
   };
-  
+
   this.fillFilterInputsWithValues = function(filterObject, formInputValues, globalIndex) {
     function convertInputValueToInputType(type, value) {
       switch(type) {
@@ -154,34 +155,35 @@ function SearchPanel(options) {
     });
     return queryFilter;
   };
-  
+
   this.createQueryFilterObject = function(options) {
-    var options = options || {};
-    var queryLayer = options.queryLayer || [];
-    var ogcService = options.ogcService || 'wms';
-    var filter =  options.filter || {};
-    var queryFilter;
-    var info = this.getInfoFromLayer(queryLayer, ogcService);
+    options = options || {};
+    const queryLayer = options.queryLayer || [];
+    const ogcService = options.ogcService || 'wms';
+    const filter =  options.filter || {};
+    let queryFilter;
+    const info = this.getInfoFromLayer(queryLayer, ogcService);
     queryFilter = _.merge(info, {
       ogcService: ogcService,
-      filter : filter 
+      filter : filter
     });
     return queryFilter
   };
-  
+
   this.getInfoFromLayer = function(layer, ogcService) {
     const urlForLayer = {};
+    let queryUrl;
     if (ogcService == 'wfs') {
-      var queryUrl = layer.getProject().getWmsUrl();
+      queryUrl = layer.getProject().getWmsUrl();
     } else {
-      var queryUrl = layer.getQueryUrl();
+      queryUrl = layer.getQueryUrl();
     }
     urlsForLayer = {
       url: queryUrl,
       layers: [],
       infoFormat: layer.getInfoFormat(ogcService),
-      crs: layer.getCrs(), 
-      serverType: layer.getServerType() 
+      crs: layer.getCrs(),
+      serverType: layer.getServerType()
     };
     return urlForLayer;
   };

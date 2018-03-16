@@ -1,5 +1,6 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
+const t = require('core/i18n/i18n.service').t;
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 const ProjectsRegistry = require('core/project/projectsregistry');
@@ -56,7 +57,7 @@ function PrintComponentService() {
     });
     this._setPrintArea();
   };
-  
+
   this.changeScale = function() {
     if (!this.state.scala) return;
     this._setPrintArea();
@@ -71,11 +72,11 @@ function PrintComponentService() {
 
   this._getOptionsPrint = function() {
     const options = {
-      scale: this.state.scala, 
-      extent: this.state.inner.join(), 
-      rotation: this.state.rotation, 
+      scale: this.state.scala,
+      extent: this.state.inner.join(),
+      rotation: this.state.rotation,
       dpi: this.state.dpi,// dpi
-      template: this.state.template, 
+      template: this.state.template,
       map: this.state.map //(map0)
     };
     return options;
@@ -88,7 +89,7 @@ function PrintComponentService() {
     const options = this._getOptionsPrint();
     GUI.setContent({
       content: this._page,
-      title: 'Stampa',
+      title: t("print"),
       perc:100
     });
     PrintService.print(options)
@@ -96,7 +97,7 @@ function PrintComponentService() {
       this.state.url = this.url;
     })
     .fail(() => {
-      GUI.notify.error('Si è verificato un errore nella richiesta al server');
+      GUI.notify.error(t("server_error"));
       GUI.closeContent();
     })
   };
@@ -108,11 +109,11 @@ function PrintComponentService() {
     const h = this.state.height  / 1000.0 * scala / resolution * ol.has.DEVICE_PIXEL_RATIO;
     const center = [this.state.size[0] * ol.has.DEVICE_PIXEL_RATIO / 2 , this.state.size[1] * ol.has.DEVICE_PIXEL_RATIO / 2];
 
-    const xmin = center[0] - (w / 2); 
+    const xmin = center[0] - (w / 2);
     const ymin = center[1] - (h / 2);
     const xmax = center[0] + (w / 2);
     const ymax = center[1] + (h / 2);
-    
+
     x_min = this._map.getCoordinateFromPixel([xmin, ymax]);
     x_max = this._map.getCoordinateFromPixel([xmax, ymax]);
     y_min = this._map.getCoordinateFromPixel([xmin, ymin]);
@@ -120,7 +121,7 @@ function PrintComponentService() {
     this.state.inner =  [x_min[0], x_min[1], y_max[0], y_max[1]];
 
   };
-  
+
   this._setPrintArea = function() {
     this.state.size = this._map.getSize();
     this.state.currentScala = resToScale(this._map.getView().getResolution());
@@ -137,7 +138,7 @@ function PrintComponentService() {
     this._moveMapKeyEvent = null;
     this._mapService.stopDrawGreyCover();
   };
-  
+
   this._changePrintOutput = function() {
     if (this.state.isShow) {
       this.state.loading = true;
@@ -151,7 +152,7 @@ function PrintComponentService() {
         })
     }
   };
-  
+
   this._setAllScalesBasedOnMaxResolution = function(maxResolution) {
     let resolution = maxResolution;
     const mapScala = resToScale(resolution);
@@ -167,7 +168,7 @@ function PrintComponentService() {
     });
     this.state.scale = _.orderBy(scale, ['value'], ['asc']);
   };
-  
+
   this._setInitialScalaSelect = function() {
     const initialResolution = this._map.getView().getResolution();
     const initialScala = resToScale(initialResolution);
@@ -185,7 +186,7 @@ function PrintComponentService() {
       this.state.scala = this.state.scale[this.state.scale.length-1].value;
     }
   };
-  
+
   this._setCurrentScala = function(resolution) {
     Object.entries(this._scalesResolutions).forEach(([scala, res]) => {
       if (res == resolution) {
@@ -200,12 +201,12 @@ function PrintComponentService() {
       this._setPrintArea();
     })
   };
-  
+
   this._showPrintArea = function() {
     this._setPrintArea();
     this._mapService.startDrawGreyCover();
   };
-  
+
   this._initPrintConfig = function() {
     let resolution;
     if (!this._initialized) {
@@ -229,7 +230,7 @@ function PrintComponentService() {
       }
     })
   };
-  
+
   this.showPrintArea = function(bool) {
     this._mapService = GUI.getComponent('map').getService();
     this._map = this._mapService.viewer.map;

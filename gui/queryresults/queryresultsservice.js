@@ -26,7 +26,6 @@ function QueryResultsService() {
   this._vectorLayers = [];
   this.setters = {
     setQueryResponse: function(queryResponse, coordinates, resolution ) {
-      console.log('lalloLo')
       this.clearState();
       this.state.query = queryResponse.query;
       const layers = this._digestFeaturesForLayers(queryResponse.data);
@@ -83,7 +82,7 @@ function QueryResultsService() {
     if (_.isNil(value)) {
       return Fields.SIMPLE;
     }
-    value = value.toString();
+    value = value.toString().toLowerCase();
 
     if (!value.match(URLPattern) && value.match(PhotoPattern)) {
       return Fields.PHOTO;
@@ -176,7 +175,6 @@ function QueryResultsService() {
       return ['boundedBy','geom','the_geom','geometry','bbox', 'GEOMETRY'].indexOf(featureAttributesName) == -1;
     });
     if (layerAttributes && layerAttributes.length) {
-      let featureAttributesNames = _.keys(featureAttributes);
       return _.filter(layerAttributes,function(attribute){
         return featureAttributesNames.indexOf(attribute.name) > -1;
       })
@@ -398,3 +396,5 @@ QueryResultsService.showQueryRelations = function(layer, feature, action) {
 inherit(QueryResultsService, G3WObject);
 
 module.exports = QueryResultsService;
+
+

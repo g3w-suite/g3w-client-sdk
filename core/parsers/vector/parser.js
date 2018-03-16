@@ -11,6 +11,8 @@ const VectorParser = function() {
       case 'gml':
         parser = this._parseLayermsGMLOutput;
         break;
+      default:
+        parser = this._parseLayerGeoJSON;
     }
     return parser;
   };

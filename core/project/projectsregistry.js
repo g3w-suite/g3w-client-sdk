@@ -122,7 +122,7 @@ proto.clearProjects = function() {
 
 proto.getListableProjects = function() {
   const currentProjectId = this.getCurrentProject().getId();
-  return _.sortBy(_.filter(this.getProjects(), (project) => {
+  return _.sortBy(this.getProjects().filter((project) => {
     if (!_.isNil(project.listable)) {
       return project.listable;
     }
@@ -143,10 +143,11 @@ proto.getProject = function(projectGid) {
   const d = $.Deferred();
   let pendingProject;
   let project = null;
-  this._pendingProjects.forEach((_pendingProject) => {
+  this._pendingProjects.find((_pendingProject) => {
     if (_pendingProject.gid == projectGid) {
       pendingProject = _pendingProject;
       project = this._projects[projectGid];
+      return true;
     }
   });
   if (!pendingProject) {
@@ -172,7 +173,7 @@ proto.getProject = function(projectGid) {
 
 proto.getProjectConfigByGid = function(gid) {
   return this._pendingProjects.find((projectConfig) => {
-    return projectConfig.gid = gid;
+    return projectConfig.gid == gid;
   })
 };
 

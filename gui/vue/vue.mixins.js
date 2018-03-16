@@ -4,7 +4,7 @@ const isMobileMixin = {
       return isMobile.any
     }
   }
-}
+};
 
 module.exports = {
   isMobileMixin: isMobileMixin

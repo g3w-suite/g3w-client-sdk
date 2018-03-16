@@ -1,29 +1,29 @@
 const TableParser = function() {
-  var pk;
+  this.pk = 'id';
   this.get = function(options) {
     options = options || {};
     const type = options.type;
-    const pk = options.pk || 'id';
+    this.pk = options.pk || this.pk;
     let parser;
     switch (type) {
       case 'json':
-        parser = this._parserJSON;
+        parser = this._parserJSON.bind(this);
         break;
-      default: 
-        parser = this._parserJSON;
+      default:
+        parser = this._parserJSON.bind(this);
     }
     return parser;
   };
-  
+
   this._parserJSON = function(data) {
     const features = [];
     let feature;
-    _.forEach(data, function(properties) {
+    _.forEach(data, (properties) => {
       feature = new ol.Feature();
-      //vado a settare le proprietà
+      //set properties
       feature.setProperties(properties);
-      //vado a settare l'id univoco della feature
-      feature.setId(properties[pk]);
+      //set Id prporties (is pk)
+      feature.setId(properties[this.pk]);
       features.push(feature)
     });
     return features;

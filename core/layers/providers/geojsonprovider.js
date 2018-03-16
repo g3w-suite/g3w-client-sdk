@@ -2,8 +2,6 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const Provider = require('core/layers/providers/provider');
 
-import axios from 'axios';
-
 function GEOJSONDataProvider(config = {}) {
   this.config =  config;
   base(this, config);
@@ -18,15 +16,15 @@ proto.getFeatures = function(options) {
   const url = options.url;
   const mapProjection = options.mapProjection;
   return new Promise((resolve, reject) => {
-    axios.get(url)
+    $.get({url})
       .then((response) => {
         const parser = new ol.format.GeoJSON({
           featureProjection: mapProjection
         });
-        const features = parser.readFeatures(response.data.results);
+        const features = parser.readFeatures(response.results);
         resolve(features)
       })
-      .catch((err) => {
+      .fail((err) => {
         reject(err)
       })
   })

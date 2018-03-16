@@ -160,7 +160,8 @@ proto.getFeatures = function(options) {
           return 1*featureLock.featureid;
         });
         parser(data, parser_options).forEach((feature) => {
-          if (lockIds.includes(feature.getId())) {
+          const featureId = feature.getId();
+          if (lockIds.includes(featureId)) {
             features.push(new Feature({
               feature: feature,
               pk: pk

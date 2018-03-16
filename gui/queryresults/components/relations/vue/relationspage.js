@@ -5,7 +5,7 @@ const Service = require('../relationsservice');
 
 
 
-/* Lista delle relationi associate  */
+/* List of relaations */
 const relationsComponent = {
   template: require('./relations.html'),
   props: ['relations', 'feature'],
@@ -38,7 +38,7 @@ const relationsComponent = {
 };
 /*-----------------------------------*/
 
-/* Tabella relation */
+/* Relation Table */
 const relationComponent = {
   template: require('./relation.html'),
   props: ['table', 'relation'],
@@ -102,7 +102,7 @@ const InternalComponent = Vue.extend({
       relation: null,
       relations: this.$options.relations,
       feature: this.$options.feature,
-      currentview: 'relations' // proprietà che serve per switchare tra componenti
+      currentview: 'relations' 
     }
   },
   components: {
@@ -147,9 +147,7 @@ const RelationsPage = function(options) {
   const service = options.service || new Service({});
   const relations = options.relations || [];
   const feature = options.feature || null;
-  // istanzio il componente interno
   this.setService(service);
-  // istanzio il componente interno
   const internalComponent = new InternalComponent({
     service: service,
     relations: relations,

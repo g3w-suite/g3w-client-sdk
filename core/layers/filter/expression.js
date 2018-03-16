@@ -93,7 +93,7 @@ proto.createExpressionFromFilter = function(filterObject, layername) {
         _.forEach(input, function(v, k, obj) {
           if (_.isArray(v)) {
             filterElement = createSingleFilter(obj);
-          } else { 
+          } else {
             if (k == 'LIKE' || k == 'ILIKE') {
               valueExtra = "%";
             }

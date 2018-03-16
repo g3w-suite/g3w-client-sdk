@@ -2,6 +2,7 @@ const inherit = require('core/utils/utils').inherit;
 const t = require('core/i18n/i18n.service').t;
 const base = require('core/utils/utils').base;
 const G3WObject = require('core/g3wobject');
+const shpToGeojson = require('core/utils/geo').shpToGeojson;
 const GUI = require('gui/gui');
 const ApplicationService = require('core/applicationservice');
 const ProjectsRegistry = require('core/project/projectsregistry');
@@ -71,7 +72,7 @@ function MapService(options) {
     this.project = ProjectsRegistry.getCurrentProject();
     //on after setting current project
     ProjectsRegistry.onafter('setCurrentProject',(project) => {
-      this.viewer.removeLayers();
+      this.removeLayers();
       this._removeListeners();
       this.project = project;
       this._resetView();
@@ -1071,6 +1072,9 @@ proto._setupLayers = function() {
   });
 };
 
+proto.removeLayers = function() {
+  this.viewer.removeLayers();
+};
 
 proto._setupVectorLayers = function() {
   const layers = this.getLayers({
@@ -1138,7 +1142,8 @@ proto._setupMapLayers = function() {
 
 proto.getOverviewMapLayers = function(project) {
   const projectLayers = project.getLayersStore().getLayers({
-    GEOLAYER: true
+    GEOLAYER: true,
+    BASELAYER: false,
   });
 
   const multiLayers = _.groupBy(projectLayers,function(layer){
@@ -1529,13 +1534,14 @@ proto.addExternalLayer = function(externalLayer) {
   const color = externalLayer.color;
   const type = externalLayer.type;
   let crs = externalLayer.crs;
+  let layer_epsg = crs;
   let data = externalLayer.data;
   const catalogService = GUI.getComponent('catalog').getService();
   const QueryResultService = GUI.getComponent('queryresults').getService();
   const layer = this.getLayerByName(name);
-  const loadExternalLayer = (format, data) => {
+  const loadExternalLayer = (format, data, epsg=layer_epsg) => {
     features = format.readFeatures(data, {
-      dataProjection: 'EPSG:'+ crs,
+      dataProjection: epsg,
       featureProjection: this.getEpsg()
     });
     vectorSource = new ol.source.Vector({
@@ -1560,8 +1566,8 @@ proto.addExternalLayer = function(externalLayer) {
   };
 
   if (!layer) {
-    if (crs != this.getCrs()) {
-      if (crs == '3003')
+    if (layer_epsg != this.getCrs()) {
+      if (layer_epsg == 'EPSG:3003')
         Projections.get("EPSG:3003", "+proj=tmerc +lat_0=0 +lon_0=9 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +units=m +no_defs");
     }
     switch (type) {
@@ -1576,19 +1582,14 @@ proto.addExternalLayer = function(externalLayer) {
         loadExternalLayer(format, data);
         break;
       case 'zip':
-        let geoJSONFile;
-        loadshp({
+        shpToGeojson({
           url: data,
           encoding: 'big5',
           EPSG: crs
-        }, function(geojson) {
-          if (!geoJSONFile) {
-            geoJSONFile = geojson;
-            crs = '4326';
-            data = JSON.stringify(geojson);
-            format = new ol.format.GeoJSON();
-            loadExternalLayer(format, data);
-          }
+        }, (geojson) => {
+          data = JSON.stringify(geojson);
+          format = new ol.format.GeoJSON({});
+          loadExternalLayer(format, data, "EPSG:4326");
         });
         break;
     }

@@ -1,7 +1,7 @@
-var BodyTemplate = require('./body.html');
-var Inputs = require('gui/inputs/inputs');
+const BodyTemplate = require('./body.html');
+const Inputs = require('gui/inputs/inputs');
 
-var BodyFormComponent = Vue.extend({
+const BodyFormComponent = Vue.extend({
   template: BodyTemplate,
   props: ['state'],
   components: Inputs,
@@ -23,8 +23,7 @@ var BodyFormComponent = Vue.extend({
       $(".nano").nanoScroller();
     }
   },
-  mounted: function() {
-  }
+  mounted: function() {}
 });
 
 module.exports = BodyFormComponent;

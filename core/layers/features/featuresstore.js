@@ -4,7 +4,6 @@ const G3WObject = require('core/g3wobject');
 
 // Interfaccia per registare i layers
 function FeaturesStore(options) {
-
   options = options || {};
   this._features = [];
   this._provider = options.provider || null;
@@ -79,9 +78,10 @@ proto._filterFeaturesResponse = function(options) {
   const features = options.features || [];
   const featurelocks = options.featurelocks || [];
   const featuresToAdd = _.filter(features, (feature) => {
-    added = _.includes(this._loadedPks, feature.getId());
+    const featureId = feature.getId();
+    added = _.includes(this._loadedPks, featureId);
     if (!added)
-      this._loadedPks.push(feature.getId());
+      this._loadedPks.push(featureId);
     return !added
   });
   this._filterLockIds(featurelocks);

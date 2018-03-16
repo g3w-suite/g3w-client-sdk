@@ -13,7 +13,7 @@ const CheckBoxInput = Vue.extend({
     return {
       service: new Service({
         state: this.state,
-        // optione che mi server per customizzare i validator
+        // options to customize validator
         validatorOptions: {
           values: values
         }
@@ -25,14 +25,15 @@ const CheckBoxInput = Vue.extend({
   },
   methods: {
     changeCheckBox: function() {
-      // faccio conversione della label
+      // convert label
       this.label = this.service.convertCheckedToValue(this.value);
-      // e lancio il metodo change del baseinput
+      //run validator
       this.change();
     }
   },
   mounted: function() {
     this.value = this.service.convertValueToChecked();
+    this.changeCheckBox();
   }
 });
 

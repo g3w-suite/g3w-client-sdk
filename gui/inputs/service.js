@@ -6,6 +6,7 @@ function Service(options) {
   this.state = options.state || {};
   const validatorType = this.state.type;
   this._validatorOptions = options.validatorOptions || this.state.input.options || {};
+  this._getValidatorType(this.state);
   // useful for the validator to validate imput
   this._validator = Validators.get(validatorType);
 }
@@ -14,6 +15,10 @@ const proto = Service.prototype;
 
 proto.getState = function() {
   return this.state;
+};
+
+proto._getValidatorType = function(input) {
+  //console.log(input)
 };
 
 proto.setState = function(state) {

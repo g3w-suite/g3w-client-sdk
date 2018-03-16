@@ -48,7 +48,7 @@ const AddLayerComponent = {
   components: {
     'chrome-picker': ChromeComponent
   },
-  mounted: function(){
+  mounted: function() {
     this.layer.crs = this.service.getCrs();
     this.service.on('addexternallayer', function() {
       $('#modal-addlayer').modal('show');
