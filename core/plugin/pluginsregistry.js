@@ -44,31 +44,25 @@ function PluginsRegistry() {
 
   // reaload plugin in case of change map
   this.reloadPlugins = function(initConfig, project) {
+    const scripts = $('script');
+    Object.entries(this.getPlugins()).forEach(([pluginName, plugin]) => {
+      // unload plugin e remove from DOM
+      plugin.unload();
+      delete this._plugins[pluginName];
+      scripts.each((index, scr) => {
+        this._loadedPluginUrls.forEach((pluginUrl, idx) => {
+          if (scr.getAttribute('src') == pluginUrl && pluginUrl.indexOf(pluginName) != -1) {
+            scr.parentNode.removeChild( scr );
+            this._loadedPluginUrls.splice(idx, 1);
+            return false;
+          }})
+      });
+    });
+    this._loadedPluginUrls = [];
     //setup plugins
     this.otherPluginsConfig = project.getState();
     this.setPluginsConfig(initConfig.group.plugins);
     this.setOtherPlugins();
-    //get all script through jquery
-    const scripts = $('script');
-    Object.entries(this.getPlugins()).forEach(([pluginName, plugin]) => {
-      if (_.keys(this.pluginsConfigs).indexOf(pluginName) == -1) {
-        // unload plugin e remove from DOM
-        plugin.unload();
-        delete this._plugins[pluginName];
-        scripts.each((index, scr) => {
-          this._loadedPluginUrls.forEach((pluginUrl, idx) => {
-            if (scr.getAttribute('src') == pluginUrl && pluginUrl.indexOf(pluginName) != -1) {
-              scr.parentNode.removeChild( scr );
-              this._loadedPluginUrls.splice(idx, 1);
-              return false;
-              }})
-        });
-      } else {
-        // load a plugin again
-        plugin.load();
-        delete this.pluginsConfigs[pluginName];
-      }
-    });
     Object.entries(this.pluginsConfigs).forEach(([pluginName, pluginConfig]) => {
       this._setup(pluginName, pluginConfig);
     });

@@ -142,6 +142,7 @@ proto._removeLastPoint = function(event) {
 //drawStart function
 proto._drawStart = function(evt) {
   this._map = this.getMap();
+  this._map.removeLayer(this._layer);
   this._createMeasureTooltip();
   this._createHelpTooltip();
   this._feature = evt.feature;

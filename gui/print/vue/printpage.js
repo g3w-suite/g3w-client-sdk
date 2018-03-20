@@ -1,8 +1,8 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var Component = require('gui/vue/component');
+const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const Component = require('gui/vue/component');
 
-var InternalComponent = Vue.extend({
+const InternalComponent = Vue.extend({
   template: require('./printpage.html'),
   data: function() {
     return {
@@ -10,23 +10,22 @@ var InternalComponent = Vue.extend({
     }
   },
   mounted: function() {
-    var self = this;
-    this.state.loading = true;
-    this.$nextTick(function(){
-      $('#pdf').load(function(){
-        self.state.loading = false;
+    this.$nextTick(() => {
+      this.state.loading = true;
+      $('#pdf').load(() => {
+        this.state.loading = false;
       })
     });
   }
 });
 
-var PrintPage = function(options) {
+const PrintPage = function(options) {
   base(this);
-  var options = options || {};
-  var service = options.service;
+  options = options || {};
+  const service = options.service;
   // istanzio il componente interno
   this.setService(service);
-  var internalComponent = new InternalComponent();
+  const internalComponent = new InternalComponent();
   this.setInternalComponent(internalComponent);
   this.internalComponent.state = service.state;
 };

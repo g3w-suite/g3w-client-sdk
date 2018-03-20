@@ -5,7 +5,9 @@ const PrinterProvider = require('./providers/printerprovider');
 
 function PrintService() {
   base(this);
+  this.url = null;
   this.print = function(options) {
+    this.url = null;
     /* options:
      type: printer server
      url:request url
@@ -14,8 +16,8 @@ function PrintService() {
     options = options || {};
     const type = options.type || 'QGIS';
     const provider = new PrinterProvider(type);
-    const url = provider.print(options);
-    return $.get(url)
+    this.url = provider.print(options);
+    return $.get(this.url)
   };
 }
 

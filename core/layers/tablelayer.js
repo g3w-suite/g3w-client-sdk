@@ -167,7 +167,7 @@ proto.getLayerForEditing = function() {
 
 proto.isFieldRequired = function(fieldName) {
   let required = false;
-  this.getFields().forEach((field) => {
+  this.getEditingFields().forEach((field) => {
     if (fieldName == field.name) {
       required = !!field.validate.required;
       return false;
@@ -209,14 +209,13 @@ proto._setOtherConfigParameters = function(config) {
 };
 
 // return layer fields
-proto.getFields = function() {
+proto.getEditingFields = function() {
   return this.config.editing.fields.length ? this.config.editing.fields: this.config.fields;
 };
 
-
 proto.getFieldsLabel = function() {
   const labels = [];
-  _.forEach(this.getFields(), function(field) {
+  this.getEditingFields().forEach((field) => {
     labels.push(field.label)
   });
   return labels;
@@ -416,7 +415,7 @@ proto.getFieldsWithValues = function(obj, options) {
   const exclude = options.exclude || [];
   const relation = options.relation || false;
   // colne fields
-  let fields = _.cloneDeep(this.getFields());
+  let fields = _.cloneDeep(this.getEditingFields());
   let feature, attributes;
   if (obj instanceof Feature){
     feature = obj;
@@ -476,7 +475,7 @@ proto._createRelations = function(projectRelations) {
 proto.createNewFeature = function() {
   let feature = new ol.Feature();
   const properties = {};
-  _.forEach(this.getFields(), function(field) {
+  _.forEach(this.getEditingFields(), function(field) {
     properties[field.name] = null;
   });
   feature.setProperties(properties);

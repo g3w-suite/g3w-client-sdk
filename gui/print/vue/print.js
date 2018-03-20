@@ -7,24 +7,17 @@ const merge = require('core/utils/utils').merge;
 const vueComponentOptions = {
   template: require('./print.html'),
   data: function() {
-    var self = this;
     return {
       state: null,
       button: {
         title: "Crea PDF",
         class: "btn-success",
         type:"stampa",
-        disabled: false,
-        cbk: function() {
-          self.print()
-        }
+        disabled: false
       }
     }
   },
   methods: {
-    exec: function(cbk) {
-      cbk();
-    },
     btnEnabled: function(button) {
       return button.disabled;
     },
@@ -48,7 +41,6 @@ const vueComponentOptions = {
       } else {
         this.state.rotation = 0;
       }
-
       this.$options.service.changeRotation();
     },
     print: function() {
@@ -75,13 +67,13 @@ function PrintComponent(options) {
     this.internalComponent.state = service.state;
     return this.internalComponent;
   };
-  
+
   this._reload = function() {
     const service = this.getService();
     service.reload();
     this.state.visible = service.state.visible;
   };
-  
+
   this._setOpen = function() {
     this._service.showPrintArea(this.state.open);
   };

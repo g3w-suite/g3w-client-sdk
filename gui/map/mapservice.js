@@ -147,7 +147,6 @@ function MapService(options) {
     this._setUpEventsKeysToLayersStore(layerStore);
   });
 
-
   MapLayersStoreRegistry.onafter('addLayersStore', (layerStore) => {
     this._setUpEventsKeysToLayersStore(layerStore);
   });
@@ -969,7 +968,8 @@ proto._removeEventsKeysToLayersStore = function(layerStore) {
       _.forEach(eventObj, function(eventKey, event) {
         layerStore.un(event, eventKey);
       })
-    })
+    });
+    delete this._layersStoresEventKeys[layerStoreId];
   }
 };
 
@@ -989,7 +989,18 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
     this._layersStoresEventKeys[layerStore.getId()].push({
       setLayersVisible:layerVisibleKey
     });
-
+    // loop througth layer of lauerstore
+    layerStore.getLayers().forEach((layer) => {
+      if (layer.getType() == 'vector') {
+        //create layer OL
+        const olLayer = this.createOlLayer({
+          id: layer.getId(),
+          geometryType: layer.getGeometryType(),
+          color: layer.getColor(),
+        });
+        this.viewer.map.addLayer(olLayer);
+      }
+    });
     //add layer event in layerStore
     const addLayerKey = layerStore.onafter('addLayer', (layer) => {
       if (layer.getType() == 'vector') {

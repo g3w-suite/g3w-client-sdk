@@ -50,9 +50,9 @@
                             <!--<a v-if="is('link',layer,attribute.name,feature.attributes[attribute.name])" :href="feature.attributes[attribute.name]"  style="display: block; width: 100%;  white-space: nowrap;  overflow: hidden;  text-overflow: ellipsis" target="_blank">{{ feature.attributes[attribute.name] }} </a>-->
                             <button v-if="is('link',layer,attribute.name,feature.attributes[attribute.name])"  class="btn btn-info" style="margin:5px"  @click="openLink(feature.attributes[attribute.name])">{{ openlink }}</button>
                             <a v-else-if="is('photolink',layer,attribute.name,feature.attributes[attribute.name])" :href="feature.attributes[attribute.name]" target="_blank">
-                              <img class=" img-responsive img-thumbnail"
-                                   :src="feature.attributes[attribute.name]">
-                            </a>                        </td>
+                              <img class=" img-responsive img-thumbnail" :src="feature.attributes[attribute.name]">
+                            </a>
+                          </td>
                         </tr>
                       </table>
                     </td>

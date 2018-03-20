@@ -15,7 +15,9 @@ const dpis = printConfig.dpis;
 function PrintComponentService() {
   base(this);
   this._initialized = false;
-  this.state = {};
+  this.state = {
+    loading: false
+  };
   this._moveMapKeyEvent = null;
   // istanzio il componete page per la visualizzazione del pdf
   this._page = null;
@@ -28,7 +30,6 @@ function PrintComponentService() {
     this.state.print = this._project.state.print;
     this.state.visible = (this.state.print && this.state.print.length) ? true : false;
     this.state.isShow = false;
-    this.state.loading = false;
     this.state.url = null;
     if (this.state.visible) {
       this.state.template = this.state.print[0].name;
@@ -67,7 +68,6 @@ function PrintComponentService() {
     this._mapService.setInnerGreyCoverBBox({
       rotation: this.state.rotation
     });
-    this._changePrintOutput();
   };
 
   this._getOptionsPrint = function() {
@@ -83,6 +83,7 @@ function PrintComponentService() {
   };
 
   this.print = function() {
+    const self = this;
     this._page = new PrintPage({
       service: this
     });
@@ -93,8 +94,8 @@ function PrintComponentService() {
       perc:100
     });
     PrintService.print(options)
-    .then((data, status, xhr) => {
-      this.state.url = this.url;
+    .then(function(data, status, xhr) {
+      self.state.url = this.url;
     })
     .fail(() => {
       GUI.notify.error(t("server_error"));
@@ -137,20 +138,6 @@ function PrintComponentService() {
     ol.Observable.unByKey(this._moveMapKeyEvent);
     this._moveMapKeyEvent = null;
     this._mapService.stopDrawGreyCover();
-  };
-
-  this._changePrintOutput = function() {
-    if (this.state.isShow) {
-      this.state.loading = true;
-      const options = this._getOptionsPrint();
-      PrintService.print(options)
-        .then((url) => {
-          if (this.state.url == url) {
-            this.state.loading = false;
-          }
-          this.state.url = url;
-        })
-    }
   };
 
   this._setAllScalesBasedOnMaxResolution = function(maxResolution) {
