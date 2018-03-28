@@ -20,9 +20,7 @@ function LayersStore(config) {
     layerstree: [],
     relations: null // useful to build tree of relations
   };
-
   this._isQueryable = _.isBoolean(config.queryable) ? config.queryable : true;
-
   this._layers = this.config.layers || {};
 
   this.setters = {
@@ -251,8 +249,8 @@ proto.getLayerById = function(layerId) {
 
 proto.getLayerByName = function(name) {
   let layer = null;
-  _.forEach(this.getLayersDict(),function(layer){
-    if (layer.getName() == name){
+  this._layers.forEach((_layer) => {
+    if (_layer.getName() == name){
       layer = _layer;
     }
   });
@@ -403,8 +401,8 @@ proto.setLayersTree = function(layerstree, name) {
 };
 
 // used by from plugin (or external code) to build layerstree
-proto.createLayersTree = function(groupName, options) {
-  options = options || {};
+// layer groupNem is a ProjectName
+proto.createLayersTree = function(groupName, options = {}) {
   const full = options.full || false;
   const _layerstree = options.layerstree || null;
   let layerstree = [];
@@ -413,7 +411,7 @@ proto.createLayersTree = function(groupName, options) {
       return this.state.layerstree;
     } else {
       let traverse = (obj, newobj) => {
-        _.forIn(obj, function (layer) {
+        _.forIn(obj, (layer) => {
           let lightlayer = {};
           if (!_.isNil(layer.id)) {
             lightlayer.id = layer.id;
@@ -423,7 +421,7 @@ proto.createLayersTree = function(groupName, options) {
             lightlayer.expanded = layer.expanded;
             lightlayer.nodes = [];
             lightlayer.mutually_exclusive = layer["mutually-exclusive"];
-            traverse(layer.nodes,lightlayer.nodes)
+            traverse(layer.nodes, lightlayer.nodes)
           }
           newobj.push(lightlayer);
         });
@@ -444,7 +442,7 @@ proto.createLayersTree = function(groupName, options) {
   this.setLayersTree(layerstree, groupName);
 };
 
-proto.removeLayersTree = function(id) {
+proto.removeLayersTree = function() {
   this.state.layerstree.splice(0,this.state.layerstree.length);
 };
 

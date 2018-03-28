@@ -219,16 +219,22 @@ function PrintComponentService() {
   };
 
   this.showPrintArea = function(bool) {
-    this._mapService = GUI.getComponent('map').getService();
-    this._map = this._mapService.viewer.map;
-    if (bool) {
-      this._setMapInfo();
-      this._setMoveendMapEvent();
-      this._initPrintConfig();
-      this._showPrintArea();
-    } else {
-      this._clearPrint();
-    }
+    // close content if open
+    GUI.closeContent()
+      .then((mapComponent) => {
+        this._mapService = mapComponent.getService();
+        this._mapService.getMap().once('postrender', (evt) => {
+          this._map = evt.map;
+          if (bool) {
+            this._setMapInfo();
+            this._setMoveendMapEvent();
+            this._initPrintConfig();
+            this._showPrintArea();
+          } else {
+            this._clearPrint();
+          }
+        });
+      })
   };
 
   this.reload = function() {

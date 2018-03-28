@@ -34,10 +34,11 @@
                       <span>{{feature.attributes[attribute.name]}}</span>
                     </td>
                     <td class="action-cell">
-                      <span class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? 'fa-plus' : 'fa-minus']"></span>
+                      <span v-if="!hasOneLayerAndOneFeature" class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? 'fa-plus' : 'fa-minus']"></span>
+                      <span v-else></span>
                     </td>
                   </tr>
-                  <tr v-show="!collapsedFeatureBox(layer,feature)" class="featurebox-body">
+                  <tr v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature" class="featurebox-body">
                     <td :colspan="attributesSubsetLength(layer.attributes)+2">
                       <table>
                         <tr v-for="attribute in layer.attributes">

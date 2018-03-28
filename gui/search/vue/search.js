@@ -1,7 +1,7 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
-const merge = require('core/utils/utils').merge;
 const Component = require('gui/vue/component');
+const GUI = require('gui/gui');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const SearchesService = require('gui/search/searchesservice');
 
@@ -31,7 +31,6 @@ function SearchComponent(options){
   });
   this.internalComponent.state = this._service.state;
   this.state.visible = ProjectsRegistry.getCurrentProject().state.search.length > 0;
-  merge(this, options);
   this.initService = function() {
     this._service.init();
   };
@@ -39,7 +38,7 @@ function SearchComponent(options){
   this._reload = function() {
     this.state.visible = ProjectsRegistry.getCurrentProject().state.search.length > 0;
     this._service.reload();
-  }
+  };
 }
 
 inherit(SearchComponent, Component);

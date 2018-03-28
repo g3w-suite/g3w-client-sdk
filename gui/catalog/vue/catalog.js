@@ -1,7 +1,6 @@
 const inherit = require('core/utils/utils').inherit;
 const t = require('core/i18n/i18n.service').t;
 const base = require('core/utils/utils').base;
-const merge = require('core/utils/utils').merge;
 const Component = require('gui/vue/component');
 const TableComponent = require('gui/table/vue/table');
 const ComponentsRegistry = require('gui/componentsregistry');
@@ -27,7 +26,8 @@ const vueComponentOptions = {
         loading_data_table : false,
         items: {
           zoomtolayer: t("catalog_items.contextmenu.zoomtolayer"),
-          open_attribute_table:t("catalog_items.contextmenu.open_attribute_table")
+          open_attribute_table: t("catalog_items.contextmenu.open_attribute_table"),
+          showmetadata: t("catalog_items.contextmenu.show_metadata")
         },
         //colorMenu
         colorMenu: {
@@ -102,6 +102,9 @@ const vueComponentOptions = {
     setBaseLayer: function(id) {
       this.project.setBaseLayer(id);
     },
+    _hideMenu: function() {
+      this.layerMenu.show = false;
+    },
     zoomToLayer: function() {
       let bbox;
       if (this.layerMenu.layer.bbox) {
@@ -109,7 +112,7 @@ const vueComponentOptions = {
       }
       const mapService = GUI.getComponent('map').getService();
       mapService.goToBBox(bbox);
-      this.layerMenu.show = false;
+      tthis._hideMenu();
     },
     showAttributeTable: function(layerId) {
       this.layerMenu.loading_data_table = false;
@@ -142,7 +145,7 @@ const vueComponentOptions = {
         })
         .always(() => {
           this.layerMenu.loading_data_table = false;
-          this.layerMenu.show = false;
+          this._hideMenu();
         });
     },
     startEditing: function() {
@@ -157,7 +160,7 @@ const vueComponentOptions = {
       });
     },
     closeLayerMenu: function() {
-      this.layerMenu.show = false;
+      this._hideMenu();
       this.showColorMenu(false);
     },
     onChangeColor: function(val) {
@@ -454,7 +457,9 @@ Vue.component('tristate-tree', {
       if (!this.isFolder && (this.layerstree.openattributetable || this.layerstree.geolayer || this.layerstree.external)) {
         CatalogEventHub.$emit('showmenulayer', layerstree, evt);
       }
-
+      // if (!this.isFolder) {
+      //   CatalogEventHub.$emit('showmenulayer', layerstree, evt);
+      // }
     }
   },
   mounted: function() {
@@ -531,7 +536,7 @@ Vue.component('layerslegend-item',{
 
 
 function CatalogComponent(options) {
-  base(this);
+  base(this, options);
   this.id = "catalog-component";
   this.title = "catalog";
   this.mapComponentId = options.mapcomponentid;
@@ -562,7 +567,6 @@ function CatalogComponent(options) {
       listenToMapVisibility(map)
     }
   }
-  merge(this, options);
 }
 
 inherit(CatalogComponent, Component);

@@ -20,6 +20,7 @@ const Projections = require('g3w-ol3/src/projection/projections');
 const VectorLayer = require('core/layers/vectorlayer');
 
 function MapService(options) {
+  this.id = 'MapService';
   this.viewer = null;
   this.target = null;
   this._layersStoresEventKeys = {};
@@ -613,9 +614,7 @@ proto.setupControls = function(){
                     streetViewService.showStreetView(position);
                   });
                   control.on('disabled', () => {
-                    if (panorama) {
-                      panorama = null;
-                    }
+                    GUI.closeContent()
                   })
                 }
               }

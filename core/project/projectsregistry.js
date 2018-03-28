@@ -19,7 +19,7 @@ function ProjectsRegistry() {
   this.projectType = null;
   this.setters = {
     setCurrentProject: function(project) {
-      if (this.state.currentProject) {
+      if (this.state.currentProject != project) {
         CatalogLayersStoresRegistry.removeLayersStores();
         MapLayersStoresRegistry.removeLayersStores();
       }
@@ -159,8 +159,9 @@ proto.getProject = function(projectGid) {
   } else {
     return this._getProjectFullConfig(pendingProject)
     .then((projectFullConfig) => {
-      const projectConfig = _.merge(pendingProject,projectFullConfig);
+      const projectConfig = _.merge(pendingProject, projectFullConfig);
       projectConfig.WMSUrl = this.config.getWmsUrl(projectConfig);
+      projectConfig.relations = this._setProjectRelations(projectConfig);
       const project = new Project(projectConfig);
       this._projects[projectConfig.gid] = project;
       return d.resolve(project);
@@ -169,6 +170,22 @@ proto.getProject = function(projectGid) {
       return d.reject();
     })
   }
+};
+
+proto._setProjectRelations = function(projectConfig) {
+  projectConfig.relations = projectConfig.relations ? projectConfig.relations : [];
+  projectConfig.relations = projectConfig.relations.map((relation) => {
+    if (relation.type == "ONE") {
+      projectConfig.layers.find((layer) => {
+        if (layer.id === relation.referencingLayer) {
+          relation.name = layer.name;
+          return true;
+        }
+      })
+    }
+    return relation
+  });
+  return projectConfig.relations;
 };
 
 proto.getProjectConfigByGid = function(gid) {

@@ -65,15 +65,14 @@ proto._addLayersStore = function(layersStore, idx) {
 proto._removeLayersStore = function(layerStore) {
   if (layerStore) {
     const storeId = layerStore.getId();
-    const idx = this.storesArray.indexOf(storeId);
+    this.storesArray = this.storesArray.filter((_storeId) => _storeId != storeId);
     delete this.stores[storeId];
-    this.storesArray.splice(idx, 1);
+
   }
 };
 
 proto._removeLayersStores = function() {
-  const length = this.storesArray.length;
-  this.storesArray.splice(0, length);
+  this.storesArray = [];
   this.stores = {};
 };
 

@@ -1,9 +1,9 @@
-var utils = require('../utils');
-var InteractionControl = require('./interactioncontrol');
+const utils = require('../utils');
+const InteractionControl = require('./interactioncontrol');
 
-var QueryBBoxControl = function(options){
+var QueryBBoxControl = function(options = {}){
   this._startCoordinate = null;
-  var _options = {
+  const _options = {
     name: "querybbox",
     tipLabel: "Query BBox layer",
     label: "\ue902",

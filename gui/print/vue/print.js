@@ -74,11 +74,9 @@ function PrintComponent(options) {
     this.state.visible = service.state.visible;
   };
 
-  this._setOpen = function() {
-    this._service.showPrintArea(this.state.open);
+  this._setOpen = function(bool) {
+    this._service.showPrintArea(bool);
   };
-  merge(this, options);
-
 }
 
 inherit(PrintComponent, Component);

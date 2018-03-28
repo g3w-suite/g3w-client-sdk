@@ -3,17 +3,10 @@ const base = require('core/utils/utils').base;
 const Component = require('gui/vue/component');
 const Service = require('../relationsservice');
 
-
-
 /* List of relaations */
 const relationsComponent = {
   template: require('./relations.html'),
   props: ['relations', 'feature'],
-  computed: {
-    isOneRelation() {
-      return this.relations.length == 1 && this.relations[0].type == 'ONE'
-    }
-  },
   methods: {
     showRelation: function(relation) {
       this.$parent.showRelation(relation);
@@ -43,7 +36,7 @@ const relationComponent = {
   template: require('./relation.html'),
   props: ['table', 'relation'],
   computed: {
-    one () {
+    one() {
       return this.relation.type == 'ONE'
     }
   },
@@ -77,6 +70,7 @@ const relationComponent = {
     }
   },
   mounted () {
+    this.relation.title = this.relation.name;
     this.$nextTick(() => {
       if (!this.one) {
         const tableHeight = $(".content").height();
@@ -88,7 +82,7 @@ const relationComponent = {
           "order": [ 0, 'asc' ]
         } )
       }
-    });
+    })
   }
 };
 /*-----------------------------------*/
@@ -102,7 +96,7 @@ const InternalComponent = Vue.extend({
       relation: null,
       relations: this.$options.relations,
       feature: this.$options.feature,
-      currentview: 'relations' 
+      currentview: 'relations'
     }
   },
   components: {
@@ -138,7 +132,7 @@ const InternalComponent = Vue.extend({
     if (this.isOneRelation()) {
       this.showRelation(this.relations[0])
     }
-  },
+  }
 });
 
 const RelationsPage = function(options) {

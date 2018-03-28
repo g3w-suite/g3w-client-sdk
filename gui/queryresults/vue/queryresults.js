@@ -26,6 +26,9 @@ const vueComponentOptions = {
   computed: {
     hasLayers: function() {
       return !!this.state.layers.length || !!this.state.components.length;
+    },
+    hasOneLayerAndOneFeature() {
+      return this.state.layers.length == 1 && this.state.layers[0].features.length == 1;
     }
   },
   methods: {
@@ -191,6 +194,7 @@ const vueComponentOptions = {
   mounted: function() {
     Vue.nextTick(() => {
       $('[data-toggle="tooltip"]').tooltip();
+
     })
   }
 };
@@ -222,8 +226,6 @@ function QueryResultsComponent(options) {
     }
     this.createLayersFeaturesBoxes();
   });
-
-  merge(this, options);
 
   this.createLayersFeaturesBoxes = function() {
     const layersFeaturesBoxes = {};

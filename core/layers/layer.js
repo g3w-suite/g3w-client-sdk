@@ -5,8 +5,7 @@ const Filter = require('core/layers/filter/filter');
 const ProviderFactory = require('core/layers/providers/providersfactory');
 
 // Base Class of all Layer
-function Layer(config) {
-  config = config || {};
+function Layer(config = {}) {
   const ProjectsRegistry = require('core/project/projectsregistry');
   ProjectsRegistry.onafter('setCurrentProject', (project) => {
     const projectType = project.getType();
@@ -28,6 +27,7 @@ function Layer(config) {
     source: config.source || null,
     geolayer: false,
     baseLayer: false,
+
     fields: config.fields || {},
     urls: {
       query: config.infourl && config.infour != '' || config.wmsUrl
@@ -41,6 +41,8 @@ function Layer(config) {
     title: config.title,
     selected: config.selected | false,
     disabled: config.disabled | false,
+    metadata: config.metadata,
+    metadata_querable: this.isQueryable({onMap:false}),
     openattributetable: this.canShowTable(),
     source: config.source
   };
@@ -226,6 +228,10 @@ proto.getId = function() {
   return this.config.id;
 };
 
+proto.getMetadata = function() {
+  return this.state.metadata
+};
+
 proto.getTitle = function() {
   return this.config.title;
 };
@@ -278,9 +284,13 @@ proto.isVisible = function() {
 proto.setVisible = function(bool) {
   this.state.visible = bool;
 };
-proto.isQueryable = function() {
+// set a parametre map to check if request from map point of view or just a capabilities info layer
+proto.isQueryable = function({onMap} = {onMap:true}) {
   let queryEnabled = false;
   const queryableForCababilities = !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.QUERYABLE));
+  if (!onMap) {
+    return queryableForCababilities;
+  }
   // if querable check if is visible or disabled
   if (queryableForCababilities) {
        queryEnabled = (this.isVisible() && !this.isDisabled());

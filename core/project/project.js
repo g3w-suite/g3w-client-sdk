@@ -109,7 +109,7 @@ proto._buildLayersStore = function() {
     catalog: this.state.gid != overviewprojectgid
   });
 
-  // intsnce each layer ad area added to layersstore
+  // instance each layer ad area added to layersstore
   const layers = this.getLayers();
   layers.forEach((layerConfig) => {
     // add projection

@@ -2,15 +2,13 @@ const inherit = require('core/utils/utils').inherit;
 const noop = require('core/utils/utils').noop;
 
 /**
- * Un oggetto base in grado di gestire eventuali setter e relativa catena di listeners.
+ * Base object to handle a setter and its listeners.
  * @constructor
  */
 const G3WObject = function() {
-  //quando istanzio l'oggetto verifico che nella sua proprietà
-  // ci sia l'attributo setters. Se si vado a registare la catena di eventi
-  // per poter registare azioni prima e dopo la chiamata del metodo
+  //check if setters property is set. Register the chain of events
   if (this.setters) {
-    this._setupListenersChain(this.setters);
+    this._setupListenersChain(this.setters)
   }
 };
 
@@ -19,8 +17,8 @@ inherit(G3WObject, EventEmitter);
 const proto = G3WObject.prototype;
 
 /**
- * Inserisce un listener dopo che è stato eseguito il setter
- * @param {string} setter - Il nome del metodo su cui si cuole registrare una funzione listener
+ * Insert a listener on afeter setter was executed
+ * @param {string} setter - IMethod name to register a listener function
  * @param {function} listener - Una funzione listener (solo sincrona)
  * @param {number} priority - Priorità di esecuzione: valore minore viene eseuito prima
  */
@@ -94,7 +92,7 @@ proto._onsetter = function(when, setter, listener, async, priority) {
 // funzione che viene lanciata se la sottoclasse ha come parametro setters
 proto._setupListenersChain = function(setters) {
   // inizializza tutti i metodi definiti nell'oggetto "setters" della classe figlia.
-  var self = this;
+  const self = this;
   this.settersListeners = {
     after: {},
     before: {}
@@ -104,8 +102,8 @@ proto._setupListenersChain = function(setters) {
   // setterOption è la funzione
   // stters è la chiave/nome del metodo che viene assegnato all'istanza
   _.forEach(setters, function(setterOption, setter) {
-    var setterFnc = noop;
-    var setterFallback = noop;
+    let setterFnc = noop;
+    let setterFallback = noop;
     // verifico che il valore della chiave setter sia una funzione
     if (_.isFunction(setterOption)){
       setterFnc = setterOption
@@ -121,10 +119,10 @@ proto._setupListenersChain = function(setters) {
     // setter aggiunto come proprietà dell'istanza
     self[setter] = function() {
       // prendo gli argomenti passati alla funzione
-      var args = arguments;
-      var deferred = $.Deferred();
-      var returnVal = null;
-      var counter = 0;
+      const args = arguments;
+      const deferred = $.Deferred();
+      let returnVal = null;
+      let counter = 0;
       // funzione complete che serve per lanciare la funzione setter dell'istanza
       function complete() {
         // eseguo la funzione setter
@@ -132,7 +130,7 @@ proto._setupListenersChain = function(setters) {
         // e risolvo la promessa (eventualmente utilizzata da chi ha invocato il setter)
         deferred.resolve(returnVal);
         //vado a eseguire tutti i listener che sono stati settati dopo l'esecuzione del setter
-        var afterListeners = self.settersListeners.after[setter];
+        const afterListeners = self.settersListeners.after[setter];
         _.forEach(afterListeners, function(listener) {
           listener.fnc.apply(self, args);
         })
@@ -148,7 +146,7 @@ proto._setupListenersChain = function(setters) {
       }
 
       // vado a prendere l'array delle funzioni che devo lanciare prima di lanciare il setter
-      var beforeListeners = self.settersListeners['before'][setter];
+      const beforeListeners = self.settersListeners['before'][setter];
       // contatore dei listener che verrà decrementato ad ogni chiamata a next()
       counter = 0;
       // funzione passata come ultimo parametro ai listeners,
@@ -156,14 +154,14 @@ proto._setupListenersChain = function(setters) {
       function next(bool) {
         // inizializzo la variabile cont a true (continue) non possibile usare
         // continue perchè parola riservata di javascript
-        var cont = true;
+        let cont = true;
         // verifica se è stato passato un parametro boolenao alla funzione
         // e la setto alla variabile cont (continue)
         if (_.isBoolean(bool)) {
           cont = bool;
         }
         // ricavo l'array di argomenti passati alla funzione setter
-        var _args = Array.prototype.slice.call(args);
+        const _args = Array.prototype.slice.call(args);
         // se la catena è stata bloccata (cont==false)
         // o se siamo arrivati alla fine dei beforelisteners
         // o non non sono stati settati nessun beforelisteners
@@ -183,7 +181,7 @@ proto._setupListenersChain = function(setters) {
           // se cont è true (continua)
           if (cont) {
             // vado a prendere la funzione dall'array dei before listener
-            var listenerFnc = beforeListeners[counter].fnc;
+            const listenerFnc = beforeListeners[counter].fnc;
             // verifico se questa è asyncrona
             if (beforeListeners[counter].async) {
               // aggiungo next come ulyimo nel caso di onbeforeasync
@@ -193,10 +191,9 @@ proto._setupListenersChain = function(setters) {
               // chiamo la funzione passandogli l'argomento (modificato con next)
               // su se stesso
               listenerFnc.apply(self, _args)
-            } // nel caso di onbefore(quindi non asincrona)
-            else {
+            } else { // nel caso di onbefore(quindi non asincrona)
               // chiamo la funzione listener che mi deve ritornare un boolenano o undefined
-              var _cont = listenerFnc.apply(self,_args);
+              const _cont = listenerFnc.apply(self,_args);
               //vado ad aggiornare il counter
               counter += 1;
               next(_cont);
@@ -211,13 +208,13 @@ proto._setupListenersChain = function(setters) {
       // la presenza ritorneà una promise
       return deferred.promise();
     }
-  })
+  });
+  return this.settersListeners
 };
 
 //metodo get
 proto.get = function(key) {
-  var value = this[key] && !(this[key] instanceof Function) ? this[key] : null;
-  return value;
+  return this[key] && !(this[key] instanceof Function) ? this[key] : null;
 };
 
 //metodo set

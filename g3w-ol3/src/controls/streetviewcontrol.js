@@ -14,7 +14,7 @@ const StreetViewControl = function(options) {
   this._panorama = null;
   this._map = null;
   this._projection = null;
-  this.lastposition = null;
+  this._lastposition = null;
   this._streetViewFeature = new ol.Feature();
   const streetVectorSource = new ol.source.Vector({
     features: []
@@ -26,16 +26,24 @@ const StreetViewControl = function(options) {
       this._lastposition = this._lastposition ? this._lastposition : coordinates;
       const dx = coordinates[0] - this._lastposition[0];
       const dy = coordinates[1] - this._lastposition[1];
-      const rotation = Math.atan2(dy, dx);
-      let styles = [new ol.style.Style({
-        text: new ol.style.Text({
-          text: '\ue905',
-          font: 'bold 30px icomoon',
-          fill: new ol.style.Fill({
-            color: '#3c8dbc'
+      const rotation = -Math.atan2(dy, dx);
+      let styles = [
+        new ol.style.Style({
+          text: new ol.style.Text({
+            text: '\ue905',
+            font: 'bold 15px icomoon',
+            fill: new ol.style.Fill({
+              color: '#ffffff'
+            })
+          })
+        }),
+        new ol.style.Style({
+          image: new ol.style.Icon({
+            src: '/static/client/images/streetviewarrow.png',
+            rotation
           })
         })
-      })];
+      ];
       this._lastposition = coordinates;
       return styles
     }
@@ -107,6 +115,8 @@ proto.setMap = function(map) {
 proto.clear = function() {
   this._layer.getSource().clear();
   this._streetViewFeature.setGeometry(null);
+  this._panorama = null;
+  this.dispatchEvent('disabled')
 };
 
 proto.toggle = function(toggle) {

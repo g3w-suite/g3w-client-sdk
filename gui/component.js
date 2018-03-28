@@ -2,12 +2,10 @@ const inherit = require('core/utils/utils').inherit;
 const merge = require('core/utils/utils').merge;
 const base = require('core/utils/utils').base;
 const G3WObject = require('core/g3wobject');
-const t = require('core/i18n/i18n.service').t;
 const VUECOMPONENTSATTRIBUTES = ['methods', 'computed', 'data', 'components'];
 
 // Class Component (Base)
-const Component = function(options) {
-  options = options || {};
+const Component = function(options = {}) {
   // internal VUE component
   this.internalComponent = null;
   this._components = [];
@@ -21,19 +19,18 @@ const Component = function(options) {
   this.setters = {
     setOpen: function(bool) {
       this.state.open = bool;
-      this._setOpen();
+      this._setOpen(bool);
     },
     setVisible: function(bool) {
       this.state.visible = bool;
-      this._setVisible();
+      this._setVisible(bool);
     },
     reload: function() {
       this._reload();
     }
   };
 
-  this.init = function(options) {
-    options = options || {};
+  this.init = function(options = {}) {
     this.vueComponent = this.createVueComponent(options.vueComponentObject);
     this._components = options.components || [];
     this.setService(options.service);
@@ -50,6 +47,7 @@ const Component = function(options) {
     };
     this.setInternalComponent();
   };
+  merge(this, options);
   base(this);
 };
 
@@ -236,14 +234,12 @@ proto.ismount = function() {
   return true;
 };
 
-
-proto._setOpen = function() {};
+proto._setOpen = function(bool) {};
 
 proto._setVisible = function() {};
 
 proto._reload = function() {};
 
 proto.layout = function(parentWidth, parentHeight) {};
-
 
 module.exports = Component;

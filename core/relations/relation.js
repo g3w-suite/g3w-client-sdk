@@ -5,17 +5,20 @@ const G3WObject = require('core/g3wobject');
 function Relation(config) {
   config = config || {};
   const uniqueSuffix = Date.now();
+  const id = config.id || 'id_' + uniqueSuffix;
+  const name = config.name || 'name_' + uniqueSuffix;
+
   // config per le pari statiche
   this.state = {
-    id: config.id || 'id_' + uniqueSuffix ,
-    name: config.name || 'name_' + uniqueSuffix,
+    id,
+    name,
     father: config.referencedLayer,
     child: config.referencingLayer,
     fatherField: config.fieldRef.referencedField,
     childField: config.fieldRef.referencingField,
     type: config.type
   };
-  
+
   base(this);
 }
 
@@ -37,6 +40,14 @@ proto.getName = function() {
 
 proto.setName = function(name) {
   this.state.name = name;
+};
+
+proto.getTitle = function() {
+  return this.state.title;
+};
+
+proto.setTitle = function(title) {
+  return this.state.title = title;
 };
 
 proto.getChild = function() {

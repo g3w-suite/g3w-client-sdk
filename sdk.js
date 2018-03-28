@@ -80,6 +80,7 @@ g3w.gui = {
   ControlFactory: require('gui/map/control/factory'),
   vue: {
     Component: require('gui/vue/component'),
+    MetadataComponent: require('gui/metadata/vue/metadata'),
     SearchComponent: require('gui/search/vue/search'),
     SearchPanel: require('gui/search/vue/panel/searchpanel'),
     PrintComponent: require('gui/print/vue/print'),

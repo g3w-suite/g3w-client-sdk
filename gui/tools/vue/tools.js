@@ -1,6 +1,6 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
-const merge = require('core/utils/utils').merge;
+const GUI = require('gui/gui');
 const Component = require('gui/vue/component');
 const ToolsService = require('gui/tools/toolsservice');
 
@@ -21,21 +21,25 @@ const InternalComponent = Vue.extend({
 function ToolsComponent(options) {
   base(this,options);
   this._service = new ToolsService();
-  this.id = "tools-component";
   this.title = "tools";
   this.state.visible = false;
-  
+
   this._service.onafter('addTools', () => {
     this.state.visible = this._service.state.toolsGroups.length > 0;
   });
   this._service.onafter('removeTools', () => {
     this.state.visible = this._service.state.toolsGroups.length > 0;
   });
-  merge(this, options);
   this.internalComponent = new InternalComponent({
     toolsService: this._service
   });
   this.internalComponent.state = this._service.state;
+
+  this._setOpen = function(bool) {
+    if (bool) {
+      GUI.closeContent();
+    }
+  }
 }
 
 inherit(ToolsComponent, Component);

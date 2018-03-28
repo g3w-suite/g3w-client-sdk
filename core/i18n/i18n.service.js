@@ -21,11 +21,19 @@ function init(config) {
 }
 
 const t = function(text){
-    const trad = i18next.t(text);
-    return trad;
+    return i18next.t(text);
+};
+
+const addI18n = function(i18nobject) {
+  Object.entries(i18nobject).forEach(([lng, value]) => {
+    Object.keys(value).forEach((key) => {
+      i18next.addResource(lng, 'translation', key, value[key])
+    })
+  });
 };
 
 module.exports = {
-  init: init,
-  t: t
+  init,
+  t,
+  addI18n
 };

@@ -19,6 +19,10 @@ function ToolsService(){
       this._removeTools();
     }
   };
+  
+  this.reload = function() {
+    this.removeTools();
+  };
 
   this._addTools = function(order, groupName, tools) {
     let group = this._getToolsGroup(groupName);
