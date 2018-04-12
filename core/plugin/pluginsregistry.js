@@ -95,29 +95,7 @@ function PluginsRegistry() {
   this.getPlugin = function(pluginName) {
     return this._plugins[pluginName];
   };
-
-  this.getDependencyPlugins = function(pluginsName = []) {
-    const pluginPromises = [];
-    pluginsName.forEach((pluginName) => {
-      pluginPromises.push(this.getDependencyPlugin())
-    });
-    return Promise.all(pluginPromises)
-  };
-
-  // method to get plugin dependency
-  this.getDependencyPlugin = function(pluginName) {
-    return new Promise((resolve, reject) => {
-      const plugin = this.getPlugin(pluginName);
-      if (plugin) {
-        resolve(plugin)
-      } else {
-        this.onafter('registerPlugin', (plugin) => {
-          if (plugin.name == pluginName)
-            resolve(plugin)
-        })
-      }
-    })
-  }
+  
 }
 
 inherit(PluginsRegistry,G3WObject);

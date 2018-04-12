@@ -3,8 +3,7 @@ const base = require('core/utils/utils').base;
 const geoutils = require('g3w-ol3/src/utils/utils');
 const G3WObject = require('core/g3wobject');
 
-function Provider(options) {
-  options = options || {};
+function Provider(options = {}) {
   this._isReady = false;
   this._name = 'provider';
   this._layer = options.layer;
@@ -14,6 +13,14 @@ function Provider(options) {
 inherit(Provider, G3WObject);
 
 const proto = Provider.prototype;
+
+proto.getLayer = function() {
+  return this._layer;
+};
+
+proto.setLayer = function(layer) {
+  this._layer = layer;
+};
 
 proto.getFeatures = function() {
   console.log('da sovrascrivere')
@@ -56,7 +63,7 @@ proto.extractGML = function (response) {
   parts.forEach((part) => {
     isGmlPart = part.search(gmlTag1) > -1 ? true : part.search(gmlTag2) > -1 ? true : false;
     if (isGmlPart) {
-      var gml = part.substr(part.indexOf("<?xml"));
+      const gml = part.substr(part.indexOf("<?xml"));
       return gml;
     }
   });
@@ -229,7 +236,7 @@ proto._parseLayerFeatureCollection = function(data, layerName, invertedAxis) {
   const parser = new ol.format.WMSGetFeatureInfo();
 
   let features = parser.readFeatures(layerFeatureCollectionXML);
-  if (invertedAxis) {
+  if (invertedAxis && features.length && !!features[0].getGeometry()) {
     features = this._reverseFeaturesCoordinates(features)
   }
   return features
@@ -237,7 +244,7 @@ proto._parseLayerFeatureCollection = function(data, layerName, invertedAxis) {
 
 proto._reverseFeaturesCoordinates = function(features) {
   features.forEach((feature) => {
-    let geometry = feature.getGeometry();
+    const geometry = feature.getGeometry();
     feature.setGeometry(geoutils.reverseGeometry(geometry))
   });
   return features

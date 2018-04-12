@@ -3,7 +3,6 @@ const base = require('core/utils/utils').base;
 const G3WObject = require('core/g3wobject');
 const ProjectsRegistry = require('core/project/projectsregistry');
 
-
 function PrinterQGISProvider() {
   base(this);
 
@@ -27,7 +26,7 @@ function PrinterQGISProvider() {
       REQUEST: 'GetPrint',
       TEMPLATE: options.template,
       DPI: options.dpi,
-      FORMAT: 'pdf',
+      FORMAT: options.format,
       CRS:layersStore.getProjection().getCode(),
       LAYERS: layers.join()
     };

@@ -1,4 +1,4 @@
-var BaseLayers = {};
+const BaseLayers = {};
 
 BaseLayers.OSM = new ol.layer.Tile({
   source: new ol.source.OSM(),

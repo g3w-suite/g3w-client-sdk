@@ -37,6 +37,6 @@ const geom = {
     }
     return [x, y];
   }
-}
+};
 
 module.exports = geom;

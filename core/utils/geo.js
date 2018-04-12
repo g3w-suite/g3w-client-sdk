@@ -4,12 +4,12 @@ const OGC_PIXEL_WIDTH = 0.28;
 const OGC_DPI = 25.4/OGC_PIXEL_WIDTH;
 
 module.exports = {
-  resToScale: function(res, unit) {
+  resToScale: function(resolution, unit) {
     unit = unit || 'm';
     let scale;
     switch (unit) {
       case 'm':
-        scale = (res*1000) / OGC_PIXEL_WIDTH;
+        scale = (resolution*1000) / OGC_PIXEL_WIDTH;
         break;
     }
     return scale;
@@ -104,7 +104,7 @@ module.exports = {
         switch(shpRecords[i].shape.type) {
           case 1:
             geometry.type = "Point";
-            var reprj = TransCoord(shpRecords[i].shape.content.x, shpRecords[i].shape.content.y);
+            const reprj = TransCoord(shpRecords[i].shape.content.x, shpRecords[i].shape.content.y);
             geometry.coordinates = [
               reprj.x, reprj.y
             ];
@@ -150,6 +150,85 @@ module.exports = {
       DBFParser.load(URL.createObjectURL(new Blob([zip.file(dbfString).asArrayBuffer()])), encoding, dbfLoader, returnData);
     };
     reader.readAsArrayBuffer(url);
+  },
+  createLayerStyle: function(styleObj) {
+    let style;
+    const styles = {};
+    if (styleObj) {
+      Object.entries(styleObj).forEach(([type, config]) => {
+        switch (type) {
+          case 'point':
+            if (config.icon) {
+              styles.image = new ol.style.Icon({
+                src: config.icon.url,
+                imageSize: config.icon.width
+              })
+            }
+            break;
+          case 'line':
+            styles.stroke = new ol.style.Stroke({
+              color: config.color,
+              width: config.width
+            });
+            break;
+          case 'polygon':
+            styles.fill = new ol.style.Fill({
+              color: config.color
+            });
+            break
+        }
+      });
+      style = new ol.style.Style(styles);
+    }
+    return style
+  },
+  createOlLayer: function(options = {}) {
+    const id = options.id;
+    const geometryType = options.geometryType;
+    const color = options.color;
+    let style = options.style;
+    // create ol layer to add to map
+    const olSource = new ol.source.Vector({
+      features: new ol.Collection()
+    });
+    const olLayer = new ol.layer.Vector({
+      id: id,
+      source: olSource
+    });
+    if (!style) {
+      switch (geometryType) {
+        case 'Point' || 'MultiPoint':
+          style = new ol.style.Style({
+            image: new ol.style.Circle({
+              radius: 5,
+              fill: new ol.style.Fill({
+                color: color
+              })
+            })
+          });
+          break;
+        case 'Line' || 'MultiLine':
+          style = new ol.style.Style({
+            stroke: new ol.style.Stroke({
+              width: 3,
+              color: color
+            })
+          });
+          break;
+        case 'Polygon' || 'MultiPolygon':
+          style =  new ol.style.Style({
+            stroke: new ol.style.Stroke({
+              color:  color,
+              width: 3
+            }),
+            fill: new ol.style.Fill({
+              color: color
+            })
+          });
+          olLayer.setOpacity(0.6);
+      }
+    }
+    olLayer.setStyle(style);
+    return olLayer;
   }
-
 };

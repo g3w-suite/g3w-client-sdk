@@ -5,11 +5,17 @@
     <template v-for="(forminput, index) in forminputs">
       <div v-if="forminput.input.type == 'numberfield'" class="form-group numeric">
         <label :for="forminput.id + ' '">{{ forminput.label }}</label>
-        <input type="number" v-model="formInputValues[index].value" class="form-control" :id="forminput.id">
+        <input type="number" v-model="formInputValues[index].value" class="form-control" :id="index">
       </div>
       <div v-if="forminput.input.type == 'textfield' || forminput.input.type == 'textField'" class="form-group text">
         <label :for="forminput.id">{{ forminput.label }}</label>
-        <input type="text" v-model="formInputValues[index].value" class="form-control" :id="forminput.id">
+        <input type="text" v-model="formInputValues[index].value" class="form-control" :id="index">
+      </div>
+      <div v-if="forminput.input.type == 'selectfield'" class="form-group text">
+        <label :for="forminput.id">{{ forminput.label }}</label>
+        <select v-model="formInputValues[index].value" class="form-control" :id="index">
+          <option :value="value" v-for="value in forminput.input.options.values">{{ value }}</option>
+        </select>
       </div>
     </template>
     <div class="form-group">

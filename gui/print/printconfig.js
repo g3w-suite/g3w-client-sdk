@@ -55,7 +55,19 @@ const scale = [
 
 const dpis = [150, 300];
 
+const formats = [
+  {
+    value: 'pdf',
+    label: 'PDF'
+  },
+  {
+    value: 'jpg',
+    label: 'JPEG'
+  }
+];
+
 module.exports = {
-  scale: scale,
-  dpis: dpis
+  scale,
+  dpis,
+  formats
 };

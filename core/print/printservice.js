@@ -17,7 +17,15 @@ function PrintService() {
     const type = options.type || 'QGIS';
     const provider = new PrinterProvider(type);
     this.url = provider.print(options);
-    return $.get(this.url)
+    return new Promise((resolve, reject) => {
+      $.get(this.url)
+        .then(() => {
+          resolve(this.url)
+        })
+        .fail((err) => {
+          reject(err)
+        })
+    });
   };
 }
 

@@ -10,9 +10,6 @@ const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const Filter = require('core/layers/filter/filter');
 const WFSProvider = require('core/layers/providers/wfsprovider');
 const ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
-const WMSLayer = require('core/layers/map/wmslayer');
-const XYZLayer = require('core/layers/map/xyzlayer');
-const GEOJSONLayer = require('core/layers/map/geojson');
 const ControlsFactory = require('gui/map/control/factory');
 const StreetViewService = require('gui/streetview/streetviewservice');
 const ControlsRegistry = require('gui/map/control/registry');
@@ -47,13 +44,14 @@ function MapService(options) {
   };
   this.config = options.config || ApplicationService.getConfig();
   this._howManyAreLoading = 0;
-  this._incrementLoaders = function(){
+  // function to show spinner layers
+  this._incrementLoaders = function() {
     if (this._howManyAreLoading == 0){
       this.emit('loadstart');
       GUI.showSpinner({
         container: $('#map-spinner'),
         id: 'maploadspinner',
-        style: 'blue'
+        style: 'transparent'
       });
     }
     this._howManyAreLoading += 1;
@@ -144,14 +142,17 @@ function MapService(options) {
     }
   });
 
-  MapLayersStoreRegistry.getLayersStores().forEach((layerStore) => {
-    this._setUpEventsKeysToLayersStore(layerStore);
+  //CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
+  MapLayersStoreRegistry.getLayersStores().forEach((layersStore) => {
+    this._setUpEventsKeysToLayersStore(layersStore);
   });
 
-  MapLayersStoreRegistry.onafter('addLayersStore', (layerStore) => {
-    this._setUpEventsKeysToLayersStore(layerStore);
+  // LISTEN ON EVERY ADDED LAYERSSTORE
+  MapLayersStoreRegistry.onafter('addLayersStore', (layersStore) => {
+    this._setUpEventsKeysToLayersStore(layersStore);
   });
 
+  // LISTENER ON REMOVE LAYERSTORE
   MapLayersStoreRegistry.onafter('removeLayersStore', (layerStore) => {
     this._removeEventsKeysToLayersStore(layerStore);
   });
@@ -162,55 +163,6 @@ function MapService(options) {
 inherit(MapService, G3WObject);
 
 const proto = MapService.prototype;
-
-proto.createOlLayer = function(options) {
-  options = options || {};
-  const id = options.id;
-  const geometryType = options.geometryType;
-  const color = options.color;
-  let style;
-  // create ol layer to add to map
-  const olSource = new ol.source.Vector({
-    features: new ol.Collection()
-  });
-  const olLayer = new ol.layer.Vector({
-    id: id,
-    source: olSource
-  });
-  switch (geometryType) {
-    case 'Point' || 'MultiPoint':
-      style = new ol.style.Style({
-                image: new ol.style.Circle({
-                  radius: 5,
-                  fill: new ol.style.Fill({
-                    color: color
-                  })
-                })
-              });
-      break;
-    case 'Line' || 'MultiLine':
-      style = new ol.style.Style({
-            stroke: new ol.style.Stroke({
-              width: 3,
-              color: color
-            })
-          });
-      break;
-    case 'Polygon' || 'MultiPolygon':
-      style =  new ol.style.Style({
-            stroke: new ol.style.Stroke({
-              color:  color,
-              width: 3
-            }),
-            fill: new ol.style.Fill({
-              color: color
-            })
-          });
-      olLayer.setOpacity(0.6);
-  }
-  olLayer.setStyle(style);
-  return olLayer;
-};
 
 proto.slaveOf = function(mapService, sameLayers) {
   sameLayers = sameLayers || false;
@@ -232,6 +184,10 @@ proto.getMap = function() {
 
 proto.getProjection = function() {
   return this.project.getProjection();
+};
+
+proto.isAxisOrientationInverted = function() {
+  return this.getProjection().getAxisOrientation() == 'neu' ? true : false;
 };
 
 proto.getCrs = function() {
@@ -269,12 +225,11 @@ proto.showMarker = function(coordinates, duration) {
 
 // return layer by name
 proto.getLayerByName = function(name) {
-  const map = this.viewer.map;
   let layer = null;
-  map.getLayers().forEach((lyr) => {
+  this.getMap().getLayers().getArray().find((lyr) => {
     if (lyr.get('name') == name) {
       layer = lyr;
-      return false
+      return true
     }
   });
   return layer;
@@ -283,11 +238,10 @@ proto.getLayerByName = function(name) {
 // return layer by id
 proto.getLayerById = function(id) {
   let layer;
-  const map = this.viewer.map;
-  map.getLayers().forEach(function(lyr) {
+  this.getMap().getLayers().getArray().find(function(lyr) {
     if (lyr.get('id') == id) {
       layer = lyr;
-      return false
+      return true
     }
   });
   return layer;
@@ -845,20 +799,25 @@ proto.addMapLayers = function(mapLayers) {
 
 proto.addMapLayer = function(mapLayer) {
   this._mapLayers.push(mapLayer);
-  this.viewer.map.addLayer(mapLayer.getOLLayer());
+  this.addLayerToMap(mapLayer)
 };
 
 proto.getMapLayers = function() {
   return this._mapLayers;
 };
 
+proto.getBaseLayers = function() {
+  return this.mapBaseLayers;
+};
+
 proto.getMapLayerForLayer = function(layer) {
   let mapLayer;
   const multilayerId = 'layer_'+layer.getMultiLayerId();
-  _.forEach(this.getMapLayers(), function(_mapLayer) {
+  const mapLayers = this.getMapLayers();
+  mapLayers.find((_mapLayer) => {
     if (_mapLayer.getId() == multilayerId) {
       mapLayer = _mapLayer;
-      return false;
+      return true;
     }
   });
   return mapLayer;
@@ -923,7 +882,7 @@ proto._setupViewer = function(width,height) {
     $('#' + this.target).css('background-color', this.config.background_color);
   }
 
-  $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute;right:0;"></div>');
+  $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute; top: 50%; right: 50%"></div>');
 
   this.viewer.map.getInteractions().forEach((interaction) => {
     this._watchInteraction(interaction);
@@ -972,60 +931,47 @@ proto._removeEventsKeysToLayersStore = function(layerStore) {
   }
 };
 
-// register all events of layersStore
+// register all events of layersStore and relative keys
 proto._setUpEventsKeysToLayersStore = function(layerStore) {
   const layerStoreId = layerStore.getId();
+  // check if already store a key of events
   if (!this._layersStoresEventKeys[layerStoreId]) {
     this._layersStoresEventKeys[layerStoreId] = [];
-    //chenge visibility event
+
+    //SETVISIBILITY EVENT
     const layerVisibleKey = layerStore.onafter('setLayersVisible',  (layersIds) => {
-      const mapLayers = layersIds.map((layerId) => {
+     layersIds.forEach((layerId) => {
         const layer = layerStore.getLayerById(layerId);
-        return this.getMapLayerForLayer(layer);
+        const mapLayer = this.getMapLayerForLayer(layer);
+        if (mapLayer)
+          this.updateMapLayer(mapLayer)
       });
-      this.updateMapLayers();
     });
-    this._layersStoresEventKeys[layerStore.getId()].push({
-      setLayersVisible:layerVisibleKey
+    this._layersStoresEventKeys[layerStoreId].push({
+      setLayersVisible: layerVisibleKey
     });
-    // loop througth layer of lauerstore
-    layerStore.getLayers().forEach((layer) => {
-      if (layer.getType() == 'vector') {
-        //create layer OL
-        const olLayer = this.createOlLayer({
-          id: layer.getId(),
-          geometryType: layer.getGeometryType(),
-          color: layer.getColor(),
-        });
-        this.viewer.map.addLayer(olLayer);
-      }
-    });
-    //add layer event in layerStore
+
+    //ADD LAYER
     const addLayerKey = layerStore.onafter('addLayer', (layer) => {
       if (layer.getType() == 'vector') {
-        //create layer OL
-        const olLayer = this.createOlLayer({
-          id: layer.getId(),
-          geometryType: layer.getGeometryType(),
-          color: layer.getColor(),
-        });
-        this.viewer.map.addLayer(olLayer);
+        const mapLayer = layer.getMapLayer();
+        this.addLayerToMap(mapLayer);
       }
     });
 
-    this._layersStoresEventKeys[layerStore.getId()].push({
+    this._layersStoresEventKeys[layerStoreId].push({
       addLayer: addLayerKey
     });
 
+    // REMOVE LAYER
     const removeLayerKey = layerStore.onafter('removeLayer',  (layer) => {
       if (layer.getType() == 'vector') {
-        const layerId = layer.getId();
-        const olLayer = this.getLayerById(layerId);
+        const olLayer = layer.getOLLayer();
         this.viewer.map.removeLayer(olLayer);
       }
     });
 
-    this._layersStoresEventKeys[layerStore.getId()].push({
+    this._layersStoresEventKeys[layerStoreId].push({
       removeLayer: removeLayerKey
     });
   }
@@ -1037,39 +983,7 @@ proto._setupListeners = function() {
   });
 };
 
-proto._setupBaseLayers = function(){
-  let baseLayer;
-  const baseLayers = this.getLayers({
-    BASELAYER: true
-  });
-  if (!baseLayers.length){
-    return;
-  }
-  this.mapBaseLayers = {};
-  baseLayers.forEach((layer) => {
-    if (layer.isWMS()) {
-      const config = {
-        url: layer.getWmsUrl(),
-        id: layer.state.id,
-        tiled: layer.state.tiled
-      };
-      baseLayer = new WMSLayer(config);
-      baseLayer.addLayer(layer);
-    } else {
-      baseLayer = layer;
-      baseLayer.setLayer(layer);
-    }
-    this.registerMapLayerListeners(baseLayer);
-    this.mapBaseLayers[layer.getId()] = baseLayer;
-  });
-  const reverseBaseLayers = Object.values(this.mapBaseLayers).reverse();
-  reverseBaseLayers.forEach((baseLayer) => {
-    this.viewer.map.addLayer(baseLayer.getOLLayer());
-    baseLayer.update(this.state);
-  });
-};
-
-// setup all layers needed to map
+// SETUP ALL LAYERS
 proto._setupLayers = function() {
   this._setupBaseLayers();
   const mapLayers = this._setupMapLayers();
@@ -1086,31 +1000,45 @@ proto.removeLayers = function() {
   this.viewer.removeLayers();
 };
 
+proto.addLayerToMap = function(layer) {
+  const olLayer = layer.getOLLayer();
+  if (olLayer)
+    this.getMap().addLayer(olLayer);
+};
+
+//SETUPA BASELAYERS
+proto._setupBaseLayers = function(){
+  const baseLayers = this.getLayers({
+    BASELAYER: true
+  });
+  if (!baseLayers.length){
+    return;
+  }
+  this.mapBaseLayers = {};
+  baseLayers.forEach((layer) => {
+    const baseMapLayer = layer.getMapLayer();
+    this.registerMapLayerListeners(baseMapLayer);
+    this.mapBaseLayers[layer.getId()] = baseMapLayer;
+  });
+  const reverseBaseLayers = Object.values(this.mapBaseLayers).reverse();
+  reverseBaseLayers.forEach((baseMapLayer) => {
+    baseMapLayer.update(this.state, this.layersExtraParams);
+    this.addLayerToMap(baseMapLayer)
+  });
+};
+
+//SETUP VECTORLAYERS
 proto._setupVectorLayers = function() {
   const layers = this.getLayers({
     VECTORLAYER: true
   });
-  const QueryResultService = GUI.getComponent('queryresults').getService();
   layers.forEach((layer) => {
-    const source = layer.getSource();
-    switch (source.type) {
-      case 'geojson':
-        const options = {
-          url: source.url,
-          mapProjection: this.getProjection().getCode(),
-          id: layer.getId(),
-          name: layer.getName(),
-          style: layer.get('style')
-        };
-        const geojsonLayer = new GEOJSONLayer(options);
-        const olLayer = geojsonLayer.getOLLayer();
-        this.getMap().addLayer(olLayer);
-        //QueryResultService.registerVectorLayer(olLayer)
-        break;
-    }
+    const mapVectorLayer = layer.getMapLayer();
+    this.addLayerToMap(mapVectorLayer)
   })
 };
 
+//SETUP MAPLAYERS
 proto._setupMapLayers = function() {
   const layers = this.getLayers({
     BASELAYER: false,
@@ -1125,8 +1053,8 @@ proto._setupMapLayers = function() {
     const multilayerId = 'layer_'+id;
     let mapLayer;
     const layer = layers[0];
-    if (layers.length == 1 && layer.isCached()) {
-      mapLayer = new XYZLayer({
+    if (layers.length == 1) {
+      mapLayer = layer.getMapLayer({
         id: multilayerId,
         projection: this.getProjection()
       });
@@ -1134,11 +1062,10 @@ proto._setupMapLayers = function() {
       mapLayer.addLayer(layer);
       mapLayers.push(mapLayer)
     } else {
-      mapLayer = new WMSLayer({
-        url: layer.getWmsUrl(),
-        id: multilayerId,
-        projection: this.getProjection()
-      }, this.layersExtraParams);
+      mapLayer = layer.getMapLayer({
+            id: multilayerId,
+            projection: this.getProjection()
+          }, this.layersExtraParams);
       this.registerMapLayerListeners(mapLayer);
       layers.reverse().forEach((sub_layer) => {
         mapLayer.addLayer(sub_layer);
@@ -1151,16 +1078,16 @@ proto._setupMapLayers = function() {
 };
 
 proto.getOverviewMapLayers = function(project) {
+  const WMSLayer = require('core/layers/map/wmslayer');
   const projectLayers = project.getLayersStore().getLayers({
     GEOLAYER: true,
     BASELAYER: false,
   });
-
   const multiLayers = _.groupBy(projectLayers,function(layer){
     return layer.getMultiLayerId();
   });
-
   let overviewMapLayers = [];
+
   Object.entries(multiLayers).forEach(([id, layers]) => {
     const multilayerId = 'overview_layer_'+id;
     const tiled = layers[0].state.tiled;
@@ -1179,23 +1106,32 @@ proto.getOverviewMapLayers = function(project) {
   return overviewMapLayers.reverse();
 };
 
+proto.updateMapLayer = function(mapLayer) {
+  mapLayer.update(this.state, this.getResolution())
+};
+
 // run update function on ech mapLayer
 proto.updateMapLayers = function() {
   this.getMapLayers().forEach((mapLayer) => {
-    mapLayer.update(this.state, this.getResolution())
+    this.updateMapLayer(mapLayer)
+  });
+  const baseLayers = this.getBaseLayers();
+  //updatebase layer
+  Object.entries(baseLayers).forEach(([layerid, baseLayer]) => {
+    baseLayer.update(this.state, this.layersExtraParams);
   })
 };
 
 // register map Layer listeners of creation
 proto.registerMapLayerListeners = function(mapLayer) {
-  mapLayer.on('loadstart', this._incrementLoaders);
-  mapLayer.on('loadend', this._decrementLoaders);
+  mapLayer.on('loadstart', this._incrementLoaders.bind(this) );
+  mapLayer.on('loadend', this._decrementLoaders.bind(this)) ;
 };
 
 // unregister listeners of mapLayers creation
 proto.unregisterMapLayerListeners = function(mapLayer) {
-  mapLayer.un('loadstart', this._incrementLoaders);
-  mapLayer.un('loadend', this._decrementLoaders);
+  mapLayer.un('loadstart', this._incrementLoaders );
+  mapLayer.un('loadend', this._decrementLoaders );
 };
 
 proto.setTarget = function(elId){
@@ -1240,9 +1176,9 @@ proto.goToRes = function(coordinates, resolution){
 };
 
 proto.goToBBox = function(bbox) {
+  bbox = this.isAxisOrientationInverted() ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox;
   this.viewer.fit(bbox);
 };
-
 
 proto.goToWGS84 = function(coordinates,zoom){
   coordinates = ol.proj.transform(coordinates,'EPSG:4326','EPSG:'+this.project.state.crs);
@@ -1359,9 +1295,8 @@ proto.clearHighlightGeometry = function() {
 };
 
 proto.refreshMap = function() {
-  _.forEach(this._mapLayers, function(mapLayer) {
-    if (!(mapLayer instanceof XYZLayer))
-      mapLayer.getOLLayer().getSource().updateParams({"time": Date.now()});
+  this._mapLayers.forEach((mapLayer) => {
+    mapLayer.getOLLayer().getSource().updateParams({"time": Date.now()});
   });
 };
 

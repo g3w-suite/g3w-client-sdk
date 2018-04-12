@@ -49,10 +49,10 @@ proto.setLayer = function(layer) {
 proto._getFeatures = function(options) {
   const d = $.Deferred();
   this._layer.getFeatures(options)
-    .then(function (promise) {
-      promise.then(function (features) {
+    .then((promise) => {
+      promise.then((features) => {
         return d.resolve(features);
-      }).fail(function (err) {
+      }).fail((err) => {
         return d.reject(err);
       })
     })

@@ -1,4 +1,5 @@
 const inherit = require('core/utils/utils').inherit;
+const t = require('core/i18n/i18n.service').t;
 const GUI = require('gui/gui');
 const Panel = require('gui/panel');
 const ProjectsRegistry = require('core/project/projectsregistry');
@@ -42,28 +43,74 @@ const SearchPanelComponet = Vue.extend({
          queryResultsPanel.setQueryResponse(results);
       })
       .fail(() => {
-        GUI.notify.error('Si è verificato un errore nella richiesta al server');
+        GUI.notify.error(t('server_error'));
         GUI.closeContent();
       })
       .always(() => {
         this.loading = false
       })
     }
+  },
+  mounted() {
+    function matchCustom(params, data) {
+      // If there are no search terms, return all of the data
+      if ($.trim(params.term) === '') {
+        return data;
+      }
+
+      // Do not display the item if there is no 'text' property
+      if (typeof data.text === 'undefined') {
+        return null;
+      }
+
+      // `params.term` should be the term that is used for searching
+      // `data.text` is the text that is displayed for the data object
+      if (data.text.indexOf(params.term) > -1) {
+        const modifiedData = $.extend({}, data, true);
+        modifiedData.text += ' (matched)';
+
+        // You can return modified objects from here
+        // This includes matching the `children` how you want in nested data sets
+        return modifiedData;
+      }
+
+      // Return `null` if the term should not be displayed
+      return null;
+    }
+
+    this.$nextTick(() => {
+      this.$on('select-change', (options) => {
+        this.formInputValues[options.index].value = options.value;
+      });
+      $('#g3w-search-form select').select2({
+        width: '100%',
+        matcher: matchCustom
+      }).on('change', (evt) => {
+        const select = $(evt.target);
+        this.$emit('select-change', {
+          index: select.attr('id'),
+          value: select.val()
+        })
+      })
+    })
+
   }
 });
 
-function SearchPanel(options) {
-  options = options || {};
+function SearchPanel(options = {}) {
   this.config = {};
   this.filter = {};
   this.id = null;
   this.querylayerid = null;
   this.internalPanel = options.internalPanel || new SearchPanelComponet();
-  this.init = function(config) {
-    this.config = config || {};
+  this.init = function(config = {}) {
+    this.config = config;
     this.name = this.config.name || this.name;
     this.id = this.config.id || this.id;
     this.filter = this.config.options.filter || this.filter;
+    // const input = this.filter.AND[0].input;
+    // input.type = 'selectfield';
+    // input.options.values = ['pippo','pluto', 'paperino49', 'pluto48', '49', '48'];
     this.internalPanel.queryurl = this.config.options.queryurl || null;
     const queryLayerId = this.config.options.querylayerid || this.querylayerid;
     this.queryLayer = ProjectsRegistry.getCurrentProject().getLayersStore().getLayerById(queryLayerId);
@@ -88,7 +135,7 @@ function SearchPanel(options) {
         input.id = id;
         input.input.type = input.input.type || 'textfield';
         formValue.type = input.input.type;
-        formValue.value = null;
+        formValue.value = input.input.type == 'selectfield' ? input.input.options.values[0] : null;
         this.internalPanel.formInputValues.push(formValue);
         this.internalPanel.forminputs.push(input);
         id+=1;
@@ -150,7 +197,7 @@ function SearchPanel(options) {
       });
       return booleanObject;
     }
-    _.forEach(filter, function(v,k,obj) {
+    _.forEach(filter, function(v,k, obj) {
       queryFilter = createBooleanObject(k,v);
     });
     return queryFilter;

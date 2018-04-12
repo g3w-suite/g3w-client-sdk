@@ -1,21 +1,26 @@
 const inherit = require('core/utils/utils').inherit;
+const createOlLayer = require('core/utils/geo').createOlLayer;
+const createLayerStyle = require('core/utils/geo').createLayerStyle;
+const GUI = require('gui/gui');
+
 const G3WObject = require('core/g3wobject');
 
-function VectorLayer(config) {
-  config = config || {};
-  this.geometrytype = config.geometrytype || null;
-  this.type = config.type || null;
-  this.crs = config.crs  || null;
-  this.id = config.id || null;
-  this.name = config.name || "";
+function VectorLayer(options = {}) {
+  this.mapService = GUI.getComponent('map').getService();
+  this.geometrytype = options.geometrytype || null;
+  this.type = options.type || null;
+  this.crs = options.crs  || null;
+  this.id = options.id;
+  this.name = options.name || "";
+  this.style = options.style;
+  this.color = options.color;
+  this.geometryType = options.geometryType;
+  this.mapProjection = this.mapService.getProjection().getCode();
+  this.projection = options.projection || this.mapProjection;
+  this.url = options.url;
+  this.data = options.data;
+  this.provider = options.provider;
   this._olLayer = null;
-  this._makeOlLayer({
-    style: config.style
-  });
-  this.getFeatures({
-    url: config.url,
-    mapProjection: config.mapProjection
-  });
 }
 
 inherit(VectorLayer,G3WObject);
@@ -74,14 +79,17 @@ proto._makeStyle = function(styleConfig) {
   return style
 };
 
-proto.getFeatures = function(options) {
-  this._provider.getFeatures(options)
+proto.getFeatures = function(options= {}) {
+  const d = $.Deferred();
+  this.provider.getFeatures(options)
     .then((features) => {
-      this.addFeatures(features)
+      this.addFeatures(features);
+      d.resolve(features);
     })
-    .catch((err) => {
-      console.log(err)
-    })
+    .fail((err) => {
+      d.reject(err)
+    });
+  return d.promise()
 };
 
 proto.addFeatures = function(features=[]) {
@@ -95,6 +103,20 @@ proto.addFeature = function(feature) {
 };
 
 proto.getOLLayer = function() {
+  if (this._olLayer) {
+    return this._olLayer
+  } else {
+    const id = this.id;
+    const geometryType =  this.geometryType;
+    const color = this.color;
+    const style = this.style ? createLayerStyle(this.style) : null;
+    this._olLayer = createOlLayer({
+      id,
+      geometryType,
+      color,
+      style
+    })
+  }
   return this._olLayer;
 };
 
@@ -102,8 +124,9 @@ proto.setOLLayer = function(olLayer) {
   this._olLayer = olLayer;
 };
 
-
-proto.getSource = function(){
+proto.getSource = function() {
+  if (!this._olLayer)
+    this.getOLLayer();
   return this._olLayer.getSource();
 };
 

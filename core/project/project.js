@@ -24,8 +24,11 @@ function Project(projectConfig) {
   }
   */
   this.state = projectConfig;
+  // proess layers
   this._processLayers();
+  // set the project projection
   this._projection = Projections.get(this.state.crs, this.state.proj4);
+  // build a layerstore of the project
   this._layersStore = this._buildLayersStore();
 
   this.setters = {
@@ -47,7 +50,7 @@ proto.getRelations = function() {
   return this.state.relations;
 };
 
-// precess layers of the project
+// process layers of the project
 proto._processLayers = function() {
   //info useful for catalog
   let traverse = (obj) => {
@@ -77,6 +80,7 @@ proto._processLayers = function() {
     });
   };
 
+  // call trasverse function to
   traverse(this.state.layerstree);
 
   const baseLayers = this.state.baselayers;
@@ -85,11 +89,9 @@ proto._processLayers = function() {
     if (this.state.initbaselayer) {
       visible = (layerConfig.id == (this.state.initbaselayer));
     }
-
     if (layerConfig.fixed) {
       visible = layerConfig.fixed;
     }
-
     layerConfig.visible = visible;
     layerConfig.baselayer = true;
   });
@@ -97,7 +99,7 @@ proto._processLayers = function() {
 
 // build layersstore and create layersstree
 proto._buildLayersStore = function() {
-  // creo il layersStore
+  // create a layersStore object
   const layersStore = new LayersStore();
   const overviewprojectgid = this.state.overviewprojectgid ? this.state.overviewprojectgid.gid : null;
   layersStore.setOptions({
@@ -113,13 +115,12 @@ proto._buildLayersStore = function() {
   const layers = this.getLayers();
   layers.forEach((layerConfig) => {
     // add projection
-    layerConfig.projection = this._projection;
+    layerConfig.projection = layerConfig.crs ? Projections.get(layerConfig.crs) : this._projection;
     const layer = LayerFactory.build(layerConfig, {
       project: this
     });
     layersStore.addLayer(layer);
   });
-
   // create layerstree from layerstore
   layersStore.createLayersTree(this.state.name, {
     layerstree: this.state.layerstree

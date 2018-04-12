@@ -35,6 +35,11 @@ function LayersStore(config) {
         layer.state.selected = ((layerId == layer.getId()) && selected) || false;
       })
     },
+    addLayers: function(layers) {
+      layers.forEach((layer) => {
+        this.addLayer(layer);
+      })
+    },
     addLayer: function(layer) {
       this._addLayer(layer);
     },
@@ -72,12 +77,6 @@ proto.getId = function() {
 
 proto._addLayer = function(layer) {
   this._layers[layer.getId()] = layer;
-};
-
-proto.addLayers = function(layers) {
-  layers.forEach((layer) =>  {
-    this.addLayer(layer);
-  });
 };
 
 proto._removeLayer = function(layer) {

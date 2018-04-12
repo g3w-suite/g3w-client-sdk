@@ -3,6 +3,8 @@ const base = require('core/utils//utils').base;
 const mixin = require('core/utils/utils').mixin;
 const Layer = require('core/layers/layer');
 const VectorLayer = require('./vectorlayer');
+const WMSLayer = require('./map/wmslayer');
+const XYZLayer = require('./map/xyzlayer');
 const GeoLayerMixin = require('./geolayermixin');
 
 function ImageLayer(config) {
@@ -111,6 +113,17 @@ proto.getWFSLayerName = function() {
 
 proto.getWfsCapabilities = function() {
   return this.config.wfscapabilities || this.config.capabilities == 1 ;
+};
+
+proto.getMapLayer = function(options = {}, extraParams) {
+  let mapLayer;
+  if (this.isCached()) {
+    mapLayer = new XYZLayer(options);
+  } else {
+    options.url = options.url || this.getWmsUrl();
+    mapLayer = new WMSLayer(options, extraParams);
+  }
+  return mapLayer;
 };
 
 ImageLayer.WMSServerTypes = [

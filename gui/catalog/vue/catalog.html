@@ -36,14 +36,14 @@
             <li v-if="!baselayer.fixed" v-for="baselayer in baselayers">
               <div class="radio">
                 <label>
-                  <input type="radio" name="baselayer" :checked="baselayer.visible" @click="setBaseLayer(baselayer.id)">
+                  <input type="radio" name="baselayer" :checked="baselayer.visible" @click.stop="setBaseLayer(baselayer.id)">
                   {{ baselayer.title }}
                 </label>
               </div>
             </li>
             <li>
               <div class="radio">
-                <label><input type="radio" name="baselayer" @click="setBaseLayer(null)" :checked="!hasBaseLayersVisible">Nessuna mappa di base</label>
+                <label><input type="radio" name="baselayer" @click.stop="setBaseLayer(null)" :checked="!hasBaseLayersVisible">Nessuna mappa di base</label>
               </div>
             </li>
           </ul>
@@ -55,7 +55,7 @@
   <ul id="layer-menu" v-click-outside-layer-menu="closeLayerMenu"  tabindex="-1" v-if="layerMenu.show"  :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }">
     <!--<li @click.prevent.stop="showMetadata"><span class="glyphicon glyphicon-info-sign"> </span> {{ layerMenu.items.showmetadata }} </li>-->
     <li v-if="layerMenu.layer.bbox" @click.prevent.stop="zoomToLayer"><span class="glyphicon glyphicon-search"> </span> {{ layerMenu.items.zoomtolayer }} </li>
-    <li v-if="layerMenu.layer.openattributetable" @click.prevent.stop="showAttributeTable">
+    <li v-if="layerMenu.layer.openattributetable" @click.prevent.stop="showAttributeTable(layerMenu.layer.id)">
       <span class="glyphicon glyphicon glyphicon-list-alt"> </span>  {{ layerMenu.items.open_attribute_table }}
       <i v-show="layerMenu.loading_data_table" class='fa fa-spinner fa-spin' style="margin-left:3px;"></i>
     </li>

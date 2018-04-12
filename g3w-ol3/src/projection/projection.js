@@ -33,6 +33,10 @@ proto.getAxisOrientation = function() {
   return this._axisOrientation;
 };
 
+proto.isInvertedAxisOrientation = function() {
+  return this._axisOrientation == 'neu';
+};
+
 proto.getOlProjection = function() {};
 
 module.exports = Projection;

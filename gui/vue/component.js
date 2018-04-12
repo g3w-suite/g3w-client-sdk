@@ -26,6 +26,7 @@ proto.mount = function(parent, append) {
   }
   Vue.nextTick(() => {
     $(parent).localize();
+    this.emit('ready');
     d.resolve(true);
   });
   return d.promise();
@@ -47,4 +48,5 @@ proto.ismount = function() {
 proto.layout = function(width,height) {
   if (this.internalComponent) {}
 };
+
 module.exports = Component;

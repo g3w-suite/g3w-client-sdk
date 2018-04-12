@@ -1,19 +1,17 @@
 <template>
   <div>
     <h4 @click="showHideInfo" class="layer_header" data-toggle="collapse" :data-target="'#' + state.id">
-      <i class="fa layer-header-icon" :class="[isSpatial ? 'fa-map-o': 'fa-table']" aria-hidden="true"></i>{{ state.metadata.title }}
+      <i class="fa layer-header-icon" :class="[isSpatial ? 'fa-map-o': 'fa-table']" aria-hidden="true"></i>{{ state.name}}
       <span class="fa" :class="[show ? 'fa-eye-slash' : 'fa-eye']"></span>
       </h4>
     <div :id="state.id" class="collapse">
       <ul class="nav nav-tabs" role="tablist">
         <li role="presentation" class="active">
-          <a :href="'#layer_general_' + state.id" aria-controls="general" role="tab" data-toggle="tab">
-            Generale
+          <a v-t="'metadata.groups.layers.groups.general'" :href="'#layer_general_' + state.id" aria-controls="general" role="tab" data-toggle="tab">
           </a>
         </li>
         <li v-if="isSpatial" role="presentation">
-          <a :href="'#layer_spatial_' + state.id" aria-controls="profile" role="tab" data-toggle="tab">
-            Info Spaziali
+          <a v-t="'metadata.groups.layers.groups.spatial'" :href="'#layer_spatial_' + state.id" aria-controls="profile" role="tab" data-toggle="tab">
           </a>
         </li>
       </ul>
@@ -21,16 +19,42 @@
       <div class="tab-content">
         <div role="tabpanel" class="tab-pane active" :id="'layer_general_' + state.id">
           <div class="container-fluid">
-            <div class="row">
-              <div class="col-lg-2 col-md-2 col-sm-12 metadata-label">Titolo</div>
+            <div v-if="findAttributeFormMetadataAttribute('title')" class="row">
+              <div v-t="'metadata.groups.layers.fields.subfields.title'" class="col-lg-2 col-md-2 col-sm-12 metadata-label"></div>
               <div class="col-lg-10 col-md-10 col-sm-12 value">{{ state.metadata.title }}</div>
             </div>
-            <div v-if="state.source" class="row">
-              <div class="col-lg-2 col-md-2 col-sm-12 col-md-2 col-sm-12 metadata-label">Sorgente</div>
+            <div v-if="findMetadataAttribute('name')" class="row">
+              <div v-t="'metadata.groups.layers.fields.subfields.name'" class="col-lg-2 col-md-2 col-sm-12 metadata-label"></div>
+              <div class="col-lg-10 col-md-10 col-sm-12 value">{{ state.name }}</div>
+            </div>
+            <div v-if="findMetadataAttribute('source')" class="row">
+              <div v-t="'metadata.groups.layers.fields.subfields.source'" class="col-lg-2 col-md-2 col-sm-12 col-md-2 col-sm-12 metadata-label"></div>
               <div class="col-lg-10 col-md-10 col-sm-12 value">{{ state.source.type }}</div>
             </div>
-            <div class="row">
-              <div class="col-lg-2 col-md-2 col-sm-12 metadata-label">Attributi</div>
+            <div v-if="findAttributeFormMetadataAttribute('abstract')" class="row">
+              <div v-t="'metadata.groups.layers.fields.subfields.abstract'" class="col-lg-2 col-md-2 col-sm-12 col-md-2 col-sm-12 metadata-label"></div>
+              <div class="col-lg-10 col-md-10 col-sm-12 value">{{ state.metadata.abstract[0] }}</div>
+            </div>
+            <div v-if="findAttributeFormMetadataAttribute('keywords')" class="row">
+              <div v-t="'metadata.groups.layers.fields.subfields.keywords'" class="col-lg-2 col-md-2 col-sm-12 col-md-2 col-sm-12 metadata-label"></div>
+              <div class="col-lg-10 col-md-10 col-sm-12 value">
+                <div>{{ state.metadata.keywords.join(', ') }}</div>
+              </div>
+            </div>
+            <div v-if="findAttributeFormMetadataAttribute('metadataurl') && state.metadata.metadataurl.onlineresources" class="row">
+              <div v-t="'metadata.groups.layers.fields.subfields.metadataurl'" class="col-lg-2 col-md-2 col-sm-12 col-md-2 col-sm-12 metadata-label"></div>
+              <div class="col-lg-10 col-md-10 col-sm-12 value">
+                <a :href="state.metadata.metadataurl.onlineresources">{{ state.metadata.metadataurl.onlineresources }}</a>
+              </div>
+            </div>
+            <div v-if="findAttributeFormMetadataAttribute('dataurl') && state.metadata.dataurl.onlineresources" class="row">
+              <div v-t="'metadata.groups.layers.fields.subfields.dataurl'" class="col-lg-2 col-md-2 col-sm-12 col-md-2 col-sm-12 metadata-label"></div>
+              <div class="col-lg-10 col-md-10 col-sm-12 value">
+                <a :href="state.metadata.dataurl.onlineresources">{{ state.metadata.dataurl.onlineresources }}</a>
+              </div>
+            </div>
+            <div v-if="findAttributeFormMetadataAttribute('attributes')" class="row">
+              <div v-t="'metadata.groups.layers.fields.subfields.attributes'" class="col-lg-2 col-md-2 col-sm-12 metadata-label"></div>
               <div class="col-lg-10 col-md-10 col-sm-12 value" style="overflow: auto;">
                 <table class="table">
                   <thead>
@@ -50,16 +74,16 @@
         </div>
         <div role="tabpanel" class="tab-pane" :id="'layer_spatial_'+state.id">
           <div class="container-fluid">
-            <div class="row">
-              <div class="col-sm-3 metadata-label">EPSG</div>
+            <div v-if="findMetadataAttribute('crs')" class="row">
+              <div v-t="'metadata.groups.layers.fields.subfields.crs'" class="col-sm-3 metadata-label"></div>
               <div class="col-sm-9 value">{{ state.crs }}</div>
             </div>
-            <div class="row">
-              <div class="col-sm-3 metadata-label">Geometria</div>
+            <div v-if="findMetadataAttribute('geometrytype')" class="row">
+              <div v-t="'metadata.groups.layers.fields.subfields.geometrytype'" class="col-sm-3 metadata-label"></div>
               <div class="col-sm-9 value">{{ state.geometrytype }}</div>
             </div>
-            <div v-if="state.bbox" class="row">
-              <div class="col-sm-3 metadata-label">BBOX</div>
+            <div v-if="findMetadataAttribute('bbox')" class="row">
+              <div v-t="'metadata.groups.layers.fields.subfields.bbox'" class="col-sm-3 metadata-label"></div>
               <div class="col-sm-9 value">
                 <p v-for="(value, key) in state.bbox">
                   <span style="font-weight: bold; margin-right: 5px;">{{ key }}</span>
@@ -67,8 +91,8 @@
                 </p>
               </div>
             </div>
-            <div v-if="state.metadata && state.metadata.crs" class="row">
-              <div class="col-sm-3 metadata-label">CRS</div>
+            <div v-if="findAttributeFormMetadataAttribute('crs')" class="row">
+              <div v-t="'metadata.groups.layers.fields.subfields.crs'" class="col-sm-3 metadata-label"></div>
               <div class="col-sm-9 value">
                 <div v-for="crs in state.metadata.crs">
                   <span>{{ crs }}</span>
@@ -83,8 +107,11 @@
 </template>
 
 <script>
+  import MetadataMixin from '../metadatamixin';
+
   export default {
     name: "layer",
+    mixins: [MetadataMixin],
     props: {
       state: {}
     },

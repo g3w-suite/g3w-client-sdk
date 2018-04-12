@@ -14,13 +14,14 @@ proto.setup = function(config) {
   // and adding informations of bbox
   _.extend(this.state, {
     geolayer: true,
+    external: config.external || false,
     bbox: config.bbox || null,
-    visible: config.visible,
+    visible: config.visible || false,
     hidden: config.hidden || false,
     scalebasedvisibility: config.scalebasedvisibility || false,
     minscale: config.minscale,
     maxscale: config.maxscale,
-    exclude_from_legend: config.exclude_from_legend
+    exclude_from_legend: (typeof config.exclude_from_legend == 'boolean') ? config.exclude_from_legend : true
   });
   if (config.projection) {
     this.config.projection = config.projection;
@@ -35,6 +36,14 @@ proto.setup = function(config) {
   } else if (config.attributions) {
     this.config.attributions = config.attributions;
   }
+};
+
+proto.getStyle = function() {
+  return this.config.style;
+};
+
+proto.setStyle = function(style) {
+  this.config.style = style;
 };
 
 proto.isDisabled = function() {
@@ -91,6 +100,10 @@ proto.hasAxisInverted = function() {
   const projection = this.getProjection();
   const axisOrientation = projection.getAxisOrientation ? projection.getAxisOrientation() : "enu";
   return axisOrientation.substr(0, 2) == 'ne';
+};
+
+proto.getMapLayer = function() {
+  console.log('overwrite by single layer')
 };
 
 module.exports = GeoLayerMixin;

@@ -8,7 +8,7 @@
       <a :href="data.value">{{ data.value }}</a>
     </div>
     <div v-else-if="!isArrayorObject(data.value)" class="col-sm-9 value" style="margin-top:0">
-      {{ data.value }}
+      <span v-html="data.value"></span>
     </div>
     <div v-else class="col-sm-9 value" style="margin-top:0">
       <div v-for="(value, key) in data.value">

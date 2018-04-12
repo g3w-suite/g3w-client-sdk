@@ -1,23 +1,101 @@
 const GUI = require('gui/gui');
+const t = require('core/i18n/i18n.service').t;
 const coordinatesToGeometry =  require('core/utils/geo').coordinatesToGeometry;
 
-const TableService = function(options) {
-  options = options || {};
-  const features = options.features || [];
-  const headers = options.headers || [];
-  const hasGeometry = this.hasGeometry(features);
+const TableService = function(options = {}) {
+  this.currentPage = 0; // number of pages
+  this.layer = options.layer;
+  const headers = this.getHeaders(this.layer.getFields());
+  this.projection = this.layer.state.geolayer  ? this.layer.getProjection() : null;
   this.state = {
-    features: features,
-    title: options.title,
-    headers: headers,
-    geometry: hasGeometry,
-    loading: false
+    pageLengths: [10, 25, 50],
+    features: [],
+    title: this.layer.getTitle(),
+    headers,
+    geometry: true,
+    loading: false,
+    allfeatures: 0,
+    featurescount: 0,
+    pagination: true,
+    hasGeometry: false
   };
-  if (hasGeometry)
-    this._addPkProperties(features);
 };
 
 const proto = TableService.prototype;
+
+proto.getHeaders = function(fields) {
+  const headers = [];
+  fields.forEach((field) => {
+    if (['boundedBy', 'geom','the_geom','geometry','bbox', 'GEOMETRY'].indexOf(field.name) == -1)
+      headers.push(field);
+  });
+  return headers;
+};
+
+// function need to work with pagination
+proto.setDataForDataTable = function() {
+  const data = [];
+  this.state.features.forEach((feature) => {
+    const attributes = feature.attributes ? feature.attributes : feature.properties;
+    const values = [];
+    this.state.headers.forEach((header) => {
+      values.push(attributes[header.name]);
+    });
+    data.push(values)
+  });
+  return data;
+};
+
+proto.getData = function({start = 0, order = [], length = this.state.pageLengths[0]} = {}) {
+  // reset features before load
+  this.state.features.splice(0, this.state.features.length);
+  if (!order.length) {
+    order.push({
+      column: 0,
+      dir: 'asc'
+    })
+  }
+  const ordering = order[0].dir == 'asc' ? this.state.headers[order[0].column].name: '-'+this.state.headers[order[0].column].name;
+  const d = $.Deferred();
+  this.currentPage = start == 0  ? 1 : (start/length) + 1;
+  this.layer.getDataTable({
+    page: this.currentPage,
+    page_size: length,
+    ordering
+  }).then((data) => {
+      let features = data.features;
+      this.addFeatures(features);
+      this.state.pagination = !!data.count;
+      this.state.allfeatures = data.count || this.state.features.length;
+      this.state.featurescount += features.length;
+      d.resolve({
+        data: this.setDataForDataTable(),
+        recordsFiltered: this.state.allfeatures,
+        recordsTotal: this.state.allfeatures
+      });
+    })
+    .fail((err) => {
+      GUI.notify.error(t("info.server_error"));
+      d.reject(err);
+    });
+  return d.promise();
+};
+
+proto.addFeature = function(feature) {
+  const tableFeature = {
+    attributes: feature.attributes ? feature.attributes : feature.properties,
+    geometry: this._returnGeometry(feature)
+  };
+  this.state.features.push(tableFeature);
+};
+
+proto.addFeatures = function(features) {
+  this.state.hasGeometry = this.hasGeometry(features);
+  this._addPkProperties(features);
+  features.forEach((feature) => {
+    this.addFeature(feature);
+  });
+};
 
 proto._setLayout = function() {
   //TODO
@@ -27,9 +105,8 @@ proto._returnGeometry = function(feature) {
   let geometry;
   if (feature.attributes) {
     geometry = feature.geometry;
-  } else {
-    geometry = coordinatesToGeometry(feature.geometry.type, feature.geometry.coordinates)
-  }
+  } else if (feature.geometry)
+      geometry = coordinatesToGeometry(feature.geometry.type, feature.geometry.coordinates);
   return geometry;
 };
 
@@ -42,34 +119,22 @@ proto.hasGeometry = function(features) {
 
 proto._addPkProperties = function(features) {
   features.forEach((feature) => {
-    if (!feature.attributes)
+    if (!feature.attributes && feature.id)
       feature.properties[this.state.headers[0].name] = feature.id;
   })
 };
 
 proto.zoomAndHighLightSelectedFeature = function(feature, zoom=true) {
-  const mapService = GUI.getComponent('map').getService();
-  const geometry = this._returnGeometry(feature);
-  mapService.highlightGeometry(geometry , {
-    zoom: zoom
-  });
-};
-
-proto._getType = function(value) {
-  const URLPattern = /^(https?:\/\/[^\s]+)/g;
-  if (value && value.toString().match(URLPattern))
-    return 'link'
-  return ''
-}
-
-proto.getValueObjectFromAttribute = function(feature, attribute) {
-  const value =  feature.attributes ? feature.attributes[attribute] : feature.properties[attribute];
-  const type = this._getType(value);
-  const valueObject = {
-    value,
-    type
+  let geometry = feature.geometry;
+  if (geometry) {
+    const mapService = GUI.getComponent('map').getService();
+    const mapProjectionCode = mapService.getProjection().getCode();
+    const layerProjectionCode = this.projection.getCode();
+    geometry = geometry.clone().transform(layerProjectionCode, mapProjectionCode);
+    mapService.highlightGeometry(geometry , {
+      zoom
+    });
   }
-  return valueObject
 };
 
 

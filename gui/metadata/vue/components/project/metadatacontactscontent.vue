@@ -3,24 +3,20 @@
     <div class="col-sm-3 metadata-label">{{ data.label }}</div>
     <div class="col-sm-9 value" style="margin-top:0">
       <div v-for="(value, key) in data.value">
-        <div v-if="key != 'personprimary'">
-          <span class="metadata-contact-label">
-            <i class="fa contact-icon" :class="iconsClass[key]" aria-hidden="true"></i>
-            {{ labels[key]}}
-          </span>
-          <span>
-            {{ sanitizeValue(value) }}
-          </span>
-        </div>
-        <div v-else class="row">
+        <div class="row">
           <div class="col-sm-3 metadata-contact-label">
             <i class="fa contact-icon" :class="iconsClass[key]" aria-hidden="true"></i>
-            {{ labels[key]}}
+            <span v-t="'metadata.groups.general.fields.subfields.contactinformation.' + key"></span>
           </div>
-          <div class="col-sm-7">
-            <div v-for="(value, key) in value">
-              <span class="metadata-contact-label" >{{ labels[key]}}</span>
-              <span>{{ value }}</span>
+          <div class="col-sm-9">
+            <template v-if="key == 'personprimary'" >
+              <div v-for="(subvalue, key) in value">
+                <span v-t="'metadata.groups.general.fields.subfields.contactinformation.' + key" class="metadata-contact-label"></span>
+                <span>{{ subvalue }}</span>
+              </div>
+            </template>
+            <div v-else>
+              {{ sanitizeValue(value) }}
             </div>
           </div>
         </div>
@@ -37,14 +33,6 @@
     },
     data() {
       return {
-        labels: {
-          contactelectronicmailaddress: "email",
-          personprimary: 'Persona di riferimento',
-          contactvoicetelephone: 'Telefono',
-          contactorganization: 'Organizzazione',
-          contactposition: 'Posizione',
-          contactperson: 'Persona'
-        },
         iconsClass: {
           contactelectronicmailaddress: "fa-envelope-o",
           personprimary: "fa-user",
@@ -62,6 +50,9 @@
           }
         }
         return value;
+      },
+      geti18n(key) {
+
       }
     }
   }
@@ -77,5 +68,8 @@
   }
   .contact-icon {
     margin-right: 3px;
+  }
+  .row {
+    margin-bottom: 5px;
   }
 </style>

@@ -68,7 +68,7 @@ proto.toggleLayer = function(layer) {
   this._updateLayers();
 };
 
-proto.update = function(mapState, extraParams) {
+proto.update = function(mapState = {}, extraParams) {
   this._updateLayers(mapState, extraParams);
 };
 
@@ -90,18 +90,11 @@ proto.getQueryableLayers = function() {
   });
 };
 
-proto._getVisibleLayers = function(mapState) {
-  const scale = geo.resToScale(mapState.resolution);
+proto._getVisibleLayers = function() {
   const visibleLayers = [];
   let visible;
   this.layers.forEach((layer) => {
-    visible = true;
-    if (layer.config.minscale) {
-      visible = visible && (layer.config.minscale > scale);
-    }
-    if (layer.config.maxscale) {
-      visible = visible && (layer.config.maxscale < scale);
-    }
+    visible = !layer.isDisabled();
     if (layer.state.visible && visible) {
       visibleLayers.push(layer);
     }
@@ -115,13 +108,11 @@ proto._makeOlLayer = function(withLayers) {
     id: this.config.id,
     projection: this.config.projection
   };
-
   if (withLayers) {
     wmsConfig.layers = this.layers.map((layer) => {
       return layer.getWMSLayerName();
     });
   }
-
   const representativeLayer = this.layers[0];
 
   if (representativeLayer.state.source && representativeLayer.state.source.type == 'wms' && representativeLayer.state.source.url){
@@ -139,25 +130,20 @@ proto._makeOlLayer = function(withLayers) {
   return olLayer
 };
 
-//
 proto.checkLayerDisabled = function(layer,resolution) {
   layer.setDisabled(resolution);
-  if (layer.isDisabled()) {
-    this.removeLayer(layer)
-  } else {
-    this.addLayer(layer)
-  }
+  return layer.isDisabled();
 };
 
 // check which layers has to be disabled
-proto.checkLayersDisabled = function(resolution){
+proto.checkLayersDisabled = function(resolution) {
   this.allLayers.forEach((layer) => {
     this.checkLayerDisabled(layer, resolution);
   });
 };
 
 //update Layers
-proto._updateLayers = function(mapState, extraParams) {
+proto._updateLayers = function(mapState = {}, extraParams = {}) {
   //checsk disabled layers
   this.checkLayersDisabled(mapState.resolution);
   const visibleLayers = this._getVisibleLayers(mapState);

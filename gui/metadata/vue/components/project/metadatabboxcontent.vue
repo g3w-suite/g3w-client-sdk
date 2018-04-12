@@ -17,7 +17,7 @@
     },
     data() {
       return {
-        bboxlabels: ['minx', 'miny', 'maxx', 'maxy']
+        bboxlabels: ['MINX', 'MINY', 'MAXX', 'MAXY']
       }
     }
   }

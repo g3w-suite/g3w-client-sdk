@@ -33,14 +33,14 @@
         </div>
         </div>
         <div class="col-md-9 metadata-body tab-content">
-            <div id="general" class="tab-pane fade in active">
+            <div id="general" class="tab-pane fade in active nano-content">
               <template>
                 <div v-for="(data, key) in state.groups.general" class="row h_100 row-info">
                   <component :data="data" :fieldName="key" :is="setComponent(key)"></component>
                 </div>
               </template>
             </div>
-            <div id="spatial" class="tab-pane fade nano-content">
+            <div id="spatial" class="tab-pane fade">
               <div class="container-fluid">
                 <template>
                   <div v-for="(data, key) in state.groups.spatial" class="row row-info">
@@ -49,7 +49,7 @@
                 </template>
               </div>
             </div>
-            <div id="layers" class="tab-pane fade nano-content">
+            <div id="layers" class="tab-pane fade">
               <metadata-layer :state="layer" v-for="layer in state.groups.layers.layers.value"></metadata-layer>
             </div>
           </div>
@@ -97,6 +97,8 @@
       }
     },
     mounted() {
+      this.$nextTick(() => {
+      })
     }
   }
 </script>

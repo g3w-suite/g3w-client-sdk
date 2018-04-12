@@ -72,6 +72,9 @@ function TableLayer(config, options) {
           d.reject(err);
         });
       return d.promise();
+    },
+    setColor: function(color) {
+      this._setColor(color)
     }
   };
   /*
@@ -147,7 +150,7 @@ inherit(TableLayer, Layer);
 
 const proto = TableLayer.prototype;
 
-proto.setColor = function(color) {
+proto._setColor = function(color) {
   this._color = color;
 };
 

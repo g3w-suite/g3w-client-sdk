@@ -33,7 +33,7 @@ proto.mount = function(parent) {
   const panel = this.internalPanel;
   const iCinstance = panel.$mount();
   $(parent).append(iCinstance.$el);
-  iCinstance.$nextTick(function(){
+  iCinstance.$nextTick(function() {
     $(parent).localize();
     if (panel.onShow) {
       panel.onShow();

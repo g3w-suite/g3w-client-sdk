@@ -11,6 +11,7 @@ const printConfig = require('./printconfig');
 const PrintPage = require('./vue/printpage');
 const scale = printConfig.scale;
 const dpis = printConfig.dpis;
+const formats = printConfig.formats;
 
 function PrintComponentService() {
   base(this);
@@ -23,7 +24,6 @@ function PrintComponentService() {
   this._page = null;
   this._mapService = null;
   this._map = null;
-  this._isOpen = false;
   this._scalesResolutions = {};
   this.init = function() {
     this._project = ProjectsRegistry.getCurrentProject();
@@ -31,21 +31,30 @@ function PrintComponentService() {
     this.state.visible = (this.state.print && this.state.print.length) ? true : false;
     this.state.isShow = false;
     this.state.url = null;
+    this.state.printextent = {
+      minx: [0,0],
+      miny: [0,0],
+      maxx: [0,0],
+      maxy: [0,0]
+    };
     if (this.state.visible) {
       this.state.template = this.state.print[0].name;
       this.state.rotation = 0;
-      this.state.inner = null;
+      this.state.inner = [0,0,0,0];
       this.state.center = null;
       this.state.size = null;
       this.state.scale = scale;
       this.state.scala = null;
       this.state.dpis = dpis;
       this.state.dpi = dpis[0];
+      this.state.formats = formats;
+      this.state.format = formats[0].value;
       this.state.map = null;//;this.state.print[0].maps[0].name;
       this.state.width = null;//this.state.print[0].maps[0].w;
       this.state.height = null;//this.state.print[0].maps[0].h;
     }
   };
+
   this.changeTemplate = function() {
     if (!this.state.template) return;
     const template = this.state.template;
@@ -70,23 +79,36 @@ function PrintComponentService() {
     });
   };
 
+  this._getPrintExtent = function() {
+    const [minx, miny, maxx, maxy] = [... this.state.printextent.lowerleft, ...this.state.printextent.upperright];
+    const extent = this._mapService.isAxisOrientationInverted() ? [miny, minx, maxy, maxx ] : [minx, miny, maxx, maxy];
+    return extent.join()
+  };
+
   this._getOptionsPrint = function() {
     const options = {
       scale: this.state.scala,
-      extent: this.state.inner.join(),
+      extent: this._getPrintExtent(),
       rotation: this.state.rotation,
       dpi: this.state.dpi,// dpi
       template: this.state.template,
-      map: this.state.map //(map0)
+      map: this.state.map,
+      format: this.state.format//(map0)
     };
     return options;
   };
 
+  this.setPrintAreaAfterCloseContent = function() {
+    this._map.on('postrender', () => {
+      this._setPrintArea()
+    })
+  };
+
   this.print = function() {
-    const self = this;
     this._page = new PrintPage({
       service: this
     });
+    this.state.url = null;
     const options = this._getOptionsPrint();
     GUI.setContent({
       content: this._page,
@@ -94,13 +116,14 @@ function PrintComponentService() {
       perc:100
     });
     PrintService.print(options)
-    .then(function(data, status, xhr) {
-      self.state.url = this.url;
+    .then((url) => {
+      this.state.url = url;
     })
-    .fail(() => {
+    .catch(() => {
       GUI.notify.error(t("server_error"));
       GUI.closeContent();
-    })
+    });
+
   };
 
   this._calculateInternalPrintExtent = function() {
@@ -115,12 +138,10 @@ function PrintComponentService() {
     const xmax = center[0] + (w / 2);
     const ymax = center[1] + (h / 2);
 
-    x_min = this._map.getCoordinateFromPixel([xmin, ymax]);
-    x_max = this._map.getCoordinateFromPixel([xmax, ymax]);
-    y_min = this._map.getCoordinateFromPixel([xmin, ymin]);
-    y_max = this._map.getCoordinateFromPixel([xmax, ymin]);
-    this.state.inner =  [x_min[0], x_min[1], y_max[0], y_max[1]];
+    this.state.printextent.lowerleft = this._map.getCoordinateFromPixel([xmin, ymax]) ? this._map.getCoordinateFromPixel([xmin, ymax]) : this.state.printextent.lowerleft;
+    this.state.printextent.upperright = this._map.getCoordinateFromPixel([xmax, ymin]) ? this._map.getCoordinateFromPixel([xmax, ymin]) : this.state.printextent.upperright;
 
+    this.state.inner =  [xmin, ymax, xmax, ymin];
   };
 
   this._setPrintArea = function() {
@@ -129,6 +150,7 @@ function PrintComponentService() {
     this.state.center = this._map.getView().getCenter();
     this._calculateInternalPrintExtent();
     this._mapService.setInnerGreyCoverBBox({
+      type: 'pixel',
       inner: this.state.inner,
       rotation: this.state.rotation
     });

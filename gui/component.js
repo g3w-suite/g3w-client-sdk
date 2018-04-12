@@ -234,6 +234,10 @@ proto.ismount = function() {
   return true;
 };
 
+// hook function to show componet
+proto.show = function() {
+};
+
 proto._setOpen = function(bool) {};
 
 proto._setVisible = function() {};

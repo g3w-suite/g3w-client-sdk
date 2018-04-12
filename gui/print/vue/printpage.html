@@ -1,4 +1,9 @@
 <div id="pdf-output" style="height:100%">
-  <div v-if="state.loading" class="bar-loader"></div>
-  <iframe id="pdf" style="border:0px;width:100%;height:100%" :src="state.url"></iframe>
+  <transition :duration="500" name="fade">
+    <div v-if="state.loading" class="bar-loader"></div>
+  </transition>
+  <div v-if="showdownloadbutton" style="display:flex; justify-content: flex-end; margin-bottom: 5px;">
+    <button @click.stop="downloadImage" class="btn btn-info" role="button">Download</button>
+  </div>
+  <iframe id="printpage" style="border:0px;width:100%;height:100%" :src="state.url"></iframe>
 </div>

@@ -20,10 +20,10 @@ proto.getData = function() {
 };
 
 // query method
-proto.query = function(options={}) {
+proto.query = function(options={}, params = {}) {
   const filter = options.filter;
   const d = $.Deferred();
-  this._doRequest(filter)
+  this._doRequest(filter, params)
     .then((response) => {
       const featuresForLayers = this.handleQueryResponseFromServer(this._layerName, response);
       d.resolve({
@@ -38,6 +38,8 @@ proto.query = function(options={}) {
 
 proto._post = function(url, params) {
   url = url + '/';
+  const urlParams = $.param(params);
+  url = url + '?' + urlParams;
   return  $.post(url, params)
 
 };
@@ -51,21 +53,21 @@ proto._get = function(url, params) {
 };
 
 //request to server
-proto._doRequest = function(filter) {
+proto._doRequest = function(filter, params = {}) {
   filter = filter || new Filter();
   const layer = this._layer;
   const url = layer.getQueryUrl();
   const crs = layer.getProjection().getCode();
   const infoFormat = layer.getInfoFormat();
 
-  const params = {
+  params = Object.assign(params, {
     SERVICE: 'WFS',
     VERSION: '1.3.0',
     REQUEST: 'GetFeature',
     TYPENAME: this._layerName,
     OUTPUTFORMAT: infoFormat,
     SRSNAME:  crs
-  };
+  });
   if (filter) {
     const filterType = filter.getType();
     let featureRequest;

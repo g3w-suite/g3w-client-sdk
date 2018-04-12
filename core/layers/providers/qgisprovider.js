@@ -4,8 +4,7 @@ const DataProvider = require('core/layers/providers/provider');
 const Feature = require('core/layers/features/feature');
 const Parsers = require('core/parsers/parsers');
 
-function QGISProvider(options) {
-  options = options || {};
+function QGISProvider(options = {}) {
   base(this);
   this._name = 'qgis';
   this._layer = options.layer || null;
@@ -119,9 +118,8 @@ proto.commit = function(commitItems) {
 };
 
 // METODS LOADING EDITING FEATURES (READ/WRITE) //
-proto.getFeatures = function(options) {
+proto.getFeatures = function(options = {}, params = {}) {
   const d = $.Deferred();
-  options = options || {};
   const layerType = options.type || 'vector'; //layer type
   // check if data are requested in read or write mode;
   let url;
@@ -140,6 +138,8 @@ proto.getFeatures = function(options) {
     }
     const features = [];
     const jsonFilter = JSON.stringify(filter);
+    const urlParams = $.param(params);
+    url+=  urlParams ? '?' + urlParams : '';
     $.post({
       url: url,
       data: jsonFilter,
@@ -179,16 +179,21 @@ proto.getFeatures = function(options) {
       });
   } else {
     url = this._layer.getUrl('data');
+    const urlParams = $.param(params);
+    url+=  urlParams ? '?' + urlParams : '';
     $.get({
       url: url,
       contentType: "application/json"
     })
       .then((response) => {
         const vector = response.vector;
+        const pk = vector.pk;
         const data = vector.data;
+        count = vector.count;
         d.resolve({
-          data: data,
-          pk: vector.pk
+          data,
+          pk,
+          count
         })
       })
       .fail((err) => {

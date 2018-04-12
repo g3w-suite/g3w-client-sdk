@@ -6,11 +6,14 @@ const RouterService = require('core/router');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const PluginsRegistry = require('core/plugin/pluginsregistry');
 const ClipboardService = require('core/clipboardservice');
+// store to centralize reactivity
+import store from './store/store';
 
 const G3W_VERSION = "{G3W_VERSION}";
 
 //Manage Application
 const ApplicationService = function() {
+  this._store = store;
   this.version = G3W_VERSION.indexOf("G3W_VERSION") == -1 ? G3W_VERSION  : "";
   this.secret = "### G3W Client Application Service ###";
   this.ready = false;
@@ -31,6 +34,11 @@ const ApplicationService = function() {
     // run bbotstrap
     return this._bootstrap();
   };
+
+  this.getStore = function() {
+    return this._store;
+  };
+
   // get config
   this.getConfig = function() {
     return this._config;

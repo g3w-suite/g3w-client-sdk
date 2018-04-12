@@ -39,4 +39,5 @@ proto._makeOlLayer = function(){
 };
 
 
+
 module.exports = BingLayer;

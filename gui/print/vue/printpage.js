@@ -6,13 +6,29 @@ const InternalComponent = Vue.extend({
   template: require('./printpage.html'),
   data: function() {
     return {
-      state: null
+      state: null,
+      showdownloadbutton: false
+    }
+  },
+  methods: {
+    downloadImage() {
+      xhr = new XMLHttpRequest();
+      xhr.open("GET", this.state.url);
+      xhr.responseType = "blob";
+      xhr.overrideMimeType("octet/stream");
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          window.location = (URL || webkitURL).createObjectURL(xhr.response);
+        }
+      };
+      xhr.send();
     }
   },
   mounted: function() {
     this.$nextTick(() => {
       this.state.loading = true;
-      $('#pdf').load(() => {
+      $('#printpage').load(() => {
+        this.showdownloadbutton = this.state.format == 'jpg';
         this.state.loading = false;
       })
     });
@@ -28,6 +44,11 @@ const PrintPage = function(options) {
   const internalComponent = new InternalComponent();
   this.setInternalComponent(internalComponent);
   this.internalComponent.state = service.state;
+
+  this.unmount = function() {
+    this.getService().setPrintAreaAfterCloseContent();
+    return base(this, 'unmount')
+  }
 };
 
 inherit(PrintPage, Component);

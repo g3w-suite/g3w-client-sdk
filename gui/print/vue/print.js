@@ -30,6 +30,8 @@ const vueComponentOptions = {
     onChangeScale: function() {
       this.$options.service.changeScale()
     },
+    onChangeFormat: function() {
+    },
     onChangeDpi: function() {},
     onChangeRotation: function(evt) {
       if (this.state.rotation >= 0 && !_.isNil(this.state.rotation) && this.state.rotation != '') {
@@ -77,6 +79,7 @@ function PrintComponent(options) {
   this._setOpen = function(bool) {
     this._service.showPrintArea(bool);
   };
+
 }
 
 inherit(PrintComponent, Component);

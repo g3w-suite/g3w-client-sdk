@@ -17,7 +17,7 @@ function Layer(config = {}) {
   // merging all common attributes
   this.config = _.merge({
     id: config.id || 'Layer' ,
-    title: config.title  || null,
+    title: config.title  || config.name,
     name: config.name || null,
     origname: config.origname || null,
     capabilities: config.capabilities || null,
@@ -27,10 +27,9 @@ function Layer(config = {}) {
     source: config.source || null,
     geolayer: false,
     baseLayer: false,
-
     fields: config.fields || {},
     urls: {
-      query: config.infourl && config.infour != '' || config.wmsUrl
+      query: config.infourl && config.infourl != '' || config.wmsUrl
     }
   }, config);
 
@@ -44,12 +43,9 @@ function Layer(config = {}) {
     metadata: config.metadata,
     metadata_querable: this.isQueryable({onMap:false}),
     openattributetable: this.canShowTable(),
+    removable: config.removable || false,
     source: config.source
   };
-  // server type
-  const serverType = this.config.servertype;
-  // source layer
-  const sourceType = this.config.source ? this.config.source.type : null ;
   // refferred to (layersstore);
   this._layersstore = config.layersstore || null;
   /*
@@ -60,6 +56,11 @@ function Layer(config = {}) {
       2 - filter
       3 - data -- raw data del layer (editing)
    */
+  // server type
+  const serverType = this.config.servertype;
+  // source layer
+  const sourceType = this.config.source ? this.config.source.type : null;
+
   if (serverType && sourceType) {
     this.providers = {
       query: ProviderFactory.build('query', serverType, sourceType, {
@@ -83,60 +84,79 @@ inherit(Layer, G3WObject);
 
 const proto = Layer.prototype;
 
-proto.getDataTable = function() {
-  let provider;
+proto.getDataTable = function({ page, page_size, ordering } = {}) {
   const d = $.Deferred();
-  if (this.isFilterable()) {
-    provider = this.getProvider('filter');
-    const filter = new Filter();
-    filter.getAll();
-    provider.query({
-      filter: filter
-    })
-      .done((response) => {
-        const data = provider.digestFeaturesForLayers(response.data);
-        const dataTableObject = {
-          headers: data[0].attributes,
-          features: data[0].features,
-          title: this.getTitle()
-        };
-        d.resolve(dataTableObject)
-      })
-      .fail((err) => {
-        d.reject(err)
-      })
+  let provider;
+  if (!(this.getProvider('filter')  || this.getProvider('data'))){
+   d.reject();
   } else {
-    provider = this.getProvider('data');
-    provider.getFeatures({
-      editing:false
-    })
-      .done((response) => {
-        let pkProperties;
-        const data = response.data;
-        let attributes, features;
-        if (this.getType() == 'table') {
-          features = data.map((feature) => {
-            return {
-              properties: feature
-            }
-          });
-          attributes = this.getAttributes();
-        } else {
-          pkProperties = this.getFields().find((field) => response.pk == field.name);
-          features = data.features;
-          attributes = [pkProperties].concat(provider._parseAttributes(this.getAttributes(), data.features[0].properties));
+    if (this.isFilterable()) {
+      provider = this.getProvider('filter');
+      const filter = new Filter();
+      filter.getAll();
+      provider.query({
+        filter: filter
+      })
+        .done((response) => {
+          const data = provider.digestFeaturesForLayers(response.data);
+          const dataTableObject = {
+            headers: data[0].attributes,
+            features: data[0].features,
+            title: this.getTitle()
+          };
+          d.resolve(dataTableObject)
+        })
+        .fail((err) => {
+          d.reject(err)
+        })
+    } else {
+      provider = this.getProvider('data');
+      provider.getFeatures({
+        editing:false
+        }, {
+          page,
+          page_size,
+          ordering
         }
-        const dataTableObject = {
-          headers: attributes,
-          features: features,
-          title: this.getTitle()
-        };
-        d.resolve(dataTableObject)
-      })
-      .fail((err) => {
-        d.reject(err)
-      })
+      ).done((response) => {
+          let pkProperties;
+          const data = response.data;
+          const count = response.count;
+          const title = this.getTitle();
+          let headers, features;
+          if (this.getType() == 'table') {
+            features = data.map((feature) => {
+              return {
+                properties: feature
+              }
+            });
+            headers = this.getAttributes();
+          } else if (this.get('source').type == 'geojson') {
+            const data = provider.digestFeaturesForLayers([{
+              layer: this,
+              features: response
+            }]);
+            headers = data[0].attributes;
+            features = data[0].features;
+          } else {
+            pkProperties = this.getFields().find((field) => response.pk == field.name);
+            features = data.features;
+            headers = [pkProperties].concat(provider._parseAttributes(this.getAttributes(), data.features[0].properties));
+          }
+          const dataTableObject = {
+            headers,
+            features,
+            title,
+            count
+          };
+          d.resolve(dataTableObject)
+        })
+        .fail((err) => {
+          d.reject(err)
+        })
+    }
   }
+
   return d.promise();
 };
 
@@ -410,6 +430,9 @@ proto.canShowTable = function() {
     if([Layer.SourceTypes.POSTGIS, Layer.SourceTypes.SPATIALITE].indexOf(this.config.source.type) > -1) {
       return true
     }
+  } else if (this.getServerType() == 'G3WSUITE') {
+      if (this.get('source').type == "geojson")
+        return true
   }
   return false
 };

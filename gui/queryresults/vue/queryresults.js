@@ -1,6 +1,5 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
-const merge = require('core/utils/utils').merge;
 const Component = require('gui/vue/component');
 const QueryResultsService = require('gui/queryresults/queryresultsservice');
 const ProjectsRegistry = require('core/project/projectsregistry');

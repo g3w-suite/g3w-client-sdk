@@ -2,9 +2,8 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const DataProvider = require('core/layers/providers/provider');
 
-function KMLDataProvider(options) {
-  options = options || {};
-  base(this);
+function KMLDataProvider(options = {}) {
+  base(this, options);
   this._name = 'kml';
 }
 

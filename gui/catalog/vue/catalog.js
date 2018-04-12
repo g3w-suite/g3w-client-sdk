@@ -89,10 +89,10 @@ const vueComponentOptions = {
     },
     hasBaseLayersVisible: function() {
       let visible = false;
-      _.forEach(this.baselayers, function(baselayer) {
+      this.baselayers.find((baselayer) => {
         if (baselayer.visible) {
           visible = true;
-          return false;
+          return true;
         }
       });
       return visible;
@@ -112,41 +112,29 @@ const vueComponentOptions = {
       }
       const mapService = GUI.getComponent('map').getService();
       mapService.goToBBox(bbox);
-      tthis._hideMenu();
+      this._hideMenu();
     },
     showAttributeTable: function(layerId) {
       this.layerMenu.loading_data_table = false;
       GUI.closeContent();
       let layer;
-      let features;
       const catallogLayersStores = CatalogLayersStoresRegistry.getLayersStores();
-      catallogLayersStores.forEach((layerStore) => {
-        layer = layerStore.getLayerById(this.layerMenu.layer.id);
+      catallogLayersStores.find((layerStore) => {
+        layer = layerStore.getLayerById(layerId);
         if (layer) {
           layer.getLayerForEditing();
-          return false;
+          return true;
         }
       });
       this.layerMenu.loading_data_table = true;
-      layer.getDataTable()
-        .then((data) => {
-          GUI.showContent({
-            content: new TableComponent({
-              features: data.features,
-              headers: data.headers,
-              title: data.title
-            }),
-            perc: 50,
-            split: 'v',
-            push: false
-          });
-        })
-        .fail((err) => {
-        })
-        .always(() => {
-          this.layerMenu.loading_data_table = false;
-          this._hideMenu();
-        });
+      const tableContent = new TableComponent({
+        layer
+      });
+      tableContent.on('show', () => {
+        this.layerMenu.loading_data_table = false;
+        this._hideMenu();
+      });
+      tableContent.show();
     },
     startEditing: function() {
       let layer;
@@ -180,11 +168,15 @@ const vueComponentOptions = {
   },
   mounted: function() {
     CatalogEventHub.$on('treenodetoogled',(storeid, node, parent_mutually_exclusive) => {
+      const mapService = GUI.getComponent('map').getService();
       if (node.external) {
-        const mapService = GUI.getComponent('map').getService();
         let layer = mapService.getLayerByName(node.name);
         layer.setVisible(!layer.getVisible());
         node.visible = !node.visible;
+      } else if (!storeid) {
+        node.visible = !node.visible;
+        let layer = mapService.getLayerById(node.id);
+        layer.setVisible(node.visible);
       } else {
         CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayer(node.id, null, parent_mutually_exclusive);
       }
@@ -457,12 +449,10 @@ Vue.component('tristate-tree', {
       if (!this.isFolder && (this.layerstree.openattributetable || this.layerstree.geolayer || this.layerstree.external)) {
         CatalogEventHub.$emit('showmenulayer', layerstree, evt);
       }
-      // if (!this.isFolder) {
-      //   CatalogEventHub.$emit('showmenulayer', layerstree, evt);
-      // }
     }
   },
   mounted: function() {
+    pippo = this.layerstree;
     if (this.isFolder && !this.root) {
       this.layerstree.nodes.forEach((node) => {
         if (this.parent_mutually_exclusive && !this.layerstree.mutually_exclusive) {
@@ -537,7 +527,6 @@ Vue.component('layerslegend-item',{
 
 function CatalogComponent(options) {
   base(this, options);
-  this.id = "catalog-component";
   this.title = "catalog";
   this.mapComponentId = options.mapcomponentid;
   const service = options.service || new Service;

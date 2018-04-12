@@ -6,7 +6,6 @@ function MapLayer(config) {
   this.config = config || {};
   this.id = config.id;
   this.projection = config.projection;
-  this._olLayer = null;
   base(this);
 }
 

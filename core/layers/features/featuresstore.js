@@ -129,10 +129,10 @@ proto._commit = function(commitItems, featurestore) {
 // recupera una feature dal suo id
 proto.getFeatureById = function(featureId) {
   let feat;
-  this._features.forEach((feature) => {
+  this._features.find((feature) => {
     if (feature.getId() == featureId) {
       feat = feature;
-      return false;
+      return true;
     }
   });
   return feat;
@@ -144,10 +144,10 @@ proto._addFeature = function(feature) {
 
 //vado ad eseguire in pratica la sostituzione della feature dopo una modifica
 proto._updateFeature = function(feature) {
-  this._features.forEach((feat, idx) => {
-    if (feat == feature) {
+  this._features.find((feat, idx) => {
+    if (feat.getId() == feature.getId()) {
       this._features[idx] = feature;
-      return false;
+      return true;
     }
   });
 };
@@ -161,11 +161,8 @@ proto.setFeatures = function(features) {
 };
 
 proto._removeFeature = function(feature) {
-  this._features.forEach((feat, idx) => {
-    if (feature == feat) {
-      this._features.splice(idx, 1);
-      return false
-    }
+  this._features = this._features.filter((feat) => {
+    return feature.getId() != feat.getId();
   })
 };
 

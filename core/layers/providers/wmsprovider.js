@@ -62,7 +62,7 @@ proto._getGetFeatureInfoUrlForLayer = function(url, coordinates,resolution, para
     1, this._layer.getProjection(), baseParams);
 };
 
-proto.query = function(options) {
+proto.query = function(options = {}) {
   const d = $.Deferred();
   const coordinates = options.coordinates || [];
   const resolution = options.resolution || null;

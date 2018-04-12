@@ -15,6 +15,10 @@ const InternalComponent = Vue.extend({
     fireAction: function(actionId) {
       this.$options.toolsService.fireAction(actionId);
     }
+  },
+  mounted() {
+    this.$nextTick(() => {
+    })
   }
 });
 
@@ -29,6 +33,7 @@ function ToolsComponent(options) {
   });
   this._service.onafter('removeTools', () => {
     this.state.visible = this._service.state.toolsGroups.length > 0;
+
   });
   this.internalComponent = new InternalComponent({
     toolsService: this._service

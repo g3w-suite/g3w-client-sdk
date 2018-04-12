@@ -51,7 +51,7 @@ function LayerFactory() {
         LayerClass = BaseLayers[serverType];
         break;
       case Layer.ServerTypes.G3WSUITE:
-        layerClass = VectorLayer;
+        LayerClass = VectorLayer;
         if (config.source) {
           switch (config.source.type) {
             case 'geojson':

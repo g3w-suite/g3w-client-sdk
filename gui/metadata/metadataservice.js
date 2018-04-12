@@ -13,30 +13,58 @@ const MetadataI18n = {
       "title": "Metadati",
       'groups': {
         'general': {
-          'title': 'Generale',
+          'title': 'GENERALE',
           'fields': {
-            'title': 'Titolo',
-            'name': 'Nome',
-            'description': "Descrizione",
-            'abstract': "Abstract",
-            'keywords': 'Parole chiave',
-            "fees": "Tasse",
-            "accessconstraints": "Limiti Accesso",
-            'contactinformation': "Contatti",
+            'title': 'TITOLO',
+            'name': 'NOME',
+            'description': "DESCRIZIONE",
+            'abstract': "ABSTRACT",
+            'keywords': 'PAROLE CHIAVE',
+            "fees": "TASSE",
+            "accessconstraints": "LIMITI DI ACCESSO",
+            'contactinformation': "CONTATTI",
+            'subfields': {
+              'contactinformation': {
+                'contactelectronicmailaddress': "Email",
+                'personprimary': 'Riferimenti',
+                'contactvoicetelephone': 'Telefono',
+                'contactorganization': 'Organizzazione',
+                'contactposition': 'Posizione',
+                'contactperson': 'Persona'
+              }
+            },
             'wms_url': "WMS"
           }
         },
         'spatial':{
-          'title': 'Info Spaziali',
+          'title': 'INFO SPAZIALI',
           'fields' : {
             'crs': 'EPSG',
             'extent': 'BBOX'
           }
         },
         'layers': {
-          'title': 'Strati',
+          'title': 'STRATI',
+          'groups' : {
+            'general': 'GENERALE',
+            'spatial': 'INFO SPAZIALI'
+          },
           'fields': {
-            'layers': 'Strati'
+            'layers': 'STRATI',
+            'subfields': {
+              'crs': 'EPSG',
+              'bbox': 'BBOX',
+              'title': "TITOLO",
+              'name': 'NOME',
+              'geometrytype': 'GEOMETRIA',
+              'source': 'SORGENTE',
+              'attributes': 'ATTRIBUTI',
+              'abstract': 'ABSTRACT',
+              'attribution': 'ATTRIBUTION',
+              'keywords': "PAROLE CHIAVE",
+              'metadataurl':'METADATA URL',
+              'dataurl': "DATA URL"
+            }
           }
         }
       }
@@ -47,30 +75,59 @@ const MetadataI18n = {
       'title': 'Metadata',
       'groups': {
         'general': {
-          'title': 'General',
+          'title': 'GENERAL',
           'fields': {
-            'title': 'Title',
-            'name': 'Name',
-            'description': "Description",
-            'abstract': "Abstract",
-            'keywords': 'Keywords',
-            "fees": "Fees",
-            "accessconstraints": "Access Contraints",
-            'contactinformation': "Contacts",
+            'title': 'TITLE',
+            'name': 'NAME',
+            'description': "DESCRIPTION",
+            'abstract': "ABASTRACT",
+            'keywords': 'KEYWORDS',
+            "fees": "FEES",
+            "accessconstraints": "ACCESS CONSTRAINT",
+            'contactinformation': "CONTACTS",
+            'subfields': {
+              'contactinformation': {
+                'contactelectronicmailaddress': "Email",
+                'personprimary': 'Refereces',
+                'contactvoicetelephone': 'Phone',
+                'contactorganization': 'Organization',
+                'contactposition': 'Position',
+                'contactperson': 'Person'
+              }
+            },
             'wms_url': "WMS"
           }
         },
         'spatial':{
-          'title': 'Spatial',
+          'title': 'SPATIAL',
           'fields' : {
             'crs': 'EPSG',
             'extent': 'BBOX'
           }
         },
         'layers': {
-          'title': 'Layers',
+          'title': 'LAYERS',
           'fields': {
-            'layers': 'Layers'
+            'layers': 'LAYERS',
+            'subfields': {
+              'crs': 'EPSG',
+              'bbox': 'BBOX',
+              'title': "TITLE",
+              'name': 'NAME',
+              'geometrytype': 'GEOMETRY',
+              'source': 'SOURCE',
+              'attributes': 'ATTRIBUTES',
+              'abstract': 'ABSTRACT',
+              'attribution': 'ATTRIBUTION',
+              'keywords': "PAROLE CHIAVE",
+              'metadataurl':'METADATA URL',
+              'dataurl': "DATA URL"
+
+            }
+          },
+          'groups' : {
+            'general': 'GENERAL',
+            'spatial': 'SPATIAL'
           }
         }
       }
@@ -103,7 +160,7 @@ proto._buildProjectGroupMetadata = function() {
   Object.entries(projectGroups).forEach(([groupName, value]) => {
     groups[groupName] = {};
     Object.keys(value.fields).forEach((field) => {
-      const  fieldValue = project.metadata[field] ? project.metadata[field] : project[field];
+      const  fieldValue = project.metadata && project.metadata[field] ? project.metadata[field] : project[field];
       if (!!fieldValue) {
         groups[groupName][field] = {
           label: t(['metadata','groups', groupName, 'fields', field].join('.')), // get traslation here

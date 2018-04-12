@@ -5,7 +5,6 @@ const ProjectsRegistry = require('core/project/projectsregistry');
 const PluginsRegistry = require('./pluginsregistry');
 
 const Plugin = function() {
-
   base(this);
   this.name = '(no name)';
   this.config = null;
@@ -60,6 +59,30 @@ proto.registerPlugin = function(projectId) {
 };
 
 proto.setupGui = function() {};
+
+// method to get dependencies plugin
+proto.getDependencyPlugins = function(pluginsName = []) {
+  const pluginPromises = [];
+  pluginsName.forEach((pluginName) => {
+    pluginPromises.push(this.getDependencyPlugin(pluginName))
+  });
+  return Promise.all(pluginPromises)
+};
+
+// method to get plugin dependency
+proto.getDependencyPlugin = function(pluginName) {
+  return new Promise((resolve, reject) => {
+    const plugin = PluginsRegistry.getPlugin(pluginName);
+    if (plugin) {
+      resolve(plugin)
+    } else {
+      PluginsRegistry.onafter('registerPlugin', (plugin) => {
+        if (plugin.name === pluginName)
+          resolve(plugin)
+      })
+    }
+  })
+};
 
 // unload (case change map)
 proto.unload  = function() {

@@ -62,9 +62,9 @@ const ProvidersForServerTypes = {
   },
   'G3WSUITE': {
     'geojson': {
-      query: null,
+      query: Providers.geojson,
       filter: null,
-      data: null,
+      data: Providers.geojson,
       search: null
     }
   }

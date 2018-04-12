@@ -1,7 +1,6 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const Component = require('gui/vue/component');
-const GUI = require('gui/gui');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const SearchesService = require('gui/search/searchesservice');
 
@@ -14,9 +13,10 @@ const vueComponentOptions = {
    },
    methods: {
     showSearchPanel: function(search) {
-        this.$options.searchesService.showSearchPanel(search);
+        this.$options.service.showSearchPanel(search);
     }
   }
+  
 };
 
 const InternalComponent = Vue.extend(vueComponentOptions);
@@ -27,7 +27,7 @@ function SearchComponent(options){
   this.title = "search";
   this._service = new SearchesService();
   this.internalComponent = new InternalComponent({
-    searchesService: this._service
+    service: this._service
   });
   this.internalComponent.state = this._service.state;
   this.state.visible = ProjectsRegistry.getCurrentProject().state.search.length > 0;

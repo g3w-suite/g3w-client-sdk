@@ -133,8 +133,6 @@ proto.getListableProjects = function() {
   }), 'title')
 };
 
-
-
 proto.getCurrentProject = function(){
   return this.state.currentProject;
 };
@@ -161,8 +159,11 @@ proto.getProject = function(projectGid) {
     .then((projectFullConfig) => {
       const projectConfig = _.merge(pendingProject, projectFullConfig);
       projectConfig.WMSUrl = this.config.getWmsUrl(projectConfig);
+      // setupu project relations
       projectConfig.relations = this._setProjectRelations(projectConfig);
+      // instance of Project
       const project = new Project(projectConfig);
+      // add to project
       this._projects[projectConfig.gid] = project;
       return d.resolve(project);
     })
@@ -194,6 +195,7 @@ proto.getProjectConfigByGid = function(gid) {
   })
 };
 
+// method to call server to get project configuration
 proto._getProjectFullConfig = function(projectBaseConfig) {
   const d = $.Deferred();
   const url = this.config.getProjectConfigUrl(projectBaseConfig);
