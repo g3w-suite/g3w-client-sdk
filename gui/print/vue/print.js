@@ -2,7 +2,8 @@ const inherit = require('core/utils/utils').inherit;
 const Component = require('gui/vue/component');
 const PrintService = require('gui/print/printservice');
 const base = require('core/utils/utils').base;
-const merge = require('core/utils/utils').merge;
+const t = require('core/i18n/i18n.service').t;
+
 
 const vueComponentOptions = {
   template: require('./print.html'),
@@ -10,7 +11,7 @@ const vueComponentOptions = {
     return {
       state: null,
       button: {
-        title: "Crea PDF",
+        title: t('create_print'),
         class: "btn-success",
         type:"stampa",
         disabled: false

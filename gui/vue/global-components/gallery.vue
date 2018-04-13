@@ -7,15 +7,14 @@
           <div :id="carouselId" class="carousel slide" data-interval="false">
             <div class="carousel-inner">
               <div v-for="(image, index) in images" class="item" :class="active == index ? 'active' : ''">
-                <img :src="image.src">
+                <img style="margin:auto" :src="isRelativePath(image.src)">
               </div>
             </div>
-            <a v-if="images.length > 1" class="left carousel-control" :href="'#'+carouselId" role="button" data-slide="prev">
+            <a v-if="images.length> 1" class="left carousel-control" :href="'#'+carouselId" role="button" data-slide="prev">
               <span class="glyphicon glyphicon-chevron-left">
-
               </span>
             </a>
-            <a v-if="images.length > 1" class="right carousel-control" :href="'#'+carouselId" role="button" data-slide="next">
+            <a v-if="images.length> 1" class="right carousel-control" :href="'#'+carouselId" role="button" data-slide="next">
               <span class="glyphicon glyphicon-chevron-right">
               </span>
             </a>
@@ -27,8 +26,9 @@
 </template>
 
 <script>
+  const ProjectsRegistry = require('core/project/projectsregistry');
   export default {
-    name: "gallery",
+    name: "g3w-images-gallery",
     props: {
       images: {
         type: Array,
@@ -50,12 +50,22 @@
     methods: {
       isActive(src) {
         return src === active
-      }
+      },
+      isRelativePath: function(url) {
+        if (!_.startsWith(url,'/') && !_.startsWith(url,'http')) {
+          return ProjectsRegistry.getConfig().mediaurl + url
+        }
+        return url
+      },
     }
   }
 </script>
 
 <style scoped>
+  .modal-content {
+    background: transparent;
+    box-shadow: none;
+  }
   .modal-dialog {
     display: inline-block;
     text-align: left;
@@ -72,5 +82,9 @@
     height: 100%;
     vertical-align: middle;
     margin-right: -4px;
+  }
+
+  .carousel .carousel-control span {
+    color: #3c8dbc
   }
 </style>

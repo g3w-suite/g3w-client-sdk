@@ -9,16 +9,39 @@ const isMobileMixin = {
 
 const fieldsMixin = {
   methods: {
-    getType(value) {
+    getFieldType(value) {
+      let Fields = {};
+      Fields.SIMPLE = 'simple';
+      Fields.GEO = 'geo';
+      Fields.LINK = 'link';
+      Fields.PHOTO = 'photo';
+      Fields.PHOTOLINK = "photolink";
+      Fields.IMAGE = 'image';
+      Fields.POINTLINK = 'pointlink';
+      Fields.ROUTE = 'route';
       const URLPattern = /^(https?:\/\/[^\s]+)/g;
-      if (value && value.toString().match(URLPattern))
-        return 'link';
-      else if (value && typeof value == 'object' && value.coordinates) {
-        return 'geo'
-      } else if (value && Array.isArray(value)) {
-        return 'gallery'
+      const PhotoPattern = /[^\s]+.(png|jpg|jpeg|gif)$/g;
+      if (_.isNil(value)) {
+        return Fields.SIMPLE;
+      } else if (value && typeof value == 'object' && value.coordinates) {
+        return Fields.GEO;
+      } else if(value && Array.isArray(value)) {
+        if (value.length && value[0].photo)
+          return Fields.PHOTO;
+        else
+          return Fields.SIMPLE
+      } else if (value.toString().toLowerCase().match(PhotoPattern)) {
+        return Fields.PHOTO;
+      } else if (value.toString().match(URLPattern)) {
+        return Fields.LINK;
       }
-      return ''
+      return Fields.SIMPLE;
+    },
+    sanitizeFieldValue(value) {
+      if (Array.isArray(value) && !value.length)
+        return '';
+      else
+        return value
     }
   }
 };

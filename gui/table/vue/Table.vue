@@ -10,10 +10,10 @@
       <tbody>
       <tr :id="'open_table_row_' + index"  v-for="(feature, index) in state.features" :key="index" @mouseenter="zoomAndHighLightSelectedFeature(feature, false)" @click="zoomAndHighLightSelectedFeature(feature)" :class="{geometry: state.hasGeometry}">
         <td v-for="header in state.headers">
-          <link-item v-if="getType(feature.attributes[header.name]) == 'link'" :href="feature.attributes[header.name]"></link-item>
-          <geo-item v-else-if="getType(feature.attributes[header.name]) == 'geo'" :data="feature.attributes[header.name]"></geo-item>
-          <gallery-images v-else-if="getType(feature.attributes[header.name]) == 'gallery'" :value="feature.attributes[header.name]"></gallery-images>
-          <p v-else>{{ feature.attributes[header.name] }}</p>
+          <link-item v-if="getFieldType(feature.attributes[header.name]) == 'link'" :href="feature.attributes[header.name]"></link-item>
+          <g3w-geospatial v-else-if="getFieldType(feature.attributes[header.name]) == 'geo'" :data="feature.attributes[header.name]"></g3w-geospatial>
+          <g3w-image v-else-if="getFieldType(feature.attributes[header.name]) == 'photo'" :value="feature.attributes[header.name]"></g3w-image>
+          <p v-else>{{ sanitizeFieldValue(feature.attributes[header.name]) }}</p>
         </td>
       </tr>
       </tbody>
@@ -22,9 +22,7 @@
 </template>
 
 <script>
-  import GeoComponent from './components/geo.vue';
   import LinkComponent from './components/link.vue'
-  import ImageComponet from './components/image.vue';
   const fieldsMixin = require('gui/vue/vue.mixins').fieldsMixin;
   export default {
     name: "Table",
@@ -36,9 +34,7 @@
       }
     },
     components: {
-      'link-item': LinkComponent,
-      'geo-item': GeoComponent,
-      'gallery-images': ImageComponet
+      'link-item': LinkComponent
     },
     methods: {
       _setLayout: function() {

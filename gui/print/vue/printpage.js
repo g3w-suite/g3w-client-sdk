@@ -1,4 +1,5 @@
 const inherit = require('core/utils/utils').inherit;
+const imageToDataURL = require('core/utils/utils').imageToDataURL;
 const base = require('core/utils/utils').base;
 const Component = require('gui/vue/component');
 
@@ -7,26 +8,22 @@ const InternalComponent = Vue.extend({
   data: function() {
     return {
       state: null,
-      showdownloadbutton: false
+      showdownloadbutton: false,
+      jpegimageurl: null
     }
   },
-  methods: {
-    downloadImage() {
-      xhr = new XMLHttpRequest();
-      xhr.open("GET", this.state.url);
-      xhr.responseType = "blob";
-      xhr.overrideMimeType("octet/stream");
-      xhr.onload = function() {
-        if (xhr.status === 200) {
-          window.location = (URL || webkitURL).createObjectURL(xhr.response);
-        }
-      };
-      xhr.send();
-    }
-  },
+  computed: {},
   mounted: function() {
+    this.state.loading = true;
+    if (this.state.format == 'jpg') {
+      imageToDataURL({
+        src: this.state.url,
+        callback: (url) => {
+          this.jpegimageurl = url;
+        }
+      })
+    }
     this.$nextTick(() => {
-      this.state.loading = true;
       $('#printpage').load(() => {
         this.showdownloadbutton = this.state.format == 'jpg';
         this.state.loading = false;

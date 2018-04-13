@@ -3,7 +3,7 @@
     <div v-if="state.loading" class="bar-loader"></div>
   </transition>
   <div v-if="showdownloadbutton" style="display:flex; justify-content: flex-end; margin-bottom: 5px;">
-    <a :href="state.url" download>
+    <a :href="jpegimageurl" download="download.jpeg">
       <button class="btn btn-info" role="button">Download</button>
     </a>
   </div>

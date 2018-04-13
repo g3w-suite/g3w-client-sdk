@@ -5,14 +5,14 @@
         <img class="img-responsive" @click="showGallery(index)" :src="getSrc(value)"/>
       </div>
     </div>
-    <stress-gallery :id="galleryId" :active="active" :images="getGalleryImages()"></stress-gallery>
+    <g3w-images-gallery :id="galleryId" :active="active" :images="getGalleryImages()"></g3w-images-gallery>
   </div>
 </template>
 
 <script>
   import Gallery from './gallery.vue'
   export default {
-    name: "image",
+    name: "g3w-image",
     props: {
       value: {}
     },
@@ -23,7 +23,7 @@
       }
     },
     components: {
-      'stress-gallery': Gallery
+      'g3w-images-gallery': Gallery
     },
     computed: {
       values() {

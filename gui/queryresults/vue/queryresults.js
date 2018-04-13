@@ -2,8 +2,8 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const Component = require('gui/vue/component');
 const QueryResultsService = require('gui/queryresults/queryresultsservice');
-const ProjectsRegistry = require('core/project/projectsregistry');
 const t = require('core/i18n/i18n.service').t;
+const fieldsMixin = require('gui/vue/vue.mixins').fieldsMixin;
 
 const maxSubsetLength = 3;
 const headerExpandActionCellWidth = 10;
@@ -11,6 +11,7 @@ const headerActionsCellWidth = 10;
 
 const vueComponentOptions = {
   template: require('./queryresults.html'),
+  mixins: [fieldsMixin],
   data: function() {
     return {
       state: this.$options.queryResultsService.state,
@@ -48,19 +49,13 @@ const vueComponentOptions = {
     },
     checkField: function(type, fieldname, attributes) {
       let isType = false;
-      _.forEach(attributes, function(attribute) {
+      attributes.forEach((attribute) => {
         if (attribute.name == fieldname) {
           isType = attribute.type == type;
         }
       });
 
       return isType;
-    },
-    isRelativePath: function(url) {
-      if (!_.startsWith(url,'/')) {
-        return ProjectsRegistry.getConfig().mediaurl + url
-      }
-      return url
     },
     layerHasFeatures: function(layer) {
       if (layer.features) {
@@ -173,11 +168,9 @@ const vueComponentOptions = {
     openLink: function(link_url) {
       window.open(link_url, '_blank');
     },
-    getFieldType: function (layer, name, value) {
-      return this.$options.queryResultsService.getFieldType(layer, name, value);
-    },
     fieldIs: function(TYPE,layer,attributeName,attributeValue) {
-      return this.$options.queryResultsService.fieldIs(TYPE,layer,attributeName,attributeValue);
+      const fieldType = this.getFieldType(attributeValue);
+      return fieldType === TYPE;
     }
   },
   watch: {

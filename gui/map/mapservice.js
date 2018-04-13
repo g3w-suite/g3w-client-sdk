@@ -3,6 +3,7 @@ const t = require('core/i18n/i18n.service').t;
 const base = require('core/utils/utils').base;
 const G3WObject = require('core/g3wobject');
 const shpToGeojson = require('core/utils/geo').shpToGeojson;
+const resToScale = require('core/utils/geo').resToScale;
 const GUI = require('gui/gui');
 const ApplicationService = require('core/applicationservice');
 const ProjectsRegistry = require('core/project/projectsregistry');
@@ -27,11 +28,12 @@ function MapService(options) {
   this.mapBaseLayers = {};
   this.layersExtraParams = {};
   this.state = {
-      bbox: [],
-      resolution: null,
-      center: null,
-      loading: false,
-      hidden: true
+    bbox: [],
+    resolution: null,
+    center: null,
+    loading: false,
+    hidden: true,
+    scale: 0
   };
 
   this._greyListenerKey = null;
@@ -897,7 +899,6 @@ proto._setupViewer = function(width,height) {
   });
 
   this.viewer.map.getView().setResolution(initResolution);
-
 
   this._marker = new ol.Overlay({
     position: undefined,

@@ -6,7 +6,6 @@ const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 const VectorLayer = require('core/layers/vectorlayer');
 const ComponentsRegistry = require('gui/componentsregistry');
-const PhotoComponent = require('./components/photo/vue/photo');
 const RelationsPage = require('./components/relations/vue/relationspage');
 
 function QueryResultsService() {
@@ -85,41 +84,6 @@ proto.setTitle = function(querytitle) {
 
 proto.reset = function() {
   this.clearState();
-};
-
-proto.getFieldType = function (layer, name, value) {
-  let Fields = {};
-  Fields.SIMPLE = 'simple';
-  Fields.LINK = 'link';
-  Fields.PHOTO = 'photo';
-  Fields.PHOTOLINK = "photolink";
-  Fields.IMAGE = 'image';
-  Fields.POINTLINK = 'pointlink';
-  Fields.ROUTE = 'route';
-
-  const URLPattern = /^(https?:\/\/[^\s]+)/g;
-  const PhotoPattern = /[^\s]+.(png|jpg|jpeg|gif)$/g;
-  if (_.isNil(value)) {
-    return Fields.SIMPLE;
-  }
-  value = value.toString().toLowerCase();
-
-  if (!value.match(URLPattern) && value.match(PhotoPattern)) {
-    return Fields.PHOTO;
-  }
-
-  if (value.match(URLPattern) && !value.match(PhotoPattern)) {
-    return Fields.LINK;
-  }
-  if (value.match(URLPattern) && value.match(PhotoPattern)) {
-    return Fields.PHOTOLINK;
-  }
-  return Fields.SIMPLE;
-};
-
-proto.fieldIs = function(TYPE,layer,attributeName,attributeValue) {
-  const fieldType = this.getFieldType(layer,attributeName,attributeValue);
-  return fieldType === TYPE;
 };
 
 proto._digestFeaturesForLayers = function(featuresForLayers) {
@@ -275,16 +239,6 @@ proto.triggerLayerAction = function(action,layer,feature) {
       GUI.goto(url);
     }
   }
-};
-
-proto.showFullPhoto = function(url) {
-  GUI.pushContent({
-    content: new PhotoComponent({
-      url: url
-    }),
-    backonclose: true,
-    closable: false
-  });
 };
 
 proto.registerVectorLayer = function(vectorLayer) {

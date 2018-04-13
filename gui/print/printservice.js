@@ -105,19 +105,19 @@ function PrintComponentService() {
   };
 
   this.print = function() {
+    this.state.url = null;
     this._page = new PrintPage({
       service: this
     });
-    this.state.url = null;
     const options = this._getOptionsPrint();
-    GUI.setContent({
-      content: this._page,
-      title: t("print"),
-      perc:100
-    });
     PrintService.print(options)
     .then((url) => {
       this.state.url = url;
+      GUI.setContent({
+        content: this._page,
+        title: t("print"),
+        perc:100
+      });
     })
     .catch(() => {
       GUI.notify.error(t("server_error"));
