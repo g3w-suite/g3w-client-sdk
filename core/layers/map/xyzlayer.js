@@ -52,16 +52,16 @@ proto._makeOlLayer = function(){
   };
 
   layerOptions.projection = projection;
-  const olLayer = RasterLayers.XYZLayer(layerOptions);
+  this._olLayer = new RasterLayers.XYZLayer(layerOptions);
 
-  olLayer.getSource().on('imageloadstart', () => {
+  this._olLayer.getSource().on('imageloadstart', () => {
     this.emit("loadstart");
   });
-  olLayer.getSource().on('imageloadend', () => {
+  this._olLayer.getSource().on('imageloadend', () => {
     this.emit("loadend");
   });
 
-  return olLayer
+  return this._olLayer
 };
 
 proto._updateLayer = function(mapState, extraParams) {

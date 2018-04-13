@@ -182,7 +182,7 @@ proto.isFieldRequired = function(fieldName) {
 // apply resposnse data from server in case of new inserted feature
 proto.applyCommitResponse = function(response) {
   const data = response;
-  if (data) {
+  if (data && data.result) {
     let feature;
     const ids = data.response.new;
     const lockids = data.response.new_lockids;

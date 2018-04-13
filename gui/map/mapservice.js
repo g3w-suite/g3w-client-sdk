@@ -1295,9 +1295,7 @@ proto.clearHighlightGeometry = function() {
 };
 
 proto.refreshMap = function() {
-  this._mapLayers.forEach((mapLayer) => {
-    mapLayer.getOLLayer().getSource().updateParams({"time": Date.now()});
-  });
+  this.updateMapLayers()
 };
 
 // called when layout (window) resize
