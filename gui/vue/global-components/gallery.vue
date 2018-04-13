@@ -63,8 +63,10 @@
 
 <style scoped>
   .modal-content {
-    background: transparent;
-    box-shadow: none;
+    background: rgba(255, 255, 255, 0.6);
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
   }
   .modal-dialog {
     display: inline-block;
