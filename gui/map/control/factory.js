@@ -11,25 +11,25 @@ const AreaControl = require('g3w-ol3/src/controls/areacontrol');
 const Control = require('g3w-ol3/src/controls/control');
 const OLControl = require('g3w-ol3/src/controls/olcontrol');
 const NominatimControl = require('g3w-ol3/src/controls/nominatimcontrol');
+const MousePositionControl = require('g3w-ol3/src/controls/mousepositioncontrol');
+const ScaleControl = require('g3w-ol3/src/controls/scalecontrol');
+
 
 const ControlsFactory = {
   create: function(options) {
     let control;
     const ControlClass = ControlsFactory.CONTROLS[options.type];
-    const layers = options.layers; // opzione che mi server per far visualizzare o meno il controllo
+    const layers = options.layers; //check if there arae layers to enable control
     if (ControlClass) {
-      // istanzio il controllo
       control = new ControlClass(options);
     }
-    // nel caso siano stati specificati i layers del progetto su cui interrogare
+    // in case of layers
     if (layers && control instanceof Control) {
-      // nel caso l'array dei layer è vuoto non visualizzo il controllo
       if (!layers.length) {
         return null
       }
       const controlGeometryTypes = control.getGeometryTypes();
-      // imposto il valore iniziale di visible se è un array vuoto vuol dire che non ho specificato nessuna
-      // geometria rilevante e quindi deve essere visible
+
       let visible = (controlGeometryTypes.length) ? false : true;
       _.forEach(layers, (layer) => {
         if (controlGeometryTypes.indexOf(layer.getGeometryType()) > -1) {
@@ -37,7 +37,6 @@ const ControlsFactory = {
           return false;
         }
       });
-      // se visibile allora restituisco il controllo altrimenti null
       if (visible) {
         return control;
       } else {
@@ -64,7 +63,9 @@ ControlsFactory.CONTROLS = {
   'nominatim': NominatimControl,
   'addlayers': AddLayersControl,
   'length': LengthControl,
-  'area': AreaControl
+  'area': AreaControl,
+  'mouseposition': MousePositionControl,
+  'scale': ScaleControl
 };
 
 module.exports = ControlsFactory;

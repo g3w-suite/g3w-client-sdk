@@ -18,21 +18,19 @@ const vueComponentOptions = {
       }
     }
   },
+  computed: {
+    disabled() {
+      return this.state.loading;
+    }
+  },
   methods: {
-    btnEnabled: function(button) {
-      return button.disabled;
-    },
-    isAnnullaButton: function(type) {
-      return type == 'annulla'
-    },
     onChangeTemplate: function() {
       this.$options.service.changeTemplate();
     },
     onChangeScale: function() {
       this.$options.service.changeScale()
     },
-    onChangeFormat: function() {
-    },
+    onChangeFormat: function() {},
     onChangeDpi: function() {},
     onChangeRotation: function(evt) {
       if (this.state.rotation >= 0 && !_.isNil(this.state.rotation) && this.state.rotation != '') {
@@ -47,7 +45,7 @@ const vueComponentOptions = {
       this.$options.service.changeRotation();
     },
     print: function() {
-      this.$options.service.print();
+      this.$options.service.print()
     }
   }
 };

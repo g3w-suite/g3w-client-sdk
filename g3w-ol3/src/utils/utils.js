@@ -1,3 +1,6 @@
+const OGC_PIXEL_WIDTH = 0.28;
+const OGC_DPI = 25.4/OGC_PIXEL_WIDTH;
+
 const utils = {
   getExtentForViewAndSize: function(center, resolution, rotation, size) {
     const dx = resolution * size[0] / 2;
@@ -48,6 +51,26 @@ const utils = {
     reverseCoordinates(coordinates);
     geometry.setCoordinates(coordinates);
     return geometry
+  },
+  resToScale: function(resolution, unit) {
+    unit = unit || 'm';
+    let scale;
+    switch (unit) {
+      case 'm':
+        scale = (resolution*1000) / OGC_PIXEL_WIDTH;
+        break;
+    }
+    return scale;
+  },
+  scaleToRes: function(scale, unit) {
+    unit = unit || 'm';
+    let resolution;
+    switch (unit) {
+      case 'm':
+        resolution = (scale * OGC_PIXEL_WIDTH) / 1000;
+        break
+    }
+    return resolution;
   }
 };
 

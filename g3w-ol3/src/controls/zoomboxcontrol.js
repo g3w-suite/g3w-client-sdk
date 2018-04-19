@@ -8,7 +8,7 @@ const ZoomBoxControl = function(options){
       label: "\ue901",
       interactionClass: ol.interaction.DragBox
     };
-  options = Object.assign({},options,_options)
+  options = Object.assign({},options,_options);
   InteractionControl.call(this,options);
 
 };

@@ -14,8 +14,7 @@ const SearchPanelComponet = Vue.extend({
       forminputs: [],
       filterObject: {},
       formInputValues : [],
-      queryurl: null,
-      loading: false
+      queryurl: null
     }
   },
   methods: {
@@ -31,7 +30,6 @@ const SearchPanelComponet = Vue.extend({
       const expression = new Expression();
       expression.createExpressionFromFilter(this.filterObject.filter, this.queryLayer.getName());
       filter.setExpression(expression.get());
-      this.loading = true;
       this.queryLayer.search({
         filter: filter,
         queryUrl: this.queryurl
@@ -45,9 +43,6 @@ const SearchPanelComponet = Vue.extend({
       .fail(() => {
         GUI.notify.error(t('server_error'));
         GUI.closeContent();
-      })
-      .always(() => {
-        this.loading = false
       })
     }
   },
@@ -67,8 +62,6 @@ const SearchPanelComponet = Vue.extend({
       // `data.text` is the text that is displayed for the data object
       if (data.text.indexOf(params.term) > -1) {
         const modifiedData = $.extend({}, data, true);
-        modifiedData.text += ' (matched)';
-
         // You can return modified objects from here
         // This includes matching the `children` how you want in nested data sets
         return modifiedData;
@@ -84,7 +77,12 @@ const SearchPanelComponet = Vue.extend({
       });
       $('#g3w-search-form select').select2({
         width: '100%',
-        matcher: matchCustom
+        matcher: matchCustom,
+        "language": {
+          "noResults": function(){
+            return t("no_results");
+          }
+        },
       }).on('change', (evt) => {
         const select = $(evt.target);
         this.$emit('select-change', {
@@ -135,7 +133,11 @@ function SearchPanel(options = {}) {
         input.id = id;
         input.input.type = input.input.type || 'textfield';
         formValue.type = input.input.type;
-        formValue.value = input.input.type == 'selectfield' ? input.input.options.values[0] : null;
+        if (input.input.type == 'selectfield') {
+          input.input.options.values.unshift('');
+          formValue.value = '';
+        } else
+          formValue.value = null;
         this.internalPanel.formInputValues.push(formValue);
         this.internalPanel.forminputs.push(input);
         id+=1;

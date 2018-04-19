@@ -5,8 +5,8 @@ const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const PrintService = require('core/print/printservice');
-const resToScale = require('core/utils/geo').resToScale;
-const scaleToRes = require('core/utils/geo').scaleToRes;
+const resToScale = require('g3w-ol3/src/utils/utils').resToScale;
+const scaleToRes = require('g3w-ol3/src/utils/utils').scaleToRes;
 const printConfig = require('./printconfig');
 const PrintPage = require('./vue/printpage');
 const scale = printConfig.scale;
@@ -15,6 +15,7 @@ const formats = printConfig.formats;
 
 function PrintComponentService() {
   base(this);
+  this.printService = new PrintService();
   this._initialized = false;
   this.state = {
     loading: false
@@ -109,21 +110,26 @@ function PrintComponentService() {
     this._page = new PrintPage({
       service: this
     });
-    const options = this._getOptionsPrint();
-    PrintService.print(options)
-    .then((url) => {
-      this.state.url = url;
-      GUI.setContent({
-        content: this._page,
-        title: t("print"),
-        perc:100
-      });
-    })
-    .catch(() => {
-      GUI.notify.error(t("server_error"));
-      GUI.closeContent();
+    GUI.setContent({
+      content: this._page,
+      title: t("print"),
+      perc:100
     });
+    const options = this._getOptionsPrint();
+    this.state.url = this.printService.getPrintUrl(options);
+  };
 
+  this.startLoading = function() {
+    this.state.loading = true;
+  };
+
+  this.stopLoading = function() {
+    this.state.loading = false;
+  };
+
+  this.showError = function() {
+    GUI.notify.error(t("info.server_error"));
+    GUI.closeContent();
   };
 
   this._calculateInternalPrintExtent = function() {

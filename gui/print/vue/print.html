@@ -23,20 +23,9 @@
       </div>
       <div class="box-footer" style="background-color: transparent">
         <span>
-          <button style="width:100%; background-color: #3c8dbc" class="btn " @click.stop.prevent="print()" v-disabled="btnEnabled(button)">{{ button.title }}</button>
+          <button style="width:100%; background-color: #3c8dbc" class="btn " @click.stop.prevent="print" v-disabled="disabled">{{ button.title }}</button>
         </span>
       </div>
     </form>
-    <div id="message" style="text-align:center; padding:3px; color: yellow" class="message" v-show="btnEnabled(button)">
-      <div>
-        <span>Muovendoti all'interno della mappa</span>
-      </div>
-      <div>
-        <span>o cambiando i parametri della stampa</span>
-      </div>
-      <div>
-        <span>il PDF si aggiornerà automaticamente</span>
-      </div>
-    </div>
   </li>
 </ul>

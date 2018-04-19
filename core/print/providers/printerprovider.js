@@ -1,20 +1,13 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const G3WObject = require('core/g3wobject');
-// providers
 
-const PrinterQGISProvider = require('./qgis/printerQGISProvider');
-
-const Providers = {
-  'QGIS': PrinterQGISProvider
-};
-
-function PrinterProvider(options) {
-  options = options || {};
-  const serverType = options.serverType || 'QGIS';
-  this._provider = Providers[serverType];
+function PrinterProvider() {
+  this.getPrintUrl = function(options) {
+    console.log('overwrite')
+  };
   this.print = function(options) {
-    return this._provider.print(options);
+    console.log('overwrite')
   };
   base(this);
 }

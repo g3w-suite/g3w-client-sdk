@@ -1,7 +1,14 @@
+const layout = require('./utils').layout;
 const Control = function(options) {
   const name = options.name || "?";
   this.name = name.split(' ').join('-').toLowerCase();
   this.id = this.name+'_'+(Math.floor(Math.random() * 1000000));
+  /*
+    tl: top-left
+    tr: top-right
+    bl: bottom-left
+    bt: bottom-right
+   */
   this.positionCode = options.position || 'tl';
   this.priority = options.priority || 0;
   if (!options.element) {
@@ -15,7 +22,6 @@ const Control = function(options) {
   $(options.element).on('click',buttonClickHandler);
   ol.control.Control.call(this, options);
   this._postRender();
-
 };
 
 // sotto classse della classe Control di OL3
@@ -28,6 +34,8 @@ proto.getPosition = function(positionCode) {
   const position = {};
   position['top'] = (positionCode.indexOf('t') > -1) ? true : false;
   position['left'] = (positionCode.indexOf('l') > -1) ? true : false;
+  position ['bottom'] = (positionCode.indexOf('b') > -1) ? true : false;
+  position ['right'] = (positionCode.indexOf('r') > -1) ? true : false;
   return position;
 };
 
@@ -60,17 +68,8 @@ proto.shiftPosition = function(position) {
 proto.layout = function(map) {
   if (map) {
     const position =  this.getPosition();
-    const viewPort = map.getViewport();
-    //check if there are element with the same class .ol-control-t o .ol-control-tl(default di ol3)
-    const previusControls = $(viewPort).find('.ol-control-'+this.positionCode+':visible');
-    if (previusControls.length) {
-      previusControl = previusControls.last();
-      const previousOffset = position.left ? previusControl.position().left : previusControl.position().top;
-      const hWhere = position.left ? 'left' : 'top';
-      const previousWidth = previusControl[0].offsetWidth;
-      const hOffset = $(this.element).position()[hWhere] + previousOffset + previousWidth;
-      $(this.element).css(hWhere,hOffset+'px');
-    }
+    const element = $(this.element);
+    layout({map, position, element})
   }
 };
 
@@ -83,33 +82,34 @@ proto.changelayout = function(map) {
   const firtsLeft = firstControl.position().left;
   const firstControlHeightOffset = firstControl[0].offsetHeight;
   const topPosition = previusControls.first().position().top + firstControlHeightOffset + 6; // 6 margin
-  const nextElement = $(this.element).next('.ol-control-'+this.positionCode+':visible');
-  const prevElement = $(this.element).prev('.ol-control-'+this.positionCode+':visible');
+  const element = $(this.element);
+  const nextElement = element.next('.ol-control-'+this.positionCode+':visible');
+  const prevElement = element.prev('.ol-control-'+this.positionCode+':visible');
   // check if left position of the controlis more than dimension of viewport
-  if ($(this.element).position().left + $(this.element).width() > viewPortWidth) {
+  if (element.position().left + element.width() > viewPortWidth) {
     if (nextElement.length && nextElement.position().top  ==  topPosition) {
-      $(this.element).css('left', firtsLeft+'px');
-      const elementWidth = $(this.element)[0].offsetWidth;
-      const hOffset = $(this.element).position().left + elementWidth;
+      element.css('left', firtsLeft+'px');
+      const elementWidth = element[0].offsetWidth;
+      const hOffset = element.position().left + elementWidth;
       nextElement.css('left', hOffset+'px');
-      $(this.element).css('top', topPosition+'px');
+      element.css('top', topPosition+'px');
     } else {
       if (prevElement.position() && (topPosition == prevElement.position().top)) {
         const elementWidth = prevElement[0].offsetWidth;
         const hOffset = prevElement.position().left + elementWidth;
-        $(this.element).css('top', topPosition+'px');
-        $(this.element).css('left', hOffset+'px');
+        element.css('top', topPosition+'px');
+        element.css('left', hOffset+'px');
       } else {
-        $(this.element).css('top', topPosition +'px');
-        $(this.element).css('left', firtsLeft+'px');
+        element.css('top', topPosition +'px');
+        element.css('left', firtsLeft+'px');
       }
     }
   } else {
     // vado a verificare se il controllo successiovo si tova ad un'altezza diversa dal primo controllo
     if (nextElement.length && nextElement.position().top != previusControls.first().position().top) {
-      nextElement.css('top', $(this.element).position().top +'px');
-      const elementWidth = $(this.element)[0].offsetWidth;
-      const hOffset = $(this.element).position().left  + elementWidth;
+      nextElement.css('top', element.position().top +'px');
+      const elementWidth = element[0].offsetWidth;
+      const hOffset = element.position().left  + elementWidth;
       nextElement.css('left', hOffset+'px');
     }
   }

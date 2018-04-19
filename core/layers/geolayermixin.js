@@ -1,5 +1,5 @@
 const Projections = require('g3w-ol3/src/projection/projections');
-const resToScale = require('core/utils/geo').resToScale;
+const resToScale = require('g3w-ol3/src/utils/utils').resToScale;
 function GeoLayerMixin(config) {}
 
 const proto = GeoLayerMixin.prototype;

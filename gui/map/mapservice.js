@@ -3,7 +3,6 @@ const t = require('core/i18n/i18n.service').t;
 const base = require('core/utils/utils').base;
 const G3WObject = require('core/g3wobject');
 const shpToGeojson = require('core/utils/geo').shpToGeojson;
-const resToScale = require('core/utils/geo').resToScale;
 const GUI = require('gui/gui');
 const ApplicationService = require('core/applicationservice');
 const ProjectsRegistry = require('core/project/projectsregistry');
@@ -11,6 +10,7 @@ const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const Filter = require('core/layers/filter/filter');
 const WFSProvider = require('core/layers/providers/wfsprovider');
 const ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
+const resToScale = require('g3w-ol3/src/utils/utils').resToScale;
 const ControlsFactory = require('gui/map/control/factory');
 const StreetViewService = require('gui/streetview/streetviewservice');
 const ControlsRegistry = require('gui/map/control/registry');
@@ -365,11 +365,27 @@ proto.setupControls = function(){
           }
           break;
         case 'mouseposition':
-          control = new ol.control.MousePosition({
+          control = ControlsFactory.create({
+            type: controlType,
             coordinateFormat: ol.coordinate.createStringXY(4),
-            projection: this.getCrs(),
-            className: 'custom-ol-mouse-position',
-            target: 'mouse-position'
+            projection: this.getCrs()
+          });
+          this.addControl(controlType,control);
+          break;
+        case 'scale':
+          const Scales = [
+            1000000,5000000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 2000, 1000
+          ];
+          const currentScale = parseInt(resToScale(this.getResolution()));
+          let scales = Scales.filter((scale) => {
+            return scale < currentScale;
+          });
+          scales.unshift(currentScale);
+          control = ControlsFactory.create({
+            type: controlType,
+            scales,
+            coordinateFormat: ol.coordinate.createStringXY(4),
+            projection: this.getCrs()
           });
           this.addControl(controlType,control);
           break;

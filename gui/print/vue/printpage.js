@@ -12,23 +12,31 @@ const InternalComponent = Vue.extend({
       jpegimageurl: null
     }
   },
-  computed: {},
-  mounted: function() {
-    this.state.loading = true;
-    if (this.state.format == 'jpg') {
-      imageToDataURL({
-        src: this.state.url,
-        callback: (url) => {
-          this.jpegimageurl = url;
-        }
-      })
+  watch: {
+    'state.url': function(url) {
+      if (url) {
+        $('#printpage').load(url, (response, status) => {
+          this.$options.service.stopLoading();
+          if (status === 'error') {
+            this.$options.service.showError();
+          } else {
+            if (this.state.format == 'jpg') {
+              imageToDataURL({
+                src: this.state.url,
+                callback: (url) => {
+                  this.showdownloadbutton = true;
+                  this.jpegimageurl = url;
+                }
+              })
+            }
+          }
+        });
+      }
     }
-    this.$nextTick(() => {
-      $('#printpage').load(() => {
-        this.showdownloadbutton = this.state.format == 'jpg';
-        this.state.loading = false;
-      })
-    });
+  },
+  mounted: function() {
+    this.$options.service.startLoading();
+    this.$nextTick(() => {});
   }
 });
 
@@ -38,10 +46,11 @@ const PrintPage = function(options) {
   const service = options.service;
   // istanzio il componente interno
   this.setService(service);
-  const internalComponent = new InternalComponent();
+  const internalComponent = new InternalComponent({
+    service: service
+  });
   this.setInternalComponent(internalComponent);
   this.internalComponent.state = service.state;
-
   this.unmount = function() {
     this.getService().setPrintAreaAfterCloseContent();
     return base(this, 'unmount')

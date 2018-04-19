@@ -5,6 +5,6 @@ const utils = {
     for (const attrname in obj2) { obj3[attrname] = obj2[attrname]; }
     return obj3;
   }
-}
+};
 
 module.exports = utils;

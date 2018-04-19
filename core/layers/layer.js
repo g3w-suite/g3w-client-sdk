@@ -90,26 +90,7 @@ proto.getDataTable = function({ page, page_size, ordering } = {}) {
   if (!(this.getProvider('filter')  || this.getProvider('data'))){
    d.reject();
   } else {
-    if (this.isFilterable()) {
-      provider = this.getProvider('filter');
-      const filter = new Filter();
-      filter.getAll();
-      provider.query({
-        filter: filter
-      })
-        .done((response) => {
-          const data = provider.digestFeaturesForLayers(response.data);
-          const dataTableObject = {
-            headers: data[0].attributes,
-            features: data[0].features,
-            title: this.getTitle()
-          };
-          d.resolve(dataTableObject)
-        })
-        .fail((err) => {
-          d.reject(err)
-        })
-    } else {
+    if (this.getServerType() == 'QGIS' && [Layer.SourceTypes.POSTGIS,Layer.SourceTypes.SPATIALITE].indexOf(this.config.source.type) != -1) {
       provider = this.getProvider('data');
       provider.getFeatures({
         editing:false
@@ -154,6 +135,27 @@ proto.getDataTable = function({ page, page_size, ordering } = {}) {
         .fail((err) => {
           d.reject(err)
         })
+    } else if (this.isFilterable()) {
+      provider = this.getProvider('filter');
+      const filter = new Filter();
+      filter.getAll();
+      provider.query({
+        filter: filter
+      })
+        .done((response) => {
+          const data = provider.digestFeaturesForLayers(response.data);
+          const dataTableObject = {
+            headers: data[0].attributes,
+            features: data[0].features,
+            title: this.getTitle()
+          };
+          d.resolve(dataTableObject)
+        })
+        .fail((err) => {
+          d.reject(err)
+        })
+    } else {
+      d.reject()
     }
   }
 
@@ -433,7 +435,8 @@ proto.canShowTable = function() {
   } else if (this.getServerType() == 'G3WSUITE') {
       if (this.get('source').type == "geojson")
         return true
-  }
+  } else if (this.isFilterable())
+    return true;
   return false
 };
 

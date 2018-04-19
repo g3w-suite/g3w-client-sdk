@@ -1,12 +1,12 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
-const G3WObject = require('core/g3wobject');
+const PrintProvider = require('../printerprovider');
 const ProjectsRegistry = require('core/project/projectsregistry');
 
 function PrinterQGISProvider() {
   base(this);
 
-  this._getPrintUrl = function(options) {
+  this.getPrintUrl = function(options) {
     options = options || {};
     const layersStore =   ProjectsRegistry.getCurrentProject().getLayersStore();
     const templateMap = options.map || 'map0';
@@ -40,13 +40,13 @@ function PrinterQGISProvider() {
 
   this.print = function(options) {
     options = options || {};
-    return this._getPrintUrl(options);
+    return this.getPrintUrl(options);
   };
 }
 
-inherit(PrinterQGISProvider, G3WObject);
+inherit(PrinterQGISProvider, PrintProvider);
 
-module.exports = new PrinterQGISProvider;
+module.exports = PrinterQGISProvider;
 
 
 /*

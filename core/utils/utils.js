@@ -159,7 +159,6 @@ const utils = {
   },
   imageToDataURL: function({src, type='image/jpeg', callback=()=>{}}) {
     const image = new Image();
-    image.crossOrigin = 'Anonymous';
     image.onload = function() {
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
@@ -171,7 +170,6 @@ const utils = {
     };
     image.src = src;
   },
-
   Base64: Base64
 };
 

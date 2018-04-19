@@ -1,5 +1,4 @@
 <div class="g3w-search-panel form-group">
-  <div v-show="loading" class="bar-loader" style="margin-bottom: 10px; background-color: #ffff;"></div>
   <h4><b>{{ title }}</b></h4>
   <form id="g3w-search-form">
     <template v-for="(forminput, index) in forminputs">
@@ -14,7 +13,10 @@
       <div v-if="forminput.input.type == 'selectfield'" class="form-group text">
         <label :for="forminput.id">{{ forminput.label }}</label>
         <select v-model="formInputValues[index].value" class="form-control" :id="index">
-          <option :value="value" v-for="value in forminput.input.options.values">{{ value }}</option>
+          <option v-if="" :value="value" v-for="value in forminput.input.options.values">
+            <span v-if="value == ''">ALL</span>
+            <span v-else>{{ value }}</span>
+          </option>
         </select>
       </div>
     </template>

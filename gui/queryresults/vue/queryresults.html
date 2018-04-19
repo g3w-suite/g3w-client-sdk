@@ -37,8 +37,8 @@
                     </td>
                   </tr>
                   <tr v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature" class="featurebox-body">
-                    <td :colspan="attributesSubsetLength(layer.attributes)+1+(state.layersactions[layer.id].length ? 1 : 0)">
-                      <table>
+                    <td :colspan="attributesSubsetLength(layer.attributes)+state.layersactions[layer.id].length+(state.layersactions[layer.id].length ? 1 : 0)">
+                      <table class="feature_attributes">
                         <tr v-for="attribute in layer.attributes">
                           <td class="attr-label">{{ attribute.label }}</td>
                           <!--aggiungo un attributo attribute per fare delle selzioni mirate per i plugin</td>-->

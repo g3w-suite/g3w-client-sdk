@@ -1,29 +1,5 @@
 const Geometry = require('core/geometry/geometry');
-
-const OGC_PIXEL_WIDTH = 0.28;
-const OGC_DPI = 25.4/OGC_PIXEL_WIDTH;
-
 module.exports = {
-  resToScale: function(resolution, unit) {
-    unit = unit || 'm';
-    let scale;
-    switch (unit) {
-      case 'm':
-        scale = (resolution*1000) / OGC_PIXEL_WIDTH;
-        break;
-    }
-    return scale;
-  },
-  scaleToRes: function(scale, unit) {
-    unit = unit || 'm';
-    let resolution;
-    switch (unit) {
-      case 'm':
-        resolution = (scale * OGC_PIXEL_WIDTH) / 1000;
-        break
-    }
-    return resolution;
-  },
   coordinatesToGeometry: function(geometryType, coordinates) {
     let geometryClass;
     switch (geometryType) {
