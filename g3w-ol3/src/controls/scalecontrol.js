@@ -50,11 +50,6 @@ proto.layout = function(map) {
     tags: true,
     width: '120px',
     height: '20px',
-    insertTag: function (data, tag) {
-      // Insert the tag at the end of the results
-      console.log(tag)
-      data.push(tag);
-    },
     language: {
       noResults: function (params) {
         return "Scala non valida";
