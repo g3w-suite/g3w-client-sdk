@@ -120,6 +120,11 @@ proto.commit = function(commitItems) {
 // METODS LOADING EDITING FEATURES (READ/WRITE) //
 proto.getFeatures = function(options = {}, params = {}) {
   const d = $.Deferred();
+  // filetr null value
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === null)
+      delete params[key]
+  })
   const layerType = options.type || 'vector'; //layer type
   // check if data are requested in read or write mode;
   let url;

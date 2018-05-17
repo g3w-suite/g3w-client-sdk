@@ -24,11 +24,9 @@ const TableService = function(options = {}) {
 const proto = TableService.prototype;
 
 proto.getHeaders = function(fields) {
-  const headers = [];
-  fields.forEach((field) => {
-    if (['boundedBy', 'geom','the_geom','geometry','bbox', 'GEOMETRY'].indexOf(field.name) == -1)
-      headers.push(field);
-  });
+  const headers = fields.filter((field) => {
+    return  ['boundedBy', 'geom','the_geom','geometry','bbox', 'GEOMETRY'].indexOf(field.name) == -1
+  })
   return headers;
 };
 
@@ -46,8 +44,9 @@ proto.setDataForDataTable = function() {
   return data;
 };
 
-proto.getData = function({start = 0, order = [], length = this.state.pageLengths[0]} = {}) {
+proto.getData = function({start = 0, order = [], length = this.state.pageLengths[0], search={value:null}} = {}) {
   // reset features before load
+  let searchText = search.value && search.value.length > 0 ? search.value : null
   this.state.features.splice(0, this.state.features.length);
   if (!order.length) {
     order.push({
@@ -61,6 +60,7 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
   this.layer.getDataTable({
     page: this.currentPage,
     page_size: length,
+    search: searchText,
     ordering
   }).then((data) => {
       let features = data.features;

@@ -49,12 +49,11 @@
       this.$nextTick(() => {
         if (this.state.pagination) {
           //pagination
-          this.table = $('#open_attribute_table table').DataTable({
+          const table = $('#open_attribute_table table').DataTable({
             "lengthMenu": this.state.pageLengths,
             "scrollX": true,
             "scrollCollapse": true,
             "order": [ 0, 'asc' ],
-            "searching": false,
             "columns": this.state.headers,
             "ajax": (data, callback) => {
               this.$options.service.getData(data)
@@ -72,7 +71,7 @@
           });
         } else {
           // no pagination all data
-          this.table = $('#open_attribute_table table').DataTable({
+          const table = $('#open_attribute_table table').DataTable({
             "lengthMenu": this.state.pageLengths,
             "scrollX": true,
             "scrollCollapse": true,

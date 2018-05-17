@@ -4,7 +4,6 @@ const PrintService = require('gui/print/printservice');
 const base = require('core/utils/utils').base;
 const t = require('core/i18n/i18n.service').t;
 
-
 const vueComponentOptions = {
   template: require('./print.html'),
   data: function() {
@@ -78,7 +77,6 @@ function PrintComponent(options) {
   this._setOpen = function(bool) {
     this._service.showPrintArea(bool);
   };
-
 }
 
 inherit(PrintComponent, Component);

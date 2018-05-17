@@ -84,7 +84,7 @@ inherit(Layer, G3WObject);
 
 const proto = Layer.prototype;
 
-proto.getDataTable = function({ page, page_size, ordering } = {}) {
+proto.getDataTable = function({ page, page_size, ordering, search } = {}) {
   const d = $.Deferred();
   let provider;
   if (!(this.getProvider('filter')  || this.getProvider('data'))){
@@ -97,7 +97,8 @@ proto.getDataTable = function({ page, page_size, ordering } = {}) {
         }, {
           page,
           page_size,
-          ordering
+          ordering,
+          search
         }
       ).done((response) => {
           let pkProperties;

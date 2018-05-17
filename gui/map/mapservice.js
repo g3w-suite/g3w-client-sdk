@@ -1527,8 +1527,17 @@ proto.addExternalLayer = function(externalLayer) {
 
   if (!layer) {
     if (layer_epsg != this.getCrs()) {
-      if (layer_epsg == 'EPSG:3003')
-        Projections.get("EPSG:3003", "+proj=tmerc +lat_0=0 +lon_0=9 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +units=m +no_defs");
+      switch (layer_epsg) {
+        case 'EPSG:3003':
+          Projections.get("EPSG:3003", "+proj=tmerc +lat_0=0 +lon_0=9 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +units=m +no_defs");
+          break;
+        case 'EPSG:3045':
+          Projections.get("EPSG:3045", "+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
+          break;
+        case 'EPSG:6708':
+          Projections.get("EPSG:6708", "+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
+          break;
+      }
     }
     switch (type) {
       case 'geojson':

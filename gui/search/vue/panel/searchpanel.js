@@ -75,7 +75,7 @@ const SearchPanelComponet = Vue.extend({
       this.$on('select-change', (options) => {
         this.formInputValues[options.index].value = options.value;
       });
-      $('#g3w-search-form select').select2({
+      $('#g3w-search-form > select').select2({
         width: '100%',
         matcher: matchCustom,
         "language": {

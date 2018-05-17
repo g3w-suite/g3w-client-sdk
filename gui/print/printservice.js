@@ -103,6 +103,7 @@ function PrintComponentService() {
     this._map.on('postrender', () => {
       this._setPrintArea()
     })
+    this.stopLoading()
   };
 
   this.print = function() {
