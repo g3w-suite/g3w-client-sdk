@@ -1,5 +1,5 @@
 <template>
-  <div id="open_attribute_table" class="">
+  <div id="open_attribute_table">
     <b style="color:#3f8dbc; margin-bottom:3px;">{{ state.title }}</b>
     <table id="layer_attribute_table" class="table table-striped" style="width:100%">
       <thead>

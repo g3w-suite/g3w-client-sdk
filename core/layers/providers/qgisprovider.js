@@ -8,6 +8,10 @@ function QGISProvider(options = {}) {
   base(this);
   this._name = 'qgis';
   this._layer = options.layer || null;
+  this._projections = {
+    map: null,
+    layer: null
+  };
   this._unlockUrl = this._layer.getUrl('unlock');
   // url referred to query
   this._queryUrl = this._layer.getUrl('query');
@@ -28,12 +32,18 @@ inherit(QGISProvider, DataProvider);
 const proto = QGISProvider.prototype;
 
 //query by filter
-proto.query = function(options) {
+proto.query = function(options = {}) {
   const d = $.Deferred();
-  options = options || {};
   const filter = options.filter || null;
+  const layerProjection = this._layer.getProjection();
+  this._projections.map = this._layer.getMapProjection() || layerProjection;
   const queryUrl = options.queryUrl || this._queryUrl;
   if (filter) {
+    // check if geomemtry filter. If not i have to remove projection layer
+    if (filter.getType() == 'geometry')
+      this._projections.layer = layerProjection;
+    else
+      this._projections.layer = null;
     const url = queryUrl ;
       $.get( url, {
           SERVICE: 'WMS',
@@ -46,7 +56,7 @@ proto.query = function(options) {
           FILTER: filter.get()
         }
       ).then((response) => {
-          const featuresForLayers = this.handleQueryResponseFromServer(this._layerName, response);
+          const featuresForLayers = this.handleQueryResponseFromServer(this._layerName, response, this._projections);
           d.resolve(featuresForLayers);
         })
         .fail(() => {

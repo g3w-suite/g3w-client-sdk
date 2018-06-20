@@ -25,7 +25,11 @@ proto.query = function(options={}, params = {}) {
   const d = $.Deferred();
   this._doRequest(filter, params)
     .then((response) => {
-      const featuresForLayers = this.handleQueryResponseFromServer(this._layerName, response);
+      const projections = {
+        map: this._layer.getMapProjection(),
+        layer: this._layer.getProjection()
+      };
+      const featuresForLayers = this.handleQueryResponseFromServer(this._layerName, response, projections);
       d.resolve({
         data: featuresForLayers
       });
@@ -38,10 +42,7 @@ proto.query = function(options={}, params = {}) {
 
 proto._post = function(url, params) {
   url = url + '/';
-  const urlParams = $.param(params);
-  url = url + '?' + urlParams;
   return  $.post(url, params)
-
 };
 
 // get request
@@ -57,7 +58,6 @@ proto._doRequest = function(filter, params = {}) {
   filter = filter || new Filter();
   const layer = this._layer;
   const url = layer.getQueryUrl();
-  const crs = layer.getProjection().getCode();
   const infoFormat = layer.getInfoFormat();
 
   params = Object.assign(params, {
@@ -66,7 +66,7 @@ proto._doRequest = function(filter, params = {}) {
     REQUEST: 'GetFeature',
     TYPENAME: this._layerName,
     OUTPUTFORMAT: infoFormat,
-    SRSNAME:  crs
+    SRSNAME: layer.getProjection().getCode()
   });
   if (filter) {
     const filterType = filter.getType();

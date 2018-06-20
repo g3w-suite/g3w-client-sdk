@@ -19,32 +19,12 @@ const ControlsFactory = {
   create: function(options) {
     let control;
     const ControlClass = ControlsFactory.CONTROLS[options.type];
-    const layers = options.layers; //check if there arae layers to enable control
+    //const layers = options.layers; //check if there are layers to enable control
     if (ControlClass) {
       control = new ControlClass(options);
     }
-    // in case of layers
-    if (layers && control instanceof Control) {
-      if (!layers.length) {
-        return null
-      }
-      const controlGeometryTypes = control.getGeometryTypes();
-
-      let visible = (controlGeometryTypes.length) ? false : true;
-      _.forEach(layers, (layer) => {
-        if (controlGeometryTypes.indexOf(layer.getGeometryType()) > -1) {
-          visible = true;
-          return false;
-        }
-      });
-      if (visible) {
-        return control;
-      } else {
-        return null;
-      }
-    } else {
-      return control;
-    }
+    const visible = (control instanceof Control && control.isVisible) ? control.isVisible() : true;
+    return visible ? control: null
   }
 };
 

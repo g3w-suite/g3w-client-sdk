@@ -1,17 +1,19 @@
 const utils = require('../utils');
 const InteractionControl = require('./interactioncontrol');
 
-var QueryBBoxControl = function(options = {}){
+const QueryBBoxControl = function(options = {}){
   this._startCoordinate = null;
   const _options = {
     name: "querybbox",
     tipLabel: "Query BBox layer",
     label: "\ue902",
     interactionClass: ol.interaction.DragBox,
-    help: '<h4>Guida - Query BBox layer</h4><ul><li>Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li></ul>'
+    onhover: true
   };
   options = utils.merge(options,_options);
-  InteractionControl.call(this,options);
+  const layers = options.layers || [];
+  options.visible = !!layers.length;
+  InteractionControl.call(this, options);
 };
 
 ol.inherits(QueryBBoxControl, InteractionControl);

@@ -23,6 +23,10 @@ const TableComponent = function(options = {}) {
   this.setInternalComponent(internalComponent);
   internalComponent.state = service.state;
 
+  this.unmount = function() {
+    return base(this, 'unmount')
+  };
+
   this.layout = function() {
     internalComponent.$nextTick(() => {
       const tableHeight = $(".content").height();

@@ -1,11 +1,12 @@
 const Control = require('./control');
 
 const InteractionControl = function(options) {
+  this._visible = options.visible === false ? false : true;
   this._toggled = this._toggled || false;
   this._interactionClass = options.interactionClass || null;
   this._interaction = null;
   this._autountoggle = options.autountoggle || false;
-  this._geometryTypes = options.geometryTypes || []; // array of types gemetries
+  this._geometryTypes = options.geometryTypes || []; // array of types geometries
   this._onSelectLayer = options.onselectlayer || false;
   this._enabled = (options.enabled === false) ? false : true;
   this._onhover = options.onhover || false;
@@ -29,6 +30,14 @@ proto._clearModalHelp = function(id) {
   });
 };
 
+proto.isVisible = function() {
+  return this._visible
+};
+
+proto.setVisible = function(bool) {
+  this._visible = bool;
+};
+
 //shwo help message
 proto._showModalHelp = function() {
   const previousToastPositionClass = toastr.options.positionClass;
@@ -48,16 +57,20 @@ proto._showModalHelp = function() {
 
 // create modal help
 proto._createModalHelp = function() {
-  const id = "close_button"+Math.floor(Math.random()*1000000)+""+Date.now();
-  this._help += '<label for="'+id+'" style="float:right">Non mostrare più</label><input type="checkbox" id="'+id+'" class="pull-right"/>';
   if (this._onhover) {
     $(this.element).on('mouseenter', () => {
-      if (!this._enabled) {
+      if (this._help && !this._enabled) {
+        let id;
+        $(this._help).each((idx, ele) => {
+          const element = $(ele);
+          if (element.is('input[type=checkbox]'))
+            id = element.attr('id');
+        });
+        this._clearModalHelp(id);
         this._showModalHelp();
       }
     });
   }
-  this._clearModalHelp(id);
 };
 
 proto.getGeometryTypes = function() {

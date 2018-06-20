@@ -221,11 +221,9 @@ proto.getLayersDict = function(options) {
 
   // return only not selected
   if (filterAllNotSelected) {
-    let _layers = layers;
-    layers = _.filter(layers,function(layer){
+    layers = layers.filter((layer) => {
       return !layer.isSelected();
     });
-    layers = layers.length ? layers : _layers;
   }
   return layers;
 };

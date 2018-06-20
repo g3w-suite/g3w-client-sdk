@@ -225,7 +225,7 @@ const vueComponentOptions = {
 
     });
 
-    CatalogEventHub.$on('treenodeselected',function(storeid,node) {
+    CatalogEventHub.$on('treenodeselected',function(storeid, node) {
       const mapservice = GUI.getComponent('map').getService();
       let layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(node.id);
       if (!layer.isSelected()) {
@@ -363,7 +363,7 @@ Vue.component('tristate-tree', {
         if (layer)
           return true;
       });
-      return this.highlightlayers && layer && layer.isFilterable() && layer.getProject() && layer.getProject().getProjection() == layer.getProjection();
+      return this.highlightlayers && layer && layer.isFilterable() && layer.getProject();
     }
   },
   methods: {
@@ -422,7 +422,7 @@ Vue.component('tristate-tree', {
     },
     select: function () {
       if (!this.isFolder && !this.layerstree.external && !this.isTable) {
-        CatalogEventHub.$emit('treenodeselected',this.storeid,this.layerstree);
+        CatalogEventHub.$emit('treenodeselected',this.storeid, this.layerstree);
       }
     },
     triClass: function () {

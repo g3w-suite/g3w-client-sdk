@@ -115,7 +115,7 @@ proto._buildLayersStore = function() {
   const layers = this.getLayers();
   layers.forEach((layerConfig) => {
     // add projection
-    layerConfig.projection = layerConfig.crs ? Projections.get(layerConfig.crs) : this._projection;
+    layerConfig.projection = layerConfig.crs ? Projections.get(layerConfig.crs, layerConfig.proj4) : this._projection;
     const layer = LayerFactory.build(layerConfig, {
       project: this
     });

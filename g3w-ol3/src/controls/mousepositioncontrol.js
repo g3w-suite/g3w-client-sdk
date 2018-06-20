@@ -1,18 +1,27 @@
 const layout = require('./utils').layout;
+const changeLayout = require('./utils').changeLayoutBottomControl;
 const MousePositionControl = function(options= {}) {
   this.position = options.position || {
     bottom: true,
     right: true
   };
-
   ol.control.MousePosition.call(this, options);
-
 };
 
 ol.inherits(MousePositionControl, ol.control.MousePosition);
 
 module.exports = MousePositionControl;
 const proto = MousePositionControl.prototype;
+
+proto.changelayout = function(map) {
+  const position = this.position;
+  const element = $(this.element);
+  changeLayout({
+    map,
+    position,
+    element
+  });
+};
 
 proto.layout = function(map) {
   const position = this.position;

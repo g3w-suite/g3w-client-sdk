@@ -5,6 +5,7 @@ function GeoLayerMixin(config) {}
 const proto = GeoLayerMixin.prototype;
 
 proto.setup = function(config) {
+
   if (!this.config) {
     console.log("GeoLayerMixin must be used from a valid (geo) Layer instance");
     return;
@@ -24,15 +25,10 @@ proto.setup = function(config) {
     exclude_from_legend: (typeof config.exclude_from_legend == 'boolean') ? config.exclude_from_legend : true
   });
   if (config.projection) {
-    this.config.projection = config.projection;
-  } else if (config.crs) {
-    if (config.project) {
-      if (config.project.getProjection().getCode() != config.crs) {
-        this.config.projection = Projections.get(config.crs,config.proj4);
-      } else {
-        this.config.projection = config.project.getProjection();
-      }
-    }
+    if (config.projection.getCode() == config.crs)
+      this.config.projection = config.projection;
+    else
+      this.config.projection = Projections.get(config.crs,config.proj4);
   } else if (config.attributions) {
     this.config.attributions = config.attributions;
   }
@@ -105,5 +101,13 @@ proto.hasAxisInverted = function() {
 proto.getMapLayer = function() {
   console.log('overwrite by single layer')
 };
+
+proto.setMapProjection = function(mapProjection) {
+  this._mapProjection = mapProjection;
+};
+
+proto.getMapProjection = function() {
+  return this._mapProjection;
+}
 
 module.exports = GeoLayerMixin;

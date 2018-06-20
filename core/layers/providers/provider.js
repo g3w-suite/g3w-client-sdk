@@ -52,7 +52,6 @@ proto.getName = function() {
 
 // to extract gml from multiple (Tuscany region)
 proto.extractGML = function (response) {
-
   if (response.substr(0,2) != '--') {
     return response;
   }
@@ -70,7 +69,7 @@ proto.extractGML = function (response) {
 };
 
 // Method to transform xml from server to present to queryreult component
-proto.handleQueryResponseFromServer = function(layerName, response, projection) {
+proto.handleQueryResponseFromServer = function(layerName, response, projections) {
   let _fakeLayerName = 'layer';
   let parser;
   this._layer.getInfoFormat();
@@ -115,8 +114,7 @@ proto.handleQueryResponseFromServer = function(layerName, response, projection) 
         case 'FeatureCollection':
           parser = this._parseLayerFeatureCollection;
           data = jsonresponse;
-          const invertedAxis = this._layer.hasAxisInverted();
-          features = parser.call(this, data, _fakeLayerName, invertedAxis);
+          features = parser.call(this, data, _fakeLayerName, projections);
           break;
         case "msGMLOutput":
           const layers = this._layer.getQueryLayerOrigName();
@@ -220,7 +218,7 @@ proto._parseAttributes = function(layerAttributes, featureAttributes) {
   }
 };
 
-proto._parseLayerFeatureCollection = function(data, layerName, invertedAxis) {
+proto._parseLayerFeatureCollection = function(data, layerName, projections) {
   const layerData = _.cloneDeep(data);
   layerData.FeatureCollection.featureMember = [];
   let featureMembers = data.FeatureCollection.featureMember;
@@ -234,11 +232,19 @@ proto._parseLayerFeatureCollection = function(data, layerName, invertedAxis) {
   const x2js = new X2JS();
   let layerFeatureCollectionXML = x2js.json2xml_str(layerData);
   const parser = new ol.format.WMSGetFeatureInfo();
-
+  const mainProjection = projections.layer ? projections.layer : projections.map;
+  let invertedAxis = mainProjection.getAxisOrientation().substr(0,2) == 'ne';
   let features = parser.readFeatures(layerFeatureCollectionXML);
-  if (invertedAxis && features.length && !!features[0].getGeometry()) {
-    features = this._reverseFeaturesCoordinates(features)
+  if (features.length && !!features[0].getGeometry()) {
+    if (projections.layer && (projections.layer.getCode() !== projections.map.getCode())) {
+      features.forEach((feature) => {
+        const geometry = feature.getGeometry();
+        feature.setGeometry(geometry.transform(projections.layer.getCode(), projections.map.getCode()))
+      })
+    }
   }
+  if (invertedAxis)
+    features = this._reverseFeaturesCoordinates(features)
   return features
 };
 

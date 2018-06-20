@@ -26,7 +26,8 @@ module.exports = {
       default:
         geometryClass = ol.geom.Point;
     }
-    return new geometryClass(coordinates);
+    const geometry = new geometryClass(coordinates);
+    return geometry
   },
   shpToGeojson: function(config, returnData) {
     const inputData = {};

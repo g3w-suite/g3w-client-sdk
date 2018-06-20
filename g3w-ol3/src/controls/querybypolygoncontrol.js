@@ -2,19 +2,33 @@ const utils = require('../utils');
 const InteractionControl = require('./interactioncontrol');
 const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
 
-const QueryByPolygonControl = function(options){
+const QueryByPolygonControl = function(options = {}) {
   const _options = {
     name: "querybypolygon",
     tipLabel: "Query By Polygon",
     label: "\ue903",
-    geometryTypes: ['Polygon', 'MultiPolygon'],
     onselectlayer: true,
     interactionClass: PickCoordinatesInteraction,
-    help: '<h4>Guida - Query By Polygon</h4><ul><li>Seleziona uno strato poligonale</li><li>Clicca su una feature dello strato selezionato per lanciare la selezione</li></ul>',
     onhover: true
   };
   options = utils.merge(options,_options);
-  InteractionControl.call(this,options);
+  const layers = options.layers || [];
+  if (!layers.length || layers.length == 1) {
+      options.visible = false
+  } else {
+    // geometryes to check
+    const geometryTypes = options.geometryTypes = ['Polygon', 'MultiPolygon'];
+    // gell all layer that have the geometries above
+    const mainQueryLayers = layers.filter((layer) => {
+      return geometryTypes.indexOf(layer.getGeometryType()) > -1
+    });
+    // get all layers that haven't the geometries above na dare filterable
+    const layersToQuery = layers.filter((layer) => {
+      return geometryTypes.indexOf(layer.getGeometryType()) == -1 && layer.isFilterable()
+    });
+    options.visible = (mainQueryLayers.length > 1) || !!(mainQueryLayers.length && layersToQuery.length);
+  }
+  InteractionControl.call(this, options);
 };
 
 ol.inherits(QueryByPolygonControl, InteractionControl);
@@ -23,10 +37,6 @@ const proto = QueryByPolygonControl.prototype;
 
 proto.setMap = function(map) {
   InteractionControl.prototype.setMap.call(this,map);
-  this._interaction.on('boxstart',(e) =>{
-    this._startCoordinate = e.coordinate;
-  });
-
   this._interaction.on('picked',(e) => {
     this.dispatchEvent({
       type: 'picked',

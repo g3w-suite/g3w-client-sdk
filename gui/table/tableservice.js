@@ -105,8 +105,9 @@ proto._returnGeometry = function(feature) {
   let geometry;
   if (feature.attributes) {
     geometry = feature.geometry;
-  } else if (feature.geometry)
-      geometry = coordinatesToGeometry(feature.geometry.type, feature.geometry.coordinates);
+  } else if (feature.geometry) {
+    geometry = coordinatesToGeometry(feature.geometry.type, feature.geometry.coordinates);
+  }
   return geometry;
 };
 
@@ -128,9 +129,6 @@ proto.zoomAndHighLightSelectedFeature = function(feature, zoom=true) {
   let geometry = feature.geometry;
   if (geometry) {
     const mapService = GUI.getComponent('map').getService();
-    const mapProjectionCode = mapService.getProjection().getCode();
-    const layerProjectionCode = this.projection.getCode();
-    geometry = geometry.clone().transform(layerProjectionCode, mapProjectionCode);
     mapService.highlightGeometry(geometry , {
       zoom
     });

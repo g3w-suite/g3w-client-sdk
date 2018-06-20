@@ -85,7 +85,7 @@ proto.changelayout = function(map) {
   const element = $(this.element);
   const nextElement = element.next('.ol-control-'+this.positionCode+':visible');
   const prevElement = element.prev('.ol-control-'+this.positionCode+':visible');
-  // check if left position of the controlis more than dimension of viewport
+  // check if left position of the controls more than dimension of viewport
   if (element.position().left + element.width() > viewPortWidth) {
     if (nextElement.length && nextElement.position().top  ==  topPosition) {
       element.css('left', firtsLeft+'px');
@@ -105,7 +105,6 @@ proto.changelayout = function(map) {
       }
     }
   } else {
-    // vado a verificare se il controllo successiovo si tova ad un'altezza diversa dal primo controllo
     if (nextElement.length && nextElement.position().top != previusControls.first().position().top) {
       nextElement.css('top', element.position().top +'px');
       const elementWidth = element[0].offsetWidth;

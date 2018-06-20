@@ -5,7 +5,7 @@ const Projection = function(options) {
     return null;
   }
   if (options.proj4def) {
-    proj4.defs(options.crs,options.proj4def);
+    proj4.defs(options.crs, options.proj4def);
   }
   // riespongo axisOrientation_ perché in OL è prinvata
   this._axisOrientation = options.axisOrientation ? options.axisOrientation : 'enu';

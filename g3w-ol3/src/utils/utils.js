@@ -21,6 +21,7 @@ const utils = {
     const y1 = y - xSin + yCos;
     const y2 = y + xSin + yCos;
     const y3 = y + xSin - yCos;
+    //return [Math.min(y0, y1, y2, y3),Math.min(x0, x1, x2, x3), Math.max(y0, y1, y2, y3), Math.max(x0, x1, x2, x3)]
     return [Math.min(x0, x1, x2, x3), Math.min(y0, y1, y2, y3), Math.max(x0, x1, x2, x3), Math.max(y0, y1, y2, y3)]
   },
   // function that create a polygon vector layer from bbox

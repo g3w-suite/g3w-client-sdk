@@ -36,9 +36,13 @@ proto.unmount = function() {
   if (_.isNil(this.internalComponent)) {
     return resolve();
   }
+  // destroy vue component
   this.internalComponent.$destroy(true);
+  // remove dom element
   $(this.internalComponent.$el).remove();
+  // set internal componet to null (for GC)
   this.internalComponent = null;
+  // resolve
   return resolve();
 };
 proto.ismount = function() {

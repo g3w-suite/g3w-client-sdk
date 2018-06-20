@@ -13,6 +13,10 @@ function WMSDataProvider(options) {
   base(this, options);
   this._name = 'wms';
   this._url = this._layer.getQueryUrl();
+  this._projections = {
+    map: null,
+    layer: null
+  };
   this._layerName = this._layer.getName() || null;
   this._infoFormat = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
 }
@@ -22,16 +26,16 @@ inherit(WMSDataProvider, DataProvider);
 const proto = WMSDataProvider.prototype;
 
 
-proto._getRequestUrl = function(url, extent, size, pixelRatio, projection, params) {
+proto._getRequestUrl = function(url, extent, size, pixelRatio, params) {
   let bbox;
-  params['CRS'] = projection.getCode();
   if (!('STYLES' in params)) {
     params['STYLES'] = '';
   }
   params['DPI'] = 90 * pixelRatio;
   params['WIDTH'] = size[0];
   params['HEIGHT'] = size[1];
-  if (this._layer.hasAxisInverted()) {
+
+  if (this._projections.map.getAxisOrientation().substr(0, 2) == 'ne') {
     bbox = [extent[1], extent[0], extent[3], extent[2]];
   } else {
     bbox = extent;
@@ -50,20 +54,20 @@ proto._getGetFeatureInfoUrlForLayer = function(url, coordinates,resolution, para
     'REQUEST': 'GetFeatureInfo',
     'QUERY_LAYERS': this._layerName
   };
-
   _.merge(baseParams, params);
-
   const x = Math.floor((coordinates[0] - extent[0]) / resolution);
   const y = Math.floor((extent[3] - coordinates[1]) / resolution);
   baseParams[ 'I' ] = x;
   baseParams['J'] = y;
   return this._getRequestUrl(
     url, extent, GETFEATUREINFO_IMAGE_SIZE,
-    1, this._layer.getProjection(), baseParams);
+    1, baseParams);
 };
 
 proto.query = function(options = {}) {
   const d = $.Deferred();
+  const layerProjection = this._layer.getProjection();
+  this._projections.map = this._layer.getMapProjection() || layerProjection;
   const coordinates = options.coordinates || [];
   const resolution = options.resolution || null;
   let url = this._url;
@@ -78,6 +82,7 @@ proto.query = function(options = {}) {
     }
   }
   const params = {
+    CRS: this._projections.map.getCode(),
     LAYERS: this._layerName,
     QUERY_LAYERS: this._layerName,
     INFO_FORMAT: this._infoFormat,
@@ -124,7 +129,7 @@ proto.doRequestAndParse = function(url) {
   const d = $.Deferred();
   $.get(url)
     .then((response) => {
-      const featuresForLayers = this.handleQueryResponseFromServer(this._layerName, response);
+      const featuresForLayers = this.handleQueryResponseFromServer(this._layerName, response, this._projections);
       d.resolve(featuresForLayers);
     })
     .fail(() => {

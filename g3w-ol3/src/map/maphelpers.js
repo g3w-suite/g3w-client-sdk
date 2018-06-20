@@ -7,19 +7,17 @@ const MapHelpers = {
 };
 
 const _Viewer = function(opts) {
-  const attribution = new ol.control.Attribution({
-    collapsible: false
-  });
+
   const controls = ol.control.defaults({
     attribution: false,
     zoom: false
-  }).extend([attribution]);
+  })
 
   const interactions = ol.interaction.defaults()
     .extend([
       new ol.interaction.DragRotate()
     ]);
-  interactions.removeAt(1);// rimuovo douclickzoom
+  interactions.removeAt(1);// remove douclickzoom
 
   let view;
   if (opts.view instanceof ol.View) {

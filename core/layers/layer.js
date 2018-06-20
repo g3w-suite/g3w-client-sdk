@@ -123,7 +123,8 @@ proto.getDataTable = function({ page, page_size, ordering, search } = {}) {
           } else {
             pkProperties = this.getFields().find((field) => response.pk == field.name);
             features = data.features;
-            headers = [pkProperties].concat(provider._parseAttributes(this.getAttributes(), data.features[0].properties));
+            headers = features.length ? features[0].properties : [];
+            headers = [pkProperties].concat(provider._parseAttributes(this.getAttributes(), headers ));
           }
           const dataTableObject = {
             headers,

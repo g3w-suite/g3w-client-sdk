@@ -11,6 +11,7 @@ const Filter = require('core/layers/filter/filter');
 const WFSProvider = require('core/layers/providers/wfsprovider');
 const ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 const resToScale = require('g3w-ol3/src/utils/utils').resToScale;
+const reverseGeometry = require('g3w-ol3/src/utils/utils').reverseGeometry;
 const ControlsFactory = require('gui/map/control/factory');
 const StreetViewService = require('gui/streetview/streetviewservice');
 const ControlsRegistry = require('gui/map/control/registry');
@@ -106,8 +107,8 @@ function MapService(options) {
       this.state.bbox = this.viewer.getBBOX();
       this.state.resolution = this.viewer.getResolution();
       this.state.center = this.viewer.getCenter();
-      this.setupControls();
       this._setupLayers();
+      this.setupControls();
       this.emit('viewerset');
     },
     controlClick: function() {}
@@ -165,6 +166,17 @@ function MapService(options) {
 inherit(MapService, G3WObject);
 
 const proto = MapService.prototype;
+
+proto.getApplicationAttribution = function() {
+  const {header_terms_of_use_link, header_terms_of_use_text} = this.config.group
+  if (header_terms_of_use_text) {
+    return  new ol.Attribution({
+      html: `<a href="${header_terms_of_use_link}">${header_terms_of_use_text}</a>`
+    })
+  } else {
+    return false
+  }
+};
 
 proto.slaveOf = function(mapService, sameLayers) {
   sameLayers = sameLayers || false;
@@ -300,28 +312,34 @@ proto.getVectorLayerFeaturesFromCoordinates = function(layerId, coordinates) {
 
 proto.getQueryLayersPromisesByCoordinates = function(layerFilterObject, coordinates) {
   const layers = this.getLayers(layerFilterObject);
-  let queryPromises = [];
+  const queryPromises = [];
+  const mapProjection = this.getProjection();
+  const resolution = this.getResolution();
   layers.forEach((layer) => {
     queryPromises.push(layer.query({
-      coordinates: coordinates,
-      resolution: this.getResolution()
+      coordinates,
+      mapProjection,
+      resolution
     }))
   });
   return queryPromises;
 };
 
-proto.getQueryLayersPromisesByFilter = function(layerFilterObject, filter) {
-  const layers = this.getLayers(layerFilterObject);
-  let queryPromises = [];
-  layers.forEach((layer) => {
-    queryPromises.push(layer.query({
-      filter: filter
-    }))
+//setup controls
+proto.setupControls = function() {
+  const baseLayers = this.getLayers({
+    BASELAYER: true
   });
-  return queryPromises;
-};
-
-proto.setupControls = function(){
+  this.getMapLayers().forEach((mapLayer) => {
+    mapLayer.getSource().setAttributions(this.getApplicationAttribution())
+  });
+  // check if base layer is set. If true add attribution control
+  if (this.getApplicationAttribution() || baseLayers.length) {
+    const attributionControl =  new ol.control.Attribution({
+      collapsible: false
+    });
+    this.getMap().addControl(attributionControl);
+  }
   if (this.config && this.config.mapcontrols) {
     const mapcontrols = this.config.mapcontrols;
     mapcontrols.forEach((controlType) => {
@@ -365,9 +383,12 @@ proto.setupControls = function(){
           }
           break;
         case 'mouseposition':
+          const coordinateLabels = this.getProjection().getUnits() === 'm' ? ['X', 'Y'] : ['Lng', 'Lat'];
           control = ControlsFactory.create({
             type: controlType,
-            coordinateFormat: ol.coordinate.createStringXY(4),
+            coordinateFormat: (coordinate) => {
+              return ol.coordinate.format(coordinate, `${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}`, 4);
+            },
             projection: this.getCrs()
           });
           this.addControl(controlType,control);
@@ -389,6 +410,7 @@ proto.setupControls = function(){
           });
           this.addControl(controlType,control);
           break;
+        // single query control
         case 'query':
           control = ControlsFactory.create({
             type: controlType
@@ -436,7 +458,8 @@ proto.setupControls = function(){
           });
           control = ControlsFactory.create({
             type: controlType,
-            layers: controlLayers
+            layers: controlLayers,
+            help: t("mapcontrols.querybypolygon.help")
           });
           if (control) {
             const showQueryResults = GUI.showContentFactory('query');
@@ -454,7 +477,7 @@ proto.setupControls = function(){
               $.when.apply(this, queryPromises)
                 .then((...args) => {
                   let layersResults = args;
-                  let queryPromises = [];
+                  const queryPromises = [];
                   results = {};
                   // unify results of the promises
                   results.query = layersResults[0] ? layersResults[0].query: null;
@@ -462,13 +485,23 @@ proto.setupControls = function(){
                     geometry = layersResults[0].data[0].features[0].getGeometry();
                     if (geometry) {
                       let filter = new Filter();
-                      filter.setGeometry(geometry);
-                      let layersFilterObject = {
+                      let layerFilterObject = {
                         ALLNOTSELECTED: true,
                         FILTERABLE: true,
                         VISIBLE: true
                       };
-                      queryPromises = this.getQueryLayersPromisesByFilter(layersFilterObject, filter);
+                      const layers = this.getLayers(layerFilterObject);
+                      const mapCrs = this.getCrs();
+                      let filterGeometry = geometry;
+                      layers.forEach((layer) => {
+                        const layerCrs = layer.getProjection().getCode();
+                        if (mapCrs != layerCrs)
+                          filterGeometry = geometry.clone().transform(mapCrs, layerCrs);
+                        filter.setGeometry(filterGeometry);
+                        queryPromises.push(layer.query({
+                          filter
+                        }))
+                      });
                       this.highlightGeometry(geometry);
                     }
                     const queryResultsPanel = showQueryResults('');
@@ -510,11 +543,13 @@ proto.setupControls = function(){
             });
             control = ControlsFactory.create({
               type: controlType,
-              layers: controlLayers
+              layers: controlLayers,
+              help: t("mapcontrols.querybybbox.help")
             });
             if (control) {
               control.on('bboxend', (e) => {
-                const bbox = e.extent;
+                let bbox = e.extent;
+                let filterBBox = bbox;
                 const center = ol.extent.getCenter(bbox);
                 this.getMap().getView().setCenter(center);
                 const layers = this.getLayers({
@@ -525,7 +560,13 @@ proto.setupControls = function(){
                 let queryPromises = [];
                 layers.forEach((layer) => {
                   const filter = new Filter();
-                  filter.setBBOX(bbox);
+                  const mapCrs = this.getCrs();
+                  const layerCrs = layer.getProjection().getCode();
+                  if (mapCrs != layerCrs) {
+                   const geometry = ol.geom.Polygon.fromExtent(bbox);
+                    filterBBox = geometry.transform(mapCrs, layerCrs).getExtent();
+                  }
+                  filter.setBBOX(filterBBox);
                   queryPromises.push(layer.query({
                     filter: filter
                   }))
@@ -711,11 +752,7 @@ proto.filterableLayersAvailable = function() {
     SELECTEDORALL: true
   });
   return layers.some((layer) => {
-    // case filter of WFS check if layer has the same projection of map, QGIS server doesn't support reprojection in WFS
-    if (layer.getProvider('filter') instanceof WFSProvider) {
-      return layer.getProjection().getCode() == this.project.getLayersStore().getProjection().getCode();
-    }
-    return true;
+    return layer.getProvider('filter') instanceof WFSProvider;
   });
 };
 
@@ -829,7 +866,7 @@ proto.getBaseLayers = function() {
 };
 
 proto.getMapLayerForLayer = function(layer) {
-  let mapLayer;
+  let mapLayer = null;
   const multilayerId = 'layer_'+layer.getMultiLayerId();
   const mapLayers = this.getMapLayers();
   mapLayers.find((_mapLayer) => {
@@ -883,15 +920,8 @@ proto._setupViewer = function(width,height) {
     id: this.target,
     view: {
       projection: projection,
-      /*center: this.config.initcenter || ol.extent.getCenter(extent),
-       zoom: this.config.initzoom || 0,
-       extent: this.config.constraintextent || extent,
-       minZoom: this.config.minzoom || 0, // default di OL3 3.16.0
-       maxZoom: this.config.maxzoom || 28 // default di OL3 3.16.0*/
       center: ol.extent.getCenter(initextent),
       extent: extent,
-      //minZoom: 0, // default di OL3 3.16.0
-      //maxZoom: 28 // default di OL3 3.16.0
       maxResolution: maxResolution
     }
   });
@@ -1044,11 +1074,19 @@ proto._setupBaseLayers = function(){
   });
 };
 
+proto._setMapProjectionToLayers = function(layers) {
+  // setup mapProjection on ech layers
+  layers.forEach((layer) => {
+    layer.setMapProjection(this.getProjection())
+  });
+};
+
 //SETUP VECTORLAYERS
 proto._setupVectorLayers = function() {
   const layers = this.getLayers({
     VECTORLAYER: true
   });
+  this._setMapProjectionToLayers(layers);
   layers.forEach((layer) => {
     const mapVectorLayer = layer.getMapLayer();
     this.addLayerToMap(mapVectorLayer)
@@ -1061,6 +1099,7 @@ proto._setupMapLayers = function() {
     BASELAYER: false,
     VECTORLAYER: false
   });
+  this._setMapProjectionToLayers(layers);
   //group layer by mutilayer
   const multiLayers = _.groupBy(layers, function(layer) {
     return layer.getMultiLayerId();
@@ -1090,7 +1129,6 @@ proto._setupMapLayers = function() {
       mapLayers.push(mapLayer)
     }
   });
-
   return mapLayers;
 };
 
@@ -1214,9 +1252,8 @@ proto.getResolutionForMeters = function(meters) {
 let highlightLayer = null;
 let animatingHighlight = false;
 
-proto.highlightGeometry = function(geometryObj, options) {
+proto.highlightGeometry = function(geometryObj, options = {}) {
   this.clearHighlightGeometry();
-  options = options || {};
   let zoom = (typeof options.zoom == 'boolean') ? options.zoom : true;
   const highlight = (typeof options.highlight == 'boolean') ? options.highlight : true;
   const duration = options.duration || 2000;
@@ -1524,7 +1561,6 @@ proto.addExternalLayer = function(externalLayer) {
     catalogService.addExternalLayer(externalLayer);
     map.getView().fit(vectorSource.getExtent());
   };
-
   if (!layer) {
     if (layer_epsg != this.getCrs()) {
       switch (layer_epsg) {

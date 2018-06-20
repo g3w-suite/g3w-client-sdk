@@ -53,9 +53,7 @@ proto.layout = function(map) {
   }
 };
 
-proto.changelayout = function() {
-
-};
+proto.changelayout = function() {};
 
 proto.showHide = function() {
   $(this.element).toggle();

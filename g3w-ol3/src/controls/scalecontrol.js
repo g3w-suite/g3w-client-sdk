@@ -1,4 +1,6 @@
 const layout = require('./utils').layout;
+const changeLayout = require('./utils').changeLayoutBottomControl;
+
 const scaleToRes = require('../utils/utils').scaleToRes;
 const resToScale = require('../utils/utils').resToScale;
 const ScaleControl = function(options= {}) {
@@ -34,10 +36,20 @@ ol.inherits(ScaleControl, ol.control.Control);
 module.exports = ScaleControl;
 const proto = ScaleControl.prototype;
 
+// called from map when layout change
+proto.changelayout = function(map) {
+  const position = this.position;
+  const element = $(this.element);
+  changeLayout({
+    map,
+    position,
+    element
+  });
+};
+
 proto.layout = function(map) {
   const self = this;
   let isMapResolutionChanged = false;
-  let customTag;
   let selectedOnClick = false;
   const position = this.position;
   const element = $(this.element);
@@ -114,13 +126,13 @@ proto.layout = function(map) {
     isMapResolutionChanged = !selectedOnClick;
   });
 
-  select2.on('select2:opening', ()=> {
+  /*select2.on('select2:opening', ()=> {
     const controls = map.getControls();
     controls.forEach((control) => {
       if (control.toggle)
         control.toggle(false);
     });
-  });
+  });*/
   select2.on('select2:select', function (e) {
     selectedOnClick = true;
     const data = e.params.data;

@@ -1,6 +1,7 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const ProjectsRegistry = require('core/project/projectsregistry');
+const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const Layer = require('core/layers/layer');
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
@@ -333,6 +334,7 @@ QueryResultsService.goToGeometry = function(layer, feature) {
   if (feature.geometry) {
     const mapService = ComponentsRegistry.getComponent('map').getService();
     mapService.highlightGeometry(feature.geometry, {
+      layerId: layer.id,
       duration: 1500
     });
   }
@@ -342,6 +344,7 @@ QueryResultsService.highlightGeometry = function(layer, feature) {
   if (feature.geometry) {
     const mapService = ComponentsRegistry.getComponent('map').getService();
     mapService.highlightGeometry(feature.geometry, {
+      layerId: layer.id,
       zoom: false
     });
   }
