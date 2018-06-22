@@ -1,6 +1,5 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
-const reject = require('core/utils/utils').reject;
 const G3WObject = require('core/g3wobject');
 const Project = require('core/project/project');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
@@ -133,7 +132,7 @@ proto.getListableProjects = function() {
   }), 'title')
 };
 
-proto.getCurrentProject = function(){
+proto.getCurrentProject = function() {
   return this.state.currentProject;
 };
 
@@ -149,28 +148,28 @@ proto.getProject = function(projectGid) {
     }
   });
   if (!pendingProject) {
-    return reject("Project doesn't exist");
+    d.reject("Project doesn't exist");
   }
-
   if (project) {
-    return d.resolve(project);
+    d.resolve(project);
   } else {
-    return this._getProjectFullConfig(pendingProject)
-    .then((projectFullConfig) => {
-      const projectConfig = _.merge(pendingProject, projectFullConfig);
-      projectConfig.WMSUrl = this.config.getWmsUrl(projectConfig);
-      // setupu project relations
-      projectConfig.relations = this._setProjectRelations(projectConfig);
-      // instance of Project
-      const project = new Project(projectConfig);
-      // add to project
-      this._projects[projectConfig.gid] = project;
-      return d.resolve(project);
-    })
-    .fail(() => {
-      return d.reject();
-    })
+    this._getProjectFullConfig(pendingProject)
+      .then((projectFullConfig) => {
+        const projectConfig = _.merge(pendingProject, projectFullConfig);
+        projectConfig.WMSUrl = this.config.getWmsUrl(projectConfig);
+        // setupu project relations
+        projectConfig.relations = this._setProjectRelations(projectConfig);
+        // instance of Project
+        const project = new Project(projectConfig);
+        // add to project
+        this._projects[projectConfig.gid] = project;
+        d.resolve(project);
+      })
+      .fail((error) => {
+        d.reject(error);
+      })
   }
+  return d.promise();
 };
 
 proto._setProjectRelations = function(projectConfig) {
@@ -203,8 +202,8 @@ proto._getProjectFullConfig = function(projectBaseConfig) {
     .done((projectFullConfig) => {
       d.resolve(projectFullConfig);
     })
-    .fail(() => {
-      d.reject();
+    .fail((error) => {
+      d.reject(error);
     });
   return d.promise();
 };
