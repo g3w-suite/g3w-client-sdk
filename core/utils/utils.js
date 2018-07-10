@@ -7,6 +7,7 @@
  * @param {Integer} exp   The exponent (the 10 logarithm of the adjustment base).
  * @returns {Number} The adjusted value.
  */
+
 function decimalAdjust(type, value, exp) {
   // If the exp is undefined or zero...
   if (typeof exp === 'undefined' || +exp === 0) {
