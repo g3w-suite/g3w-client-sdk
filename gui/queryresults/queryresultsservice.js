@@ -1,7 +1,6 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const ProjectsRegistry = require('core/project/projectsregistry');
-const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const Layer = require('core/layers/layer');
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');

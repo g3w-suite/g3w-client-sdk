@@ -94,7 +94,7 @@
                                               <!--<td class="attr-value">{{attribute.value}}</td>-->
                                               <td class="attr-value">
                                                 <div v-if="isArray(relattribute.value)" v-for="value in relattribute.value">
-                                                  <div v-for="value, label in value">
+                                                  <div v-for="(value, label) in value">
                                                     <span>{{ label }}</span><span class="pull-right">{{ value }}</span>
                                                   </div>
                                                   <span class="divider"></span>
@@ -102,11 +102,9 @@
                                                 <span v-if="is('simple',layer,relattribute.name, relattribute.value)"> {{ relattribute.value }}</span>
                                                 <img v-if="is('photo',layer,relattribute.name, relattribute.value)"  class="photo-preview img-responsive img-thumbnail" title="Clicca per allargare"  @click="showFullPhoto(isRelativePath(relattribute.value))" :src="isRelativePath(relattribute.value)">
                                                 <img v-else-if="checkField('image', relattribute.label, relattribute.value)"  class="photo-preview img-responsive img-thumbnail" title="Clicca per allargare"  @click="showFullPhoto(isRelativePath(relattribute.value))" :src="isRelativePath(relattribute.value)">
-                                                <!--<a v-if="is('link',layer, relattribute.name, relattribute.value)" :href="relattribute.value"  style="display: block; width: 100%;  white-space: nowrap;  overflow: hidden;  text-overflow: ellipsis" target="_blank"> {{ relattribute.value }} </a>-->
                                                 <button v-if="is('link', layer, relattribute.name, relattribute.value)"  class="btn btn-info" style="margin:5px"  @click="openLink(relattribute.value)">{{ openlink }}</button>
                                                 <a v-else-if="is('photolink',layer, relattribute.name, relattribute.value)" :href="relattribute.value" target="_blank">
-                                                  <img class=" img-responsive img-thumbnail"
-                                                       :src="relattribute.value">
+                                                  <img :class="g3wtemplate.getImageClass({type:'responsive'})" class="img-thumbnail" :src="relattribute.value">
                                                 </a>
                                               </td>
                                             </tr>

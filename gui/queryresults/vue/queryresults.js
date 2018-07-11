@@ -184,6 +184,7 @@ const vueComponentOptions = {
     }
   },
   mounted: function() {
+    console.log(this.g3wtemplate.getColumnClass({width:'10', breakpoint:'sm', offset: '2'}))
     Vue.nextTick(() => {
       $('[data-toggle="tooltip"]').tooltip();
 

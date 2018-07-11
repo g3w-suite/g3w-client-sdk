@@ -19,43 +19,43 @@
       <div class="tab-content">
         <div role="tabpanel" class="tab-pane active" :id="'layer_general_' + state.id">
           <div class="container-fluid">
-            <div v-if="findAttributeFormMetadataAttribute('title')" class="row">
-              <div v-t="'metadata.groups.layers.fields.subfields.title'" class="col-lg-2 col-md-2 col-sm-12 metadata-label"></div>
-              <div class="col-lg-10 col-md-10 col-sm-12 value">{{ state.metadata.title }}</div>
+            <div v-if="findAttributeFormMetadataAttribute('title')" :class="g3wtemplate.getRowClass()">
+              <div v-t="'metadata.groups.layers.fields.subfields.title'" :class="g3wtemplate.getColumnClass({width:['2', '12'], breakpoint:['md', 'sm']})" class="metadata-label"></div>
+              <div :class="g3wtemplate.getColumnClass({width:['10', '12'], breakpoint:['md', 'sm']})" class="value">{{ state.metadata.title }}</div>
             </div>
-            <div v-if="findMetadataAttribute('name')" class="row">
-              <div v-t="'metadata.groups.layers.fields.subfields.name'" class="col-lg-2 col-md-2 col-sm-12 metadata-label"></div>
-              <div class="col-lg-10 col-md-10 col-sm-12 value">{{ state.name }}</div>
+            <div v-if="findMetadataAttribute('name')" :class="g3wtemplate.getRowClass()">
+              <div v-t="'metadata.groups.layers.fields.subfields.name'" :class="g3wtemplate.getColumnClass({width:['2', '12'], breakpoint:['md', 'sm']})" class="metadata-label"></div>
+              <div  :class="g3wtemplate.getColumnClass({width:['10', '12'], breakpoint:['md', 'sm']})" class="value">{{ state.name }}</div>
             </div>
-            <div v-if="findMetadataAttribute('source')" class="row">
-              <div v-t="'metadata.groups.layers.fields.subfields.source'" class="col-lg-2 col-md-2 col-sm-12 col-md-2 col-sm-12 metadata-label"></div>
-              <div class="col-lg-10 col-md-10 col-sm-12 value">{{ state.source.type }}</div>
+            <div v-if="findMetadataAttribute('source')" :class="g3wtemplate.getRowClass()">
+              <div v-t="'metadata.groups.layers.fields.subfields.source'" :class="g3wtemplate.getColumnClass({width:['2', '12'], breakpoint:['md', 'sm']})" class="metadata-label"></div>
+              <div  :class="g3wtemplate.getColumnClass({width:['10', '12'], breakpoint:['md', 'sm']})" class="value">{{ state.source.type }}</div>
             </div>
-            <div v-if="findAttributeFormMetadataAttribute('abstract')" class="row">
-              <div v-t="'metadata.groups.layers.fields.subfields.abstract'" class="col-lg-2 col-md-2 col-sm-12 col-md-2 col-sm-12 metadata-label"></div>
-              <div class="col-lg-10 col-md-10 col-sm-12 value">{{ state.metadata.abstract[0] }}</div>
+            <div v-if="findAttributeFormMetadataAttribute('abstract')" :class="g3wtemplate.getRowClass()">
+              <div v-t="'metadata.groups.layers.fields.subfields.abstract'" :class="g3wtemplate.getColumnClass({width:['2', '12'], breakpoint:['md', 'sm']})" class="metadata-label"></div>
+              <div  :class="g3wtemplate.getColumnClass({width:['10', '12'], breakpoint:['md', 'sm']})" class="value">{{ state.metadata.abstract[0] }}</div>
             </div>
-            <div v-if="findAttributeFormMetadataAttribute('keywords')" class="row">
-              <div v-t="'metadata.groups.layers.fields.subfields.keywords'" class="col-lg-2 col-md-2 col-sm-12 col-md-2 col-sm-12 metadata-label"></div>
-              <div class="col-lg-10 col-md-10 col-sm-12 value">
+            <div v-if="findAttributeFormMetadataAttribute('keywords')" :class="g3wtemplate.getRowClass()">
+              <div v-t="'metadata.groups.layers.fields.subfields.keywords'" :class="g3wtemplate.getColumnClass({width:['2', '12'], breakpoint:['md', 'sm']})" class="metadata-label"></div>
+              <div :class="g3wtemplate.getColumnClass({width:['10', '12'], breakpoint:['md', 'sm']})" class="value">
                 <div>{{ state.metadata.keywords.join(', ') }}</div>
               </div>
             </div>
-            <div v-if="findAttributeFormMetadataAttribute('metadataurl') && state.metadata.metadataurl.onlineresources" class="row">
-              <div v-t="'metadata.groups.layers.fields.subfields.metadataurl'" class="col-lg-2 col-md-2 col-sm-12 col-md-2 col-sm-12 metadata-label"></div>
-              <div class="col-lg-10 col-md-10 col-sm-12 value">
+            <div v-if="findAttributeFormMetadataAttribute('metadataurl') && state.metadata.metadataurl.onlineresources" :class="g3wtemplate.getRowClass()">
+              <div v-t="'metadata.groups.layers.fields.subfields.metadataurl'" :class="g3wtemplate.getColumnClass({width:['2', '12'], breakpoint:['md', 'sm']})" class="metadata-label"></div>
+              <div  :class="g3wtemplate.getColumnClass({width:['md', 'sm'], breakpoint:['10', '12']})" class="value">
                 <a :href="state.metadata.metadataurl.onlineresources">{{ state.metadata.metadataurl.onlineresources }}</a>
               </div>
             </div>
-            <div v-if="findAttributeFormMetadataAttribute('dataurl') && state.metadata.dataurl.onlineresources" class="row">
-              <div v-t="'metadata.groups.layers.fields.subfields.dataurl'" class="col-lg-2 col-md-2 col-sm-12 col-md-2 col-sm-12 metadata-label"></div>
-              <div class="col-lg-10 col-md-10 col-sm-12 value">
+            <div v-if="findAttributeFormMetadataAttribute('dataurl') && state.metadata.dataurl.onlineresources" :class="g3wtemplate.getRowClass()">
+              <div v-t="'metadata.groups.layers.fields.subfields.dataurl'" :class="g3wtemplate.getColumnClass({width:['2', '12'], breakpoint:['md', 'sm']})" class="metadata-label"></div>
+              <div :class="g3wtemplate.getColumnClass({width:['10', '12'], breakpoint:['md', 'sm']})" class="value">
                 <a :href="state.metadata.dataurl.onlineresources">{{ state.metadata.dataurl.onlineresources }}</a>
               </div>
             </div>
-            <div v-if="findAttributeFormMetadataAttribute('attributes')" class="row">
-              <div v-t="'metadata.groups.layers.fields.subfields.attributes'" class="col-lg-2 col-md-2 col-sm-12 metadata-label"></div>
-              <div class="col-lg-10 col-md-10 col-sm-12 value" style="overflow: auto;">
+            <div v-if="findAttributeFormMetadataAttribute('attributes')" :class="g3wtemplate.getRowClass()">
+              <div v-t="'metadata.groups.layers.fields.subfields.attributes'" :class="g3wtemplate.getColumnClass({width:['2', '12'], breakpoint:['md', 'sm']})" class="metadata-label"></div>
+              <div  :class="g3wtemplate.getColumnClass({width:['10', '12'], breakpoint:['md', 'sm']})" class="value" style="overflow: auto;">
                 <table class="table">
                   <thead>
                   <tr>
@@ -74,26 +74,26 @@
         </div>
         <div role="tabpanel" class="tab-pane" :id="'layer_spatial_'+state.id">
           <div class="container-fluid">
-            <div v-if="findMetadataAttribute('crs')" class="row">
+            <div v-if="findMetadataAttribute('crs')" :class="g3wtemplate.getRowClass()">
               <div v-t="'metadata.groups.layers.fields.subfields.crs'" class="col-sm-3 metadata-label"></div>
               <div class="col-sm-9 value">{{ state.crs }}</div>
             </div>
-            <div v-if="findMetadataAttribute('geometrytype')" class="row">
+            <div v-if="findMetadataAttribute('geometrytype')" :class="g3wtemplate.getRowClass()">
               <div v-t="'metadata.groups.layers.fields.subfields.geometrytype'" class="col-sm-3 metadata-label"></div>
               <div class="col-sm-9 value">{{ state.geometrytype }}</div>
             </div>
-            <div v-if="findMetadataAttribute('bbox')" class="row">
-              <div v-t="'metadata.groups.layers.fields.subfields.bbox'" class="col-sm-3 metadata-label"></div>
-              <div class="col-sm-9 value">
+            <div v-if="findMetadataAttribute('bbox')" :class="g3wtemplate.getRowClass()">
+              <div v-t="'metadata.groups.layers.fields.subfields.bbox'" :class="g3wtemplate.getColumnClass({width:'3'})" class="metadata-label"></div>
+              <div :class="g3wtemplate.getColumnClass({width:'9'})" class="value">
                 <p v-for="(value, key) in state.bbox">
                   <span style="font-weight: bold; margin-right: 5px;">{{ key }}</span>
                   <span>{{ value}}</span>
                 </p>
               </div>
             </div>
-            <div v-if="findAttributeFormMetadataAttribute('crs')" class="row">
-              <div v-t="'metadata.groups.layers.fields.subfields.crs'" class="col-sm-3 metadata-label"></div>
-              <div class="col-sm-9 value">
+            <div v-if="findAttributeFormMetadataAttribute('crs')" :class="g3wtemplate.getRowClass()">
+              <div v-t="'metadata.groups.layers.fields.subfields.crs'" :class="g3wtemplate.getColumnClass({width:'3'})" class="metadata-label"></div>
+              <div :class="g3wtemplate.getColumnClass({width:'9'})" class="value">
                 <div v-for="crs in state.metadata.crs">
                   <span>{{ crs }}</span>
                 </div>
