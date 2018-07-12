@@ -181,7 +181,7 @@ proto.setActionsForLayers = function(layers) {
     if (layer.hasgeometry) {
       this.state.layersactions[layer.id].push({
         id: 'gotogeometry',
-        class: 'glyphicon glyphicon-map-marker',
+        class: GUI.getFontClass('marker'),
         hint: 'Visualizza sulla mappa',
         cbk: QueryResultsService.goToGeometry
       })
