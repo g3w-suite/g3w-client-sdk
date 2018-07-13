@@ -11,7 +11,7 @@
         <tr @click="showRelation(relation)" v-for="relation in relations" style="cursor:pointer">
           <td>
             <span >{{ relation.name }}</span>
-            <span class="glyphicon glyphicon-chevron-right pull-right" aria-hidden="true"></span>
+            <span :class="g3wtemplate.getFontClass('arrow-right')" class="pull-right" aria-hidden="true"></span>
           </td>
         </tr>
         </tbody>

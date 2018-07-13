@@ -5,7 +5,7 @@
       <div v-for="(value, key) in data.value">
         <div :class="g3wtemplate.getRowClass()">
           <div :class="g3wtemplate.getColumnClass({width:'3'})" class="metadata-contact-label">
-            <i class="fa contact-icon" :class="iconsClass[key]" aria-hidden="true"></i>
+            <i class="contact-icon" :class="iconsClass[key]" aria-hidden="true"></i>
             <span v-t="'metadata.groups.general.fields.subfields.contactinformation.' + key"></span>
           </div>
           <div :class="g3wtemplate.getColumnClass({width:'9'})">
@@ -34,9 +34,9 @@
     data() {
       return {
         iconsClass: {
-          contactelectronicmailaddress: "fa-envelope-o",
-          personprimary: "fa-user",
-          contactvoicetelephone: "fa-mobile"
+          contactelectronicmailaddress: this.g3wtemplate.getFontClass("mail"),
+          personprimary: this.g3wtemplate.getFontClass("user"),
+          contactvoicetelephone: this.g3wtemplate.getFontClass("mobile")
         }
       }
     },

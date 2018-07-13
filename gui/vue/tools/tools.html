@@ -6,7 +6,7 @@
       </div>
       <div id="iternet-tools" class="tool-box collapse">
         <template v-for="action in tool.actions">
-          <i class="glyphicon glyphicon-cog"></i>
+          <i :class="g3wtemplate.getFontClass('tool')"></i>
           <span @click="fireAction(action.id)">{{ action.name }}</span>
         </template>
       </div>

@@ -5,26 +5,25 @@
   :class="{selected: !isFolder || !isTable ? layerstree.selected : false, itemmarginbottom: !isFolder }">
 
   <span v-if="isFolder"
-    :class="{bold: isFolder, 'fa-chevron-down': layerstree.expanded, 'fa-chevron-right': !layerstree.expanded}"
+    :class="[{bold : isFolder}, layerstree.expanded ? g3wtemplate.getFontClass('arrow-down') : g3wtemplate.getFontClass('arrow-right')]"
     @click="expandCollapse"
-    class="root fa">
+    class="root">
   </span>
 
   <span v-if="isFolder"
     @click.stop="toggle(true)"
-    :class="[triClass()]"
-    class="fa">
+    :class="[triClass()]">
   </span>
   <span v-else-if="isTable"
         v-show="!layerstree.hidden"
         :class="[parentFolder ? 'child' : 'root' ]"
-        class='fa fa-table'>
+        :class="g3wtemplate.getFontClass('table')">
   </span>
   <span v-else
     v-show="!layerstree.hidden"
     @click.stop="!layerstree.uncheckable ? toggle(false) : null"
-    :class="[layerstree.visible  ? 'fa-check-square-o': 'fa-square-o', layerstree.disabled  ? 'disabled': '',  parentFolder ? 'child' : 'root' ]"
-    class="fa checkbox-layer">
+    :class="[layerstree.visible  ? g3wtemplate.getFontClass('check'): g3wtemplate.getFontClass('uncheck'), layerstree.disabled  ? 'disabled': '',  parentFolder ? 'child' : 'root' ]"
+    class="checkbox-layer">
   </span>
 
   <span v-show="!layerstree.hidden || isFolder"
@@ -33,7 +32,7 @@
   </span>
 
   <i v-if="layerstree.external && layerstree.removable"
-    class="glyphicon glyphicon glyphicon-trash link trash pull-right"
+    :class="g3wtemplate.getFontClass('trash')" class="link trash pull-right"
     @click="removeExternalLayer(layerstree.name)">
   </i>
   <ul v-if="isFolder" v-show="layerstree.expanded">

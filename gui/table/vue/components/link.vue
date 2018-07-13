@@ -1,6 +1,6 @@
 <template>
   <a :href="href" target="_blank">
-    <i class="glyphicon glyphicon-link"></i>
+    <i :class="g3wtemplate.getFontClass('link')"></i>
   </a>
 </template>
 

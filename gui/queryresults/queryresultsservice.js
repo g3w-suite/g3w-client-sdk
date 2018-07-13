@@ -191,7 +191,7 @@ proto.setActionsForLayers = function(layers) {
         if (layer.id == id) {
           this.state.layersactions[layer.id].push({
             id: 'show-query-relations',
-            class: 'fa fa-sitemap',
+            class: GUI.getFontClass('relation'),
             hint: 'Visualizza Relazioni',
             cbk: QueryResultsService.showQueryRelations,
             relations: relations

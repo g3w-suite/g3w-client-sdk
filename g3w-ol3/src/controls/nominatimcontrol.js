@@ -525,7 +525,7 @@ function NominatimControl(options) {
     ' id="', vars.inputQueryId, '"',
     ' class="', klasses.inputText.input, '"',
     ' autocomplete="off" placeholder="Search ...">',
-    '<button type="button" class="btn btn-primary" id="search_nominatim"><i class="fa fa-search" aria-hidden="true"></i></button>',
+    '<button type="button" class="btn btn-primary" id="search_nominatim"><i class="fa fa-search fas fa-search" aria-hidden="true"></i></button>',
     '<button type="button"',
     ' id="', vars.inputResetId, '"',
     ' class="', klasses.inputText.reset, ' ', klasses.hidden, '"',

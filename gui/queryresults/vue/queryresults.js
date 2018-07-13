@@ -185,8 +185,7 @@ const vueComponentOptions = {
   },
   mounted: function() {
     Vue.nextTick(() => {
-      $('[data-toggle="tooltip"]').tooltip();
-
+      //$('[data-toggle="tooltip"]').tooltip();
     })
   }
 };

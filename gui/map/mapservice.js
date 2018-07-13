@@ -647,6 +647,7 @@ proto.setupControls = function() {
               return
             }
             const overviewProjectGid = this.config.overviewproject.gid;
+            console.log('<span class="'+GUI.getFontClass('arrow-left')+'"></span>');
             if (overviewProjectGid) {
               ProjectsRegistry.getProject(overviewProjectGid)
               .then((project) =>{
@@ -655,8 +656,8 @@ proto.setupControls = function() {
                   type: controlType,
                   position: 'bl',
                   className: 'ol-overviewmap ol-custom-overviewmap',
-                  collapseLabel: $('<span class="glyphicon glyphicon-menu-left"></span>')[0],
-                  label: $('<span class="glyphicon glyphicon-menu-right"></span>')[0],
+                  collapseLabel: $(`<span class="${GUI.getFontClass('arrow-left')}"></span>`)[0],
+                  label: $(`<span class="${GUI.getFontClass('arrow-right')}"></span>`)[0],
                   collapsed: false,
                   layers: overViewMapLayers,
                   view: new ol.View({

@@ -1,7 +1,7 @@
 <ul class="g3w-tools treeview-menu">
   <li v-for="group in state.toolsGroups">
     <div class="tool-header">
-      <i class="fa fa-gear"></i>
+      <i :class="g3wtemplate.getFontClass('tool')"></i>
       <span style="">{{ group.name }}</span>
     </div>
     <div :id="group.name + '-tools'" class="tool-box">
@@ -12,7 +12,7 @@
           </label>
         </div>
         <div v-else class="tool" @click="fireAction(tool.actionId)">
-          <i class="fa fa-caret-right"></i>
+          <i :class="g3wtemplate.getFontClass('caret-right')"></i>
           <span >{{ tool.name }}</span>
         </div>
       </template>

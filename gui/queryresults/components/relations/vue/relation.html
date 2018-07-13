@@ -1,7 +1,7 @@
 <div class="query-relation">
   <div v-if="!one" class="back-btn" @click="back">
     <span class="back-link">
-      <span class="glyphicon glyphicon-chevron-left" v-t="'back_to_relations'"></span>
+      <span :class="g3wtemplate.getFontClass('arrow-left')" v-t="'back_to_relations'"></span>
     </span>
   </div>
   <div class="header">
@@ -21,7 +21,7 @@
           <tr v-for="row in table.rows">
             <td v-for="value in row">
               <p v-if="is('simple',value)"> {{ value }}</p>
-              <a v-else="is('link',value)" :href="value"  style="display: block; width: 100%;  white-space: nowrap;  overflow: hidden;  text-overflow: ellipsis" target="_blank"><i class="glyphicon glyphicon-link"></i></a>
+              <a v-else="is('link',value)" :href="value"  style="display: block; width: 100%;  white-space: nowrap;  overflow: hidden;  text-overflow: ellipsis" target="_blank"><i :class="g3wtemplatye.getFontClass('link')"></i></a>
             </td>
           </tr>
         </tbody>

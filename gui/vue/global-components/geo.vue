@@ -1,7 +1,7 @@
 <template>
   <div class="geo-content">
-    <span @click.stop="showLayer()" class="glyphicon show-hide-geo"
-          :class="[visible ? 'glyphicon glyphicon-eye-close' : 'glyphicon-eye-open']">
+    <span @click.stop="showLayer()" class="show-hide-geo"
+          :class="[visible ? g3wtemplate.getFontClass('eye-close') : g3wtemplate.getFontClass('eye')]">
     </span>
   </div>
 </template>

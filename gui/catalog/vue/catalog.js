@@ -260,7 +260,7 @@ const vueComponentOptions = {
       buttonText: "",
       input: false,
       buttonName: "btn-primary",
-      iconName: "glyphicon glyphicon-plus"
+      iconName: this.g3wtemplate.getFontClass('plus')
     });
   }
 };
@@ -428,17 +428,17 @@ Vue.component('tristate-tree', {
     triClass: function () {
       if (this.n_visibleChilds == this.n_childs) {
         //checked
-        return 'fa-check-square-o';
+        return this.g3wtemplate.getFontClass('check');
       } else if ((this.n_visibleChilds > 0) && (this.n_visibleChilds < this.n_childs)) {
         if (this.layerstree.mutually_exclusive) {
           //checked
-          return 'fa-check-square-o';
+          return this.g3wtemplate.getFontClass('uncheck');
         }
         // white square
-        return 'fa-square';
+        return this.g3wtemplate.getFontClass('filluncheck');
       } else {
         //unchecked
-        return 'fa-square-o';
+        return this.g3wtemplate.getFontClass('uncheck');
       }
     },
     removeExternalLayer: function(name) {
@@ -452,7 +452,6 @@ Vue.component('tristate-tree', {
     }
   },
   mounted: function() {
-    pippo = this.layerstree;
     if (this.isFolder && !this.root) {
       this.layerstree.nodes.forEach((node) => {
         if (this.parent_mutually_exclusive && !this.layerstree.mutually_exclusive) {
