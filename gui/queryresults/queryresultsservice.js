@@ -330,6 +330,7 @@ QueryResultsService.zoomToElement = function(layer, feature) {
 };
 
 QueryResultsService.goToGeometry = function(layer, feature) {
+  isMobile.any && !GUI.isContentCollapsed()? GUI.collapseContent() : null;
   if (feature.geometry) {
     const mapService = ComponentsRegistry.getComponent('map').getService();
     mapService.highlightGeometry(feature.geometry, {

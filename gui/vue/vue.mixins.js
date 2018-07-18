@@ -1,11 +1,4 @@
 const GUI = require('gui/gui');
-const isMobileMixin = {
-  methods: {
-    isMobile: function() {
-      return isMobile.any
-    }
-  }
-};
 
 const fieldsMixin = {
   methods: {
@@ -119,7 +112,6 @@ const geoMixin = {
 };
 
 module.exports = {
-  isMobileMixin: isMobileMixin,
-  geoMixin: geoMixin,
-  fieldsMixin: fieldsMixin
+  geoMixin,
+  fieldsMixin
 };

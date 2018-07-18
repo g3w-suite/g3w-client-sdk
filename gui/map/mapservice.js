@@ -647,7 +647,6 @@ proto.setupControls = function() {
               return
             }
             const overviewProjectGid = this.config.overviewproject.gid;
-            console.log('<span class="'+GUI.getFontClass('arrow-left')+'"></span>');
             if (overviewProjectGid) {
               ProjectsRegistry.getProject(overviewProjectGid)
               .then((project) =>{
