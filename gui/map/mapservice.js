@@ -10,8 +10,6 @@ const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const Filter = require('core/layers/filter/filter');
 const WFSProvider = require('core/layers/providers/wfsprovider');
 const ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
-const resToScale = require('g3w-ol3/src/utils/utils').resToScale;
-const reverseGeometry = require('g3w-ol3/src/utils/utils').reverseGeometry;
 const ControlsFactory = require('gui/map/control/factory');
 const StreetViewService = require('gui/streetview/streetviewservice');
 const ControlsRegistry = require('gui/map/control/registry');
@@ -34,7 +32,8 @@ function MapService(options) {
     center: null,
     loading: false,
     hidden: true,
-    scale: 0
+    scale: 0,
+    mapcontrolsalignement: 'rv'
   };
 
   this._greyListenerKey = null;
@@ -326,7 +325,14 @@ proto.getQueryLayersPromisesByCoordinates = function(layerFilterObject, coordina
 };
 
 //setup controls
+/*
+  layout : {
+    tl: <options> h : horizontal (default), v vertical
+    tr: <options> h: horizontal: v vertical (default)
+  }
+ */
 proto.setupControls = function() {
+  //this.state.mapcontrolsalignement = 'rh'
   const baseLayers = this.getLayers({
     BASELAYER: true
   });
@@ -351,7 +357,7 @@ proto.setupControls = function() {
               type: controlType
             });
           }
-          this.addControl(controlType,control);
+          this.addControl(controlType, control, false);
           break;
         case 'zoom':
           control = ControlsFactory.create({
@@ -369,7 +375,7 @@ proto.setupControls = function() {
             control.on('zoomend', (e) => {
               this.viewer.fit(e.extent);
             });
-            this.addControl(controlType,control);
+            this.addControl(controlType,control, true);
           }
           break;
         case 'zoomtoextent':
@@ -383,32 +389,25 @@ proto.setupControls = function() {
           }
           break;
         case 'mouseposition':
-          const coordinateLabels = this.getProjection().getUnits() === 'm' ? ['X', 'Y'] : ['Lng', 'Lat'];
-          control = ControlsFactory.create({
-            type: controlType,
-            coordinateFormat: (coordinate) => {
-              return ol.coordinate.format(coordinate, `${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}`, 4);
-            },
-            projection: this.getCrs()
-          });
-          this.addControl(controlType,control);
+          if (!isMobile.any) {
+            const coordinateLabels = this.getProjection().getUnits() === 'm' ? ['X', 'Y'] : ['Lng', 'Lat'];
+            control = ControlsFactory.create({
+              type: controlType,
+              coordinateFormat: (coordinate) => {
+                return ol.coordinate.format(coordinate, `${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}`, 4);
+              },
+              projection: this.getCrs()
+            });
+            this.addControl(controlType, control, false);
+          }
           break;
         case 'scale':
-          const Scales = [
-            1000000,5000000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 2000, 1000
-          ];
-          const currentScale = parseInt(resToScale(this.getResolution()));
-          let scales = Scales.filter((scale) => {
-            return scale < currentScale;
-          });
-          scales.unshift(currentScale);
           control = ControlsFactory.create({
             type: controlType,
-            scales,
             coordinateFormat: ol.coordinate.createStringXY(4),
             projection: this.getCrs()
           });
-          this.addControl(controlType,control);
+          this.addControl(controlType,control, false);
           break;
         // single query control
         case 'query':
@@ -427,6 +426,7 @@ proto.setupControls = function() {
               SELECTEDORALL: true,
               VISIBLE: true
             };
+
             let queryPromises = this.getQueryLayersPromisesByCoordinates(layersFilterObject, coordinates);
             const queryResultsPanel = showQueryResults('');
             $.when.apply(this, queryPromises)
@@ -639,7 +639,7 @@ proto.setupControls = function() {
             type: controlType,
             position: 'br'
           });
-          this.addControl(controlType,control);
+          this.addControl(controlType,control, false);
           break;
         case 'overview':
           if (!isMobile.any) {
@@ -663,7 +663,7 @@ proto.setupControls = function() {
                     projection: this.getProjection()
                   })
                 });
-                this.addControl(controlType,control);
+                this.addControl(controlType,control, false);
               });
             }
           }
@@ -679,7 +679,7 @@ proto.setupControls = function() {
             const geometry =  new ol.geom.Point(coordinate);
             this.highlightGeometry(geometry);
           });
-          this.addControl(controlType,control);
+          this.addControl(controlType, control, false);
           $('#search_nominatim').click(() => {
             control.nominatim.query($('input.gcd-txt-input').val());
           });
@@ -756,7 +756,40 @@ proto.filterableLayersAvailable = function() {
   });
 };
 
-proto.addControl = function(type, control) {
+proto.setMapToolsAlignement = function(alignement='rv') {
+  this.state.mapcontrolsalignement = alignement;
+};
+
+proto.getMapToolsAlignement = function() {
+  return this.state.mapcontrolsalignement
+};
+
+proto.isMapToolsVerticalAlignement = function() {
+  return this.state.mapcontrolsalignement.indexOf('v') != -1;
+};
+
+proto.setMapToolsVerticalAlignement = function() {
+  this.state.mapcontrolsalignement = this.state.mapcontrolsalignement[0] + 'v';
+};
+
+proto.setMapToolsHorizontalAlignement = function() {
+  this.state.mapcontrolsalignement = this.state.mapcontrolsalignement[0] + 'h';
+};
+
+proto.flipMapToolsHorizontally = function() {
+  this.state.mapcontrolsalignement = this.state.mapcontrolsalignement[0] === 'r' ? 'l' + this.state.mapcontrolsalignement[1] : 'r' + this.state.mapcontrolsalignement[1]
+};
+
+proto.flipMapToolsVertically = function() {
+  this.state.mapcontrolsalignment = this.state.mapcontrolsalignement[1] === 'v' ? this.state.mapcontrolsalignement[0] + 'h' :  this.state.mapcontrolsalignement[0] + 'v'
+};
+
+proto._addControlToMapControls = function(control) {
+  const controlElement = control.element;
+  $('.g3w-map-controls').append(controlElement)
+};
+
+proto.addControl = function(type, control, addToMapControls=true) {
   this.viewer.map.addControl(control);
   this._mapControls.push({
     type: type,
@@ -766,6 +799,8 @@ proto.addControl = function(type, control) {
   control.on('controlclick', () => {
     this.controlClick();
   });
+  if (addToMapControls)
+    this._addControlToMapControls(control);
   ControlsRegistry.registerControl(type, control);
 };
 

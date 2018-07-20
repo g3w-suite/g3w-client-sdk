@@ -115,12 +115,17 @@ const vueComponentOptions = {
   template: require('./map.html'),
   data: function() {
     return {
-      target: 'map', // specidica l'id
+      target: 'map', // specidica l'ide
       service: this.$options.mapService
     }
   },
   components: {
     'addlayer': AddLayerComponent
+  },
+  computed: {
+    mapcontrolsalignement: function() {
+      return this.service.state.mapcontrolsalignement;
+    }
   },
   mounted: function() {
     let mapWidth;

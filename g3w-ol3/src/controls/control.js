@@ -17,7 +17,6 @@ const Control = function(options) {
     const label = options.label || "?";
     options.element = $('<div class="'+className+' ol-unselectable ol-control"><button type="button" title="'+tipLabel+'">'+label+'</button></div>')[0];
   }
-  $(options.element).addClass("ol-control-"+this.positionCode);
   const buttonClickHandler = options.buttonClickHandler || Control.prototype._handleClick.bind(this);
   $(options.element).on('click',buttonClickHandler);
   ol.control.Control.call(this, options);
@@ -75,43 +74,7 @@ proto.layout = function(map) {
 
 // change layout of controls
 proto.changelayout = function(map) {
-  const viewPort = map.getViewport();
-  const viewPortWidth = $(viewPort).width();
-  const previusControls = $(viewPort).find('.ol-control-'+this.positionCode+':visible');
-  const firstControl = previusControls.first();
-  const firtsLeft = firstControl.position().left;
-  const firstControlHeightOffset = firstControl[0].offsetHeight;
-  const topPosition = previusControls.first().position().top + firstControlHeightOffset + 6; // 6 margin
-  const element = $(this.element);
-  const nextElement = element.next('.ol-control-'+this.positionCode+':visible');
-  const prevElement = element.prev('.ol-control-'+this.positionCode+':visible');
-  // check if left position of the controls more than dimension of viewport
-  if (element.position().left + element.width() > viewPortWidth) {
-    if (nextElement.length && nextElement.position().top  ==  topPosition) {
-      element.css('left', firtsLeft+'px');
-      const elementWidth = element[0].offsetWidth;
-      const hOffset = element.position().left + elementWidth;
-      nextElement.css('left', hOffset+'px');
-      element.css('top', topPosition+'px');
-    } else {
-      if (prevElement.position() && (topPosition == prevElement.position().top)) {
-        const elementWidth = prevElement[0].offsetWidth;
-        const hOffset = prevElement.position().left + elementWidth;
-        element.css('top', topPosition+'px');
-        element.css('left', hOffset+'px');
-      } else {
-        element.css('top', topPosition +'px');
-        element.css('left', firtsLeft+'px');
-      }
-    }
-  } else {
-    if (nextElement.length && nextElement.position().top != previusControls.first().position().top) {
-      nextElement.css('top', element.position().top +'px');
-      const elementWidth = element[0].offsetWidth;
-      const hOffset = element.position().left  + elementWidth;
-      nextElement.css('left', hOffset+'px');
-    }
-  }
+
 };
 
 proto.showHide = function() {
