@@ -128,23 +128,8 @@ const vueComponentOptions = {
     }
   },
   mounted: function() {
-    let mapWidth;
     const mapService = this.$options.mapService;
     this.crs = mapService.getCrs();
-    this.$on('changelayout', (width) => {
-      mapWidth = width;
-      this.$nextTick(() => {
-        const map = mapService.getMap();
-        const viewPort = map.getViewport();
-        const viewPortWidth = $(viewPort).width();
-        if (viewPortWidth) {
-          mapService.getMapControls().forEach((control) => {
-            if (control.control.changelayout)
-              control.control.changelayout(map);
-          })
-        }
-      })
-    });
     this.$nextTick(() => {
       mapService.setTarget(this.$el.id);
     });
@@ -191,8 +176,7 @@ const proto = MapComponent.prototype;
 proto.layout = function(width, height) {
   $('#'+this.target).height(height);
   $('#'+this.target).width(width);
-  this._service.layout(width, height);
-  this.internalComponent.$emit('changelayout', width);
+  this._service.layout({width, height});
 };
 
 module.exports =  MapComponent;

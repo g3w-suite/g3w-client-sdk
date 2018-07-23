@@ -110,7 +110,8 @@ function MapService(options) {
       this.setupControls();
       this.emit('viewerset');
     },
-    controlClick: function() {}
+    controlClick: function() {
+    }
   };
 
   this.on('cataloglayerselected', (layer) => {
@@ -158,6 +159,8 @@ function MapService(options) {
   MapLayersStoreRegistry.onafter('removeLayersStore', (layerStore) => {
     this._removeEventsKeysToLayersStore(layerStore);
   });
+
+
   base(this);
 }
 
@@ -167,7 +170,7 @@ inherit(MapService, G3WObject);
 const proto = MapService.prototype;
 
 proto.getApplicationAttribution = function() {
-  const {header_terms_of_use_link, header_terms_of_use_text} = this.config.group
+  const {header_terms_of_use_link, header_terms_of_use_text} = this.config.group;
   if (header_terms_of_use_text) {
     return  new ol.Attribution({
       html: `<a href="${header_terms_of_use_link}">${header_terms_of_use_text}</a>`
@@ -327,12 +330,12 @@ proto.getQueryLayersPromisesByCoordinates = function(layerFilterObject, coordina
 //setup controls
 /*
   layout : {
-    tl: <options> h : horizontal (default), v vertical
-    tr: <options> h: horizontal: v vertical (default)
+    lv: <options> h : horizontal (default), v vertical
+    lh: <options> h: horizontal: v vertical (default)
   }
  */
 proto.setupControls = function() {
-  //this.state.mapcontrolsalignement = 'rh'
+  //this.state.mapcontrolsalignement = 'lv'
   const baseLayers = this.getLayers({
     BASELAYER: true
   });
@@ -756,32 +759,70 @@ proto.filterableLayersAvailable = function() {
   });
 };
 
-proto.setMapToolsAlignement = function(alignement='rv') {
+proto.setMapControlsAlignement = function(alignement='rv') {
   this.state.mapcontrolsalignement = alignement;
 };
 
-proto.getMapToolsAlignement = function() {
+proto.getMapControlsAlignement = function() {
   return this.state.mapcontrolsalignement
 };
 
-proto.isMapToolsVerticalAlignement = function() {
+proto.isMapControlsVerticalAlignement = function() {
   return this.state.mapcontrolsalignement.indexOf('v') != -1;
 };
 
-proto.setMapToolsVerticalAlignement = function() {
+proto.setMapControlsVerticalAlignement = function() {
   this.state.mapcontrolsalignement = this.state.mapcontrolsalignement[0] + 'v';
 };
 
-proto.setMapToolsHorizontalAlignement = function() {
+proto.setMapControlsHorizontalAlignement = function() {
   this.state.mapcontrolsalignement = this.state.mapcontrolsalignement[0] + 'h';
 };
 
-proto.flipMapToolsHorizontally = function() {
+proto.flipControlsHorizontally = function() {
   this.state.mapcontrolsalignement = this.state.mapcontrolsalignement[0] === 'r' ? 'l' + this.state.mapcontrolsalignement[1] : 'r' + this.state.mapcontrolsalignement[1]
 };
 
-proto.flipMapToolsVertically = function() {
+proto.flipMapControlsVertically = function() {
   this.state.mapcontrolsalignment = this.state.mapcontrolsalignement[1] === 'v' ? this.state.mapcontrolsalignement[0] + 'h' :  this.state.mapcontrolsalignement[0] + 'v'
+};
+
+proto._updateMapControlsLayout = function({width, height}) {
+
+  const HEIGHTWIDTH = 47; // constant
+  const MAXFACTOR = 4;
+  // mapcontrols element
+  const $mapControls = $('.g3w-map-controls');
+  // compaconstol height
+  const mapControlsHeight = $mapControls.height();
+  // mapcontrols width
+  const mapControlsWidth = $mapControls.width();
+  // check if is vertical
+  if (this.isMapControlsVerticalAlignement()) {
+    this._mapControls.forEach((control) => {
+      const map = this.getMap();
+      control.control.changelayout ? control.control.changelayout(map) : null;
+    });
+
+    const bottomMapControls =  $(`.ol-control-b${this.getMapControlsAlignement()[0]}`);
+    const bottomMapControlsTop = bottomMapControls.length ? $(bottomMapControls[bottomMapControls.length - 1]).position().top: height;
+    const HeightFreeSpace =  (height - ((height - bottomMapControlsTop) + HEIGHTWIDTH));
+    const FACTOR = mapControlsWidth/HEIGHTWIDTH * 2;
+    if ( (mapControlsHeight > HeightFreeSpace) && (FACTOR <= MAXFACTOR) ) {
+       $mapControls.css('width', `${HEIGHTWIDTH*FACTOR}px`);
+       $mapControls.css('height', `${mapControlsHeight/2}px`);
+    } else {
+      if (mapControlsWidth > HEIGHTWIDTH) {
+        if (HeightFreeSpace > mapControlsHeight * 2 ) {
+          let FACTOR = (mapControlsWidth/HEIGHTWIDTH);
+          if (FACTOR > 2)
+            FACTOR = Math.log2(FACTOR);
+          $mapControls.css('width', `${mapControlsWidth/FACTOR}px`);
+          $mapControls.css('height', `${mapControlsHeight*2}px`);
+        }
+      }
+    }
+  }
 };
 
 proto._addControlToMapControls = function(control) {
@@ -801,6 +842,13 @@ proto.addControl = function(type, control, addToMapControls=true) {
   });
   if (addToMapControls)
     this._addControlToMapControls(control);
+  else {
+    const $mapElement = $(`#${this.getMap().getTarget()}`);
+    this._updateMapControlsLayout({
+      width: $mapElement.width(),
+      height: $mapElement.height()
+    })
+  }
   ControlsRegistry.registerControl(type, control);
 };
 
@@ -1388,14 +1436,14 @@ proto.refreshMap = function() {
 };
 
 // called when layout (window) resize
-proto.layout = function(width, height) {
+proto.layout = function({width, height}) {
   if (!this.viewer) {
     this.setupViewer(width,height);
-  }
-  if (this.viewer) {
+  } else {
     this.setHidden((width == 0 || height == 0));
     this.getMap().updateSize();
     this._updateMapView();
+    this._updateMapControlsLayout({width, height})
   }
 };
 
