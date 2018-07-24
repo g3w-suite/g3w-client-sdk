@@ -12,9 +12,6 @@ function GUI() {
   this.setters = {
     setContent: function(options) {
       this._setContent(options)
-    } ,
-    closeContent: function() {
-      this._closeContent()
     }
   };
   this.isready = false;
