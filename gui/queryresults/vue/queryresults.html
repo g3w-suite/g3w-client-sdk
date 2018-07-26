@@ -1,7 +1,8 @@
 <div id="search-results" class="queryresults-wrapper">
   <div v-show="state.loading" class="bar-loader"></div>
   <div class="queryresults-container">
-    <template v-if="!state.loading">
+    <transition name="fade">
+      <template v-if="!state.loading">
       <ul v-if="hasLayers" class="queryresults" id="queryresults" style="position: relative">
         <li v-if="layerHasFeatures(layer) && layer.show" v-for="layer in state.layers">
           <div class="box box-primary">
@@ -22,7 +23,7 @@
                 </thead>
                 <tbody>
                 <template v-if="feature.show" v-for="feature in layer.features">
-                  <tr @click="toggleFeatureBoxAndZoom(layer,feature);" @mouseover="trigger('highlightgeometry',layer,feature)" @mouseout="trigger('clearHighlightGeometry')" class="featurebox-header" :class="[collapsedFeatureBox(layer,feature) ? '' : 'featurebox-header-open']">
+                  <tr @click="toggleFeatureBoxAndZoom(layer,feature)" @mouseover="trigger('highlightgeometry',layer,feature)" @mouseout="trigger('clearHighlightGeometry')" class="featurebox-header" :class="[collapsedFeatureBox(layer,feature) ? '' : 'featurebox-header-open']">
                     <td v-for="action in state.layersactions[layer.id]">
                       <span @click.stop="trigger(action.id,layer,feature)" class="action-button" data-placement="top" data-toggle="tooltip" :title="action.hint">
                         <i class="action-button-icon" :class="action.class"></i>
@@ -135,6 +136,7 @@
       </ul>
       <h4 v-if="!hasResults">{{ noresultmessage }}</h4>
     </template>
+    </transition>
   </div>
 </div>
 

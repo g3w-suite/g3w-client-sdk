@@ -145,9 +145,6 @@ const vueComponentOptions = {
         if (control.type != "scaleline")
           control.control.showHide();
       })
-    },
-    isMobile: function() {
-      return isMobile.any;
     }
   }
 };
