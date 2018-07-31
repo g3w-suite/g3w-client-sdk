@@ -57,12 +57,12 @@ const vueComponentObject = {
       // calculate heigth body
       let centralHeight = height - (notBodyElementHeight); // central form dom
       let heightToAppy = (centralHeight/ centralElementsNumber) - 15; // height of others part
-      // check height of the bosy 
+      // check height of the bosy
       let bodyElementHeight = $(this.$el).find(".g3w-form-component_body .box-primary").outerHeight() + 20;
-      bodyElementHeight =  bodyElementHeight > heightToAppy ? heightToAppy: bodyElementHeight ; 
+      bodyElementHeight =  bodyElementHeight > heightToAppy ? heightToAppy: bodyElementHeight ;
       $(this.$el).find(".g3w-form-component_body").height(bodyElementHeight);
-      centralHeight = centralHeight - bodyElementHeight; 
-      centralElementsNumber-=1; 
+      centralHeight = centralHeight - bodyElementHeight;
+      centralElementsNumber-=1;
       heightToAppy = (centralHeight/ centralElementsNumber) - 15;
       centralElements.forEach((element) => {
         element.height(heightToAppy)
@@ -87,8 +87,9 @@ function FormComponent(options) {
   options.service = options.service ?  new options.service : new Service;
   options.vueComponentObject = options.vueComponentObject  || vueComponentObject;
   options.template = options.template || Template;
-  //set statdar element of the form
+  //set standard element of the form (header, body, footer)
   options.components = options.components || [HeaderFormComponent, BodyFormComponent, FooterFormComponent];
+
   this.init(options);
 
   this.addComponentBeforeBody = function(Component) {
@@ -99,14 +100,10 @@ function FormComponent(options) {
     this.insertComponentAt(2, Component)
   };
 
-  this.addComponentBeforeFooter = function() {
-   //TODO
-  };
+  this.addComponentBeforeFooter = function() {};
 
-  this.addComponentAfterFooter = function(Component) {
-    //TODO
-  };
-  // overwrite father mount method. 
+  this.addComponentAfterFooter = function(Component) {};
+  // overwrite  mount method.
   this.mount = function(parent, append) {
     return base(this, 'mount', parent, append)
     .then(() => {

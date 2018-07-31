@@ -28,6 +28,7 @@ function FormService() {
     },
     // setter add action
     addActionsForForm: function (actions) {},
+    // postrender function
     postRender: function (element) {
       // hook for listener to chenge DOM
     }
@@ -37,32 +38,26 @@ function FormService() {
     options = options || {};
     this.title = options.title || 'Form';
     this.formId = options.formId;
-    this.name = options.name; 
-    this.pk = options.pk || null; 
-    this.buttons = options.buttons || []; 
-    this._pickedPromise = null;
+    this.name = options.name;
+    this.pk = options.pk || null;
+    this.buttons = options.buttons || [];
     this.state = {
       title: this.title,
       fields: null,
       buttons: this.buttons,
       disabled: false,
       valid: true, // global form validation state. True at beginning
-        // when input change will be update 
+        // when input change will be update
       tovalidate: [] // object array to be validate. They have at list valid key (boolean)
     };
     this.setFormFields(options.fields);
   };
   // Every input send to form it valid value that will change the genaral state of form
   this.isValid = function() {
-    let bool = true;
-    this.state.tovalidate.forEach((tovalidate) => {
-      if (!tovalidate.valid) {
-        bool = false;
-        return false;
-      }
-    });
-    this.state.valid = bool;
+    this.state.valid = this.state.tovalidate.reduce((valid, tovalidate) => valid && tovalidate.valid, true);
   };
+
+  //add new input to validate
   this.addToValidate = function(validate) {
     this.state.tovalidate.push(validate);
   };
@@ -70,27 +65,25 @@ function FormService() {
   this.getState = function () {
     return this.state;
   };
+
   this._setState = function(state) {
     this.state = state;
   };
+
+  //get fields
   this.getFields = function() {
     return this.state.fields;
   };
 
   this._getField = function(fieldName){
-    let field = null;
-    this.state.fields.forEach((f) => {
-      if (f.name == fieldName){
-        field = f;
-      }
-    });
-    return field;
+    return this.state.fields.find(field => field.name === fieldName);
   };
 
+  //get form event bus
   this.getEventBus = function() {
     return this.eventBus;
   };
-  
+
   this.init = function(options) {
     this._setInitForm(options);
   };

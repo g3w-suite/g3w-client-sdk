@@ -1,13 +1,17 @@
 const BodyTemplate = require('./body.html');
+// get inputs
 const Inputs = require('gui/inputs/inputs');
 
 const BodyFormComponent = Vue.extend({
   template: BodyTemplate,
   props: ['state'],
-  components: Inputs,
+  components: Inputs, // load inputs as components
   methods: {
+    getInputComponent(field) {
+      return field.input.type+'_input';
+    },
     addToValidate: function(input) {
-      // aggiunge l'input da validare
+      // add input to validate
       this.$emit('addtovalidate', input.validate);
     },
     changeInput: function(input) {
@@ -18,12 +22,8 @@ const BodyFormComponent = Vue.extend({
         this.$emit('reloadlayout');
       }
       return true
-    },
-    datetimepickerShow: function(fieldName) {
-      $(".nano").nanoScroller();
     }
-  },
-  mounted: function() {}
+  }
 });
 
 module.exports = BodyFormComponent;

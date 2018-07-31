@@ -1,12 +1,12 @@
 // Base object that has common  inputs methods
-const Service = require('./service');
+const Service = require('../service');
 
 const BaseInput = {
   props: ['state'],
   data: function() {
     return {
       service: new Service({
-        state: this.state 
+        state: this.state
       })
     }
   },
@@ -14,7 +14,7 @@ const BaseInput = {
   methods: {
     // called when input value chage
     change: function(options) {
-      // validsate input
+      // validate input
       this.service.validate(options);
       // emit change input
       this.$emit('changeinput', this.state);
@@ -22,17 +22,17 @@ const BaseInput = {
     isEditable: function() {
       return this.service.isEditable();
     },
-    isVisible: function() {
-
-    }
+    isVisible: function() {}
   },
-  mounted: function() {
+  created() {
+    // add default values validate and message to show
     Vue.set(this.state.validate, 'valid', true);
     Vue.set(this.state.validate, 'message', null);
     this.change();
-    this.$nextTick(() => {
-      this.$emit('addinput', this.state);
-    })
+    this.$emit('addinput', this.state);
+  },
+  mounted: function() {
+    this.$nextTick(() => {})
   }
 };
 

@@ -54,11 +54,13 @@ const DateTimePickerInput = Vue.extend({
         }
         this.change();
       });
-      $('#'+self.iddatetimepicker).on("dp.show", (e) => {
+      $('#'+this.iddatetimepicker).on("dp.show", (e) => {
         this.$emit('datetimepickershow');
+        $(".nano").nanoScroller();
       });
-      $('#'+self.iddatetimepicker).on("dp.hide", (e) => {
+      $('#'+this.iddatetimepicker).on("dp.hide", (e) => {
         this.$emit('datetimepickershow');
+        $(".nano").nanoScroller();
       });
     });
   }

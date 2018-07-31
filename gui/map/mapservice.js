@@ -788,7 +788,6 @@ proto.flipMapControlsVertically = function() {
 };
 
 proto._updateMapControlsLayout = function({width, height}) {
-
   const HEIGHTWIDTH = 47; // constant
   const MAXFACTOR = 4;
   // mapcontrols element
@@ -797,13 +796,13 @@ proto._updateMapControlsLayout = function({width, height}) {
   const mapControlsHeight = $mapControls.height();
   // mapcontrols width
   const mapControlsWidth = $mapControls.width();
+  // force to udpdate control that are outside mapControls element
+  this._mapControls.forEach((control) => {
+    const map = this.getMap();
+    control.control.changelayout ? control.control.changelayout(map) : null;
+  });
   // check if is vertical
   if (this.isMapControlsVerticalAlignement()) {
-    this._mapControls.forEach((control) => {
-      const map = this.getMap();
-      control.control.changelayout ? control.control.changelayout(map) : null;
-    });
-
     const bottomMapControls =  $(`.ol-control-b${this.getMapControlsAlignement()[0]}`);
     const bottomMapControlsTop = bottomMapControls.length ? $(bottomMapControls[bottomMapControls.length - 1]).position().top: height;
     const HeightFreeSpace =  (height - ((height - bottomMapControlsTop) + HEIGHTWIDTH));
@@ -822,6 +821,9 @@ proto._updateMapControlsLayout = function({width, height}) {
         }
       }
     }
+  } else {
+    // Horizzontal
+    //TODO
   }
 };
 

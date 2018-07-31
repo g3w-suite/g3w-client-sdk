@@ -1,13 +1,12 @@
 const Validators = require('core/validators/inputs/validators');
 const t = require('core/i18n/i18n.service').t;
 
-function Service(options) {
-  options = options || {};
+function Service(options = {}) {
   this.state = options.state || {};
   const validatorType = this.state.type;
   this._validatorOptions = options.validatorOptions || this.state.input.options || {};
-  this._getValidatorType(this.state);
-  // useful for the validator to validate imput
+  //this._getValidatorType(this.state);
+  // useful for the validator to validate input
   this._validator = Validators.get(validatorType);
 }
 

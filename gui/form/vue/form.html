@@ -1,9 +1,9 @@
 <div>
-  <component
+  <component v-for="component in state.components" :key="component.id"
     @reloadlayout="reloadLayout"
     @addtovalidate="addToValidate"
     @changeinput="changeInput"
     :state="state"
-    :is="component" v-for="component in state.components">
+    :is="component">
   </component>
 </div>
