@@ -1,11 +1,11 @@
 <div class="form-group has-feedback">
-  <slot name="inputlabel">
+  <slot name="label">
     <label :for="state.name" class="col-sm-4 control-label">{{ state.label }}
       <span v-if="state.validate && state.validate.required">*</span>
     </label>
   </slot>
   <div class="col-sm-8">
-    <slot name="inputelement">
+    <slot name="body">
       <input
         @keyup="change()"
         v-disabled="!isEditable()"

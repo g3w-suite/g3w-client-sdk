@@ -18,7 +18,7 @@ const BodyFormComponent = Vue.extend({
       this.$emit('changeinput', input);
     },
     reloadLayout: function(index) {
-      if (index == this.state.fields.length - 1) {
+      if (index === this.state.fields.length - 1) {
         this.$emit('reloadlayout');
       }
       return true

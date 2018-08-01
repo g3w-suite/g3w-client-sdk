@@ -4,7 +4,7 @@ function NominatimControl(options) {
   let self = this;
   this.options = {
     provider: 'osm',
-    placeholder: 'Città, indirizzo ... ',
+    placeholder: options.placeholder || 'Città, indirizzo ... ',
     targetType: 'text-input',
     lang: 'it-IT',
     limit: 5,

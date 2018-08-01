@@ -675,7 +675,8 @@ proto.setupControls = function() {
           control = ControlsFactory.create({
             type: controlType,
             bbox: this.project.state.initextent,
-            mapCrs: 'EPSG:'+this.project.state.crs
+            mapCrs: 'EPSG:'+this.project.state.crs,
+            placeholder: t("mapcontrols.nominatim.placeholder")
           });
           control.on('addresschosen', (evt) => {
             const coordinate = evt.coordinate;
