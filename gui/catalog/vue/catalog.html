@@ -33,18 +33,13 @@
       <div v-if="hasBaseLayers" role="tabpanel" class="tab-pane baselayers" :class="{ active: !hasLayers }" id="baselayers">
         <form>
           <ul>
-            <li v-if="!baselayer.fixed" v-for="baselayer in baselayers">
-              <div class="radio">
-                <label>
-                  <input type="radio" name="baselayer" :checked="baselayer.visible" @click.stop="setBaseLayer(baselayer.id)">
-                  {{ baselayer.title }}
-                </label>
-              </div>
-            </li>
-            <li>
-              <div class="radio">
-                <label><input type="radio" name="baselayer" @click.stop="setBaseLayer(null)" :checked="!hasBaseLayersVisible">Nessuna mappa di base</label>
-              </div>
+            <li @click.stop="setBaseLayer(baselayer.id)" v-if="!baselayer.fixed" v-for="baselayer in baselayers">
+              <img :src="getSrcBaseLayerImage(baselayer.name)" class="img-responsive img-thumbnail" :style="{opacity: baselayer.visible ? 1 : 0.5}" >
+              <div class="text-center">{{ baselayer.title }}</div>
+              <input type="checkbox" :id="baselayer.title" class="hidden">
+            <li @click.stop="setBaseLayer(null)" style="cursor: pointer; width: 45%;">
+              <img :src="getSrcBaseLayerImage(null)" class="img-responsive img-thumbnail" :style="{opacity: !hasBaseLayersVisible ? 1 : 0.5}">
+              <div class="text-center" v-t="'nobaselayer'"></div>
             </li>
           </ul>
         </form>

@@ -37,7 +37,6 @@ const vueComponentOptions = {
           color: null
         }
       }
-
     }
   },
   directives: {
@@ -101,6 +100,23 @@ const vueComponentOptions = {
   methods: {
     setBaseLayer: function(id) {
       this.project.setBaseLayer(id);
+    },
+    getSrcBaseLayerImage(baseLayerName) {
+      let image;
+      switch (baseLayerName) {
+        case 'OpenStreetMap':
+          image = 'osm.png';
+          break;
+        case 'Bing Streets':
+          image = 'bingstreet.png';
+          break;
+        case 'Bing Aerial':
+          image = 'bingaerial.png';
+          break;
+        default:
+          image = 'nobaselayer.png';
+      }
+      return `${GUI.getResourcesUrl()}images/${image}`;
     },
     _hideMenu: function() {
       this.layerMenu.show = false;
