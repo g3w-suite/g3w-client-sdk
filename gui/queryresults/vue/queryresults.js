@@ -151,12 +151,11 @@ const vueComponentOptions = {
         boxid = layer.id + '_' + feature.id;
       }
       this.layersFeaturesBoxes[boxid].collapsed = !this.layersFeaturesBoxes[boxid].collapsed;
+      this.$nextTick(() => {
+        $('.queryresults-container .nano').nanoScroller()
+      })
     },
     toggleFeatureBoxAndZoom: function(layer, feature, relation_index) {
-      // Disattivo zoom to sul toggle della featurebox. Casomai lo ripristineremo quando sarà gestito tramite qualche setting
-      /*if (this.collapsedFeatureBox(layer, feature, relation_index)) {
-       this.trigger('gotogeometry',layer,feature)
-       }*/
       this.toggleFeatureBox(layer, feature, relation_index);
     },
     trigger: function(action,layer,feature) {
@@ -184,8 +183,10 @@ const vueComponentOptions = {
     }
   },
   mounted: function() {
-    Vue.nextTick(() => {
-      $('[data-toggle="tooltip"]').tooltip();
+    Vue.nextTick()
+      .then(() => {
+        $('[data-toggle="tooltip"]').tooltip();
+        $('.nano').nanoScroller();
     })
   }
 };
@@ -249,9 +250,7 @@ function QueryResultsComponent(options) {
     this.internalComponent.layersFeaturesBoxes = layersFeaturesBoxes;
   };
 
-  this.layout = function(width,height) {
-    //TODO
-  };
+  this.layout = function(width,height) {};
   this.unmount = function() {
     this.getService().closeComponent();
     return base(this, 'unmount')

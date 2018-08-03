@@ -118,7 +118,7 @@ const InternalComponent = Vue.extend({
         this.table = this.$options.service.buildRelationTable(relations);
         this.currentview = 'relation';
         Vue.nextTick(() => {
-          $(".nano").nanoScroller();
+          $(".query-relations .nano").nanoScroller();
         })
       }).fail((err) => {
         console.log(err)

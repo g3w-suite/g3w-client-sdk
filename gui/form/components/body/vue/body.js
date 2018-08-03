@@ -17,6 +17,9 @@ const BodyFormComponent = Vue.extend({
     changeInput: function(input) {
       this.$emit('changeinput', input);
     },
+    scrollBar() {
+      $('.g3w-form-component_body.nano').nanoScroller();
+    },
     reloadLayout: function(index) {
       if (index === this.state.fields.length - 1) {
         this.$emit('reloadlayout');

@@ -117,9 +117,6 @@
     border-radius: 3px;
     margin-bottom: 10px;
   }
-  .metadata-item-tab.general {
-    background-color: #3c8dbc;
-  }
 
   .metadata-item-tab.spatial {
     background-color: #019A4C;

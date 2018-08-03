@@ -5,6 +5,7 @@
         <component v-for="(field, index) in state.fields" v-if="reloadLayout(index)"
           @changeinput="changeInput"
           @addinput="addToValidate"
+          @datetimepickershow="scrollBar"
           :state="field"
           :is="getInputComponent(field)">
         </component>
