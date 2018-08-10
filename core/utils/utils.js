@@ -70,8 +70,6 @@ const utils = {
       utils.merge(destination, sourceInstance);
       utils.merge(destination.prototype, source.prototype);
   },
-
-
   merge: function merge(destination, source) {
       let key;
       for (key in source) {
@@ -80,11 +78,9 @@ const utils = {
           }
       }
   },
-
   hasOwn: function hasOwn(object, key) {
       return Object.prototype.hasOwnProperty.call(object, key);
   },
-
   inherit:function(childCtor, parentCtor) {
     function tempCtor() {}
     tempCtor.prototype = parentCtor.prototype;
@@ -92,7 +88,6 @@ const utils = {
     childCtor.prototype = new tempCtor();
     childCtor.prototype.constructor = childCtor;
   },
-
   base: function(me, opt_methodName, var_args) {
     const caller = arguments.callee.caller;
     if (caller.superClass_) {
@@ -140,6 +135,31 @@ const utils = {
   reject: function(value){
     const d = $.Deferred();
     d.reject(value);
+    return d.promise();
+  },
+  getValueFromG3WObjectEvent() {
+    //TODO
+  },
+  getAjaxResponses(listRequests = []) {
+    let requestsLenght = listRequests.length;
+    const d = $.Deferred();
+    const DoneRespones = [];
+    const FailedResponses = [];
+    listRequests.forEach((request) => {
+      request.then((response) => {
+        DoneRespones.push(response)
+      })
+      .fail((err) => {
+        FailedResponses.push(err)
+      }).always(() => {
+        requestsLenght = requestsLenght > 0 ? requestsLenght - 1: requestsLenght;
+        if (requestsLenght === 0)
+          d.resolve({
+            done: DoneRespones,
+            fail: FailedResponses
+          })
+      })
+    });
     return d.promise();
   },
   // Appends query parameters to a URI

@@ -110,8 +110,7 @@ function MapService(options) {
       this.setupControls();
       this.emit('viewerset');
     },
-    controlClick: function() {
-    }
+    controlClick: function() {}
   };
 
   this.on('cataloglayerselected', (layer) => {
@@ -159,7 +158,6 @@ function MapService(options) {
   MapLayersStoreRegistry.onafter('removeLayersStore', (layerStore) => {
     this._removeEventsKeysToLayersStore(layerStore);
   });
-
 
   base(this);
 }
