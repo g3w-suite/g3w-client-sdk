@@ -1,7 +1,7 @@
 <template>
   <div>
-    <div :class="g3wtemplate.getColumnClass({width:'3'})" class="metadata-label">{{ data.label }}</div>
-    <div :class="g3wtemplate.getColumnClass({width:'9'})" class="value" style="margin-top:0">
+    <div class="col-sm-3 metadata-label">{{ data.label }}</div>
+    <div class="col-sm-9 value" style="margin-top:0">
       <div v-for="(value, index) in data.value">
         <span class="bbox-labels">{{ bboxlabels[index] }}</span>  {{ value }}
       </div>

@@ -7,8 +7,8 @@
       <li v-if="hasBaseLayers" role="presentation" :class="{ active: !hasLayers }" :style="{width: !hasLayers ? '100%' : '32%'}"><a href="#baselayers" aria-controls="baselayers" role="tab" data-toggle="tab" data-i18n="baselayers" v-t="'baselayers'"></a></li>
       <li v-if="showLegend" role="presentation" :style="{width: hasBaseLayers ? '32%' : '48%'}"><a href="#legend" aria-controls="legend" role="tab" data-toggle="tab" data-i18n="legend" v-t="'legend'"></a></li>
     </ul>
-    <div  class="tab-content">
-      <div role="tabpanel" class="tab-pane tree" :class="{ active: hasLayers }" id="tree">
+    <div class="tab-content">
+      <div role="tabpanel" class="tab-pane" :class="{ active: hasLayers }" id="tree">
         <ul class="tree-root" v-for="_layerstree in state.layerstrees">
           <tristate-tree
             :highlightlayers="state.highlightlayers"
@@ -30,19 +30,16 @@
           <layers-group :layersgroup="layersgroup"></layers-group>
         </ul>
       </div>
-      <div v-if="hasBaseLayers" role="tabpanel" class="tab-pane baselayers" :class="{ active: !hasLayers }" id="baselayers">
-        <form>
-          <ul>
-            <li @click.stop="setBaseLayer(baselayer.id)" v-if="!baselayer.fixed" v-for="baselayer in baselayers">
-              <img :src="getSrcBaseLayerImage(baselayer.name)" class="img-responsive img-thumbnail" :style="{opacity: baselayer.visible ? 1 : 0.5}" >
-              <div class="text-center">{{ baselayer.title }}</div>
-              <input type="checkbox" :id="baselayer.title" class="hidden">
-            <li @click.stop="setBaseLayer(null)" style="cursor: pointer; width: 45%;">
-              <img :src="getSrcBaseLayerImage(null)" class="img-responsive img-thumbnail" :style="{opacity: !hasBaseLayersVisible ? 1 : 0.5}">
-              <div class="text-center" v-t="'nobaselayer'"></div>
-            </li>
-          </ul>
-        </form>
+      <div class="tab-pane baselayers nano-content" v-if="hasBaseLayers" role="tabpanel"  :class="{ active: !hasLayers }" id="baselayers">
+        <ul>
+          <li v-if="!baselayer.fixed" v-for="baselayer in baselayers">
+            <img :src="getSrcBaseLayerImage(baselayer.name)" @click.stop="setBaseLayer(baselayer.id)" class="img-responsive img-thumbnail" :style="{opacity: baselayer.visible ? 1 : 0.5}" >
+            <div class="text-center">{{ baselayer.title }}</div>
+          <li @click.stop="setBaseLayer(null)">
+            <img :src="getSrcBaseLayerImage(null)" class="img-responsive img-thumbnail" :style="{opacity: !hasBaseLayersVisible ? 1 : 0.5}">
+            <div class="text-center" v-t="'nobaselayer'"></div>
+          </li>
+        </ul>
       </div>
       <layerslegend v-for="_layerstree in state.layerstrees" :layerstree="_layerstree" :key="_layerstree.id"></layerslegend>
     </div>

@@ -1,14 +1,14 @@
 <template>
   <div>
-    <div :class="g3wtemplate.getColumnClass({width:'3'})" class="metadata-label">{{ data.label }}</div>
-    <div :class="g3wtemplate.getColumnClass({width:'9'})" class="value" style="margin-top:0">
+    <div class="col-sm-3 metadata-label">{{ data.label }}</div>
+    <div class="col-sm-9 value" style="margin-top:0">
       <div v-for="(value, key) in data.value">
-        <div :class="g3wtemplate.getRowClass()">
-          <div :class="g3wtemplate.getColumnClass({width:'3'})" class="metadata-contact-label">
+        <div class="row">
+          <div class="col-sm-3 metadata-contact-label">
             <i class="contact-icon" :class="iconsClass[key]" aria-hidden="true"></i>
             <span v-t="'metadata.groups.general.fields.subfields.contactinformation.' + key"></span>
           </div>
-          <div :class="g3wtemplate.getColumnClass({width:'9'})">
+          <div class="col-sm-9">
             <template v-if="key == 'personprimary'" >
               <div v-for="(subvalue, key) in value">
                 <span v-t="'metadata.groups.general.fields.subfields.contactinformation.' + key" class="metadata-contact-label"></span>
