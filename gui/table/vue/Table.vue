@@ -1,7 +1,7 @@
 <template>
   <div id="open_attribute_table">
     <b style="color:#3f8dbc; margin-bottom:3px;">{{ state.title }}</b>
-    <table id="layer_attribute_table" class="table table-striped" style="width:100%">
+    <table v-if="hasHeaders()" id="layer_attribute_table" class="table table-striped" style="width:100%">
       <thead>
       <tr>
         <th v-for="header in state.headers">{{ header.label }}</th>
@@ -18,6 +18,8 @@
       </tr>
       </tbody>
     </table>
+    <div id="nohedaers" v-t="'dataTable.no_data'" v-else>
+    </div>
   </div>
 </template>
 
@@ -43,6 +45,9 @@
       zoomAndHighLightSelectedFeature: function(feature, zoom=true) {
         if (this.state.geometry)
           this.$options.service.zoomAndHighLightSelectedFeature(feature, zoom);
+      },
+      hasHeaders() {
+        return !!this.state.headers.length;
       }
     },
     mounted: function() {
@@ -86,5 +91,10 @@
 <style scoped>
   .geometry {
     cursor: pointer
+  }
+  #nohedaers {
+    background-color: #ffffff;
+    font-weight: bold;
+    margin-top: 10px;
   }
 </style>

@@ -311,18 +311,26 @@ proto.getVectorLayerFeaturesFromCoordinates = function(layerId, coordinates) {
 };
 
 proto.getQueryLayersPromisesByCoordinates = function(layerFilterObject, coordinates) {
+  const d = $.Deferred();
   const layers = this.getLayers(layerFilterObject);
-  const queryPromises = [];
+  const queryResponses = [];
   const mapProjection = this.getProjection();
   const resolution = this.getResolution();
+  let layersLenght = layers.length;
   layers.forEach((layer) => {
-    queryPromises.push(layer.query({
+    layer.query({
       coordinates,
       mapProjection,
       resolution
-    }))
+    }).then((response) => {
+      queryResponses.push(response)
+    }).always(() => {
+      layersLenght -= 1;
+      if (layersLenght === 0)
+        d.resolve(queryResponses)
+    })
   });
-  return queryPromises;
+  return d.promise();
 };
 
 //setup controls
@@ -427,11 +435,11 @@ proto.setupControls = function() {
               SELECTEDORALL: true,
               VISIBLE: true
             };
-            let queryPromises = this.getQueryLayersPromisesByCoordinates(layersFilterObject, coordinates);
+
+            let queryResultsPromise = this.getQueryLayersPromisesByCoordinates(layersFilterObject, coordinates);
             const queryResultsPanel = showQueryResults('');
-            $.when.apply(this, queryPromises)
-              .then((...args) => {
-                layersResults = args;
+            queryResultsPromise.then((responses) => {
+                layersResults = responses;
                 const results = {
                   query: layersResults[0] ? layersResults[0].query: null,
                   data: []
@@ -440,11 +448,11 @@ proto.setupControls = function() {
                   result.data ? results.data.push(result.data[0]): null;
                 });
                 queryResultsPanel.setQueryResponse(results, coordinates, this.state.resolution);
-                })
+              })
               .fail(function() {
                 GUI.notify.error(t("info.server_error"));
                 GUI.closeContent();
-              })
+              });
           });
           this.addControl(controlType,control);
           //set active control by default
@@ -473,10 +481,9 @@ proto.setupControls = function() {
                 SELECTED: true,
                 VISIBLE: true
               };
-              let queryPromises = this.getQueryLayersPromisesByCoordinates(layersFilterObject, coordinates);
-              $.when.apply(this, queryPromises)
-                .then((...args) => {
-                  let layersResults = args;
+              let queryResulsPromise = this.getQueryLayersPromisesByCoordinates(layersFilterObject, coordinates);
+              queryResulsPromise.then((responses) => {
+                  let layersResults = responses;
                   const queryPromises = [];
                   results = {};
                   // unify results of the promises

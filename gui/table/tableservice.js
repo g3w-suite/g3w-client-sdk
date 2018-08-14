@@ -5,7 +5,7 @@ const coordinatesToGeometry =  require('core/utils/geo').coordinatesToGeometry;
 const TableService = function(options = {}) {
   this.currentPage = 0; // number of pages
   this.layer = options.layer;
-  const headers = this.getHeaders(this.layer.getFields());
+  const headers = this.getHeaders(this.layer.getTableFields());
   this.projection = this.layer.state.geolayer  ? this.layer.getProjection() : null;
   this.state = {
     pageLengths: [10, 25, 50],
@@ -26,7 +26,7 @@ const proto = TableService.prototype;
 proto.getHeaders = function(fields) {
   const headers = fields.filter((field) => {
     return  ['boundedBy', 'geom','the_geom','geometry','bbox', 'GEOMETRY'].indexOf(field.name) == -1
-  })
+  });
   return headers;
 };
 
@@ -46,23 +46,31 @@ proto.setDataForDataTable = function() {
 
 proto.getData = function({start = 0, order = [], length = this.state.pageLengths[0], search={value:null}} = {}) {
   // reset features before load
-  let searchText = search.value && search.value.length > 0 ? search.value : null
-  this.state.features.splice(0, this.state.features.length);
-  if (!order.length) {
-    order.push({
-      column: 0,
-      dir: 'asc'
-    })
-  }
-  const ordering = order[0].dir == 'asc' ? this.state.headers[order[0].column].name: '-'+this.state.headers[order[0].column].name;
   const d = $.Deferred();
-  this.currentPage = start == 0  ? 1 : (start/length) + 1;
-  this.layer.getDataTable({
-    page: this.currentPage,
-    page_size: length,
-    search: searchText,
-    ordering
-  }).then((data) => {
+
+  if (!this.state.headers.length)
+    d.resolve({
+      data: [],
+      recordsTotal: 0,
+      recordsFiltered: 0
+    });
+  else {
+    let searchText = search.value && search.value.length > 0 ? search.value : null;
+    this.state.features.splice(0, this.state.features.length);
+    if (!order.length) {
+      order.push({
+        column: 0,
+        dir: 'asc'
+      })
+    }
+    const ordering = order[0].dir == 'asc' ? this.state.headers[order[0].column].name : '-'+this.state.headers[order[0].column].name;
+    this.currentPage = start == 0  ? 1 : (start/length) + 1;
+    this.layer.getDataTable({
+      page: this.currentPage,
+      page_size: length,
+      search: searchText,
+      ordering
+    }).then((data) => {
       let features = data.features;
       this.addFeatures(features);
       this.state.pagination = !!data.count;
@@ -74,10 +82,12 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
         recordsTotal: this.state.allfeatures
       });
     })
-    .fail((err) => {
-      GUI.notify.error(t("info.server_error"));
-      d.reject(err);
-    });
+      .fail((err) => {
+        GUI.notify.error(t("info.server_error"));
+        d.reject(err);
+      });
+  }
+
   return d.promise();
 };
 

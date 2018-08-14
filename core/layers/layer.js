@@ -216,6 +216,12 @@ proto.getFields = function() {
   return this.config.fields
 };
 
+proto.getTableFields = function() {
+  return this.config.fields.filter((field) => {
+    return field.show
+  })
+};
+
 proto.getProject = function() {
   return this.config.project;
 };

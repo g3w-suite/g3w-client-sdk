@@ -92,6 +92,7 @@ proto.handleQueryResponseFromServer = function(layerName, response, projections)
       try {
         if (_.isString(response)) {
           let layerNameSanitazed = layerName.replace(/[/\s]/g, '');
+          layerNameSanitazed = layerNameSanitazed.replace("'", '');
           layerNameSanitazed = layerNameSanitazed.replace(')', '\\)');
           layerNameSanitazed = layerNameSanitazed.replace('(', '\\(');
           let reg = new RegExp(layerNameSanitazed, "g");
