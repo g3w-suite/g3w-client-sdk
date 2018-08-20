@@ -1,10 +1,10 @@
 const inherit = require('core/utils/utils').inherit;
+const t = require('core/i18n/i18n.service').t;
 const base = require('core/utils//utils').base;
 const G3WObject = require('core/g3wobject');
 
-function Step(options) {
+function Step(options={}) {
   base(this);
-  options = options || {};
   this._inputs = options.inputs || null;
   this._task = options.task || null;
   this._outputs = options.outputs || null;
@@ -13,7 +13,7 @@ function Step(options) {
   this.state = {
     id: options.id || null,
     name: options.name || null,
-    help: options.help || null, // help che verrà visualizzato per descrivere a cosa serve
+    help: options.help ? t(options.help) : null, // help che verrà visualizzato per descrivere a cosa serve
     running: false, // se è in fase di lavorazione
     error: null, // riporta se c'è stato un errore
     message: options.message || null // eventuale messaggio da presentare all'utente
