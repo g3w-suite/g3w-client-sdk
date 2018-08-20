@@ -27,9 +27,9 @@ const BaseInput = {
   created() {
     Vue.set(this.state.validate, 'valid', true);
     Vue.set(this.state.validate, 'message', null);
+    this.change();
   },
   mounted: function() {
-    this.change();
     this.$nextTick(() => {
       this.$emit('addinput', this.state);
     })

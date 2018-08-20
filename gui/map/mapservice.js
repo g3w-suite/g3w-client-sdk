@@ -10,7 +10,6 @@ const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const Filter = require('core/layers/filter/filter');
 const WFSProvider = require('core/layers/providers/wfsprovider');
 const ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
-const resToScale = require('g3w-ol3/src/utils/utils').resToScale;
 const ControlsFactory = require('gui/map/control/factory');
 const StreetViewService = require('gui/streetview/streetviewservice');
 const ControlsRegistry = require('gui/map/control/registry');
