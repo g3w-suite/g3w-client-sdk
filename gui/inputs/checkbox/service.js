@@ -2,9 +2,9 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const Service = require('gui/inputs/service');
 
-function CheckBoxService(options) {
-  options = options || {};
+function CheckBoxService(options={}) {
   base(this, options);
+  this.state.value = this.state.value !== undefined ? this.state.value : this.convertCheckedToValue(false);
 }
 
 inherit(CheckBoxService, Service);

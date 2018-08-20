@@ -6,7 +6,7 @@ const BaseInput = {
   data: function() {
     return {
       service: new Service({
-        state: this.state 
+        state: this.state
       })
     }
   },
@@ -22,13 +22,13 @@ const BaseInput = {
     isEditable: function() {
       return this.service.isEditable();
     },
-    isVisible: function() {
-
-    }
+    isVisible: function() {}
   },
-  mounted: function() {
+  created() {
     Vue.set(this.state.validate, 'valid', true);
     Vue.set(this.state.validate, 'message', null);
+  },
+  mounted: function() {
     this.change();
     this.$nextTick(() => {
       this.$emit('addinput', this.state);
