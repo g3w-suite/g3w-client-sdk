@@ -25,14 +25,14 @@ const BaseInput = {
     isVisible: function() {}
   },
   created() {
-    // add default values validate and message to show
     Vue.set(this.state.validate, 'valid', true);
     Vue.set(this.state.validate, 'message', null);
-    this.change();
-    this.$emit('addinput', this.state);
   },
   mounted: function() {
-    this.$nextTick(() => {})
+    this.change();
+    this.$nextTick(() => {
+      this.$emit('addinput', this.state);
+    })
   }
 };
 

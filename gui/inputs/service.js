@@ -5,8 +5,8 @@ function Service(options = {}) {
   this.state = options.state || {};
   const validatorType = this.state.type;
   this._validatorOptions = options.validatorOptions || this.state.input.options || {};
-  //this._getValidatorType(this.state);
-  // useful for the validator to validate input
+  this._getValidatorType(this.state);
+  // useful for the validator to validate imput
   this._validator = Validators.get(validatorType);
 }
 
@@ -14,6 +14,18 @@ const proto = Service.prototype;
 
 proto.getState = function() {
   return this.state;
+};
+
+proto.getValue = function() {
+  return this.state.value;
+};
+
+proto.setValue = function(value) {
+  this.state.value = value;
+};
+
+proto.addValueToValues = function(value) {
+  this.state.input.options.values.push(value)
 };
 
 proto._getValidatorType = function(input) {

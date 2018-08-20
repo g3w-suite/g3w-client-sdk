@@ -10,6 +10,7 @@ const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const Filter = require('core/layers/filter/filter');
 const WFSProvider = require('core/layers/providers/wfsprovider');
 const ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
+const resToScale = require('g3w-ol3/src/utils/utils').resToScale;
 const ControlsFactory = require('gui/map/control/factory');
 const StreetViewService = require('gui/streetview/streetviewservice');
 const ControlsRegistry = require('gui/map/control/registry');
@@ -158,7 +159,6 @@ function MapService(options) {
   MapLayersStoreRegistry.onafter('removeLayersStore', (layerStore) => {
     this._removeEventsKeysToLayersStore(layerStore);
   });
-
   base(this);
 }
 
@@ -1251,14 +1251,17 @@ proto.getOverviewMapLayers = function(project) {
   return overviewMapLayers.reverse();
 };
 
-proto.updateMapLayer = function(mapLayer) {
-  mapLayer.update(this.state, this.getResolution())
+proto.updateMapLayer = function(mapLayer, options={force: false}) {
+  if (!options.force)
+    mapLayer.update(this.state, this.getResolution());
+  else
+    mapLayer.update(this.state, {"time": Date.now()})
 };
 
 // run update function on ech mapLayer
-proto.updateMapLayers = function() {
+proto.updateMapLayers = function(options) {
   this.getMapLayers().forEach((mapLayer) => {
-    this.updateMapLayer(mapLayer)
+    this.updateMapLayer(mapLayer, options)
   });
   const baseLayers = this.getBaseLayers();
   //updatebase layer
@@ -1438,8 +1441,8 @@ proto.clearHighlightGeometry = function() {
   }
 };
 
-proto.refreshMap = function() {
-  this.updateMapLayers()
+proto.refreshMap = function(options) {
+  this.updateMapLayers(options);
 };
 
 // called when layout (window) resize
