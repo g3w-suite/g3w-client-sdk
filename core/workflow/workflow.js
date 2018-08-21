@@ -4,6 +4,7 @@ const base = require('core/utils//utils').base;
 const G3WObject = require('core/g3wobject');
 const Flow = require('./flow');
 const WorkflowsStack = require('./workflowsstack');
+const MESSAGES = require('./step').MESSAGES;
 //Class to manage flow of steps
 function Workflow(options) {
   base(this);
@@ -19,6 +20,7 @@ function Workflow(options) {
   this._child = null;
   // stack workflowindex
   this._stackIndex = null;
+  this._messages = MESSAGES;
 }
 
 inherit(Workflow, G3WObject);
@@ -86,6 +88,20 @@ proto.getStep = function(index) {
   return this._steps[index];
 };
 
+proto.setMessages = function(messages) {
+  for (let messageKey in messages) {
+    this._messages[messageKey] = messages[messageKey];
+  }
+};
+
+proto.getMessages = function() {
+  return this._messages;
+};
+
+proto.clearMessages = function() {
+  this._messages.help = null;
+};
+
 proto.getLastStep = function() {
   const length = this._steps.length;
   if (length) {
@@ -129,6 +145,7 @@ proto.start = function(options) {
     .fail((error) => {
       d.reject(error);
     });
+
   return d.promise();
 };
 
@@ -150,7 +167,10 @@ proto.stop = function() {
         .fail((err) => {
           // mi serve per capire cosa fare
           d.reject(err)
-        });
+        })
+        .always(() => {
+          this.clearMessages();
+        })
   });
   return d.promise();
 };

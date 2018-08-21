@@ -8,15 +8,14 @@ function Step(options={}) {
   this._inputs = options.inputs || null;
   this._task = options.task || null;
   this._outputs = options.outputs || null;
-
   //dynamic state of step
   this.state = {
     id: options.id || null,
     name: options.name || null,
-    help: options.help ? t(options.help) : null, // help che verrà visualizzato per descrivere a cosa serve
-    running: false, // se è in fase di lavorazione
-    error: null, // riporta se c'è stato un errore
-    message: options.message || null // eventuale messaggio da presentare all'utente
+    help: options.help ? t(options.help) : null, // help to show wat the user has to do
+    running: false, // running
+    error: null, // error
+    message: options.message || null // message
   }
 }
 
@@ -119,6 +118,10 @@ proto.setOutputs = function(outputs) {
 
 proto.getOutputs = function() {
   return this._outputs;
+};
+
+Step.MESSAGES = {
+  help: null
 };
 
 

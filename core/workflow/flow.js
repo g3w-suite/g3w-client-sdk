@@ -8,20 +8,19 @@ function Flow() {
   let inputs;
   let counter = 0;
   let context = null;
-  let workflow;
   let d;
-
+  let _workflow;
   //start workflow
   this.start = function(workflow) {
     d = $.Deferred();
     if (counter > 0) {
       console.log("reset workflow before restarting");
     }
-    workflow = workflow;
+    _workflow = workflow;
     inputs = workflow.getInputs();
     context = workflow.getContext();
     steps = workflow.getSteps();
-    // check if there are stes
+    // check if there are steps
     if (steps && steps.length) {
       //run step (first)
       this.runStep(steps[0], inputs, context);
@@ -33,6 +32,9 @@ function Flow() {
   //run step
   this.runStep = function(step, inputs) {
     //run step that run task
+    _workflow.setMessages({
+      help: step.state.help
+    });
     step.run(inputs, context)
       .then((outputs) => {
         this.onDone(outputs);
