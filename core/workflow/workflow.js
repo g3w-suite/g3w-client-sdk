@@ -89,9 +89,10 @@ proto.getStep = function(index) {
 };
 
 proto.setMessages = function(messages) {
-  for (let messageKey in messages) {
+  Object.assign(this._messages, messages);
+  /*for (let messageKey in messages) {
     this._messages[messageKey] = messages[messageKey];
-  }
+  }*/
 };
 
 proto.getMessages = function() {
