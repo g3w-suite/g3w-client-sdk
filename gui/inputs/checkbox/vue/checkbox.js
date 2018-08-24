@@ -1,9 +1,10 @@
 // oggetto base utilizzato per i mixins
 const Input = require('gui/inputs/input');
 const Service = require('../service');
+const WidgetMixins = require('gui/inputs/widgetmixins');
 
 const CheckBoxInput = Vue.extend({
-  mixins: [Input],
+  mixins: [Input, WidgetMixins],
   template: require('./checkbox.html'),
   data: function() {
     const values = _.map(this.state.input.options, function(option) {
@@ -18,22 +19,33 @@ const CheckBoxInput = Vue.extend({
           values: values
         }
       }),
-      value: null,
+      value: false,
       label: label,
       id: 'checkboxinput_' + Date.now() // vado a mettere un id nuovo sempre per le label
     }
   },
   methods: {
-    changeCheckBox: function() {
+    setLabel(){
       // convert label
       this.label = this.service.convertCheckedToValue(this.value);
-      //run validator
-      this.change();
+    },
+    setValue(value) {
+      this.value = this.service.convertValueToChecked(value);
+    },
+    changeCheckBox: function() {
+      // convert label
+      this.setLabel();
+      this.widgetChanged();
+    },
+    stateValueChanged(value) {
+      this.setValue(value);
+      this.setLabel();
     }
   },
   mounted: function() {
     this.value = this.service.convertValueToChecked();
-    this.changeCheckBox();
+    this.setLabel();
+    this.change();
   }
 });
 

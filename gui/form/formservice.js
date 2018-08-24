@@ -9,6 +9,9 @@ function FormService() {
     setInitForm: function(options) {
       this._setInitForm(options);
     },
+    setFormStructure: function(formStructure) {
+      this.state.formstructure = formStructure;
+    },
     // setter change fields
     setFormFields: function (fields) {
       this.state.fields = fields;
@@ -33,13 +36,12 @@ function FormService() {
     }
   };
   // init form options paased for example by editor
-  this._setInitForm = function(options) {
-    options = options || {};
+  this._setInitForm = function(options={}) {
     this.title = options.title || 'Form';
     this.formId = options.formId;
-    this.name = options.name; 
-    this.pk = options.pk || null; 
-    this.buttons = options.buttons || []; 
+    this.name = options.name;
+    this.pk = options.pk || null;
+    this.buttons = options.buttons || [];
     this._pickedPromise = null;
     this.state = {
       title: this.title,
@@ -47,10 +49,11 @@ function FormService() {
       buttons: this.buttons,
       disabled: false,
       valid: true, // global form validation state. True at beginning
-        // when input change will be update 
+        // when input change will be update
       tovalidate: [] // object array to be validate. They have at list valid key (boolean)
     };
     this.setFormFields(options.fields);
+    this.setFormStructure(options.formStructure);
   };
   // Every input send to form it valid value that will change the genaral state of form
   this.isValid = function() {
@@ -90,7 +93,7 @@ function FormService() {
   this.getEventBus = function() {
     return this.eventBus;
   };
-  
+
   this.init = function(options) {
     this._setInitForm(options);
   };

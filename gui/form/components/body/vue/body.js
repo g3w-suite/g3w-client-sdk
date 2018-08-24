@@ -1,10 +1,14 @@
 const BodyTemplate = require('./body.html');
 const Inputs = require('gui/inputs/inputs');
+import Tabs from './tabs/tabs.vue';
 
 const BodyFormComponent = Vue.extend({
   template: BodyTemplate,
   props: ['state'],
-  components: Inputs,
+  components: {
+    ...Inputs,
+    Tabs
+  },
   methods: {
     addToValidate: function(input) {
       // aggiunge l'input da validare
@@ -19,10 +23,16 @@ const BodyFormComponent = Vue.extend({
       }
       return true
     },
-    datetimepickerShow: function(fieldName) {
+    datetimepickerShow: function() {
       $(".nano").nanoScroller();
     }
   },
+  computed: {
+    hasFormStructure() {
+      return !!this.state.formstructure;
+    }
+  },
+  created() {},
   mounted: function() {}
 });
 

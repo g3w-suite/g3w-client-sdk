@@ -25,6 +25,8 @@ const proto = Step.prototype;
 
 // method to start task
 proto.run = function(inputs, context) {
+  //emit run
+  this.emit('run', {inputs, context});
   const d = $.Deferred();
   if (this._task) {
     try {
@@ -56,6 +58,8 @@ proto.stop = function() {
   this._task.stop();
   // running to false
   this.state.running = false;
+  //emit run
+  this.emit('stop');
 };
 
 // revert task

@@ -7,7 +7,7 @@ const Feature = require('./features/feature');
 const Relations = require('core/relations/relations');
 
 
-// Base Layer tht support editing
+// Base Layer that support editing
 function TableLayer(config, options) {
   options = options || {}; // to add more informations
   const ProjectsRegistry = require('core/project/projectsregistry');

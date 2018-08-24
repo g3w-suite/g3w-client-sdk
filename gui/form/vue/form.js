@@ -57,12 +57,12 @@ const vueComponentObject = {
       // calculate heigth body
       let centralHeight = height - (notBodyElementHeight); // central form dom
       let heightToAppy = (centralHeight/ centralElementsNumber) - 15; // height of others part
-      // check height of the bosy 
+      // check height of the bosy
       let bodyElementHeight = $(this.$el).find(".g3w-form-component_body .box-primary").outerHeight() + 20;
-      bodyElementHeight =  bodyElementHeight > heightToAppy ? heightToAppy: bodyElementHeight ; 
+      bodyElementHeight =  bodyElementHeight > heightToAppy ? heightToAppy: bodyElementHeight ;
       $(this.$el).find(".g3w-form-component_body").height(bodyElementHeight);
-      centralHeight = centralHeight - bodyElementHeight; 
-      centralElementsNumber-=1; 
+      centralHeight = centralHeight - bodyElementHeight;
+      centralElementsNumber-=1;
       heightToAppy = (centralHeight/ centralElementsNumber) - 15;
       centralElements.forEach((element) => {
         element.height(heightToAppy)
@@ -70,6 +70,7 @@ const vueComponentObject = {
       $(".nano").nanoScroller();
     }
   },
+  created() {},
   mounted: function() {
     this.$options.service.getEventBus().$on('addtovalidate', this.addToValidate);
     this.$nextTick(() => {
@@ -79,8 +80,7 @@ const vueComponentObject = {
   }
 };
 
-function FormComponent(options) {
-  options = options || {};
+function FormComponent(options={}) {
   options.id = options.id || 'form';
   // qui vado a tenere traccia delle tre cose che mi permettono di customizzare
   base(this, options);
@@ -106,7 +106,7 @@ function FormComponent(options) {
   this.addComponentAfterFooter = function(Component) {
     //TODO
   };
-  // overwrite father mount method. 
+  // overwrite father mount method.
   this.mount = function(parent, append) {
     return base(this, 'mount', parent, append)
     .then(() => {

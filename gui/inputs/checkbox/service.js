@@ -23,13 +23,14 @@ proto.convertCheckedToValue = function(checked) {
   return value;
 };
 
-proto.convertValueToChecked = function() {
+proto.convertValueToChecked = function(value=null) {
   let checked = null;
+  const valueToCheck = value|| this.state.value;
   const options = this.state.input.options;
-  if (this.state.value === null)
+  if (valueToCheck === null)
     return false;
   options.forEach((option) => {
-    if (option.value === this.state.value) {
+    if (option.value === valueToCheck) {
       checked = option.checked;
       return false;
     }

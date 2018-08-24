@@ -22,6 +22,7 @@ function Layer(config = {}) {
     origname: config.origname || null,
     capabilities: config.capabilities || null,
     editops: config.editops || null,
+    editor_form_structure: config.editor_form_structure || null,
     infoformat: config.infoformat || null,
     servertype: config.servertype || null,
     source: config.source || null,
@@ -216,6 +217,10 @@ proto.getFields = function() {
   return this.config.fields
 };
 
+proto.getEditingFields = function() {
+  return this.config.editing.fields;
+};
+
 proto.getTableFields = function() {
   return this.config.fields.filter((field) => {
     return field.show
@@ -228,6 +233,10 @@ proto.getProject = function() {
 
 proto.getConfig = function() {
   return this.config;
+};
+
+proto.getEditorFormStructure = function() {
+  return this.config.editor_form_structure;
 };
 
 proto.getState = function() {
