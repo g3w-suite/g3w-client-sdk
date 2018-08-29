@@ -1,6 +1,6 @@
 const BodyTemplate = require('./body.html');
 const Inputs = require('gui/inputs/inputs');
-import Tabs from './tabs/tabs.vue';
+import Tabs from '../../../../tabs/tabs.vue';
 
 const BodyFormComponent = Vue.extend({
   template: BodyTemplate,

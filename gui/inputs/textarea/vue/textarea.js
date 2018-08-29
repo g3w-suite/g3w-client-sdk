@@ -2,7 +2,8 @@
 var Input = require('gui/inputs/input');
 
 var TextAreaInput = Vue.extend({
-  mixins: [Input]
+  mixins: [Input],
+  template: require('./textarea.html')
 });
 
 module.exports = TextAreaInput;

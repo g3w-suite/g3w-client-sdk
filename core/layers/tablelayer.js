@@ -8,8 +8,7 @@ const Relations = require('core/relations/relations');
 
 
 // Base Layer that support editing
-function TableLayer(config, options) {
-  options = options || {}; // to add more informations
+function TableLayer(config, options={}) {
   const ProjectsRegistry = require('core/project/projectsregistry');
   // setters
   this.setters = {
@@ -264,9 +263,8 @@ proto.isPkEditable = function() {
 };
 
 // get configuration from server
-proto.getEditingConfig = function(options) {
+proto.getEditingConfig = function(options={}) {
   const d = $.Deferred();
-  options = options || {};
   const provider = this.getProvider('data');
   provider.getConfig(options)
     .then((config) => {

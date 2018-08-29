@@ -4,6 +4,7 @@ const Component = require('gui/vue/component');
 const QueryResultsService = require('gui/queryresults/queryresultsservice');
 const t = require('core/i18n/i18n.service').t;
 const fieldsMixin = require('gui/vue/vue.mixins').fieldsMixin;
+import Tabs from '../../tabs/tabs.vue';
 
 const maxSubsetLength = 3;
 const headerExpandActionCellWidth = 10;
@@ -23,6 +24,9 @@ const vueComponentOptions = {
       openlink: t("info.open_link")
     }
   },
+  components: {
+    Tabs
+  },
   computed: {
     hasLayers: function() {
       return !!this.state.layers.length || !!this.state.components.length;
@@ -32,6 +36,9 @@ const vueComponentOptions = {
     }
   },
   methods: {
+    hasFormStructure(layer) {
+      return !!layer.formStructure;
+    },
     showResults() {
       this.hasResults = true;
     },
@@ -153,10 +160,6 @@ const vueComponentOptions = {
       this.layersFeaturesBoxes[boxid].collapsed = !this.layersFeaturesBoxes[boxid].collapsed;
     },
     toggleFeatureBoxAndZoom: function(layer, feature, relation_index) {
-      // Disattivo zoom to sul toggle della featurebox. Casomai lo ripristineremo quando sarà gestito tramite qualche setting
-      /*if (this.collapsedFeatureBox(layer, feature, relation_index)) {
-       this.trigger('gotogeometry',layer,feature)
-       }*/
       this.toggleFeatureBox(layer, feature, relation_index);
     },
     trigger: function(action,layer,feature) {
@@ -171,6 +174,19 @@ const vueComponentOptions = {
     fieldIs: function(TYPE,layer,attributeName,attributeValue) {
       const fieldType = this.getFieldType(attributeValue);
       return fieldType === TYPE;
+    },
+    getQueryFields(layer, feature) {
+      const fields = [];
+      for (const field of layer.formStructure.fields) {
+        const _field = {...field};
+        _field.query = true;
+        _field.value = feature.attributes[field.name];
+        _field.input = {
+          type: `${this.getFieldType(_field.value)}_field`
+        };
+        fields.push(_field);
+      }
+      return fields;
     }
   },
   watch: {

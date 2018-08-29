@@ -50,7 +50,12 @@ function FormService() {
       disabled: false,
       valid: true, // global form validation state. True at beginning
         // when input change will be update
-      tovalidate: [] // object array to be validate. They have at list valid key (boolean)
+      tovalidate: [], // object array to be validate. They have at list valid key (boolean)
+      addedcomponent: {
+        header: false,
+        body: false,
+        footer: false
+      }
     };
     this.setFormFields(options.fields);
     this.setFormStructure(options.formStructure);
@@ -79,13 +84,9 @@ function FormService() {
   this.getFields = function() {
     return this.state.fields;
   };
-
   this._getField = function(fieldName){
-    let field = null;
-    this.state.fields.forEach((f) => {
-      if (f.name == fieldName){
-        field = f;
-      }
+    const field = this.state.fields.find((field) => {
+      return field.name === fieldName
     });
     return field;
   };

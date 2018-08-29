@@ -6,9 +6,6 @@ const TabsMixins = {
     },
     changeInput: function(input) {
       this.$emit('changeinput', input);
-    },
-    getNodeType(node) {
-      return node.groupbox ? 'group': 'field';
     }
   }
 };

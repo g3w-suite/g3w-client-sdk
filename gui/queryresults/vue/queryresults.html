@@ -12,27 +12,61 @@
               </div>
             </div>
             <div class="box-body">
-              <table class="table">
+              <template v-if="hasFormStructure(layer)">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th v-for="n in state.layersactions[layer.id]" :style="{ width:headerExpandActionCellWidth + '%' }"></th>
+                      <th v-for="(attribute, index) in attributesSubset(layer.attributes)">{{attribute.label}}</th>
+                      <th v-if="!hasOneLayerAndOneFeature"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template v-if="feature.show" v-for="feature in layer.features">
+                      <tr @click="toggleFeatureBoxAndZoom(layer,feature)" @mouseover="trigger('highlightgeometry',layer,feature)" @mouseout="trigger('clearHighlightGeometry')" class="featurebox-header" :class="[collapsedFeatureBox(layer,feature) ? '' : 'featurebox-header-open']">
+                        <td v-for="action in state.layersactions[layer.id]">
+                          <span @click.stop="trigger(action.id,layer,feature)"  class="action-button" data-placement="top" data-toggle="tooltip" :title="action.hint">
+                            <span :class="'action-button-icon ' + action.class"></span>
+                          </span>
+                        </td>
+                        <td style="text-overflow: ellipsis;white-space: nowrap;overflow: hidden;" v-for="attribute in attributesSubset(layer.attributes)">
+                          <span>{{feature.attributes[attribute.name]}}</span>
+                        </td>
+                        <td class="action-cell" style="text-align: right; padding-right: 3px">
+                          <span v-if="!hasOneLayerAndOneFeature" class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? 'fa-plus' : 'fa-minus']"></span>
+                          <span v-else></span>
+                        </td>
+                      </tr>
+                      <tr v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature" class="featurebox-body">
+                        <td :colspan="attributesSubsetLength(layer.attributes)+state.layersactions[layer.id].length+(state.layersactions[layer.id].length ? 1 : 0)">
+                          <tabs :fields="getQueryFields(layer, feature)" :tabs="layer.formStructure.structure"></tabs>
+                        </td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </template>
+              <table v-else class="table">
                 <thead>
-                <tr>
-                  <th v-for="n in state.layersactions[layer.id]" :style="{ width:headerExpandActionCellWidth + '%' }"></th>
-                  <th v-for="(attribute, index) in attributesSubset(layer.attributes)">{{attribute.label}}</th>
-                  <th v-if="!hasOneLayerAndOneFeature"></th>
-                </tr>
+                  <tr>
+                    <th v-for="n in state.layersactions[layer.id]" :style="{ width:headerExpandActionCellWidth + '%' }"></th>
+                    <th v-for="(attribute, index) in attributesSubset(layer.attributes)">{{attribute.label}}</th>
+                    <th v-if="!hasOneLayerAndOneFeature"></th>
+                  </tr>
                 </thead>
                 <tbody>
                 <template v-if="feature.show" v-for="feature in layer.features">
-                  <tr @click="toggleFeatureBoxAndZoom(layer,feature);" @mouseover="trigger('highlightgeometry',layer,feature)" @mouseout="trigger('clearHighlightGeometry')" class="featurebox-header" :class="[collapsedFeatureBox(layer,feature) ? '' : 'featurebox-header-open']">
+                  <tr @click="toggleFeatureBoxAndZoom(layer,feature)" @mouseover="trigger('highlightgeometry',layer,feature)" @mouseout="trigger('clearHighlightGeometry')" class="featurebox-header" :class="[collapsedFeatureBox(layer,feature) ? '' : 'featurebox-header-open']">
                     <td v-for="action in state.layersactions[layer.id]">
                       <span @click.stop="trigger(action.id,layer,feature)"  class="action-button" data-placement="top" data-toggle="tooltip" :title="action.hint">
                         <span :class="'action-button-icon ' + action.class"></span>
                       </span>
                     </td>
-                    <td v-for="attribute in attributesSubset(layer.attributes)">
+                    <td style="text-overflow: ellipsis;white-space: nowrap;overflow: hidden;" v-for="attribute in attributesSubset(layer.attributes)">
                       <span>{{feature.attributes[attribute.name]}}</span>
                     </td>
                     <td class="action-cell">
-                      <span v-if="!hasOneLayerAndOneFeature" class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? 'fa-plus' : 'fa-minus']"></span>
+                      <span v-if="!hasOneLayerAndOneFeature"  class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? 'fa-plus' : 'fa-minus']"></span>
                       <span v-else></span>
                     </td>
                   </tr>

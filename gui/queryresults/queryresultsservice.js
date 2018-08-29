@@ -95,6 +95,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     layerRelationsAttributes,
     layerTitle,
     layerId;
+  let formStructure;
   featuresForLayers.forEach((featuresForLayer) => {
     featuresForLayer = featuresForLayer;
     const layer = featuresForLayer.layer;
@@ -103,8 +104,15 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       layerRelationsAttributes = [];
       layerTitle = layer.getTitle();
       layerId = layer.getId();
-    }
-    else if (layer instanceof ol.layer.Vector){
+
+      if (layer.hasFormStructure()) {
+        let fields = layer.getFields();
+        formStructure = {
+          structure: layer.getEditorFormStructure(),
+          fields
+        }
+      }
+    } else if (layer instanceof ol.layer.Vector){
       layerAttributes = layer.getProperties();
       layerRelationsAttributes =  [];
       layerTitle = layer.get('name');
@@ -121,6 +129,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       expandable: true,
       hasImageField: false,
       relationsattributes: layerRelationsAttributes,
+      formStructure,
       error: ''
     };
 
