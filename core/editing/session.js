@@ -303,11 +303,15 @@ proto._serializeCommit = function(itemsToCommit) {
             layer.delete.push(item.getId());
           break;
         default:
-          layer[item.getState()].push(GeoJSONFormat.writeFeatureObject(item));
+          const value = GeoJSONFormat.writeFeatureObject(item);
+          for (const key in value.properties) {
+           if (value.properties[key] && typeof value.properties[key] === 'object' && value.properties[key].constructor === Object)
+             value.properties[key] = value.properties[key].value;
+          }
+          layer[item.getState()].push(value);
           break;
       }
     });
-
   });
   return commitObj;
 };

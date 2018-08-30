@@ -131,4 +131,7 @@
   .title{
     font-weight: bold;
   }
+  .row {
+    margin-bottom: 5px;
+  }
 </style>

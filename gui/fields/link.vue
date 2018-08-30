@@ -1,6 +1,6 @@
 <template>
   <field :state="state">
-    <button slot="field" class="btn btn-info field_link" v-t="'info.open_link'" @click="openLink(state.value)"></button>
+    <button slot="field" class="btn btn-info field_link" v-t="'info.link_button'" @click="openLink(state.value)"></button>
   </field>
 </template>
 

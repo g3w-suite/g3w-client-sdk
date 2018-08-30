@@ -1,18 +1,22 @@
 // oggetto base utilizzato per i mixins
 const InputMixins = require('gui/inputs/input');
-const WidgetMixins = require('gui/inputs/widgetmixins');
 const Service = require('../service');
 const GUI = require('gui/gui');
 
 const IntegerInput = Vue.extend({
-  mixins: [InputMixins, WidgetMixins],
+  mixins: [InputMixins],
   data: function() {
     return {
       service: new Service({
         state: this.state
       }),
-      media: this.getMediaType(this.state.value),
-      value: this.state.value
+      media: {
+        type: null,
+        options: {
+          format: null
+        }
+      },
+      value: null
     }
   },
   template: require('./media.html'),
@@ -41,9 +45,12 @@ const IntegerInput = Vue.extend({
         done: (e, data) => {
           const response = data.result[fieldName];
           if (response) {
-            self.value = response.filename;
+            self.value = response.value;
             self.media = {...self.getMediaType(response.mime_type)};
-            self.state.value =  self.value;
+            self.state.value =  {
+              value: self.value,
+              mime_type: response.mime_type
+            };
             self.change();
           }
         },
@@ -78,7 +85,6 @@ const IntegerInput = Vue.extend({
           break;
         default:
       }
-      console.log(mime_type)
       return media;
     },
     createImage: function(file, field) {
@@ -96,10 +102,16 @@ const IntegerInput = Vue.extend({
       return value
     },
     clearMedia() {
-      this.value = this.state.value = '';
+      $(this.$el).find('input:file').filestyle('clear');
+      this.value = this.state.value = null;
     }
   },
-  created() {},
+  created() {
+    if (this.state.value) {
+      this.value = this.state.value.value;
+      this.media = this.getMediaType(this.state.value.mime_type);
+    }
+  },
   mounted() {
     this.$nextTick(() => {
       $(this.$el).find('input:file').filestyle({

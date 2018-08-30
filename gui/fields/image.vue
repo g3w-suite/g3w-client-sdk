@@ -2,7 +2,7 @@
   <field :state="state">
     <div class="container-fluid" slot="field">
       <div  class="row">
-        <div v-for="(value, index) in values" class="col-sm-12">
+        <div v-for="(value, index) in values" class="col-sm-12 image">
           <img class="img-responsive" @click="showGallery(index)" :src="getSrc(value)"/>
         </div>
       </div>

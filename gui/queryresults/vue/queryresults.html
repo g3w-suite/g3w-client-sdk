@@ -32,7 +32,7 @@
                         <td style="text-overflow: ellipsis;white-space: nowrap;overflow: hidden;" v-for="attribute in attributesSubset(layer.attributes)">
                           <span>{{feature.attributes[attribute.name]}}</span>
                         </td>
-                        <td class="action-cell" style="text-align: right; padding-right: 3px">
+                        <td class="action-cell">
                           <span v-if="!hasOneLayerAndOneFeature" class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? 'fa-plus' : 'fa-minus']"></span>
                           <span v-else></span>
                         </td>

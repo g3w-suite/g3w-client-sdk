@@ -86,7 +86,7 @@ const vueComponentObject = {
   }
 };
 
-function FormComponent(options={}) {
+function FormComponent(options = {}) {
   options.id = options.id || 'form';
   // qui vado a tenere traccia delle tre cose che mi permettono di customizzare
   base(this, options);

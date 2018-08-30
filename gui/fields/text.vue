@@ -1,16 +1,16 @@
 <template>
-  <table class="field_text_table">
-    <td class="field_label">{{state.label}}</td>
-    <td class="value"><span>{{ state.value }}</span></td>
-  </table>
+  <field :state="state"></field>
 </template>
 
 <script>
+  import Field from './field.vue';
   export default {
     name: "text",
     props: ['state'],
-    created() {
-    }
+    components: {
+      Field
+    },
+    created() {}
   }
 </script>
 
