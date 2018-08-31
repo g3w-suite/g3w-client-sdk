@@ -57,7 +57,7 @@ const vueComponentObject = {
       let centralHeight = height - (notBodyElementHeight); // central form dom
       let heightToAppy = (centralHeight/ centralElementsNumber) - 15; // height of others part
       // check height of the body
-      if (this.state.addedcomponent.body) {
+      if (this.state.addedcomponentto.body) {
         let bodyElementHeight = $(this.$el).find(".g3w-form-component_body .box-primary").outerHeight() + 20;
         bodyElementHeight =  bodyElementHeight > heightToAppy ? heightToAppy: bodyElementHeight ;
         $(this.$el).find(".g3w-form-component_body").height(bodyElementHeight);
@@ -98,12 +98,12 @@ function FormComponent(options = {}) {
   this.init(options);
 
   this.addComponentBeforeBody = function(Component) {
-    this.getService().getEventBus().$emit('addedcomponenttobody');
+    this.getService().addedComponentTo('body');
     this.insertComponentAt(1, Component);
   };
 
   this.addComponentAfterBody = function(Component) {
-    this.getService().getEventBus().$emit('addedcomponenttobody');
+    this.getService().addedComponentTo('body');
     this.insertComponentAt(2, Component)
   };
 
@@ -124,9 +124,11 @@ function FormComponent(options = {}) {
       this.getService().isValid();
     });
   };
+
   this.layout = function() {
     this.internalComponent.reloadLayout();
-  }
+  };
+
 }
 
 inherit(FormComponent, Component);

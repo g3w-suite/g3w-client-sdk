@@ -51,7 +51,7 @@ function FormService() {
       valid: true, // global form validation state. True at beginning
         // when input change will be update
       tovalidate: [], // object array to be validate. They have at list valid key (boolean)
-      addedcomponent: {
+      addedcomponentto: {
         header: false,
         body: false,
         footer: false
@@ -71,6 +71,11 @@ function FormService() {
     });
     this.state.valid = bool;
   };
+
+  this.addedComponentTo = function(formcomponent = 'body') {
+    this.state.addedcomponentto[formcomponent] = true;
+  };
+
   this.addToValidate = function(validate) {
     this.state.tovalidate.push(validate);
   };

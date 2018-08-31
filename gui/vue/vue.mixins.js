@@ -10,6 +10,7 @@ const isMobileMixin = {
 const fieldsMixin = {
   methods: {
     getFieldType(value) {
+      value = value && typeof  value === 'object' && value.constructor === Object && !value.coordinates? value.value : value;
       let Fields = {};
       Fields.SIMPLE = 'simple';
       Fields.GEO = 'geo';

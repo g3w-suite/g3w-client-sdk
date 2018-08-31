@@ -8,6 +8,8 @@
     <div class="tab-content">
       <div :id="tab._id" class="tab-pane fade" v-for="(tab, index) in tabs" :key="index" :class="{'in active': index === 0}">
         <node
+          :addToValidate="addToValidate"
+          :changeInput="changeInput"
           :fields="fields"
           :showTitle="false"
           :node="tab">
@@ -19,11 +21,9 @@
 
 <script>
   import Node from "./node.vue";
-  const TabMixins = require('./tabsmixins');
   export default {
     name: "tabs",
-    mixins: [TabMixins],
-    props: ['tabs', 'fields'],
+    props: ['tabs', 'fields', 'addToValidate', 'changeInput'],
     methods: {
       getField(fieldName) {
         const tabfields = this.fields.find((field) => {
@@ -36,10 +36,15 @@
       Node
     },
     created() {
-      let unique_suffix = 0;
-      for (tab of this.tabs) {
-        tab._id = `form_tab_${unique_suffix}`;
-        unique_suffix+=1;
+      const getUniqueSuffix = (function() {
+        let index = 0;
+        return () => {
+          index+=1;
+          return `${index}_${Date.now()}`;
+        }
+      })();
+      for (const tab of this.tabs) {
+        tab._id = `form_tab_${getUniqueSuffix()}`;
       }
     }
   }

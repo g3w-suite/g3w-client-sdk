@@ -4,7 +4,8 @@
       <div class="box-body">
         <template v-if="hasFormStructure">
           <tabs
-            @changeinput="changeInput"
+            :addToValidate="addToValidate"
+            :changeInput="changeInput"
             :tabs="state.formstructure"
             :fields="state.fields">
           </tabs>

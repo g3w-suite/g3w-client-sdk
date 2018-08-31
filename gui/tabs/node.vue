@@ -7,12 +7,17 @@
           <component v-if="getNodeType(getNode(row, column)) == 'field'"
             :state="getField(getNode(row, column))"
             @changeinput="changeInput"
+            @addinput="addToValidate"
             :is="getComponent(getField(getNode(row, column)))">
-          </component>
+            </component>
           <div v-else class="sub-group">
-            <node @changeinput="changeInput"
+            <node
+              @changeinput="changeInput"
+              @addinput="addToValidate"
               :fields="fields"
               :showTitle="true"
+              :changeInput="changeInput"
+              :addToValidate="addToValidate"
               :node="getNode(row, column)">
             </node>
           </div>
@@ -25,7 +30,6 @@
 <script>
   const Inputs = require('gui/inputs/inputs');
   const Fields = require('gui/fields/fields');
-  const TabMixins = require('./tabsmixins');
   const COLUMNCLASSES = {
     1: 'col-md-12',
     2: 'col-md-6',
@@ -42,8 +46,7 @@
   };
   export default {
     name: "node",
-    mixins: [TabMixins],
-    props: ['node', 'fields', 'showTitle'],
+    props: ['node', 'fields', 'showTitle', 'addToValidate', 'changeInput'],
     components: {
       ...Inputs,
       ...Fields
@@ -111,10 +114,10 @@
         } else {
           return `${field.input.type}_input`;
         }
-
       }
     },
     created() {
+      //this.addToValidate({valid: false})
     }
   }
 </script>

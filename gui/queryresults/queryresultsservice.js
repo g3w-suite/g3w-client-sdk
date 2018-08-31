@@ -104,11 +104,25 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       layerRelationsAttributes = [];
       layerTitle = layer.getTitle();
       layerId = layer.getId();
-
       if (layer.hasFormStructure()) {
+        const structure = layer.getEditorFormStructure();
+        // if (this._relations) {
+        //   const getRelationFieldsFromFormStructure = (node) => {
+        //     if (!node.nodes) {
+        //       node.name ? node.relation = true : null;
+        //     } else {
+        //       for (const _node of node.nodes) {
+        //         getRelationFieldsFromFormStructure(_node);
+        //       }
+        //     }
+        //   };
+        //   for (const node of structure) {
+        //     getRelationFieldsFromFormStructure(node);
+        //   }
+        // }
         let fields = layer.getFields();
         formStructure = {
-          structure: layer.getEditorFormStructure(),
+          structure,
           fields
         }
       }

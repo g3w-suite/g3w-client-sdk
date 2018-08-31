@@ -80,7 +80,7 @@
                             <span v-if="is('simple',layer,attribute.name,feature.attributes[attribute.name])">{{feature.attributes[attribute.name]}}</span>
                             <g3w-image v-else-if="is('photo',layer,attribute.name,feature.attributes[attribute.name])"  :value="feature.attributes[attribute.name]"></g3w-image>
                             <g3w-image v-else-if="checkField('image', attribute.label, layer.attributes)"  :value="attribute.value"></g3w-image>
-                            <button v-else-if="is('link',layer,attribute.name,feature.attributes[attribute.name])"  class="btn btn-info" style="margin:5px"  @click="openLink(feature.attributes[attribute.name])">{{ openlink }}</button>
+                            <button v-else-if="is('link',layer,attribute.name,feature.attributes[attribute.name])"  class="btn btn-info" style="margin:5px"  @click="openLink(feature.attributes[attribute.name].value)">{{ openlink }}</button>
                           </td>
                         </tr>
                       </table>

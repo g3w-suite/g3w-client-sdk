@@ -1,8 +1,8 @@
 <template>
   <div class="container-fluid">
     <div  class="row">
-      <div v-for="(value, index) in values" class="col-md-6 col-sm-12">
-        <img class="img-responsive" @click="showGallery(index)" :src="getSrc(value)"/>
+      <div v-for="(value, index) in values" class="col-md-6 col-sm-12" style="min-width: 100px">
+        <img class="img-thumbnail" @click="showGallery(index)" :src="getSrc(value)"/>
       </div>
     </div>
     <g3w-images-gallery :id="galleryId" :active="active" :images="getGalleryImages()"></g3w-images-gallery>
@@ -54,7 +54,7 @@
         return images
       }
     },
-    mounted() {}
+    created() {}
   }
 </script>
 
