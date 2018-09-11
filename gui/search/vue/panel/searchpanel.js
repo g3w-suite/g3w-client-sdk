@@ -20,6 +20,7 @@ const SearchPanelComponet = Vue.extend({
   methods: {
     doSearch: function(event) {
       event.preventDefault();
+      GUI.closeContent();
       this.filterObject = this.fillFilterInputsWithValues(this.filterObject, this.formInputValues);
       if (this.queryurl) {
         this.filterObject.url = this.queryurl;

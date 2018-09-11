@@ -14,7 +14,7 @@ const vueComponentObject = {
   template: null,
   data: function() {
     return {
-      state: null
+      state: {}
     }
   },
   transitions: {'addremovetransition': 'showhide'},
@@ -30,7 +30,7 @@ const vueComponentObject = {
     // relaod layout
     reloadLayout: function() {
       const height = $(this.$el).height();
-      const width = $(this.$el).width();
+      //const width = $(this.$el).width();
       // check height
       if (!height)
         return;
@@ -46,64 +46,74 @@ const vueComponentObject = {
         if (!isHeader || isFooter) {
           externalElement.push($(this));
           notBodyElementHeight += $(this).height();
-        }
-        else {
-          if (!$(this).hasClass('g3w-form-component_body'))
+        } else {
+          if (!$(this).hasClass('g3w-form-component_body')) {
             centralElements.push($(this));
-          centralElementsNumber += 1;
+            centralElementsNumber += 1;
+          }
         }
         isHeader = !isHeader ? $(this).hasClass('g3w-form-component_header') : true;
       });
       // calculate heigth body
       let centralHeight = height - (notBodyElementHeight); // central form dom
-      let heightToAppy = (centralHeight/ centralElementsNumber) - 15; // height of others part
-      // check height of the bosy
-      let bodyElementHeight = $(this.$el).find(".g3w-form-component_body .box-primary").outerHeight() + 20;
-      bodyElementHeight =  bodyElementHeight > heightToAppy ? heightToAppy: bodyElementHeight ;
-      $(this.$el).find(".g3w-form-component_body").height(bodyElementHeight);
-      centralHeight = centralHeight - bodyElementHeight;
-      centralElementsNumber-=1;
-      heightToAppy = (centralHeight/ centralElementsNumber) - 15;
-      centralElements.forEach((element) => {
-        element.height(heightToAppy)
-      });
+      // assign 70% of the space to body element
+      let bodyHeight = centralHeight * 0.70;
+      let heightToAppy = ((centralHeight - bodyHeight)/ centralElementsNumber) - 15; // height of others part
+      // check height of the body
+      if (this.state.addedcomponentto.body) {
+        let bodyElementHeight = $(this.$el).find(".g3w-form-component_body .box-primary").outerHeight() + 20;
+        bodyElementHeight =  bodyElementHeight > bodyHeight ? bodyHeight: bodyElementHeight ;
+        $(this.$el).find(".g3w-form-component_body").height(bodyElementHeight);
+        centralHeight = centralHeight - bodyElementHeight;
+        heightToAppy = (centralHeight/ centralElementsNumber) - 15;
+        centralElements.forEach((element) => {
+          element.height(heightToAppy)
+        });
+      } else {
+        // only bosy element feature
+        $(this.$el).find(".g3w-form-component_body").height(height - notBodyElementHeight);
+      }
       $(".nano").nanoScroller();
     }
   },
+  created() {},
   mounted: function() {
     this.$options.service.getEventBus().$on('addtovalidate', this.addToValidate);
     this.$nextTick(() => {
-      this.reloadLayout();
       this.$options.service.postRender();
     });
   }
 };
 
-function FormComponent(options) {
-  options = options || {};
+function FormComponent(options = {}) {
   options.id = options.id || 'form';
   // qui vado a tenere traccia delle tre cose che mi permettono di customizzare
   base(this, options);
   options.service = options.service ?  new options.service : new Service;
   options.vueComponentObject = options.vueComponentObject  || vueComponentObject;
   options.template = options.template || Template;
-  //set standard element of the form (header, body, footer)
+  //set statdar element of the form
   options.components = options.components || [HeaderFormComponent, BodyFormComponent, FooterFormComponent];
-
   this.init(options);
 
   this.addComponentBeforeBody = function(Component) {
+    this.getService().addedComponentTo('body');
     this.insertComponentAt(1, Component);
   };
 
   this.addComponentAfterBody = function(Component) {
+    this.getService().addedComponentTo('body');
     this.insertComponentAt(2, Component)
   };
 
-  this.addComponentBeforeFooter = function() {};
+  this.addComponentBeforeFooter = function() {
+   //TODO
+  };
 
-  this.addComponentAfterFooter = function(Component) {};
-  // overwrite  mount method.
+  this.addComponentAfterFooter = function(Component) {
+    //TODO
+  };
+  // overwrite father mount method.
   this.mount = function(parent, append) {
     return base(this, 'mount', parent, append)
     .then(() => {
@@ -113,9 +123,11 @@ function FormComponent(options) {
       this.getService().isValid();
     });
   };
+
   this.layout = function() {
     this.internalComponent.reloadLayout();
-  }
+  };
+
 }
 
 inherit(FormComponent, Component);

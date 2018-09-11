@@ -48,12 +48,14 @@ mixin(ImageLayer, GeoLayerMixin);
 
 const proto = ImageLayer.prototype;
 
-proto.getLayerForEditing = function() {
-  if (this.isEditable()) {
+proto.getLayerForEditing = function({force=false}={}) {
+  if (this.isEditable() || force) {
     // clone configuration
     const config = _.cloneDeep(this.config);
     //return istance of vectorlayer
-    return new VectorLayer(config);
+    const editingLayer = new VectorLayer(config);
+    this.setEditingLayer(editingLayer);
+    return editingLayer;
   } else {
     return null
   }

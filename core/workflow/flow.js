@@ -41,8 +41,7 @@ function Flow() {
       })
       .fail((error) => {
         this.onError(error);
-      })
-
+      });
   };
 
   //check if all step are resolved

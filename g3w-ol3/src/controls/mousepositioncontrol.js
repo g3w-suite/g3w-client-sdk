@@ -5,7 +5,6 @@ const MousePositionControl = function(options= {}) {
     bottom: true,
     right: true
   };
-  this.positionCode = 'br';
   ol.control.MousePosition.call(this, options);
 };
 

@@ -12,9 +12,7 @@ function VectorLayer(config, options) {
   this.type = Layer.LayerTypes.VECTOR;
   // need a ol layer for add to map
   this.setup(config);
-  this.onafter('setColor', (color) => {
-    //TODO
-  })
+  this.onafter('setColor', (color) => {})
 }
 
 inherit(VectorLayer, TableLayer);

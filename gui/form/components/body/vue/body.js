@@ -1,30 +1,35 @@
 const BodyTemplate = require('./body.html');
-// get inputs
 const Inputs = require('gui/inputs/inputs');
+import Tabs from '../../../../tabs/tabs.vue';
 
 const BodyFormComponent = Vue.extend({
   template: BodyTemplate,
   props: ['state'],
-  components: Inputs, // load inputs as components
+  components: {
+    ...Inputs,
+    Tabs
+  },
   methods: {
-    getInputComponent(field) {
-      return field.input.type+'_input';
-    },
     addToValidate: function(input) {
-      // add input to validate
+      // aggiunge l'input da validare
       this.$emit('addtovalidate', input.validate);
     },
     changeInput: function(input) {
       this.$emit('changeinput', input);
     },
-    scrollBar() {
-      $('.g3w-form-component_body.nano').nanoScroller();
-    },
     reloadLayout: function(index) {
-      if (index === this.state.fields.length - 1) {
+      if (index == this.state.fields.length - 1) {
         this.$emit('reloadlayout');
       }
       return true
+    },
+    datetimepickerShow: function() {
+      $(".nano").nanoScroller();
+    }
+  },
+  computed: {
+    hasFormStructure() {
+      return !!this.state.formstructure;
     }
   }
 });

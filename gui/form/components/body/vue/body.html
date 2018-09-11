@@ -2,14 +2,26 @@
   <form class="form-horizontal g3w-form nano-content">
     <div class="box box-primary">
       <div class="box-body">
-        <component v-for="(field, index) in state.fields" v-if="reloadLayout(index)"
-          @changeinput="changeInput"
-          @addinput="addToValidate"
-          @datetimepickershow="scrollBar"
-          :state="field"
-          :is="getInputComponent(field)">
-        </component>
-        <span class="divider"></span>
+        <template v-if="hasFormStructure">
+          <tabs
+            :addToValidate="addToValidate"
+            :changeInput="changeInput"
+            :tabs="state.formstructure"
+            :fields="state.fields">
+          </tabs>
+        </template>
+        <template v-else>
+          <template v-for="(field, index) in state.fields" v-if="reloadLayout(index)">
+            <component
+              @changeinput="changeInput"
+              @addinput="addToValidate"
+              @datetimepickershow="datetimepickerShow"
+              :state="field"
+              :is="field.input.type+'_input'">
+            </component>
+            <span class="divider"></span>
+          </template>
+        </template>
       </div>
     </div>
   </form>

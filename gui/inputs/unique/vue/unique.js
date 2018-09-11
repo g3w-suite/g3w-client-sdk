@@ -1,9 +1,10 @@
 const Input = require('gui/inputs/input');
 const selectMixin = require('gui/inputs/select/vue/selectmixin');
+const WidgetMixins = require('gui/inputs/widgetmixins');
 const Service = require('../service');
 
 const UniqueInput = Vue.extend({
-  mixins: [Input, selectMixin],
+  mixins: [Input, selectMixin, WidgetMixins],
   template: require('./unique.html'),
   data: function() {
     const uniqueid = 'uniqueinputid_' + Date.now();
@@ -12,6 +13,12 @@ const UniqueInput = Vue.extend({
         state: this.state
       }),
       id: uniqueid
+    }
+  },
+  methods: {
+    stateValueChanged(value) {
+      value = value === null ? 'null': value;
+      $('#'+this.id).val(value).trigger('change.select2');
     }
   },
   mounted: function() {
@@ -23,7 +30,7 @@ const UniqueInput = Vue.extend({
         });
         $('#'+self.id).on('change', function(e) {
           self.state.value = this.value == 'null' ? null : this.value;
-          self.change();
+          self.widgetChanged();
         })
       }
     })

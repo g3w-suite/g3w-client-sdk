@@ -22,6 +22,7 @@ function Layer(config = {}) {
     origname: config.origname || null,
     capabilities: config.capabilities || null,
     editops: config.editops || null,
+    editor_form_structure: config.editor_form_structure || null,
     infoformat: config.infoformat || null,
     servertype: config.servertype || null,
     source: config.source || null,
@@ -32,7 +33,6 @@ function Layer(config = {}) {
       query: config.infourl && config.infourl != '' || config.wmsUrl
     }
   }, config);
-
   // dinamic layer values
   //this.state = config; //catalog reactive
   this.state = {
@@ -46,6 +46,7 @@ function Layer(config = {}) {
     removable: config.removable || false,
     source: config.source
   };
+  this._editingLayer = null;
   // refferred to (layersstore);
   this._layersstore = config.layersstore || null;
   /*
@@ -216,6 +217,10 @@ proto.getFields = function() {
   return this.config.fields
 };
 
+proto.getEditingFields = function() {
+  return this.config.editing.fields;
+};
+
 proto.getTableFields = function() {
   return this.config.fields.filter((field) => {
     return field.show
@@ -230,6 +235,14 @@ proto.getConfig = function() {
   return this.config;
 };
 
+proto.getEditorFormStructure = function() {
+  return this.config.editor_form_structure;
+};
+
+proto.hasFormStructure = function() {
+  return !!this.config.editor_form_structure;
+};
+
 proto.getState = function() {
   return this.state;
 };
@@ -239,7 +252,11 @@ proto.getSource = function() {
 };
 
 proto.getEditingLayer = function() {
-  return this;
+  return this._editingLayer;
+};
+
+proto.setEditingLayer = function(editingLayer) {
+  this._editingLayer = editingLayer;
 };
 
 proto.isHidden = function() {
@@ -401,12 +418,12 @@ proto.getAttributes = function() {
 };
 
 proto.changeAttribute = function(attribute, type, options) {
-  this.config.fields.forEach((field) => {
+  for (const field of this.config.fields) {
     if (field.name == attribute) {
       field.type = type;
       field.options = options;
     }
-  })
+  }
 };
 
 proto.getAttributeLabel = function(name) {

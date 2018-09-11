@@ -115,7 +115,7 @@ const vueComponentOptions = {
   template: require('./map.html'),
   data: function() {
     return {
-      target: 'map', // specidica l'ide
+      target: 'map',
       service: this.$options.mapService
     }
   },
