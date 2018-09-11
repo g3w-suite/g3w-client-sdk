@@ -1,7 +1,7 @@
 <baseinput :state="state">
   <textarea
     slot="inputelement"
-    style="max-width: 100%"
+    style="max-width: 100%; min-width: 100%"
     v-disabled="!isEditable()"
     :class="{'input-error-validation' : !state.validate.valid}"
     v-model="state.value"></textarea>

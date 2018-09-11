@@ -42,7 +42,6 @@ function FormService() {
     this.name = options.name;
     this.pk = options.pk || null;
     this.buttons = options.buttons || [];
-    this._pickedPromise = null;
     this.state = {
       title: this.title,
       fields: null,

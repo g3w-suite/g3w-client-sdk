@@ -1,7 +1,6 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const ProjectsRegistry = require('core/project/projectsregistry');
-const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const Layer = require('core/layers/layer');
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
@@ -97,7 +96,6 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     layerId;
   let formStructure;
   featuresForLayers.forEach((featuresForLayer) => {
-    featuresForLayer = featuresForLayer;
     const layer = featuresForLayer.layer;
     if (layer instanceof Layer) {
       layerAttributes = layer.getAttributes();
@@ -106,20 +104,20 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       layerId = layer.getId();
       if (layer.hasFormStructure()) {
         const structure = layer.getEditorFormStructure();
-        // if (this._relations) {
-        //   const getRelationFieldsFromFormStructure = (node) => {
-        //     if (!node.nodes) {
-        //       node.name ? node.relation = true : null;
-        //     } else {
-        //       for (const _node of node.nodes) {
-        //         getRelationFieldsFromFormStructure(_node);
-        //       }
-        //     }
-        //   };
-        //   for (const node of structure) {
-        //     getRelationFieldsFromFormStructure(node);
-        //   }
-        // }
+        if (this._relations) {
+          const getRelationFieldsFromFormStructure = (node) => {
+            if (!node.nodes) {
+              node.name ? node.relation = true : null;
+            } else {
+              for (const _node of node.nodes) {
+                getRelationFieldsFromFormStructure(_node);
+              }
+            }
+          };
+          for (const node of structure) {
+            getRelationFieldsFromFormStructure(node);
+          }
+        }
         let fields = layer.getFields();
         formStructure = {
           structure,

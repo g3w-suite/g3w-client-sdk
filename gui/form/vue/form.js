@@ -30,7 +30,7 @@ const vueComponentObject = {
     // relaod layout
     reloadLayout: function() {
       const height = $(this.$el).height();
-      const width = $(this.$el).width();
+      //const width = $(this.$el).width();
       // check height
       if (!height)
         return;
@@ -47,27 +47,30 @@ const vueComponentObject = {
           externalElement.push($(this));
           notBodyElementHeight += $(this).height();
         } else {
-          if (!$(this).hasClass('g3w-form-component_body'))
+          if (!$(this).hasClass('g3w-form-component_body')) {
             centralElements.push($(this));
-          centralElementsNumber += 1;
+            centralElementsNumber += 1;
+          }
         }
         isHeader = !isHeader ? $(this).hasClass('g3w-form-component_header') : true;
       });
       // calculate heigth body
       let centralHeight = height - (notBodyElementHeight); // central form dom
-      let heightToAppy = (centralHeight/ centralElementsNumber) - 15; // height of others part
+      // assign 70% of the space to body element
+      let bodyHeight = centralHeight * 0.70;
+      let heightToAppy = ((centralHeight - bodyHeight)/ centralElementsNumber) - 15; // height of others part
       // check height of the body
       if (this.state.addedcomponentto.body) {
         let bodyElementHeight = $(this.$el).find(".g3w-form-component_body .box-primary").outerHeight() + 20;
-        bodyElementHeight =  bodyElementHeight > heightToAppy ? heightToAppy: bodyElementHeight ;
+        bodyElementHeight =  bodyElementHeight > bodyHeight ? bodyHeight: bodyElementHeight ;
         $(this.$el).find(".g3w-form-component_body").height(bodyElementHeight);
         centralHeight = centralHeight - bodyElementHeight;
-        centralElementsNumber-=1;
         heightToAppy = (centralHeight/ centralElementsNumber) - 15;
         centralElements.forEach((element) => {
           element.height(heightToAppy)
         });
       } else {
+        // only bosy element feature
         $(this.$el).find(".g3w-form-component_body").height(height - notBodyElementHeight);
       }
       $(".nano").nanoScroller();
@@ -76,11 +79,7 @@ const vueComponentObject = {
   created() {},
   mounted: function() {
     this.$options.service.getEventBus().$on('addtovalidate', this.addToValidate);
-    this.$options.service.getEventBus().$on('addedcomponents', () => {
-      this.state.addedcomponent.body = true;
-    });
     this.$nextTick(() => {
-      this.reloadLayout();
       this.$options.service.postRender();
     });
   }

@@ -75,12 +75,12 @@
                       <table class="feature_attributes">
                         <tr v-for="attribute in layer.attributes">
                           <td class="attr-label">{{ attribute.label }}</td>
-                          <!--aggiungo un attributo attribute per fare delle selzioni mirate per i plugin</td>-->
                           <td class="attr-value" :attribute="attribute.name">
                             <span v-if="is('simple',layer,attribute.name,feature.attributes[attribute.name])">{{feature.attributes[attribute.name]}}</span>
                             <g3w-image v-else-if="is('photo',layer,attribute.name,feature.attributes[attribute.name])"  :value="feature.attributes[attribute.name]"></g3w-image>
                             <g3w-image v-else-if="checkField('image', attribute.label, layer.attributes)"  :value="attribute.value"></g3w-image>
                             <button v-else-if="is('link',layer,attribute.name,feature.attributes[attribute.name])"  class="btn btn-info" style="margin:5px"  @click="openLink(feature.attributes[attribute.name].value)">{{ openlink }}</button>
+                            <!--<g3w-field :state="{label:attribute.label, value: feature.attributes[attribute.name]? feature.attributes[attribute.name] : attribute.value }"></g3w-field>-->
                           </td>
                         </tr>
                       </table>
@@ -174,3 +174,9 @@
   </div>
 </div>
 
+<script>
+  import G3wField from "../../fields/g3w-field";
+  export default {
+    components: {G3wField}
+  }
+</script>

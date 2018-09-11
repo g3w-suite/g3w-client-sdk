@@ -31,9 +31,7 @@ const BodyFormComponent = Vue.extend({
     hasFormStructure() {
       return !!this.state.formstructure;
     }
-  },
-  created() {},
-  mounted: function() {}
+  }
 });
 
 module.exports = BodyFormComponent;

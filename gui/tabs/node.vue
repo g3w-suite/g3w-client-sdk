@@ -116,9 +116,7 @@
         }
       }
     },
-    created() {
-      //this.addToValidate({valid: false})
-    }
+    created() {}
   }
 </script>
 
