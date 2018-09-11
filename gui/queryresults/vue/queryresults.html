@@ -8,7 +8,7 @@
             <div class="box-header with-border" data-widget="collapse">
               <h3 class="box-title">{{ layer.title }} ({{layer.features.length}})</h3>
               <div class="box-tools pull-right">
-                <button class="btn btn-box-tool" data-widget="collapse"><i class="btn-collapser fa fa-minus"></i></button>
+                <button class="btn btn-box-tool" data-widget="collapse"><i class="btn-collapser" :class="g3wtemplate.getFontClass('minus')"></i></button>
               </div>
             </div>
             <div class="box-body">
@@ -96,7 +96,7 @@
                                 <div class="box-header with-border" data-widget="collapse">
                                   <h3 class="box-title">{{ relation.name }} ({{ relation.elements.length }})</h3>
                                   <div class="box-tools pull-right">
-                                    <button class="btn btn-box-tool" data-widget="collapse"><i class="btn-collapser fa fa-plus"></i></button>
+                                    <button class="btn btn-box-tool" data-widget="collapse"><i class="btn-collapser" :class="g3wtemplate.getFontClass('plus')"></i></button>
                                   </div>
                                 </div>
                                 <div class="box-body">
@@ -116,7 +116,7 @@
                                           <span>{{attribute.value}}</span>
                                         </td>
                                         <td class="action-cell text-center">
-                                          <span class="fa link morelink" :class="[collapsedFeatureBox(layer, feature, relation.name+index) ? 'fa-minus' : 'fa-plus']" style="text-align: right"></span>
+                                          <span :class="[collapsedFeatureBox(layer, feature, relation.name+index) ? g3wtemplate.getFontClass('minus') : g3wtemplate.getFontClass('plus'), g3wtemplate.getFontClass('link')]" style="text-align: right"></span>
                                         </td>
                                       </tr>
                                       <tr v-show="collapsedFeatureBox(layer, feature, relation.name+index)" class="featurebox-body">
