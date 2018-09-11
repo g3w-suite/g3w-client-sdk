@@ -1,6 +1,6 @@
 <template>
   <div>
-    <ul class="formtabs nav nav-tabs">
+    <ul class="formquerytabs nav nav-tabs">
       <li v-for="(tab, index) in tabs" :class="{active: index === 0}">
         <a data-toggle="tab" :href="'#'+ ids[index]" style="font-weight: bold;">{{tab.name}}</a>
       </li>
@@ -50,7 +50,7 @@
 </script>
 
 <style scoped>
-  .formtabs {
+  .formquerytabs {
     overflow: hidden !important;
   }
   .tab-content {
