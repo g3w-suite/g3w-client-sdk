@@ -1,12 +1,12 @@
 <template>
   <div>
-    <ul class="formtabs nav nav-tabs">
+    <ul class="formquerytabs nav nav-tabs">
       <li v-for="(tab, index) in tabs" :class="{active: index === 0}">
-        <a data-toggle="tab" :href="'#'+ tab._id" style="font-weight: bold;">{{tab.name}}</a>
+        <a data-toggle="tab" :href="'#'+ ids[index]" style="font-weight: bold;">{{tab.name}}</a>
       </li>
     </ul>
     <div class="tab-content">
-      <div :id="tab._id" class="tab-pane fade" v-for="(tab, index) in tabs" :key="index" :class="{'in active': index === 0}">
+      <div :id="ids[index]" class="tab-pane fade" v-for="(tab, index) in tabs" :key="ids[index]" :class="{'in active': index === 0}">
         <node
           :addToValidate="addToValidate"
           :changeInput="changeInput"
@@ -21,9 +21,15 @@
 
 <script>
   import Node from "./node.vue";
+  const getUniqueDomId = require ('core/utils/utils').getUniqueDomId;
   export default {
     name: "tabs",
     props: ['tabs', 'fields', 'addToValidate', 'changeInput'],
+    data() {
+      return {
+        ids : []
+      }
+    },
     methods: {
       getField(fieldName) {
         const tabfields = this.fields.find((field) => {
@@ -36,22 +42,15 @@
       Node
     },
     created() {
-      const getUniqueSuffix = (function() {
-        let index = 0;
-        return () => {
-          index+=1;
-          return `${index}_${Date.now()}`;
-        }
-      })();
       for (const tab of this.tabs) {
-        tab._id = `form_tab_${getUniqueSuffix()}`;
+        this.ids.push(`tab_${getUniqueDomId()}`);
       }
     }
   }
 </script>
 
 <style scoped>
-  .formtabs {
+  .formquerytabs {
     overflow: hidden !important;
   }
   .tab-content {
