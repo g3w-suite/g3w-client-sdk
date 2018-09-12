@@ -792,6 +792,9 @@ proto.flipMapControlsVertically = function() {
 };
 
 proto._updateMapControlsLayout = function({width, height}) {
+  // check if width
+  if (width <= 0)
+    return;
   const HEIGHTWIDTH = 47; // constant
   const MAXFACTOR = 4;
   // mapcontrols element

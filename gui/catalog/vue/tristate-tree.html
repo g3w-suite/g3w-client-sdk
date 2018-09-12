@@ -16,8 +16,7 @@
   </span>
   <span v-else-if="isTable"
         v-show="!layerstree.hidden"
-        :class="[parentFolder ? 'child' : 'root' ]"
-        :class="g3wtemplate.getFontClass('table')">
+        :class="[parentFolder ? 'child' : 'root', g3wtemplate.getFontClass('table')]">
   </span>
   <span v-else
     v-show="!layerstree.hidden"

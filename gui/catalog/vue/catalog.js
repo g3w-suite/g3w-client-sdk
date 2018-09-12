@@ -113,6 +113,9 @@ const vueComponentOptions = {
         case 'Bing Aerial':
           image = 'bingaerial.png';
           break;
+        case 'Bing Aerial With Labels':
+          image = 'bingaeriallabel.png';
+          break;
         default:
           image = 'nobaselayer.png';
       }

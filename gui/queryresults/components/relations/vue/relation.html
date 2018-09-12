@@ -21,7 +21,7 @@
           <tr v-for="row in table.rows">
             <td v-for="value in row">
               <p v-if="is('simple',value)"> {{ value }}</p>
-              <a v-else="is('link',value)" :href="value"  style="display: block; width: 100%;  white-space: nowrap;  overflow: hidden;  text-overflow: ellipsis" target="_blank"><i :class="g3wtemplatye.getFontClass('link')"></i></a>
+              <a v-else="is('link',value)" :href="value"  style="display: block; width: 100%;  white-space: nowrap;  overflow: hidden;  text-overflow: ellipsis" target="_blank"><i :class="g3wtemplate.getFontClass('link')"></i></a>
             </td>
           </tr>
         </tbody>

@@ -8,7 +8,7 @@
             <div class="box-header with-border" data-widget="collapse">
               <h3 class="box-title">{{ layer.title }} ({{layer.features.length}})</h3>
               <div class="box-tools pull-right">
-                <button class="btn btn-box-tool" data-widget="collapse"><i class="btn-collapser" :class="g3wtemplate.getFontClass('minus')"></i></button>
+                <button class="btn btn-box-tool" data-widget="collapse"><i class="btn-collapser" :class="g3wtemplate.font['minus']"></i></button>
               </div>
             </div>
             <div class="box-body">
@@ -33,7 +33,7 @@
                           <span>{{feature.attributes[attribute.name]}}</span>
                         </td>
                         <td class="action-cell">
-                          <span v-if="!hasOneLayerAndOneFeature" class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? 'fa-plus' : 'fa-minus']"></span>
+                          <span v-if="!hasOneLayerAndOneFeature" class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? g3wtemplate.font['plus'] : g3wtemplate.font['minus']]"></span>
                           <span v-else></span>
                         </td>
                       </tr>
@@ -96,7 +96,7 @@
                                 <div class="box-header with-border" data-widget="collapse">
                                   <h3 class="box-title">{{ relation.name }} ({{ relation.elements.length }})</h3>
                                   <div class="box-tools pull-right">
-                                    <button class="btn btn-box-tool" data-widget="collapse"><i class="btn-collapser" :class="g3wtemplate.getFontClass('plus')"></i></button>
+                                    <button class="btn btn-box-tool" data-widget="collapse"><i class="btn-collapser" :class="g3wtemplate.font['plus']"></i></button>
                                   </div>
                                 </div>
                                 <div class="box-body">
