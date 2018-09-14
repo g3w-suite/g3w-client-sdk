@@ -1,6 +1,6 @@
 <template>
   <div class="group">
-    <h4 class="title" v-if="showGroupTile">{{ node.name }}</h4>
+    <h5 class="title" v-if="showGroupTile">{{ node.name }}</h5>
     <div v-for="row in rows" class="row">
       <div v-for="column in columnNumber" :class="columnClass">
         <template v-if="getNode(row, column)">
@@ -9,18 +9,33 @@
             @changeinput="changeInput"
             @addinput="addToValidate"
             :is="getComponent(getField(getNode(row, column)))">
-            </component>
-          <div v-else class="sub-group">
-            <node
-              @changeinput="changeInput"
-              @addinput="addToValidate"
-              :fields="fields"
-              :showTitle="true"
-              :changeInput="changeInput"
-              :addToValidate="addToValidate"
-              :node="getNode(row, column)">
-            </node>
-          </div>
+          </component>
+          <template v-else>
+            <div v-if="getNodeType(getNode(row, column)) == 'group'" class="sub-group">
+              <node
+                :contenttype="contenttype"
+                @changeinput="changeInput"
+                @addinput="addToValidate"
+                :fields="fields"
+                :showTitle="true"
+                :changeInput="changeInput"
+                :addToValidate="addToValidate"
+                :node="getNode(row, column)">
+              </node>
+            </div>
+            <div v-else>
+              <template v-if="context == 'query'">
+                <div class="query_relation_field" @click="showRelation(getNode(row, column).name)">
+                  <i :class="g3wtemplate.font['relation']"></i>
+                </div>
+              </template>
+              <template v-else>
+                <div class="form_editing_relation_input" v-t="'editing.messages.qgis_input_widget_relation'">
+                  <span class="info_helptext_button">i</span>
+                </div>
+              </template>
+            </div>
+          </template>
         </template>
       </div>
     </div>
@@ -30,6 +45,10 @@
 <script>
   const Inputs = require('gui/inputs/inputs');
   const Fields = require('gui/fields/fields');
+  const ProjectRegistry = require('core/project/projectsregistry');
+  const RelationsService = require('core/relations/relationsservice');
+  const RelationPage = require('gui/relations/vue/relationspage');
+  const GUI = require('gui/gui');
   const COLUMNCLASSES = {
     1: 'col-md-12',
     2: 'col-md-6',
@@ -46,19 +65,27 @@
   };
   export default {
     name: "node",
-    props: ['node', 'fields', 'showTitle', 'addToValidate', 'changeInput'],
+    props: ['contenttype', 'node', 'fields', 'showTitle', 'addToValidate', 'changeInput'],
     components: {
       ...Inputs,
       ...Fields
+    },
+    data() {
+      return {
+        context: this.contenttype
+      }
     },
     computed: {
       filterNodes() {
         const filterNodes = this.node.nodes.filter((node) => {
           if (this.getNodeType(node) === 'group') {
             return true
+          } else if (!node.nodes && node.name && this.getNodeType(node) != 'group') {
+            node.relation = true;
+            return true
           } else {
             return !!this.fields.find((field) => {
-              return field.name === node.field_name;
+              return field.name === node.field_name || node.relation
             })
           }
         });
@@ -90,6 +117,29 @@
       }
     },
     methods: {
+      showRelation(relationId) {
+        const relationService = new RelationsService();
+        const relation = ProjectRegistry.getCurrentProject().getRelationById(relationId);
+        const field = this.fields.find((field) => {
+          return field.name === relation.fieldRef.referencedField;
+        })
+        const value = field.value;
+        relationService.getRelations({
+          value,
+          id: relationId
+        }).then((response) => {
+          const content = new RelationPage({
+            currentview: 'relation',
+            relations: [relation],
+            relation,
+            table: response
+          })
+          GUI.pushContent({
+            content,
+            perc: 100
+          })
+        })
+      },
       getNodes(row) {
         const startIndex = (row - 1) * this.columnNumber;
         const nodes = this.filterNodes.slice(startIndex, this.columnNumber + startIndex);
@@ -100,16 +150,22 @@
         return node;
       },
       getField(node) {
+        if (node.relation) {
+          return node;
+        }
         const field = this.fields.find((field) => {
           return field.name === node.field_name;
         });
         return field;
       },
       getNodeType(node) {
-        return node.groupbox ? 'group' : 'field';
+        return node.groupbox || node.nodes ? 'group' : node.relation ? 'relation': 'field';
       },
       getComponent(field) {
-        if (field.query) {
+        if (field.relation) {
+          return
+        }
+        else if (field.query) {
           return field.input.type;
         } else {
           return `${field.input.type}_input`;
@@ -129,8 +185,13 @@
     background-color: rgba(180, 180, 180, 0.1);
     border-radius: 5px;
   }
-  .title{
+  .title {
     font-weight: bold;
+    font-size: 1.1em;
+    width: 100%;
+    background-color: #2c3b418a;
+    color: #ffffff;
+    padding: 3px;
   }
   .row {
     margin-bottom: 5px;

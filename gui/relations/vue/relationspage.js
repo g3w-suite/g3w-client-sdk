@@ -34,8 +34,11 @@ const relationsComponent = {
 /* Relation Table */
 const relationComponent = {
   template: require('./relation.html'),
-  props: ['table', 'relation'],
+  props: ['table', 'relation', 'previousview'],
   computed: {
+    showrelationslist() {
+      return this.previousview === 'relations'
+    },
     one() {
       return this.relation.type == 'ONE'
     }
@@ -92,11 +95,12 @@ const InternalComponent = Vue.extend({
   data: function() {
     return {
       state: null,
-      table: null,
-      relation: null,
+      table: this.$options.table ? this.$options.service.buildRelationTable(this.$options.table) : null,
+      relation: this.$options.relation || null,
       relations: this.$options.relations,
       feature: this.$options.feature,
-      currentview: 'relations'
+      currentview: this.$options.currentview,
+      previousview: this.$options.currentview
     }
   },
   components: {
@@ -117,6 +121,7 @@ const InternalComponent = Vue.extend({
       }).then((relations) => {
         this.table = this.$options.service.buildRelationTable(relations);
         this.currentview = 'relation';
+        this.previousview = 'relations';
         Vue.nextTick(() => {
           $(".query-relations .nano").nanoScroller();
         })
@@ -125,6 +130,7 @@ const InternalComponent = Vue.extend({
       })
     },
     setRelationsList: function() {
+      this.previousview = 'relation';
       this.currentview = 'relations';
     }
   },
@@ -135,17 +141,23 @@ const InternalComponent = Vue.extend({
   }
 });
 
-const RelationsPage = function(options) {
+const RelationsPage = function(options={}) {
   base(this);
-  options = options || {};
   const service = options.service || new Service({});
   const relations = options.relations || [];
+  const relation = options.relation || null;
   const feature = options.feature || null;
+  const table = options.table || null;
+  const currentview = options.currentview || 'relations';
   this.setService(service);
   const internalComponent = new InternalComponent({
+    previousview: currentview,
     service: service,
     relations: relations,
-    feature: feature
+    relation,
+    feature: feature,
+    currentview,
+    table
   });
   this.setInternalComponent(internalComponent);
   internalComponent.state = service.state;

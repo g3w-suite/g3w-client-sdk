@@ -620,20 +620,26 @@ proto.setupControls = function() {
                   lat: null,
                   lng: null
                 };
+                const closeContentFnc = () => {
+                  control.clearMarker();
+                };
                 const streetViewService = new StreetViewService();
                 streetViewService.onafter('postRender', (position) => {
                   control.setPosition(position);
                 });
                 if (control) {
                   control.on('picked', (e) => {
+                    GUI.EventBus.$off('closecontent', closeContentFnc);
                     const coordinates = e.coordinates;
                     const lonlat = ol.proj.transform(coordinates, this.getProjection().getCode(), 'EPSG:4326');
                     position.lat = lonlat[1];
                     position.lng = lonlat[0];
                     streetViewService.showStreetView(position);
+                    GUI.EventBus.$on('closecontent', closeContentFnc);
                   });
                   control.on('disabled', () => {
-                    GUI.closeContent()
+                    GUI.closeContent();
+                    GUI.EventBus.$off('closecontent', closeContentFnc);
                   })
                 }
               }
@@ -792,9 +798,6 @@ proto.flipMapControlsVertically = function() {
 };
 
 proto._updateMapControlsLayout = function({width, height}) {
-  // check if width
-  if (width <= 0)
-    return;
   const HEIGHTWIDTH = 47; // constant
   const MAXFACTOR = 4;
   // mapcontrols element
@@ -812,7 +815,8 @@ proto._updateMapControlsLayout = function({width, height}) {
   if (this.isMapControlsVerticalAlignement()) {
     const bottomMapControls =  $(`.ol-control-b${this.getMapControlsAlignement()[0]}`);
     const bottomMapControlsTop = bottomMapControls.length ? $(bottomMapControls[bottomMapControls.length - 1]).position().top: height;
-    const HeightFreeSpace =  (height - ((height - bottomMapControlsTop) + HEIGHTWIDTH));
+    const bottomHeightControl = bottomMapControlsTop > 0 ? height - (bottomMapControlsTop + HEIGHTWIDTH) : HEIGHTWIDTH;
+    const HeightFreeSpace =  height - bottomHeightControl;
     const FACTOR = mapControlsWidth/HEIGHTWIDTH * 2;
     if ( (mapControlsHeight > HeightFreeSpace) && (FACTOR <= MAXFACTOR) ) {
        $mapControls.css('width', `${HEIGHTWIDTH*FACTOR}px`);

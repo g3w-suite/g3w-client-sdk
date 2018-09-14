@@ -51,6 +51,12 @@ proto.getRelations = function() {
   return this.state.relations;
 };
 
+proto.getRelationById = function(relationId){
+  return this.state.relations.find((relation) => {
+    return relation.id === relationId
+  })
+};
+
 // process layers of the project
 proto._processLayers = function() {
   //info useful for catalog

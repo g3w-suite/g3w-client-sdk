@@ -1,11 +1,11 @@
 <div class="query-relation">
-  <div v-if="!one" class="back-btn" @click="back">
+  <div v-if="showrelationslist" class="back-btn" @click="back">
     <span class="back-link">
-      <span :class="g3wtemplate.getFontClass('arrow-left')" v-t="'back_to_relations'"></span>
+      <span  v-t="'back_to_relations'"><i :class="g3wtemplate.getFontClass('arrow-left')" style="margin-right: 5px;"></i></span>
     </span>
   </div>
   <div class="header">
-    <div>
+    <div style="font-size: 1.5em">
       <span v-t="'relation_data'"></span> <b>{{ relation.name }}</b>
     </div>
   </div>

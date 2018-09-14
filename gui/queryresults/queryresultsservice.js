@@ -6,7 +6,7 @@ const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 const VectorLayer = require('core/layers/vectorlayer');
 const ComponentsRegistry = require('gui/componentsregistry');
-const RelationsPage = require('./components/relations/vue/relationspage');
+const RelationsPage = require('gui/relations/vue/relationspage');
 
 function QueryResultsService() {
   ProjectsRegistry.onafter('setCurrentProject', (project) => {
