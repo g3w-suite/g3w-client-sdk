@@ -1,6 +1,6 @@
 <template>
   <div class="group">
-    <h5 class="title" v-if="showGroupTile">{{ node.name }}</h5>
+    <h5 class="title group-title" v-if="showGroupTile">{{ node.name }}</h5>
     <div v-for="row in rows" class="row">
       <div v-for="column in columnNumber" :class="columnClass">
         <template v-if="getNode(row, column)">
@@ -23,18 +23,19 @@
                 :node="getNode(row, column)">
               </node>
             </div>
-            <div v-else>
+            <template v-else>
               <template v-if="context == 'query'">
                 <div class="query_relation_field" @click="showRelation(getNode(row, column).name)">
                   <i :class="g3wtemplate.font['relation']"></i>
                 </div>
+                <span class="query_relation_field_message" v-t="'mapcontrols.query.input_relation'"></span>
               </template>
               <template v-else>
                 <div class="form_editing_relation_input" v-t="'editing.messages.qgis_input_widget_relation'">
                   <span class="info_helptext_button">i</span>
                 </div>
               </template>
-            </div>
+            </template>
           </template>
         </template>
       </div>
@@ -122,7 +123,7 @@
         const relation = ProjectRegistry.getCurrentProject().getRelationById(relationId);
         const field = this.fields.find((field) => {
           return field.name === relation.fieldRef.referencedField;
-        })
+        });
         const value = field.value;
         relationService.getRelations({
           value,
@@ -189,9 +190,9 @@
     font-weight: bold;
     font-size: 1.1em;
     width: 100%;
-    background-color: #2c3b418a;
     color: #ffffff;
-    padding: 3px;
+    padding: 5px;
+    border-radius: 2px;
   }
   .row {
     margin-bottom: 5px;

@@ -10,10 +10,7 @@
       <tbody>
       <tr :id="'open_table_row_' + index"  v-for="(feature, index) in state.features" :key="index" @mouseenter="zoomAndHighLightSelectedFeature(feature, false)" @click="zoomAndHighLightSelectedFeature(feature)" :class="{geometry: state.hasGeometry}">
         <td v-for="header in state.headers">
-          <link-item v-if="getFieldType(feature.attributes[header.name]) == 'link'" :href="feature.attributes[header.name].value"></link-item>
-          <g3w-geospatial v-else-if="getFieldType(feature.attributes[header.name]) == 'geo'" :data="feature.attributes[header.name]"></g3w-geospatial>
-          <g3w-image v-else-if="getFieldType(feature.attributes[header.name]) == 'photo'" :value="feature.attributes[header.name].value"></g3w-image>
-          <p v-else>{{ sanitizeFieldValue(feature.attributes[header.name]) }}</p>
+          <field :state="{value: feature.attributes[header.name]}"></field>
         </td>
       </tr>
       </tbody>
@@ -24,11 +21,9 @@
 </template>
 
 <script>
-  import LinkComponent from './components/link.vue'
-  const fieldsMixin = require('gui/vue/vue.mixins').fieldsMixin;
+  const Field = require('gui/fields/g3w-field.vue');
   export default {
-    name: "Table",
-    mixins: [fieldsMixin],
+    name: "G3WTable",
     data: function() {
       return {
         state: null,
@@ -36,7 +31,7 @@
       }
     },
     components: {
-      'link-item': LinkComponent
+      Field
     },
     methods: {
       _setLayout: function() {

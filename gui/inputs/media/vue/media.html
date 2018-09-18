@@ -11,8 +11,8 @@
       type="file">
     <div class="preview" style="margin-top: 5px" v-if="value">
       <div v-show="loading" class="bar-loader"></div>
-      <div @click="clearMedia()" style="cursor: pointer; color: red; text-align: right" >
-        <i class="fa fa-trash fa-2x"></i>
+      <div @click="clearMedia()" style="cursor: pointer; color: red; text-align: right; margin-bottom:5px;" >
+        <i :class="g3wtemplate.font['trash-o']" class="g3w-icon"></i>
       </div>
       <img :id="mediaid"  class="img-responsive" :src="value" v-if="media.type ==='image'">
       <iframe :id="mediaid" style="width: 100%;" :src="value" v-else-if="media.type === 'pdf'"></iframe>

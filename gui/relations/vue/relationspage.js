@@ -2,6 +2,7 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const Component = require('gui/vue/component');
 const Service = require('../relationsservice');
+const Field = require('gui/fields/g3w-field.vue');
 
 /* List of relaations */
 const relationsComponent = {
@@ -35,6 +36,9 @@ const relationsComponent = {
 const relationComponent = {
   template: require('./relation.html'),
   props: ['table', 'relation', 'previousview'],
+  components: {
+    Field
+  },
   computed: {
     showrelationslist() {
       return this.previousview === 'relations'

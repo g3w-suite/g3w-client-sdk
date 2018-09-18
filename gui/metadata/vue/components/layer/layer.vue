@@ -1,11 +1,11 @@
 <template>
   <div>
     <h4 @click="showHideInfo" class="layer_header" data-toggle="collapse" :data-target="'#' + state.id">
-      <i class="fa layer-header-icon" :class="[isSpatial ? 'fa-map-o': 'fa-table']" aria-hidden="true"></i>{{ state.name}}
-      <span class="fa" :class="[show ? 'fa-eye-slash' : 'fa-eye']"></span>
+      <i class="layer-header-icon" :class="[isSpatial ? g3wtemplate.font['map']: g3wtemplate.font['table']]" aria-hidden="true"></i>{{ state.name}}
+      <span class="fa" :class="[show ? g3wtemplate.font['eye-close'] : g3wtemplate.font['eye']]"></span>
     </h4>
     <div :id="state.id" class="collapse">
-      <ul class="nav nav-tabs" role="tablist">
+      <ul class="metadata-nav-tabs nav nav-tabs" role="tablist">
         <li role="presentation" class="active">
           <a v-t="'metadata.groups.layers.groups.general'" :href="'#layer_general_' + state.id" aria-controls="general" role="tab" data-toggle="tab">
           </a>
@@ -159,8 +159,8 @@
   .nav-tabs { border-bottom: 0px solid #DDD; }
   .nav-tabs > li.active > a, .nav-tabs > li.active > a:focus, .nav-tabs > li.active > a:hover { border-width: 0; }
   .nav-tabs > li > a { border: none; color: #aeaeae; }
-  .nav-tabs > li.active > a, .nav-tabs > li > a:hover { border: none; color: #3c8dbc !important; background: transparent; }
-  .nav-tabs > li > a::after { content: ""; background: #3c8dbc; height: 2px; position: absolute; width: 100%; left: 0px; bottom: -1px; transition: all 250ms ease 0s; transform: scale(0); }
+  .nav-tabs > li.active > a, .nav-tabs > li > a:hover { border: none; background: transparent; }
+  .nav-tabs > li > a::after { content: ""; height: 2px; position: absolute; width: 100%; left: 0px; bottom: -1px; transition: all 250ms ease 0s; transform: scale(0); }
   .nav-tabs > li.active > a::after, .nav-tabs > li:hover > a::after { transform: scale(1); }
   .tab-nav > li > a::after { background: #21527d none repeat scroll 0% 0%; color: #fff; }
   .tab-pane { padding: 15px 0; }
