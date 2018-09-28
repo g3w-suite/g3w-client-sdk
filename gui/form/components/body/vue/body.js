@@ -5,6 +5,11 @@ import Tabs from '../../../../tabs/tabs.vue';
 const BodyFormComponent = Vue.extend({
   template: BodyTemplate,
   props: ['state'],
+  data() {
+    return {
+      show: true
+    }
+  },
   components: {
     ...Inputs,
     Tabs
@@ -31,6 +36,9 @@ const BodyFormComponent = Vue.extend({
     hasFormStructure() {
       return !!this.state.formstructure;
     }
+  },
+  mounted() {
+    this.$nextTick(() => {})
   }
 });
 

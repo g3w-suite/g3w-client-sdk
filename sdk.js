@@ -97,7 +97,8 @@ g3w.gui = {
     },
     inputs: {
       InputsComponents: require('gui/inputs/inputs')
-    }
+    },
+    mixins: require('gui/vue/vue.mixins')
   }
 };
 

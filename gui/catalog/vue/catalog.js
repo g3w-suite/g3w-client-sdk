@@ -153,7 +153,9 @@ const vueComponentOptions = {
         this.layerMenu.loading_data_table = false;
         this._hideMenu();
       });
-      tableContent.show();
+      tableContent.show({
+        title: layer.getName()
+      });
     },
     startEditing: function() {
       let layer;

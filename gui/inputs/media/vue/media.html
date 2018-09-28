@@ -1,6 +1,5 @@
 <baseinput :state="state">
   <div slot="body">
-    <div :id="mediaspinnerid" style="max-width: 100%"></div>
     <input
       :name="state.name"
       :data-url="state.input.options.uploadurl"
@@ -9,18 +8,16 @@
       v-disabled="!isEditable()"
       :class="{'input-error-validation' : !state.validate.valid}"
       type="file">
-    <div class="preview" style="margin-top: 5px" v-if="value">
-      <div v-show="loading" class="bar-loader"></div>
-      <div @click="clearMedia()" style="cursor: pointer; color: red; text-align: right; margin-bottom:5px;" >
+    <div v-if="loading" class="bar-loader" style="margin-top: 3px;"></div>
+    <div class="preview" v-if="value">
+      <a :href="value" target="_blank">
+        <div class="previewtype" :class="media.type">
+          <i class="fa-2x" :class="g3wtemplate.font[media.type]"></i>
+        </div>
+      </a>
+      <div class="filename">{{ filename }}</div>
+      <div class="clearmedia" @click="clearMedia()">
         <i :class="g3wtemplate.font['trash-o']" class="g3w-icon"></i>
-      </div>
-      <img :id="mediaid"  class="img-responsive" :src="value" v-if="media.type ==='image'">
-      <iframe :id="mediaid" style="width: 100%;" :src="value" v-else-if="media.type === 'pdf'"></iframe>
-      <video :id="mediaid" style="width:100%" v-else-if="media.type ==='video'" controls>
-        <source :src="value">
-        Your browser does not support the video tag.
-      </video>
-      <div style="font-weight: bold" v-else v-t="'editing.inputs.media.unsupported'">
       </div>
     </div>
   </div>

@@ -24,12 +24,15 @@
               </node>
             </div>
             <template v-else>
-              <template v-if="context == 'query'">
-                <div class="query_relation_field" @click="showRelation(getNode(row, column).name)">
+              <div style="cursor: pointer" v-if="context == 'query'" @click="showRelation(getNode(row, column).name)">
+                <div class="query_relation_field" >
                   <i :class="g3wtemplate.font['relation']"></i>
                 </div>
-                <span class="query_relation_field_message" v-t="'mapcontrols.query.input_relation'"></span>
-              </template>
+                <span>
+                  <span class="query_relation_field_message">
+                    <span v-t="'mapcontrols.query.input_relation'"></span><span style="text-transform: uppercase"> {{ getRelationName(getNode(row, column).name) }}</span></span>
+                </span>
+              </div>
               <template v-else>
                 <div class="form_editing_relation_input" v-t="'editing.messages.qgis_input_widget_relation'">
                   <span class="info_helptext_button">i</span>
@@ -118,6 +121,10 @@
       }
     },
     methods: {
+      getRelationName(relationId) {
+        const relation = ProjectRegistry.getCurrentProject().getRelationById(relationId);
+        return relation.name;
+      },
       showRelation(relationId) {
         const relationService = new RelationsService();
         const relation = ProjectRegistry.getCurrentProject().getRelationById(relationId);

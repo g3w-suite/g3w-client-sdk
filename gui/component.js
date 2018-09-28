@@ -43,6 +43,7 @@ const Component = function(options = {}) {
         template: this.getInternalTemplate()
       });
       this.internalComponent.state = this.getService().state;
+      // add compoents to state components
       this.internalComponent.state.components = this._components;
     };
     this.setInternalComponent();
@@ -235,8 +236,7 @@ proto.ismount = function() {
 };
 
 // hook function to show componet
-proto.show = function() {
-};
+proto.show = function() {};
 
 proto._setOpen = function(bool) {};
 

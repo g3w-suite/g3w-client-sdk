@@ -387,14 +387,12 @@ proto.setupControls = function() {
           }
           break;
         case 'zoomtoextent':
-          if (!isMobile.any) {
-            control = ControlsFactory.create({
-              type: controlType,
-              label: "\ue98c",
-              extent: this.project.state.initextent
-            });
-            this.addControl(controlType,control);
-          }
+          control = ControlsFactory.create({
+            type: controlType,
+            label: "\ue98c",
+            extent: this.project.state.initextent
+          });
+          this.addControl(controlType,control);
           break;
         case 'mouseposition':
           if (!isMobile.any) {
@@ -699,18 +697,16 @@ proto.setupControls = function() {
           $('.gcd-txt-result').perfectScrollbar();
           break;
         case 'geolocation':
-          if (!isMobile.any) {
-            control = ControlsFactory.create({
-              type: controlType
-            });
-            control.on('click',(evt) => {
-              this.showMarker(evt.coordinates);
-            });
-            control.on('error', (e) => {
-              GUI.notify.error(t("mapcontrols.geolocations.error"))
-            });
-            this.addControl(controlType, control);
-          }
+          control = ControlsFactory.create({
+            type: controlType
+          });
+          control.on('click',(evt) => {
+            this.showMarker(evt.coordinates);
+          });
+          control.on('error', (e) => {
+            GUI.notify.error(t("mapcontrols.geolocations.error"))
+          });
+          this.addControl(controlType, control);
           break;
         case 'addlayers':
           if (!isMobile.any) {

@@ -1,9 +1,11 @@
-<div>
-  <component v-for="component in state.components" :key="component.id"
-    @reloadlayout="reloadLayout"
-    @addtovalidate="addToValidate"
-    @changeinput="changeInput"
-    :state="state"
-    :is="component">
-  </component>
+<div class="g3wform" style="position: relative">
+  <div class="g3w-form-component" :id="'g3wform_'+ component.id" v-for="component in state.components" :key="component.id">
+    <component
+      @reloadlayout="reloadLayout"
+      @addtovalidate="addToValidate"
+      @changeinput="changeInput"
+      :state="state"
+      :is="component.component">
+    </component>
+  </div>
 </div>

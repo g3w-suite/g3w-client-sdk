@@ -1,18 +1,17 @@
 <template>
   <div id="open_attribute_table">
-    <b style="color:#3f8dbc; margin-bottom:3px;">{{ state.title }}</b>
     <table v-if="hasHeaders()" id="layer_attribute_table" class="table table-striped" style="width:100%">
       <thead>
-      <tr>
-        <th v-for="header in state.headers">{{ header.label }}</th>
-      </tr>
+        <tr>
+          <th v-for="header in state.headers">{{ header.label }}</th>
+        </tr>
       </thead>
       <tbody>
-      <tr :id="'open_table_row_' + index"  v-for="(feature, index) in state.features" :key="index" @mouseenter="zoomAndHighLightSelectedFeature(feature, false)" @click="zoomAndHighLightSelectedFeature(feature)" :class="{geometry: state.hasGeometry}">
-        <td v-for="header in state.headers">
-          <field :state="{value: feature.attributes[header.name]}"></field>
-        </td>
-      </tr>
+        <tr :id="'open_table_row_' + index"  v-for="(feature, index) in state.features" :key="index" @mouseenter="zoomAndHighLightSelectedFeature(feature, false)" @click="zoomAndHighLightSelectedFeature(feature); toggleRow(index)" :class="[{geometry: state.hasGeometry}, {selected: selectedRow === index }]">
+          <td v-for="header in state.headers">
+            <field :state="{value: feature.attributes[header.name]}"></field>
+          </td>
+        </tr>
       </tbody>
     </table>
     <div id="nohedaers" v-t="'dataTable.no_data'" v-else>
@@ -27,7 +26,8 @@
     data: function() {
       return {
         state: null,
-        table: null
+        table: null,
+        selectedRow: null
       }
     },
     components: {
@@ -41,9 +41,15 @@
         if (this.state.geometry)
           this.$options.service.zoomAndHighLightSelectedFeature(feature, zoom);
       },
+      toggleRow(index) {
+        this.selectedRow = this.selectedRow === index ? null : index;
+      },
       hasHeaders() {
         return !!this.state.headers.length;
       }
+    },
+    created() {
+
     },
     mounted: function() {
       this.$nextTick(() => {
@@ -91,5 +97,8 @@
     background-color: #ffffff;
     font-weight: bold;
     margin-top: 10px;
+  }
+  .selected {
+    background-color: yellow !important;
   }
 </style>
