@@ -43,8 +43,6 @@ const Component = function(options = {}) {
         template: this.getInternalTemplate()
       });
       this.internalComponent.state = this.getService().state;
-      // add compoents to state components
-      this.internalComponent.state.components = this._components;
     };
     this.setInternalComponent();
   };

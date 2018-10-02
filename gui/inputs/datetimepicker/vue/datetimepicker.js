@@ -58,7 +58,6 @@ const DateTimePickerInput = Vue.extend({
         this.$emit('datetimepickershow');
       });
       $(`#${this.iddatetimepicker}`).on("dp.hide", (e) => {
-        //$(`#${this.iddatetimepicker}`).data("DateTimePicker").show();
         this.$emit('datetimepickershow');
       });
     });

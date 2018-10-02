@@ -1,4 +1,5 @@
-<div class="box-header with-border">
-  <h3 class="box-title title">{{ state.title }}</h3>
-  <div class="box-tools pull-right"></div>
+<div class="g3wform_header box-header with-border">
+  <span :class="[{item_selected: currentindex === index && titles.length > 1}, {tabs: titles.length > 1}]" v-for="(title, index) in titles" :key="title" class="title" @click="click(index)">
+    {{ title }}
+  </span>
 </div>

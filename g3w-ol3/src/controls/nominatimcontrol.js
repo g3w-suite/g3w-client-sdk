@@ -5,6 +5,7 @@ function NominatimControl(options) {
   this.options = {
     provider: 'osm',
     placeholder: options.placeholder || 'Città, indirizzo ... ',
+    noresults: options.noresults || 'Nessun risultato ',
     targetType: 'text-input',
     lang: 'it-IT',
     limit: 5,
@@ -659,6 +660,14 @@ function NominatimControl(options) {
   };
 
   Nominatim.prototype.query = function query (q) {
+    const isNumber = (value) => {
+      return typeof value === 'number' && !Number.isNaN(value);
+    };
+    let latlon = null;
+    if (q && q.split(',').length === 2) {
+      latlon = q.split(',');
+      latlon = isNumber(latlon[0]) && isNumber(latlon[1]) ? latlon : null;
+    }
     const this$1 = this;
     const ajax = {}, options = this.options;
     const provider = this.getProvider({
@@ -667,7 +676,9 @@ function NominatimControl(options) {
       key: options.key,
       lang: options.lang,
       countrycodes: options.countrycodes,
-      limit: options.limit
+      limit: options.limit,
+      lat: latlon ? latlon[0]: null,
+      lon: latlon? latlon[1]: null
     });
     if (this.lastQuery === q && this.els.result.firstChild) { return; }
     this.lastQuery = q;
@@ -710,7 +721,8 @@ function NominatimControl(options) {
         ul.appendChild(li);
       });
     } else {
-      li = utils.createElement('li', 'Nessun Risultato');
+      const li = utils.createElement('li', this.options.noresults);
+      li.className = 'nominatim-noresults';
       ul.appendChild(li);
     }
 

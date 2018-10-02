@@ -43,18 +43,15 @@ function FormService() {
     this.pk = options.pk || null;
     this.buttons = options.buttons || [];
     this.state = {
-      title: this.title,
+      components: [],
+      component: null,
+      headers: [],
       fields: null,
       buttons: this.buttons,
       disabled: false,
       valid: true, // global form validation state. True at beginning
         // when input change will be update
       tovalidate: [], // object array to be validate. They have at list valid key (boolean)
-      addedcomponentto: {
-        header: false,
-        body: false,
-        footer: false
-      }
     };
     this.setFormFields(options.fields);
     this.setFormStructure(options.formStructure);
@@ -63,12 +60,26 @@ function FormService() {
   this.isValid = function() {
     let bool = true;
     this.state.tovalidate.forEach((tovalidate) => {
-      if (!tovalidate.valid) {
+      if (tovalidate && !tovalidate.valid) {
         bool = false;
         return false;
       }
     });
     this.state.valid = bool;
+  };
+  this.addComponents = function(components = []) {
+    for (const component of components) {
+      this.addComponent(component);
+    }
+  };
+
+  this.addComponent = function(component) {
+    this.state.headers.push(component.id);
+    this.state.components.push(component.component);
+  };
+
+  this.setComponent = function(component) {
+    this.state.component = component;
   };
 
   this.addedComponentTo = function(formcomponent = 'body') {

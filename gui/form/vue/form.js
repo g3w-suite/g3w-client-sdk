@@ -6,23 +6,23 @@ const base = require('core/utils/utils').base;
 const Template = require('./form.html');
 const HeaderFormComponent = require('../components/header/vue/header');
 const BodyFormComponent = require('../components/body/vue/body');
-const FooterFormComponent = require('../components/footer/vue/footer');
-
 
 //vue component
 const vueComponentObject = {
   template: null,
   data: function() {
     return {
-      state: {},
-      split: {
-        show: !this.isMobile(),
-        resized: false
-      }
+      state: {}
     }
+  },
+  components: {
+    g3wformheader: HeaderFormComponent
   },
   transitions: {'addremovetransition': 'showhide'},
   methods: {
+    switchComponent(index) {
+      this.$options.service.setComponent(this.state.components[index])
+    },
     changeInput: function(input) {
       //emit change input of body input
       this.$options.service.eventBus.$emit('changeinput', input);
@@ -33,64 +33,15 @@ const vueComponentObject = {
     },
     // set layout
     reloadLayout: function() {
-      if ((!this.split.show || !this.split.resize)) {
-        const height = $(this.$el).height();
-        //const width = $(this.$el).width();
-        // check height
-        if(!height)
-          return;
-        let isHeader = false; // is header
-        let isFooter = false; // is footer
-        let notBodyElementHeight = 0;
-        let centralElementsNumber = 0;
-        const formElement = $(this.$el).find("div[class*=\"g3w-form-component\"]");
-        const externalElement = [];
-        const centralElements = [];
-        formElement.each(function () {
-          isFooter = $(this).attr('id') === 'g3wform_footer';
-          if(!isHeader || isFooter) {
-            externalElement.push($(this));
-            notBodyElementHeight += $(this).height();
-          } else {
-            if($(this).attr('id') !== 'g3wform_body') {
-              centralElements.push($(this));
-              centralElementsNumber += 1;
-            }
-          }
-          isHeader = !isHeader ? $(this).attr('id') === 'g3wform_header' : true;
-        });
-        // calculate heigth body
-        let centralHeight = height - (notBodyElementHeight); // central form dom
-        // assign 70% of the space to body element
-        let bodyHeight = bodyElementHeight = centralHeight * 0.70;
-        let heightToApply = ((centralHeight - bodyHeight) / centralElementsNumber) - 15; // height of others part
-        // check height of the body
-        if(this.state.addedcomponentto.body) {
-          $(this.$el).find("#g3wform_body").height(bodyElementHeight);
-          centralHeight = centralHeight - bodyElementHeight;
-          heightToApply = (centralHeight / centralElementsNumber) - 15;
-          centralElements.forEach((element) => {
-            element.height(heightToApply)
-          });
-        } else {
-          // only body element feature
-          $(this.$el).find("#g3wform_body").height(height - notBodyElementHeight);
-        }
-        this.split.resize = this.split.show ? true : false;
-      }
+      const height = $(this.$el).height();
+      if(!height)
+        return;
+      $(this.$el).find(".g3wform_body").height(height - ($('.g3wform_header').height() +  $('.g3wform_footer').height()) - 50);
     }
   },
   mounted: function() {
     this.$options.service.getEventBus().$on('addtovalidate', this.addToValidate);
     this.$nextTick(() => {
-      if (this.state.addedcomponentto.body && this.split.show) {
-        Split(['#g3wform_body', '#g3wform_relations'], {
-          direction: 'vertical',
-          elementStyle: (dimension, size) => {
-            return { 'height': 'calc(' + size + '% - ' + 80 + 'px)' }
-          },
-        })
-      }
     });
   }
 };
@@ -103,25 +54,30 @@ function FormComponent(options = {}) {
   options.vueComponentObject = options.vueComponentObject  || vueComponentObject;
   options.template = options.template || Template;
   //set statdar element of the form
-  options.components = options.components || [
-    {id: 'header', component: HeaderFormComponent},
-    {id: 'body', component: BodyFormComponent},
-    {id: 'footer', component: FooterFormComponent}
+  const components = options.components || [
+    {id: options.title, component: BodyFormComponent}
   ];
   // initialize component
   this.init(options);
+
+  this.getService().addComponents(components);
+  this.getService().setComponent(components[0].component);
+
+  this.addFormComponents = function(components = []) {
+    this.getService().addComponents(components);
+  };
   // some utilities methods
-  this.addRelations = function(relations) {
-    console.log(relations)
+  this.addDependecyComponents = function(components) {
+    this.getService().addDependecyComponents(components)
   };
   this.addComponentBeforeBody = function(Component) {
-    this.getService().addedComponentTo('body');
-    this.insertComponentAt(1, Component);
+    //this.getService().addedComponentTo('body');
+    //this.insertComponentAt(1, Component);
   };
 
   this.addComponentAfterBody = function(Component) {
-    this.getService().addedComponentTo('body');
-    this.insertComponentAt(2, Component)
+    //this.getService().addedComponentTo('body');
+    //this.insertComponentAt(2, Component)
   };
 
   this.addComponentBeforeFooter = function() {

@@ -1,6 +1,7 @@
 <baseinput :state="state">
   <input
     @change="change"
+    class="form-control"
     style="width:100%"
     v-disabled="!isEditable()"
     :class="{'input-error-validation' : !state.validate.valid}"

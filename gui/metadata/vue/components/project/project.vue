@@ -158,7 +158,6 @@
   }
 
   #project-catalog {
-    background-color: rgba(255, 255, 255, 1.0);
     padding: 3px 10px 3px 10px;
     position: relative;
     overflow: auto;

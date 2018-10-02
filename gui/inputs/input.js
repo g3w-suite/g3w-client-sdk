@@ -4,7 +4,7 @@ const Input = {
   props: ['state'],
   mixins: [BaseInput],
   components: {
-    baseinput: BaseInputComponent 
+    baseinput: BaseInputComponent
   }
 };
 
