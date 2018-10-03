@@ -161,7 +161,7 @@ function MapComponent(options) {
   this.setService(new MapService(options));
   merge(this, options);
   this.internalComponent = new InternalComponent({
-    mapService: this._service // definisco il mapservice
+    mapService: this._service
   });
   this.internalComponent.target = this.target;
 }

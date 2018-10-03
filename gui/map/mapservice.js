@@ -684,7 +684,8 @@ proto.setupControls = function() {
             bbox: this.project.state.initextent,
             mapCrs: 'EPSG:'+this.project.state.crs,
             placeholder: t("mapcontrols.nominatim.placeholder"),
-            noresults: t("mapcontrols.nominatim.noresults")
+            noresults: t("mapcontrols.nominatim.noresults"),
+            fontIcon: GUI.getFontClass('search')
           });
           control.on('addresschosen', (evt) => {
             const coordinate = evt.coordinate;
@@ -723,7 +724,8 @@ proto.setupControls = function() {
         case 'length':
           if (!isMobile.any) {
             control = ControlsFactory.create({
-              type: controlType
+              type: controlType,
+              tipLabel: t('mapcontrols.length.tooltip')
             });
             this.addControl(controlType, control);
           }
@@ -731,7 +733,8 @@ proto.setupControls = function() {
         case 'area':
           if (!isMobile.any) {
             control = ControlsFactory.create({
-              type: controlType
+              type: controlType,
+              tipLabel: t('mapcontrols.area.tooltip')
             });
             this.addControl(controlType, control);
           }
@@ -850,6 +853,12 @@ proto.addControl = function(type, control, addToMapControls=true) {
   control.on('controlclick', () => {
     this.controlClick();
   });
+
+  $(control.element).find('button').tooltip({
+    placement: 'bottom',
+    trigger : 'hover'
+  });
+
   if (addToMapControls)
     this._addControlToMapControls(control);
   else {
@@ -859,6 +868,7 @@ proto.addControl = function(type, control, addToMapControls=true) {
       height: $mapElement.height()
     })
   }
+
   ControlsRegistry.registerControl(type, control);
 };
 

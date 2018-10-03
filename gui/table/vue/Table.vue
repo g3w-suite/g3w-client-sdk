@@ -14,7 +14,7 @@
         </tr>
       </tbody>
     </table>
-    <div id="nohedaers" v-t="'dataTable.no_data'" v-else>
+    <div id="noheaders" v-t="'dataTable.no_data'" v-else>
     </div>
   </div>
 </template>
@@ -93,7 +93,7 @@
   .geometry {
     cursor: pointer
   }
-  #nohedaers {
+  #noheaders {
     background-color: #ffffff;
     font-weight: bold;
     margin-top: 10px;

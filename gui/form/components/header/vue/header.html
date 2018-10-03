@@ -1,5 +1,5 @@
 <div class="g3wform_header box-header with-border">
-  <span :class="[{item_selected: currentindex === index && titles.length > 1}, {tabs: titles.length > 1}]" v-for="(title, index) in titles" :key="title" class="title" @click="click(index)">
+  <span :class="[{item_selected: currentindex === index && titles.length > 1}, [titles.length > 1 ? 'tabs' : 'one' ]]" v-for="(title, index) in titles" :key="title" class="title" @click="click(index)">
     {{ title }}
   </span>
 </div>

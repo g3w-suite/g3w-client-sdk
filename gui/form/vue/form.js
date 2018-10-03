@@ -21,7 +21,7 @@ const vueComponentObject = {
   transitions: {'addremovetransition': 'showhide'},
   methods: {
     switchComponent(index) {
-      this.$options.service.setComponent(this.state.components[index])
+      this.$options.service.setComponent(this.state.components[index]);
     },
     changeInput: function(input) {
       //emit change input of body input
@@ -36,7 +36,8 @@ const vueComponentObject = {
       const height = $(this.$el).height();
       if(!height)
         return;
-      $(this.$el).find(".g3wform_body").height(height - ($('.g3wform_header').height() +  $('.g3wform_footer').height()) - 50);
+      const footerHeight = $('.g3wform_footer').height() ? $('.g3wform_footer').height() + 50 : 50;
+      $(this.$el).find(".g3wform_body").height(height - ($('.g3wform_header').height() +  footerHeight));
     }
   },
   mounted: function() {

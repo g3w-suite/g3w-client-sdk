@@ -4,7 +4,7 @@
   <div class="g3wform_body">
     <keep-alive>
       <component
-        @reloadlayout="reloadLayout"
+        @hook:activated="reloadLayout"
         @addtovalidate="addToValidate"
         @changeinput="changeInput"
         :state="state"
