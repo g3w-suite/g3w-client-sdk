@@ -7,7 +7,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr :id="'open_table_row_' + index"  v-for="(feature, index) in state.features" :key="index" @mouseenter="zoomAndHighLightSelectedFeature(feature, false)" @click="zoomAndHighLightSelectedFeature(feature); toggleRow(index)" :class="[{geometry: state.hasGeometry}, {selected: selectedRow === index }]">
+        <tr class="feature_attribute" :id="'open_table_row_' + index"  v-for="(feature, index) in state.features" :key="index" @mouseenter="zoomAndHighLightSelectedFeature(feature, false)" @click="zoomAndHighLightSelectedFeature(feature); toggleRow(index)" :class="[{geometry: state.hasGeometry}, {selected: selectedRow === index }]">
           <td v-for="header in state.headers">
             <field :state="{value: feature.attributes[header.name]}"></field>
           </td>
@@ -98,7 +98,4 @@
     font-weight: bold;
     margin-top: 10px;
   }
-  .selected {
-    background-color: yellow !important;
-  }
-</style>
+  </style>

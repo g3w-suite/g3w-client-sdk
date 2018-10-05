@@ -6,6 +6,7 @@ function NominatimControl(options) {
     provider: 'osm',
     placeholder: options.placeholder || 'Città, indirizzo ... ',
     noresults: options.noresults || 'Nessun risultato ',
+    notresponseserver: options.notresponseserver || 'Il server non risponde',
     targetType: 'text-input',
     lang: 'it-IT',
     limit: 5,
@@ -542,7 +543,7 @@ function NominatimControl(options) {
 
   const OpenStreet = function OpenStreet() {
     this.settings = {
-      url: '//nominatim.openstreetmap.org/search/',
+      url: 'https://nominatim.openstreetmap.org/search/',
       params: {
         q: '',
         format: 'json',
@@ -670,7 +671,8 @@ function NominatimControl(options) {
       latlon = isNumber(latlon[0]) && isNumber(latlon[1]) ? latlon : null;
     }
     const this$1 = this;
-    const ajax = {}, options = this.options;
+    const ajax = {
+    }, options = this.options;
     const provider = this.getProvider({
       query: q,
       provider: options.provider,
@@ -685,7 +687,7 @@ function NominatimControl(options) {
     this.lastQuery = q;
     this.clearResults();
     utils.addClass(this.els.reset, klasses$1.spin);
-    ajax.url = document.location.protocol + provider.url;
+    ajax.url = provider.url;
     ajax.data = provider.params;
     utils.json(ajax)
       .done(function(res) {
@@ -701,7 +703,7 @@ function NominatimControl(options) {
       .fail(function(error){
         utils.removeClass(this$1.els.reset, klasses$1.spin);
         const li = utils.createElement(
-              'li', '<h5>  Il server non risponde</h5>');
+              'li', `<h5>  ${this$1.options.notresponseserver}</h5>`);
             this$1.els.result.appendChild(li);
       })
 

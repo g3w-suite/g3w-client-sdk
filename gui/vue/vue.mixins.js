@@ -47,8 +47,11 @@ const mediaMixin = {
     }
   },
   methods: {
-    getFileName(value) {
-      return this.value.split('/').pop();
+    isMedia(value) {
+      if (value && typeof  value === 'object' && value.constructor === Object) {
+        return !!value.mime_type;
+      }
+      return false;
     },
     getMediaType(mime_type) {
       let media = {

@@ -339,6 +339,12 @@ proto.getQueryLayersPromisesByCoordinates = function(layerFilterObject, coordina
     lh: <options> h: horizontal: v vertical (default)
   }
  */
+
+proto.activeMapControl = function(controlName) {
+  const mapControl = this._mapControls.find((control) => control.type === controlName);
+  const control = mapControl.control;
+  !control.isToggled() ? control.toggle() : null;
+};
 proto.setupControls = function() {
   //this.state.mapcontrolsalignement = 'lv'
   const baseLayers = this.getLayers({
@@ -685,6 +691,7 @@ proto.setupControls = function() {
             mapCrs: 'EPSG:'+this.project.state.crs,
             placeholder: t("mapcontrols.nominatim.placeholder"),
             noresults: t("mapcontrols.nominatim.noresults"),
+            notresponseserver: t("mapcontrols.nominatim.notresponseserver"),
             fontIcon: GUI.getFontClass('search')
           });
           control.on('addresschosen', (evt) => {
