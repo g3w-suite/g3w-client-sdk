@@ -1,10 +1,10 @@
-const BaseInput = require('./baseinput').BaseInput;
-const BaseInputComponent= require('./baseinput').BaseInputComponent;
+const BaseInput = require('./baseinput/baseinput').BaseInput;
+const BaseInputComponent= require('./baseinput/baseinput').BaseInputComponent;
 const Input = {
   props: ['state'],
   mixins: [BaseInput],
   components: {
-    baseinput: BaseInputComponent 
+    baseinput: BaseInputComponent
   }
 };
 

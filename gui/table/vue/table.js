@@ -41,7 +41,7 @@ inherit(TableComponent, Component);
 const proto = TableComponent.prototype;
 
 // overwrite show method
-proto.show = function() {
+proto.show = function(options = {}) {
   const service = this.getService();
   service.getData()
     .then(() => {
@@ -49,7 +49,8 @@ proto.show = function() {
         content: this,
         perc: 50,
         split: 'v',
-        push: false
+        push: false,
+        title: options.title
       });
     })
     .fail((err) => {

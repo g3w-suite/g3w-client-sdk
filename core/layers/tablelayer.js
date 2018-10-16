@@ -178,7 +178,7 @@ proto.isFieldRequired = function(fieldName) {
   return required;
 };
 
-// apply resposnse data from server in case of new inserted feature
+// apply response data from server in case of new inserted feature
 proto.applyCommitResponse = function(response) {
   const data = response;
   if (data && data.result) {

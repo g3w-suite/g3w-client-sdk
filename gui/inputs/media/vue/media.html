@@ -1,6 +1,5 @@
 <baseinput :state="state">
-  <div slot="inputelement">
-    <div id="media-spinner" style="max-width: 100%"></div>
+  <div slot="body">
     <input
       :name="state.name"
       :data-url="state.input.options.uploadurl"
@@ -9,17 +8,16 @@
       v-disabled="!isEditable()"
       :class="{'input-error-validation' : !state.validate.valid}"
       type="file">
-    <div class="preview" style="margin-top: 5px" v-if="value">
-      <div @click="clearMedia()" style="cursor: pointer; color: red; text-align: right" >
-        <i class="fa fa-trash fa-2x"></i>
-      </div>
-      <img class="img-responsive" :src="value" v-if="media.type ==='image'">
-      <iframe style="max-width: 100%;" :src="value" v-else-if="media.type === 'pdf'"></iframe>
-      <video style="max-width:100%" v-else-if="media.type ==='video'" controls>
-        <source :src="value">
-        Your browser does not support the video tag.
-      </video>
-      <div style="font-weight: bold" v-else v-t="'editing.inputs.media.unsupported'">
+    <div v-if="loading" class="bar-loader" style="margin-top: 3px;"></div>
+    <div class="preview" v-if="value">
+      <a :href="value" target="_blank">
+        <div class="previewtype" :class="media.type">
+          <i class="fa-2x" :class="g3wtemplate.font[media.type]"></i>
+        </div>
+      </a>
+      <div class="filename">{{ filename }}</div>
+      <div class="clearmedia" @click="clearMedia()">
+        <i :class="g3wtemplate.font['trash-o']" class="g3w-icon"></i>
       </div>
     </div>
   </div>

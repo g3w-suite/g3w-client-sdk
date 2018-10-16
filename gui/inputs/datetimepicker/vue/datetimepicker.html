@@ -1,6 +1,5 @@
 <baseinput :state="state">
-  <div slot="inputelement" >
-    <div style="position:relative"></div>
+  <div slot="body" >
     <div class='input-group date' :id='iddatetimepicker'>
       <input
         :id="idinputdatetimepiker"
@@ -12,8 +11,7 @@
       <span
         class="input-group-addon caret">
         <span
-          class="glyphicon"
-          :class="[timeOnly() ? 'glyphicon-time' : ' glyphicon-calendar']">
+          :class="[timeOnly() ? g3wtemplate.getFontClass('time') :  g3wtemplate.getFontClass('calendar')]">
         </span>
       </span>
     </div>

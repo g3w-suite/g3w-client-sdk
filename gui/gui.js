@@ -2,12 +2,18 @@ const noop = require('core/utils/utils').noop;
 const inherit = require('core/utils/utils').inherit;
 const G3WObject = require('core/g3wobject');
 const RouterService = require('core/router');
+const base = require('core/utils/utils').base;
 const ComponentsRegistry = require('gui/componentsregistry');
 
 // API della GUI.
 // methods have be defined by application
 // app shold call GUI.ready() when GUI is ready
 function GUI() {
+  this.setters = {
+    setContent: function(options) {
+      this._setContent(options)
+    }
+  };
   this.isready = false;
   // images urls
   this.getResourcesUrl = noop;
@@ -53,8 +59,10 @@ function GUI() {
 
   this.notify = noop;
   this.dialog = noop;
+  //useful to registere setters
+  base(this);
 }
 
-inherit(GUI,G3WObject);
+inherit(GUI, G3WObject);
 
 module.exports = new GUI;

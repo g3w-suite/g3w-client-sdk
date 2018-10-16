@@ -1,15 +1,15 @@
-const validators = {
-  integer: require('./integer'),
-  checkbox: require('./checkbox'),
-  datetimepicker: require('./datetimepicker'),
-  text: require('./validator'),
-  string: require('./validator'),
-  default: require('./validator'),
-};
-
 const Validators = {
-  get: function(type) {
-    const Validator = validators[type] || validators.default;
+  validators: {
+    integer: require('./integer'),
+    checkbox: require('./checkbox'),
+    datetimepicker: require('./datetimepicker'),
+    text: require('./validator'),
+    string: require('./validator'),
+    default: require('./validator'),
+  },
+
+  get(type) {
+    const Validator = this.validators[type] || this.validators.default;
     return new Validator;
   }
 

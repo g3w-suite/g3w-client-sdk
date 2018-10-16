@@ -10,7 +10,6 @@ const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const Filter = require('core/layers/filter/filter');
 const WFSProvider = require('core/layers/providers/wfsprovider');
 const ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
-const resToScale = require('g3w-ol3/src/utils/utils').resToScale;
 const ControlsFactory = require('gui/map/control/factory');
 const StreetViewService = require('gui/streetview/streetviewservice');
 const ControlsRegistry = require('gui/map/control/registry');
@@ -33,7 +32,8 @@ function MapService(options) {
     center: null,
     loading: false,
     hidden: true,
-    scale: 0
+    scale: 0,
+    mapcontrolsalignement: 'rv'
   };
 
   this._greyListenerKey = null;
@@ -167,7 +167,7 @@ inherit(MapService, G3WObject);
 const proto = MapService.prototype;
 
 proto.getApplicationAttribution = function() {
-  const {header_terms_of_use_link, header_terms_of_use_text} = this.config.group
+  const {header_terms_of_use_link, header_terms_of_use_text} = this.config.group;
   if (header_terms_of_use_text) {
     return  new ol.Attribution({
       html: `<a href="${header_terms_of_use_link}">${header_terms_of_use_text}</a>`
@@ -333,7 +333,20 @@ proto.getQueryLayersPromisesByCoordinates = function(layerFilterObject, coordina
 };
 
 //setup controls
+/*
+  layout : {
+    lv: <options> h : horizontal (default), v vertical
+    lh: <options> h: horizontal: v vertical (default)
+  }
+ */
+
+proto.activeMapControl = function(controlName) {
+  const mapControl = this._mapControls.find((control) => control.type === controlName);
+  const control = mapControl.control;
+  !control.isToggled() ? control.toggle() : null;
+};
 proto.setupControls = function() {
+  //this.state.mapcontrolsalignement = 'lv'
   const baseLayers = this.getLayers({
     BASELAYER: true
   });
@@ -358,7 +371,7 @@ proto.setupControls = function() {
               type: controlType
             });
           }
-          this.addControl(controlType,control);
+          this.addControl(controlType, control, false);
           break;
         case 'zoom':
           control = ControlsFactory.create({
@@ -376,46 +389,37 @@ proto.setupControls = function() {
             control.on('zoomend', (e) => {
               this.viewer.fit(e.extent);
             });
-            this.addControl(controlType,control);
+            this.addControl(controlType,control, true);
           }
           break;
         case 'zoomtoextent':
-          if (!isMobile.any) {
-            control = ControlsFactory.create({
-              type: controlType,
-              label: "\ue98c",
-              extent: this.project.state.initextent
-            });
-            this.addControl(controlType,control);
-          }
-          break;
-        case 'mouseposition':
-          const coordinateLabels = this.getProjection().getUnits() === 'm' ? ['X', 'Y'] : ['Lng', 'Lat'];
           control = ControlsFactory.create({
             type: controlType,
-            coordinateFormat: (coordinate) => {
-              return ol.coordinate.format(coordinate, `${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}`, 4);
-            },
-            projection: this.getCrs()
+            label: "\ue98c",
+            extent: this.project.state.initextent
           });
           this.addControl(controlType,control);
           break;
+        case 'mouseposition':
+          if (!isMobile.any) {
+            const coordinateLabels = this.getProjection().getUnits() === 'm' ? ['X', 'Y'] : ['Lng', 'Lat'];
+            control = ControlsFactory.create({
+              type: controlType,
+              coordinateFormat: (coordinate) => {
+                return ol.coordinate.format(coordinate, `${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}`, 4);
+              },
+              projection: this.getCrs()
+            });
+            this.addControl(controlType, control, false);
+          }
+          break;
         case 'scale':
-          const Scales = [
-            1000000,5000000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 2000, 1000
-          ];
-          const currentScale = parseInt(resToScale(this.getResolution()));
-          let scales = Scales.filter((scale) => {
-            return scale < currentScale;
-          });
-          scales.unshift(currentScale);
           control = ControlsFactory.create({
             type: controlType,
-            scales,
             coordinateFormat: ol.coordinate.createStringXY(4),
             projection: this.getCrs()
           });
-          this.addControl(controlType,control);
+          this.addControl(controlType,control, false);
           break;
         // single query control
         case 'query':
@@ -620,20 +624,26 @@ proto.setupControls = function() {
                   lat: null,
                   lng: null
                 };
+                const closeContentFnc = () => {
+                  control.clearMarker();
+                };
                 const streetViewService = new StreetViewService();
                 streetViewService.onafter('postRender', (position) => {
                   control.setPosition(position);
                 });
                 if (control) {
                   control.on('picked', (e) => {
+                    GUI.EventBus.$off('closecontent', closeContentFnc);
                     const coordinates = e.coordinates;
                     const lonlat = ol.proj.transform(coordinates, this.getProjection().getCode(), 'EPSG:4326');
                     position.lat = lonlat[1];
                     position.lng = lonlat[0];
                     streetViewService.showStreetView(position);
+                    GUI.EventBus.$on('closecontent', closeContentFnc);
                   });
                   control.on('disabled', () => {
-                    GUI.closeContent()
+                    GUI.closeContent();
+                    GUI.EventBus.$off('closecontent', closeContentFnc);
                   })
                 }
               }
@@ -645,7 +655,7 @@ proto.setupControls = function() {
             type: controlType,
             position: 'br'
           });
-          this.addControl(controlType,control);
+          this.addControl(controlType,control, false);
           break;
         case 'overview':
           if (!isMobile.any) {
@@ -661,15 +671,15 @@ proto.setupControls = function() {
                   type: controlType,
                   position: 'bl',
                   className: 'ol-overviewmap ol-custom-overviewmap',
-                  collapseLabel: $('<span class="glyphicon glyphicon-menu-left"></span>')[0],
-                  label: $('<span class="glyphicon glyphicon-menu-right"></span>')[0],
+                  collapseLabel: $(`<span class="${GUI.getFontClass('arrow-left')}"></span>`)[0],
+                  label: $(`<span class="${GUI.getFontClass('arrow-right')}"></span>`)[0],
                   collapsed: false,
                   layers: overViewMapLayers,
                   view: new ol.View({
                     projection: this.getProjection()
                   })
                 });
-                this.addControl(controlType,control);
+                this.addControl(controlType,control, false);
               });
             }
           }
@@ -678,32 +688,34 @@ proto.setupControls = function() {
           control = ControlsFactory.create({
             type: controlType,
             bbox: this.project.state.initextent,
-            mapCrs: 'EPSG:'+this.project.state.crs
+            mapCrs: 'EPSG:'+this.project.state.crs,
+            placeholder: t("mapcontrols.nominatim.placeholder"),
+            noresults: t("mapcontrols.nominatim.noresults"),
+            notresponseserver: t("mapcontrols.nominatim.notresponseserver"),
+            fontIcon: GUI.getFontClass('search')
           });
           control.on('addresschosen', (evt) => {
             const coordinate = evt.coordinate;
             const geometry =  new ol.geom.Point(coordinate);
             this.highlightGeometry(geometry);
           });
-          this.addControl(controlType,control);
+          this.addControl(controlType, control, false);
           $('#search_nominatim').click(() => {
             control.nominatim.query($('input.gcd-txt-input').val());
           });
           $('.gcd-txt-result').perfectScrollbar();
           break;
         case 'geolocation':
-          if (!isMobile.any) {
-            control = ControlsFactory.create({
-              type: controlType
-            });
-            control.on('click',(evt) => {
-              this.showMarker(evt.coordinates);
-            });
-            control.on('error', (e) => {
-              GUI.notify.error(t("mapcontrols.geolocations.error"))
-            });
-            this.addControl(controlType, control);
-          }
+          control = ControlsFactory.create({
+            type: controlType
+          });
+          control.on('click',(evt) => {
+            this.showMarker(evt.coordinates);
+          });
+          control.on('error', (e) => {
+            GUI.notify.error(t("mapcontrols.geolocations.error"))
+          });
+          this.addControl(controlType, control);
           break;
         case 'addlayers':
           if (!isMobile.any) {
@@ -719,7 +731,8 @@ proto.setupControls = function() {
         case 'length':
           if (!isMobile.any) {
             control = ControlsFactory.create({
-              type: controlType
+              type: controlType,
+              tipLabel: t('mapcontrols.length.tooltip')
             });
             this.addControl(controlType, control);
           }
@@ -727,7 +740,8 @@ proto.setupControls = function() {
         case 'area':
           if (!isMobile.any) {
             control = ControlsFactory.create({
-              type: controlType
+              type: controlType,
+              tipLabel: t('mapcontrols.area.tooltip')
             });
             this.addControl(controlType, control);
           }
@@ -762,7 +776,81 @@ proto.filterableLayersAvailable = function() {
   });
 };
 
-proto.addControl = function(type, control) {
+proto.setMapControlsAlignement = function(alignement='rv') {
+  this.state.mapcontrolsalignement = alignement;
+};
+
+proto.getMapControlsAlignement = function() {
+  return this.state.mapcontrolsalignement
+};
+
+proto.isMapControlsVerticalAlignement = function() {
+  return this.state.mapcontrolsalignement.indexOf('v') != -1;
+};
+
+proto.setMapControlsVerticalAlignement = function() {
+  this.state.mapcontrolsalignement = this.state.mapcontrolsalignement[0] + 'v';
+};
+
+proto.setMapControlsHorizontalAlignement = function() {
+  this.state.mapcontrolsalignement = this.state.mapcontrolsalignement[0] + 'h';
+};
+
+proto.flipControlsHorizontally = function() {
+  this.state.mapcontrolsalignement = this.state.mapcontrolsalignement[0] === 'r' ? 'l' + this.state.mapcontrolsalignement[1] : 'r' + this.state.mapcontrolsalignement[1]
+};
+
+proto.flipMapControlsVertically = function() {
+  this.state.mapcontrolsalignment = this.state.mapcontrolsalignement[1] === 'v' ? this.state.mapcontrolsalignement[0] + 'h' :  this.state.mapcontrolsalignement[0] + 'v'
+};
+
+proto._updateMapControlsLayout = function({width, height}) {
+  const HEIGHTWIDTH = 47; // constant
+  const MAXFACTOR = 4;
+  // mapcontrols element
+  const $mapControls = $('.g3w-map-controls');
+  // compaconstol height
+  const mapControlsHeight = $mapControls.height();
+  // mapcontrols width
+  const mapControlsWidth = $mapControls.width();
+  // force to udpdate control that are outside mapControls element
+  this._mapControls.forEach((control) => {
+    const map = this.getMap();
+    control.control.changelayout ? control.control.changelayout(map) : null;
+  });
+  // check if is vertical
+  if (this.isMapControlsVerticalAlignement()) {
+    const bottomMapControls =  $(`.ol-control-b${this.getMapControlsAlignement()[0]}`);
+    const bottomMapControlsTop = bottomMapControls.length ? $(bottomMapControls[bottomMapControls.length - 1]).position().top: height;
+    const bottomHeightControl = bottomMapControlsTop > 0 ? height - (bottomMapControlsTop + HEIGHTWIDTH) : HEIGHTWIDTH;
+    const HeightFreeSpace =  height - bottomHeightControl;
+    const FACTOR = mapControlsWidth/HEIGHTWIDTH * 2;
+    if ( (mapControlsHeight > HeightFreeSpace) && (FACTOR <= MAXFACTOR) ) {
+       $mapControls.css('width', `${HEIGHTWIDTH*FACTOR}px`);
+       $mapControls.css('height', `${mapControlsHeight/2}px`);
+    } else {
+      if (mapControlsWidth > HEIGHTWIDTH) {
+        if (HeightFreeSpace > mapControlsHeight * 2 ) {
+          let FACTOR = (mapControlsWidth/HEIGHTWIDTH);
+          if (FACTOR > 2)
+            FACTOR = Math.log2(FACTOR);
+          $mapControls.css('width', `${mapControlsWidth/FACTOR}px`);
+          $mapControls.css('height', `${mapControlsHeight*2}px`);
+        }
+      }
+    }
+  } else {
+    // Horizzontal
+    //TODO
+  }
+};
+
+proto._addControlToMapControls = function(control) {
+  const controlElement = control.element;
+  $('.g3w-map-controls').append(controlElement)
+};
+
+proto.addControl = function(type, control, addToMapControls=true) {
   this.viewer.map.addControl(control);
   this._mapControls.push({
     type: type,
@@ -772,6 +860,22 @@ proto.addControl = function(type, control) {
   control.on('controlclick', () => {
     this.controlClick();
   });
+
+  $(control.element).find('button').tooltip({
+    placement: 'bottom',
+    trigger : 'hover'
+  });
+
+  if (addToMapControls)
+    this._addControlToMapControls(control);
+  else {
+    const $mapElement = $(`#${this.getMap().getTarget()}`);
+    this._updateMapControlsLayout({
+      width: $mapElement.width(),
+      height: $mapElement.height()
+    })
+  }
+
   ControlsRegistry.registerControl(type, control);
 };
 
@@ -1362,14 +1466,14 @@ proto.refreshMap = function(options) {
 };
 
 // called when layout (window) resize
-proto.layout = function(width, height) {
+proto.layout = function({width, height}) {
   if (!this.viewer) {
     this.setupViewer(width,height);
-  }
-  if (this.viewer) {
+  } else {
     this.setHidden((width == 0 || height == 0));
     this.getMap().updateSize();
     this._updateMapView();
+    this._updateMapControlsLayout({width, height})
   }
 };
 

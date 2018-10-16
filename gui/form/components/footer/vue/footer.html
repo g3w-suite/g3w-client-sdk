@@ -1,12 +1,13 @@
-<div class="g3w-form-component_footer">
-  <div  style="margin: 0 auto; width: 100%">
-    <div class="form-group">
-      <div class="col-sm-offset-4 col-sm-8">
-        <div style="margin:10px">
-          <span>* Campi richiesti</span>
-        </div>
-        <button v-for="button in state.buttons" class="btn " :class="[button.class]" @click.stop.prevent="exec(button.cbk)" v-disabled="!btnEnabled(button)">{{ button.title }}</button>
-      </div>
+<div class="form-group g3wform_footer">
+  <slot>
+    <div style="margin:10px; font-weight: bold">
+      * <span  v-t="'form.footer.required_fields'"></span>
     </div>
-  </div>
+    <button v-for="button in state.buttons" class="btn "
+            :class="[button.class]"
+            @click.stop.prevent="exec(button.cbk)"
+            v-disabled="!btnEnabled(button)">
+      {{ button.title }}
+    </button>
+  </slot>
 </div>

@@ -9,7 +9,7 @@
               <li class="active">
                 <a data-toggle="tab" href="#general" class="metadata-item-tab general">
                   <div class="title title_center">
-                    <i class="fa fa-info-circle fa-2x" aria-hidden="true"></i>
+                    <i :class="iconsClass.info" class="fa-2x" aria-hidden="true"></i>
                   </div>
                   <div v-t="'metadata.groups.general.title'" class="tab-title"></div>
                 </a>
@@ -17,14 +17,14 @@
               <li>
                 <a data-toggle="tab" href="#spatial" class="metadata-item-tab spatial">
                   <div class="title title_center">
-                    <i class="fa fa-globe fa-2x" aria-hidden="true"></i>
+                    <i :class="iconsClass.globe" class="fa-2x" aria-hidden="true"></i>
                   </div>
                   <div v-t="'metadata.groups.spatial.title'" class="tab-title"></div>
                 </a></li>
               <li>
                 <a data-toggle="tab" href="#layers"  class="metadata-item-tab layers">
                   <div class="title title_center">
-                    <i class="fa fa-bars fa-2x" aria-hidden="true"></i>
+                    <i :class="iconsClass.bars" class="fa-2x" aria-hidden="true"></i>
                   </div>
                   <div v-t="'metadata.groups.layers.title'" class="tab-title"></div>
                 </a>
@@ -67,7 +67,12 @@
     name: "project",
     data() {
       return {
-        state: this.$options.state
+        state: this.$options.state,
+        iconsClass: {
+          info: this.g3wtemplate.getFontClass("info-circle"),
+          globe: this.g3wtemplate.getFontClass("globe"),
+          bars: this.g3wtemplate.getFontClass("bars")
+        }
       }
     },
     components: {
@@ -112,9 +117,6 @@
     border-radius: 3px;
     margin-bottom: 10px;
   }
-  .metadata-item-tab.general {
-    background-color: #3c8dbc;
-  }
 
   .metadata-item-tab.spatial {
     background-color: #019A4C;
@@ -156,7 +158,6 @@
   }
 
   #project-catalog {
-    background-color: rgba(255, 255, 255, 1.0);
     padding: 3px 10px 3px 10px;
     position: relative;
     overflow: auto;

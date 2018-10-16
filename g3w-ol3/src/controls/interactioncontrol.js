@@ -14,7 +14,7 @@ const InteractionControl = function(options) {
   this._modalHelp = this._help ? (options.modalHelp || toastr) : null;
   options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
   Control.call(this, options);
-  // create an hel message
+  // create an help message
   if (this._help) {
     this._createModalHelp();
   }
@@ -23,12 +23,6 @@ const InteractionControl = function(options) {
 ol.inherits(InteractionControl, Control);
 
 const proto = InteractionControl.prototype;
-
-proto._clearModalHelp = function(id) {
-  $('body').delegate('#'+id,'change', () => {
-    this._modalHelp = null;
-  });
-};
 
 proto.isVisible = function() {
   return this._visible
@@ -43,7 +37,7 @@ proto._showModalHelp = function() {
   const previousToastPositionClass = toastr.options.positionClass;
   const contentDiv = $('#g3w-view-content');
   if (this._modalHelp) {
-    toastr.options.positionClass = 'toast-top-right';
+    toastr.options.positionClass = 'toast-top-center';
     //if already present delete it
     this._modalHelp.clear();
     const helpElement = this._modalHelp.info(this._help);
@@ -58,17 +52,17 @@ proto._showModalHelp = function() {
 // create modal help
 proto._createModalHelp = function() {
   if (this._onhover) {
+    const helpButton = $('<span style="display:none" class="info_mapcontrol_button">i</span>');
+    $(this.element).prepend(helpButton);
+    //this._modalHelp.options.timeOut = 0;
+    helpButton.on('click', () => {
+      this._showModalHelp();
+    });
     $(this.element).on('mouseenter', () => {
-      if (this._help && !this._enabled) {
-        let id;
-        $(this._help).each((idx, ele) => {
-          const element = $(ele);
-          if (element.is('input[type=checkbox]'))
-            id = element.attr('id');
-        });
-        this._clearModalHelp(id);
-        this._showModalHelp();
-      }
+      helpButton.show();
+    });
+    $(this.element).on('mouseleave', () => {
+      helpButton.hide();
     });
   }
 };

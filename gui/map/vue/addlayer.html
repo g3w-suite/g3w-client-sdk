@@ -25,7 +25,7 @@
           <h4 v-t="'mapcontrols.add_layer_control.drag_layer'"></h4>
           <h4 v-if="layer.name">{{ layer.name }}</h4>
           <div>
-            <i class="fa fa-cloud-upload fa-5x" aria-hidden="true"></i>
+            <i :class="g3wtemplate.getFontClass('cloud-upload')"  class="fa-5x" aria-hidden="true"></i>
           </div>
           <p>.geojson, .kml, .zip(shapefile)</p>
         </form>

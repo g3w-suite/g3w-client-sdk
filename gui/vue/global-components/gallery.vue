@@ -11,11 +11,11 @@
               </div>
             </div>
             <a v-if="images.length> 1" class="left carousel-control" :href="'#'+carouselId" role="button" data-slide="prev">
-              <span class="glyphicon glyphicon-chevron-left">
+              <span :class="g3wtemplate.getFontClass('arrow-left')">
               </span>
             </a>
             <a v-if="images.length> 1" class="right carousel-control" :href="'#'+carouselId" role="button" data-slide="next">
-              <span class="glyphicon glyphicon-chevron-right">
+              <span :class="g3wtemplate.getFontClass('arrow-left')">
               </span>
             </a>
           </div>

@@ -1,10 +1,12 @@
 // oggetto base utilizzato per i mixins
 const InputMixins = require('gui/inputs/input');
+const getUniqueDomId = require('core/utils/utils').getUniqueDomId;
 const Service = require('../service');
 const GUI = require('gui/gui');
+const MediaMixin = require('gui/vue/vue.mixins').mediaMixin;
 
-const IntegerInput = Vue.extend({
-  mixins: [InputMixins],
+const MediaInput = Vue.extend({
+  mixins: [InputMixins, MediaMixin],
   data: function() {
     return {
       service: new Service({
@@ -16,7 +18,9 @@ const IntegerInput = Vue.extend({
           format: null
         }
       },
-      value: null
+      value: null,
+      mediaid: `media_${getUniqueDomId()}`,
+      loading: false
     }
   },
   template: require('./media.html'),
@@ -27,18 +31,12 @@ const IntegerInput = Vue.extend({
       var formData = {
         name: fieldName
       };
-      var spinnerContainer = $('#media-spinner');
       //check if token exist di django
       var csrftoken = this.$cookie.get('csrftoken');
       if (csrftoken) {
         formData.csrfmiddlewaretoken = csrftoken;
       }
-      GUI.showSpinner({
-        container: spinnerContainer,
-        id: 'medialoadspinner',
-        style: 'white',
-        center: true
-      });
+      this.loading = true;
       $(e.target).fileupload({
         dataType: 'json',
         formData : formData,
@@ -51,41 +49,18 @@ const IntegerInput = Vue.extend({
               value: self.value,
               mime_type: response.mime_type
             };
+            self.setFileNameInput();
             self.change();
           }
         },
-        fail: function() {
+        fail: () => {
           $(this).siblings('.bootstrap-filestyle').find('input').val(field.value);
           GUI.notify.error('Si è verificato un errore nel caricamento')
         },
-        always: function() {
-          GUI.hideSpinner('medialoadspinner');
+        always: () => {
+          this.loading = false;
         }
       });
-
-    },
-    getMediaType(mime_type) {
-      let media = {
-        type: null,
-        options: {}
-      };
-      switch (mime_type) {
-        case 'image/gif':
-        case 'image/png':
-        case 'image/jpeg':
-        case 'image/bmp':
-          media.type = 'image';
-          break;
-        case 'application/pdf':
-          media.type = 'pdf';
-          break;
-        case 'video/mp4':
-          media.type = 'video';
-          media.options.format = mime_type;
-          break;
-        default:
-      }
-      return media;
     },
     createImage: function(file, field) {
       var reader = new FileReader();
@@ -102,8 +77,11 @@ const IntegerInput = Vue.extend({
       return value
     },
     clearMedia() {
-      $(this.$el).find('input:file').filestyle('clear');
       this.value = this.state.value = null;
+      this.setFileNameInput();
+    },
+    setFileNameInput() {
+      $(this.$el).find('.form-control').val(this.filename);
     }
   },
   created() {
@@ -118,9 +96,10 @@ const IntegerInput = Vue.extend({
         buttonText: "...",
         buttonName: "btn-primary",
         icon: false
-      })
+      });
+      this.setFileNameInput();
     })
   }
 });
 
-module.exports = IntegerInput;
+module.exports = MediaInput;

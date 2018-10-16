@@ -5,18 +5,23 @@
       <div v-for="(value, key) in data.value">
         <div class="row">
           <div class="col-sm-3 metadata-contact-label">
-            <i class="fa contact-icon" :class="iconsClass[key]" aria-hidden="true"></i>
+            <i class="contact-icon" :class="iconsClass[key]" aria-hidden="true"></i>
             <span v-t="'metadata.groups.general.fields.subfields.contactinformation.' + key"></span>
           </div>
           <div class="col-sm-9">
-            <template v-if="key == 'personprimary'" >
+            <template v-if="key === 'personprimary'" >
               <div v-for="(subvalue, key) in value">
                 <span v-t="'metadata.groups.general.fields.subfields.contactinformation.' + key" class="metadata-contact-label"></span>
                 <span>{{ subvalue }}</span>
               </div>
             </template>
             <div v-else>
-              {{ sanitizeValue(value) }}
+              <template v-if="key === 'contactelectronicmailaddress'">
+                <a :href="'mailto:' + sanitizeValue(value)">{{sanitizeValue(value)}}</a>
+              </template>
+              <template v-else>
+                {{ sanitizeValue(value) }}
+              </template>
             </div>
           </div>
         </div>
@@ -34,9 +39,9 @@
     data() {
       return {
         iconsClass: {
-          contactelectronicmailaddress: "fa-envelope-o",
-          personprimary: "fa-user",
-          contactvoicetelephone: "fa-mobile"
+          contactelectronicmailaddress: this.g3wtemplate.getFontClass("mail"),
+          personprimary: this.g3wtemplate.getFontClass("user"),
+          contactvoicetelephone: this.g3wtemplate.getFontClass("mobile")
         }
       }
     },

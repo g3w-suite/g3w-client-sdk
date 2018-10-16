@@ -4,7 +4,9 @@ function NominatimControl(options) {
   let self = this;
   this.options = {
     provider: 'osm',
-    placeholder: 'Città, indirizzo ... ',
+    placeholder: options.placeholder || 'Città, indirizzo ... ',
+    noresults: options.noresults || 'Nessun risultato ',
+    notresponseserver: options.notresponseserver || 'Il server non risponde',
     targetType: 'text-input',
     lang: 'it-IT',
     limit: 5,
@@ -15,7 +17,8 @@ function NominatimControl(options) {
     debug: false,
     viewbox: options.bbox,
     bounded: 1,
-    mapCrs: options.mapCrs
+    mapCrs: options.mapCrs,
+    fontIcon: options.fontIcon || "fa fa-search fas fa-search"
   };
 
   const inputQueryId = "gcd-input-query";
@@ -525,7 +528,7 @@ function NominatimControl(options) {
     ' id="', vars.inputQueryId, '"',
     ' class="', klasses.inputText.input, '"',
     ' autocomplete="off" placeholder="Search ...">',
-    '<button type="button" class="btn btn-primary" id="search_nominatim"><i class="fa fa-search" aria-hidden="true"></i></button>',
+    '<button type="button" class="btn" id="search_nominatim"><i style="color:#ffffff" class="' + this.options.fontIcon +'" aria-hidden="true"></i></button>',
     '<button type="button"',
     ' id="', vars.inputResetId, '"',
     ' class="', klasses.inputText.reset, ' ', klasses.hidden, '"',
@@ -540,7 +543,7 @@ function NominatimControl(options) {
 
   const OpenStreet = function OpenStreet() {
     this.settings = {
-      url: '//nominatim.openstreetmap.org/search/',
+      url: 'https://nominatim.openstreetmap.org/search/',
       params: {
         q: '',
         format: 'json',
@@ -659,21 +662,32 @@ function NominatimControl(options) {
   };
 
   Nominatim.prototype.query = function query (q) {
+    const isNumber = (value) => {
+      return typeof value === 'number' && !Number.isNaN(value);
+    };
+    let latlon = null;
+    if (q && q.split(',').length === 2) {
+      latlon = q.split(',');
+      latlon = isNumber(latlon[0]) && isNumber(latlon[1]) ? latlon : null;
+    }
     const this$1 = this;
-    const ajax = {}, options = this.options;
+    const ajax = {
+    }, options = this.options;
     const provider = this.getProvider({
       query: q,
       provider: options.provider,
       key: options.key,
       lang: options.lang,
       countrycodes: options.countrycodes,
-      limit: options.limit
+      limit: options.limit,
+      lat: latlon ? latlon[0]: null,
+      lon: latlon? latlon[1]: null
     });
     if (this.lastQuery === q && this.els.result.firstChild) { return; }
     this.lastQuery = q;
     this.clearResults();
     utils.addClass(this.els.reset, klasses$1.spin);
-    ajax.url = document.location.protocol + provider.url;
+    ajax.url = provider.url;
     ajax.data = provider.params;
     utils.json(ajax)
       .done(function(res) {
@@ -689,7 +703,7 @@ function NominatimControl(options) {
       .fail(function(error){
         utils.removeClass(this$1.els.reset, klasses$1.spin);
         const li = utils.createElement(
-              'li', '<h5>  Il server non risponde</h5>');
+              'li', `<h5>  ${this$1.options.notresponseserver}</h5>`);
             this$1.els.result.appendChild(li);
       })
 
@@ -710,7 +724,8 @@ function NominatimControl(options) {
         ul.appendChild(li);
       });
     } else {
-      li = utils.createElement('li', 'Nessun Risultato');
+      const li = utils.createElement('li', this.options.noresults);
+      li.className = 'nominatim-noresults';
       ul.appendChild(li);
     }
 

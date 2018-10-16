@@ -1,9 +1,11 @@
 <template>
-  <div class="col-sm-12 field">
-    <div class="col-md-6 col-sm-12 field_label">{{state.label}}</div>
-    <div class="value col-md-6 col-sm-12 ">
+  <div class="field">
+    <div v-if="state.label" class="col-md-6 col-sm-12 field_label">
+      <slot name="label">{{state.label}}</slot>
+    </div>
+    <div :class="[state.label ? 'col-md-6' : null ]" class="value col-sm-12 ">
       <slot name="field">
-        <span>{{ state.value }}</span>
+        <span style="word-wrap: break-word;">{{ state.value }}</span>
       </slot>
     </div>
   </div>

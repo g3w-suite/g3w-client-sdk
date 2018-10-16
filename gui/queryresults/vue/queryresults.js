@@ -32,7 +32,15 @@ const vueComponentOptions = {
       return !!this.state.layers.length || !!this.state.components.length;
     },
     hasOneLayerAndOneFeature() {
-      return this.state.layers.length == 1 && this.state.layers[0].features.length == 1;
+      const one = this.state.layers.length == 1 && this.state.layers[0].features.length == 1;
+      if (one) {
+        const layer = this.state.layers[0];
+        const feature = this.state.layers[0].features[0];
+        const boxid = this.getBoxId(layer, feature);
+        this.layersFeaturesBoxes[boxid].collapsed = false;
+        this.showFeatureInfo(layer, boxid);
+      }
+      return one;
     }
   },
   methods: {
@@ -150,14 +158,29 @@ const vueComponentOptions = {
       }
       return collapsed;
     },
-    toggleFeatureBox: function(layer, feature, relation_index) {
+    showFeatureInfo(layer, boxid) {
+      this.$nextTick(() => {
+        this.$options.queryResultsService.emit('show-query-feature-info', {
+          tabs: this.hasFormStructure(layer),
+          show: !this.layersFeaturesBoxes[boxid].collapsed
+        });
+        $('.queryresults-container .nano').nanoScroller()
+      })
+    },
+    getBoxId(layer, feature, relation_index) {
       let boxid;
       if (!_.isNil(relation_index)) {
         boxid = layer.id + '_' + feature.id+ '_' + relation_index;
       } else {
         boxid = layer.id + '_' + feature.id;
       }
+      return boxid;
+    },
+    toggleFeatureBox: function(layer, feature, relation_index) {
+      const boxid = this.getBoxId(layer, feature, relation_index);
       this.layersFeaturesBoxes[boxid].collapsed = !this.layersFeaturesBoxes[boxid].collapsed;
+      this.showFeatureInfo(layer, boxid);
+
     },
     toggleFeatureBoxAndZoom: function(layer, feature, relation_index) {
       this.toggleFeatureBox(layer, feature, relation_index);
@@ -200,9 +223,10 @@ const vueComponentOptions = {
     }
   },
   mounted: function() {
-    Vue.nextTick(() => {
-      $('[data-toggle="tooltip"]').tooltip();
-
+    Vue.nextTick()
+      .then(() => {
+        $('[data-toggle="tooltip"]').tooltip();
+        $('.nano').nanoScroller();
     })
   }
 };
@@ -266,9 +290,7 @@ function QueryResultsComponent(options) {
     this.internalComponent.layersFeaturesBoxes = layersFeaturesBoxes;
   };
 
-  this.layout = function(width,height) {
-    //TODO
-  };
+  this.layout = function(width,height) {};
   this.unmount = function() {
     this.getService().closeComponent();
     return base(this, 'unmount')

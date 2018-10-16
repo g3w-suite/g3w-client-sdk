@@ -6,7 +6,7 @@ const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 const VectorLayer = require('core/layers/vectorlayer');
 const ComponentsRegistry = require('gui/componentsregistry');
-const RelationsPage = require('./components/relations/vue/relationspage');
+const RelationsPage = require('gui/relations/vue/relationspage');
 
 function QueryResultsService() {
   ProjectsRegistry.onafter('setCurrentProject', (project) => {
@@ -203,7 +203,7 @@ proto.setActionsForLayers = function(layers) {
     if (layer.hasgeometry) {
       this.state.layersactions[layer.id].push({
         id: 'gotogeometry',
-        class: 'glyphicon glyphicon-map-marker',
+        class: GUI.getFontClass('marker'),
         hint: 'Visualizza sulla mappa',
         cbk: QueryResultsService.goToGeometry
       })
@@ -213,7 +213,7 @@ proto.setActionsForLayers = function(layers) {
         if (layer.id == id) {
           this.state.layersactions[layer.id].push({
             id: 'show-query-relations',
-            class: 'fa fa-sitemap',
+            class: GUI.getFontClass('relation'),
             hint: 'Visualizza Relazioni',
             cbk: QueryResultsService.showQueryRelations,
             relations: relations
@@ -352,6 +352,9 @@ QueryResultsService.zoomToElement = function(layer, feature) {
 };
 
 QueryResultsService.goToGeometry = function(layer, feature) {
+  //mobile
+  isMobile.any && !GUI.isContentCollapsed()? GUI.collapseContent() : null;
+  //
   if (feature.geometry) {
     const mapService = ComponentsRegistry.getComponent('map').getService();
     mapService.highlightGeometry(feature.geometry, {

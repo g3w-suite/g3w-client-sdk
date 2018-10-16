@@ -1,9 +1,15 @@
-<div>
-  <component
-    @reloadlayout="reloadLayout"
-    @addtovalidate="addToValidate"
-    @changeinput="changeInput"
-    :state="state"
-    :is="component" v-for="component in state.components">
-  </component>
+<div class="g3wform_content" style="position: relative">
+  <g3wformheader :titles="state.headers" @clickheader="switchComponent">
+  </g3wformheader>
+  <div class="g3wform_body">
+    <keep-alive>
+      <component
+        @hook:activated="reloadLayout"
+        @addtovalidate="addToValidate"
+        @changeinput="changeInput"
+        :state="state"
+        :is="state.component">
+      </component>
+    </keep-alive>
+  </div>
 </div>

@@ -2,13 +2,16 @@
 <div id="catalog" @contextmenu.prevent.stop="" class="tabbable-panel catalog">
   <!--<div class="title">{{ title }}</div>-->
   <div class="tabbable-line">
-    <ul class="nav nav-tabs" role="tablist">
+    <ul class="nav nav-tabs catalalog-nav-tabs" role="tablist">
       <li v-if="hasLayers" role="presentation"  :class="{ active: hasLayers }" :style="{width: hasBaseLayers ? '32%' : '48%'}"><a href="#tree" aria-controls="tree" role="tab" data-toggle="tab" data-i18n="tree" v-t="'data'"></a></li>
       <li v-if="hasBaseLayers" role="presentation" :class="{ active: !hasLayers }" :style="{width: !hasLayers ? '100%' : '32%'}"><a href="#baselayers" aria-controls="baselayers" role="tab" data-toggle="tab" data-i18n="baselayers" v-t="'baselayers'"></a></li>
       <li v-if="showLegend" role="presentation" :style="{width: hasBaseLayers ? '32%' : '48%'}"><a href="#legend" aria-controls="legend" role="tab" data-toggle="tab" data-i18n="legend" v-t="'legend'"></a></li>
     </ul>
-    <div  class="tab-content">
-      <div role="tabpanel" class="tab-pane tree" :class="{ active: hasLayers }" id="tree">
+    <div class="tab-content">
+      <div role="tabpanel" class="tab-pane" :class="{ active: hasLayers }" id="tree">
+        <div id="toc_layer_help_text" v-t="'catalog_items.helptext'">
+          <span class="info_helptext_button">i</span>
+        </div>
         <ul class="tree-root" v-for="_layerstree in state.layerstrees">
           <tristate-tree
             :highlightlayers="state.highlightlayers"
@@ -30,36 +33,27 @@
           <layers-group :layersgroup="layersgroup"></layers-group>
         </ul>
       </div>
-      <div v-if="hasBaseLayers" role="tabpanel" class="tab-pane baselayers" :class="{ active: !hasLayers }" id="baselayers">
-        <form>
-          <ul>
-            <li v-if="!baselayer.fixed" v-for="baselayer in baselayers">
-              <div class="radio">
-                <label>
-                  <input type="radio" name="baselayer" :checked="baselayer.visible" @click.stop="setBaseLayer(baselayer.id)">
-                  {{ baselayer.title }}
-                </label>
-              </div>
-            </li>
-            <li>
-              <div class="radio">
-                <label><input type="radio" name="baselayer" @click.stop="setBaseLayer(null)" :checked="!hasBaseLayersVisible">Nessuna mappa di base</label>
-              </div>
-            </li>
-          </ul>
-        </form>
+      <div class="tab-pane baselayers nano-content" v-if="hasBaseLayers" role="tabpanel"  :class="{ active: !hasLayers }" id="baselayers">
+        <ul>
+          <li v-if="!baselayer.fixed" v-for="baselayer in baselayers">
+            <img :src="getSrcBaseLayerImage(baselayer.name)" @click.stop="setBaseLayer(baselayer.id)" class="img-responsive img-thumbnail" :style="{opacity: baselayer.visible ? 1 : 0.5}" >
+            <div class="text-center">{{ baselayer.title }}</div>
+          <li @click.stop="setBaseLayer(null)">
+            <img :src="getSrcBaseLayerImage(null)" class="img-responsive img-thumbnail" :style="{opacity: !hasBaseLayersVisible ? 1 : 0.5}">
+            <div class="text-center" v-t="'nobaselayer'"></div>
+          </li>
+        </ul>
       </div>
       <layerslegend v-for="_layerstree in state.layerstrees" :layerstree="_layerstree" :key="_layerstree.id"></layerslegend>
     </div>
   </div>
   <ul id="layer-menu" v-click-outside-layer-menu="closeLayerMenu"  tabindex="-1" v-if="layerMenu.show"  :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }">
-    <!--<li @click.prevent.stop="showMetadata"><span class="glyphicon glyphicon-info-sign"> </span> {{ layerMenu.items.showmetadata }} </li>-->
-    <li v-if="layerMenu.layer.bbox" @click.prevent.stop="zoomToLayer"><span class="glyphicon glyphicon-search"> </span> {{ layerMenu.items.zoomtolayer }} </li>
+    <li v-if="layerMenu.layer.bbox" @click.prevent.stop="zoomToLayer"><span :class="g3wtemplate.getFontClass('search')"> </span> {{ layerMenu.items.zoomtolayer }} </li>
     <li v-if="layerMenu.layer.openattributetable" @click.prevent.stop="showAttributeTable(layerMenu.layer.id)">
-      <span class="glyphicon glyphicon glyphicon-list-alt"> </span>  {{ layerMenu.items.open_attribute_table }}
-      <i v-show="layerMenu.loading_data_table" class='fa fa-spinner fa-spin' style="margin-left:3px;"></i>
+      <span :class="g3wtemplate.getFontClass('list')"> </span>  {{ layerMenu.items.open_attribute_table }}
+      <i v-show="layerMenu.loading_data_table" :class="g3wtemplate.getFontClass('spinner')" style="margin-left:3px;"></i>
     </li>
-    <li @click.prevent.stop="" v-if="layerMenu.layer.external" @mouseleave.self="showColorMenu(false,$event)" @mouseover.self="showColorMenu(true,$event)"> Setta/Cambia Colore <i class="fa fa-chevron-right" style="padding-left:10px;" aria-hidden="true"></i>
+    <li @click.prevent.stop="" v-if="layerMenu.layer.external" @mouseleave.self="showColorMenu(false,$event)" @mouseover.self="showColorMenu(true,$event)"> Setta/Cambia Colore <i :class="g3wtemplate.getFontClass('arrow-right')" style="padding-left:10px;" aria-hidden="true"></i>
       <ul v-if="layerMenu.colorMenu.show" style="position:fixed" :style="{ top: layerMenu.colorMenu.top + 'px', left: layerMenu.colorMenu.left +   'px' }">
         <li style="padding:0;">
           <chrome-picker @click.prevent.stop="" v-model="layerMenu.colorMenu.color" @change-color="onChangeColor" style="width: 100%"></chrome-picker>

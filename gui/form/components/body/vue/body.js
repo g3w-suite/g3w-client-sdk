@@ -1,13 +1,20 @@
 const BodyTemplate = require('./body.html');
 const Inputs = require('gui/inputs/inputs');
 import Tabs from '../../../../tabs/tabs.vue';
+const g3wFormFooter = require('gui/form/components/footer/vue/footer');
 
 const BodyFormComponent = Vue.extend({
   template: BodyTemplate,
   props: ['state'],
+  data() {
+    return {
+      show: true
+    }
+  },
   components: {
     ...Inputs,
-    Tabs
+    Tabs,
+    g3wFormFooter
   },
   methods: {
     addToValidate: function(input) {
@@ -31,6 +38,9 @@ const BodyFormComponent = Vue.extend({
     hasFormStructure() {
       return !!this.state.formstructure;
     }
+  },
+  mounted() {
+    this.$nextTick(() => {})
   }
 });
 

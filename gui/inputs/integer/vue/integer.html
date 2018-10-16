@@ -1,11 +1,12 @@
 <baseinput :state="state">
   <input
     @change="change"
+    class="form-control"
     style="width:100%"
     v-disabled="!isEditable()"
     :class="{'input-error-validation' : !state.validate.valid}"
     v-model="state.value"
-    slot="inputelement"
+    slot="body"
     type="number"
     min="0">
 </baseinput>

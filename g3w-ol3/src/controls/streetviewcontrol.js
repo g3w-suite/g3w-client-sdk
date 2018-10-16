@@ -112,9 +112,14 @@ proto.setMap = function(map) {
   });
 };
 
+proto.clearMarker = function() {
+  this._streetViewFeature.setGeometry(null)
+};
+
 proto.clear = function() {
   this._layer.getSource().clear();
   this._streetViewFeature.setGeometry(null);
+  this.clearMarker();
   this._panorama = null;
   this.dispatchEvent('disabled')
 };

@@ -2,12 +2,13 @@
   <div>
     <ul class="formquerytabs nav nav-tabs">
       <li v-for="(tab, index) in tabs" :class="{active: index === 0}">
-        <a data-toggle="tab" :href="'#'+ ids[index]" style="font-weight: bold;">{{tab.name}}</a>
+        <a data-toggle="tab" :href="'#'+ ids[index]" >{{tab.name}}</a>
       </li>
     </ul>
     <div class="tab-content">
       <div :id="ids[index]" class="tab-pane fade" v-for="(tab, index) in tabs" :key="ids[index]" :class="{'in active': index === 0}">
         <node
+          :contenttype="contenttype"
           :addToValidate="addToValidate"
           :changeInput="changeInput"
           :fields="fields"
@@ -24,7 +25,19 @@
   const getUniqueDomId = require ('core/utils/utils').getUniqueDomId;
   export default {
     name: "tabs",
-    props: ['tabs', 'fields', 'addToValidate', 'changeInput'],
+    props: {
+      contenttype: {
+        default: 'query'
+      },
+      tabs: {
+        required: true
+      },
+      fields: {
+        required: true
+      },
+      addToValidate: Function,
+      changeInput: Function
+    },
     data() {
       return {
         ids : []
@@ -52,6 +65,10 @@
 <style scoped>
   .formquerytabs {
     overflow: hidden !important;
+  }
+  .formquerytabs > li > a {
+    font-size: 1.2em;
+    font-weight: bold;
   }
   .tab-content {
     margin-top: 10px;

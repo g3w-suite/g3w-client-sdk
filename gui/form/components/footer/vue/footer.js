@@ -12,6 +12,11 @@ const FooterFormComponent = Vue.extend({
     isValid: function() {
       return this.state.valid
     }
+  },
+  data() {
+    return {
+      id:"footer"
+    }
   }
 });
 

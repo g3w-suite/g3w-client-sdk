@@ -115,31 +115,21 @@ const vueComponentOptions = {
   template: require('./map.html'),
   data: function() {
     return {
-      target: 'map', // specidica l'id
+      target: 'map',
       service: this.$options.mapService
     }
   },
   components: {
     'addlayer': AddLayerComponent
   },
+  computed: {
+    mapcontrolsalignement: function() {
+      return this.service.state.mapcontrolsalignement;
+    }
+  },
   mounted: function() {
-    let mapWidth;
     const mapService = this.$options.mapService;
     this.crs = mapService.getCrs();
-    this.$on('changelayout', (width) => {
-      mapWidth = width;
-      this.$nextTick(() => {
-        const map = mapService.getMap();
-        const viewPort = map.getViewport();
-        const viewPortWidth = $(viewPort).width();
-        if (viewPortWidth) {
-          mapService.getMapControls().forEach((control) => {
-            if (control.control.changelayout)
-              control.control.changelayout(map);
-          })
-        }
-      })
-    });
     this.$nextTick(() => {
       mapService.setTarget(this.$el.id);
     });
@@ -155,9 +145,6 @@ const vueComponentOptions = {
         if (control.type != "scaleline")
           control.control.showHide();
       })
-    },
-    isMobile: function() {
-      return isMobile.any;
     }
   }
 };
@@ -174,7 +161,7 @@ function MapComponent(options) {
   this.setService(new MapService(options));
   merge(this, options);
   this.internalComponent = new InternalComponent({
-    mapService: this._service // definisco il mapservice
+    mapService: this._service
   });
   this.internalComponent.target = this.target;
 }
@@ -186,8 +173,7 @@ const proto = MapComponent.prototype;
 proto.layout = function(width, height) {
   $('#'+this.target).height(height);
   $('#'+this.target).width(width);
-  this._service.layout(width, height);
-  this.internalComponent.$emit('changelayout', width);
+  this._service.layout({width, height});
 };
 
 module.exports =  MapComponent;

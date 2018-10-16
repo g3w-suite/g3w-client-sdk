@@ -2,7 +2,6 @@ const InteractionControl = require('./interactioncontrol');
 
 const MeasureControl = function(options) {
   this._map = null;
-  this._projection = null;
   InteractionControl.call(this, options);
 };
 

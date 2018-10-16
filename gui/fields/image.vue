@@ -1,11 +1,7 @@
 <template>
   <field :state="state">
-    <div class="container-fluid" slot="field">
-      <div  class="row">
-        <div v-for="(value, index) in values" class="col-sm-12 image">
-          <img class="img-responsive" @click="showGallery(index)" :src="getSrc(value)"/>
-        </div>
-      </div>
+    <div slot="field" align="center">
+      <img v-for="(value, index) in values" class="img-responsive" style="max-height:50px" @click="showGallery(index)" :src="getSrc(value)"/>
       <gallery :id="galleryId" :active="active" :images="getGalleryImages()"></gallery>
     </div>
   </field>
@@ -21,7 +17,7 @@
       return {
         galleryId: 'gallery_' + Date.now(),
         active: null,
-        value: this.state.value
+        value: this.state.value.mime_type ? this.state.value.value : this.state.value
       }
     },
     components: {

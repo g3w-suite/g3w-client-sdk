@@ -97,7 +97,8 @@ g3w.gui = {
     },
     inputs: {
       InputsComponents: require('gui/inputs/inputs')
-    }
+    },
+    mixins: require('gui/vue/vue.mixins')
   }
 };
 
@@ -111,8 +112,13 @@ g3w.ol3 = {
   }
 };
 
+g3w.utils = {
+
+};
+
 module.exports = {
   core: g3w.core,
   gui: g3w.gui,
-  ol3: g3w.ol3
+  ol3: g3w.ol3,
+  utils: g3w.utils
 };

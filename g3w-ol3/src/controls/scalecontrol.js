@@ -1,34 +1,17 @@
 const layout = require('./utils').layout;
 const changeLayout = require('./utils').changeLayoutBottomControl;
-
 const scaleToRes = require('../utils/utils').scaleToRes;
 const resToScale = require('../utils/utils').resToScale;
+const SCALES = [
+  1000000,5000000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 2000, 1000
+];
+
 const ScaleControl = function(options= {}) {
   this.position = options.position || {
     bottom: true,
     right: true
   };
-  this.scales = options.scales || [];
-  const controlDomElement = document.createElement('div');
-  const select = document.createElement('select');
-  const optgroup  = document.createElement('optgroup')
-  optgroup.label = '';
-  const optgroup_custom  = document.createElement('optgroup')
-  optgroup_custom.label = 'Custom';
-  this.scales.forEach((scale, index) => {
-    const option = document.createElement('option');
-    option.value = scale;
-    option.text = `1:${scale}`;
-    option.selected = index == 0  ? true : false;
-    optgroup.appendChild(option);
-  });
-  select.appendChild(optgroup);
-  select.appendChild(optgroup_custom);
-  controlDomElement.appendChild(select);
-  options.element = controlDomElement;
   ol.control.Control.call(this, options);
-  $(this.element).addClass('ol-control ol-control-br ol-scale-control');
-  $(this.element).css('height', '20px');
 };
 
 ol.inherits(ScaleControl, ol.control.Control);
@@ -126,13 +109,6 @@ proto.layout = function(map) {
     isMapResolutionChanged = !selectedOnClick;
   });
 
-  /*select2.on('select2:opening', ()=> {
-    const controls = map.getControls();
-    controls.forEach((control) => {
-      if (control.toggle)
-        control.toggle(false);
-    });
-  });*/
   select2.on('select2:select', function (e) {
     selectedOnClick = true;
     const data = e.params.data;
@@ -146,8 +122,41 @@ proto.layout = function(map) {
   });
 };
 
+proto._setScales = function(map) {
+  const currentScale = parseInt(resToScale(map.getView().getResolution()));
+  this.scales = SCALES.filter((scale) => {
+    return scale < currentScale;
+  });
+  this.scales.unshift(currentScale);
+  this._createControl();
+};
+
+proto._createControl = function() {
+  const controlDomElement = document.createElement('div');
+  const select = document.createElement('select');
+  const optgroup  = document.createElement('optgroup');
+  optgroup.label = '';
+  this.scales.forEach((scale, index) => {
+    const option = document.createElement('option');
+    option.value = scale;
+    option.text = `1:${scale}`;
+    option.selected = index == 0  ? true : false;
+    optgroup.appendChild(option);
+  });
+  const optgroup_custom  = document.createElement('optgroup');
+  optgroup_custom.label = 'Custom';
+  select.appendChild(optgroup);
+  select.appendChild(optgroup_custom);
+  controlDomElement.appendChild(select);
+  // set element of control (it is necessary to visualize it)
+  this.element = controlDomElement;
+  $(this.element).addClass('ol-control ol-control-br ol-scale-control');
+  $(this.element).css('height', '20px');
+};
+
 proto.setMap = function(map) {
   if (map) {
+    this._setScales(map);
     this.layout(map);
     ol.control.Control.prototype.setMap.call(this, map);
   }

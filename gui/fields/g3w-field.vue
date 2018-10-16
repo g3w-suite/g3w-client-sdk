@@ -52,12 +52,6 @@
           type = FieldType.SIMPLE;
         }
         return `${type}_field`
-      },
-      sanitizevalue() {
-        if (Array.isArray(this.value) && !this.value.length)
-          return '';
-        else
-          return value
       }
     }
   }
