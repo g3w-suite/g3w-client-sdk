@@ -33,7 +33,8 @@ function MapService(options) {
     loading: false,
     hidden: true,
     scale: 0,
-    mapcontrolsalignement: 'rv'
+    mapcontrolsalignement: 'rv',
+    mapcontrolSize: null
   };
 
   this._greyListenerKey = null;
@@ -417,9 +418,10 @@ proto.setupControls = function() {
           control = ControlsFactory.create({
             type: controlType,
             coordinateFormat: ol.coordinate.createStringXY(4),
-            projection: this.getCrs()
+            projection: this.getCrs(),
+            isMobile: isMobile.any
           });
-          this.addControl(controlType,control, false);
+          this.addControl(controlType, control, false);
           break;
         // single query control
         case 'query':
@@ -486,60 +488,60 @@ proto.setupControls = function() {
               };
               let queryResulsPromise = this.getQueryLayersPromisesByCoordinates(layersFilterObject, coordinates);
               queryResulsPromise.then((responses) => {
-                  let layersResults = responses;
-                  const queryPromises = [];
-                  results = {};
-                  // unify results of the promises
-                  results.query = layersResults[0] ? layersResults[0].query: null;
-                  if (layersResults[0] && layersResults[0].data && layersResults[0].data.length) {
-                    geometry = layersResults[0].data[0].features[0].getGeometry();
-                    if (geometry) {
-                      let filter = new Filter();
-                      let layerFilterObject = {
-                        ALLNOTSELECTED: true,
-                        FILTERABLE: true,
-                        VISIBLE: true
-                      };
-                      const layers = this.getLayers(layerFilterObject);
-                      const mapCrs = this.getCrs();
-                      let filterGeometry = geometry;
-                      layers.forEach((layer) => {
-                        const layerCrs = layer.getProjection().getCode();
-                        if (mapCrs != layerCrs)
-                          filterGeometry = geometry.clone().transform(mapCrs, layerCrs);
-                        filter.setGeometry(filterGeometry);
-                        queryPromises.push(layer.query({
-                          filter
-                        }))
-                      });
-                      this.highlightGeometry(geometry);
-                    }
-                    const queryResultsPanel = showQueryResults('');
-                    $.when.apply(this, queryPromises)
-                      .then((...args) => {
-                        layersResults = args;
-                        const results = {
-                          query: layersResults[0] ? layersResults[0].query: null,
-                          data: []
-                        };
-                        _.forEach(layersResults, function(result) {
-                          result.data ? results.data.push(result.data[0]): null;
-                        });
-                        queryResultsPanel.setQueryResponse(results, geometry, this.state.resolution);
-                      })
-                      .fail(() => {
-                        GUI.notify.error(t("info.server_error"));
-                        GUI.closeContent();
-                      })
-                      .always(() => {
-                        this.clearHighlightGeometry();
-                      });
+                let layersResults = responses;
+                const queryPromises = [];
+                results = {};
+                // unify results of the promises
+                results.query = layersResults[0] ? layersResults[0].query : null;
+                if(layersResults[0] && layersResults[0].data && layersResults[0].data.length) {
+                  geometry = layersResults[0].data[0].features[0].getGeometry();
+                  if(geometry) {
+                    let filter = new Filter();
+                    let layerFilterObject = {
+                      ALLNOTSELECTED: true,
+                      FILTERABLE: true,
+                      VISIBLE: true
+                    };
+                    const layers = this.getLayers(layerFilterObject);
+                    const mapCrs = this.getCrs();
+                    let filterGeometry = geometry;
+                    layers.forEach((layer) => {
+                      const layerCrs = layer.getProjection().getCode();
+                      if(mapCrs != layerCrs)
+                        filterGeometry = geometry.clone().transform(mapCrs, layerCrs);
+                      filter.setGeometry(filterGeometry);
+                      queryPromises.push(layer.query({
+                        filter
+                      }))
+                    });
+                    this.highlightGeometry(geometry);
                   }
-                })
-                .fail(() => {
-                  GUI.notify.error(t("info.server_error"));
-                  GUI.closeContent();
-                })
+                  const queryResultsPanel = showQueryResults('');
+                  $.when.apply(this, queryPromises)
+                    .then((...args) => {
+                      layersResults = args;
+                      const results = {
+                        query: layersResults[0] ? layersResults[0].query : null,
+                        data: []
+                      };
+                      _.forEach(layersResults, function (result) {
+                        result.data ? results.data.push(result.data[0]) : null;
+                      });
+                      queryResultsPanel.setQueryResponse(results, geometry, this.state.resolution);
+                    })
+                    .fail(() => {
+                      GUI.notify.error(t("info.server_error"));
+                      GUI.closeContent();
+                    })
+                    .always(() => {
+                      this.clearHighlightGeometry();
+                    });
+                }
+              })
+              .fail(() => {
+                GUI.notify.error(t("info.server_error"));
+                GUI.closeContent();
+              })
             });
             this.addControl(controlType, control);
           }
@@ -687,6 +689,7 @@ proto.setupControls = function() {
         case 'nominatim':
           control = ControlsFactory.create({
             type: controlType,
+            isMobile: isMobile.any,
             bbox: this.project.state.initextent,
             mapCrs: 'EPSG:'+this.project.state.crs,
             placeholder: t("mapcontrols.nominatim.placeholder"),
@@ -804,8 +807,8 @@ proto.flipMapControlsVertically = function() {
   this.state.mapcontrolsalignment = this.state.mapcontrolsalignement[1] === 'v' ? this.state.mapcontrolsalignement[0] + 'h' :  this.state.mapcontrolsalignement[0] + 'v'
 };
 
+
 proto._updateMapControlsLayout = function({width, height}) {
-  const HEIGHTWIDTH = 47; // constant
   const MAXFACTOR = 4;
   // mapcontrols element
   const $mapControls = $('.g3w-map-controls');
@@ -820,28 +823,31 @@ proto._updateMapControlsLayout = function({width, height}) {
   });
   // check if is vertical
   if (this.isMapControlsVerticalAlignement()) {
+    this.state.mapcontrolSize = this.state.mapcontrolSize ? this.state.mapcontrolSize : mapControlsWidth;
+    const fullMapControlsHeight = mapControlsHeight + $mapControls.position().top;
     const bottomMapControls =  $(`.ol-control-b${this.getMapControlsAlignement()[0]}`);
-    const bottomMapControlsTop = bottomMapControls.length ? $(bottomMapControls[bottomMapControls.length - 1]).position().top: height;
-    const bottomHeightControl = bottomMapControlsTop > 0 ? height - (bottomMapControlsTop + HEIGHTWIDTH) : HEIGHTWIDTH;
-    const HeightFreeSpace =  height - bottomHeightControl;
-    const FACTOR = mapControlsWidth/HEIGHTWIDTH * 2;
-    if ( (mapControlsHeight > HeightFreeSpace) && (FACTOR <= MAXFACTOR) ) {
-       $mapControls.css('width', `${HEIGHTWIDTH*FACTOR}px`);
-       $mapControls.css('height', `${mapControlsHeight/2}px`);
+    const bottomMapControlTop = bottomMapControls.length ? $(bottomMapControls[bottomMapControls.length - 1]).position().top: fullMapControlsHeight;
+    const freeSpace = bottomMapControlTop > 0 ? bottomMapControlTop - fullMapControlsHeight : height - this.state.mapcontrolSize;
+    let FACTOR = (mapControlsWidth/this.state.mapcontrolSize) * 2;
+    if (freeSpace < 10) {
+      if (isMobile.any) {
+        this.setMapControlsAlignement('rh');
+      } else if (FACTOR <= MAXFACTOR) {
+        $mapControls.css('height', `${mapControlsHeight/2}px`);
+        $mapControls.css('width', `${this.state.mapcontrolSize*FACTOR}px`);
+      }
     } else {
-      if (mapControlsWidth > HEIGHTWIDTH) {
-        if (HeightFreeSpace > mapControlsHeight * 2 ) {
-          let FACTOR = (mapControlsWidth/HEIGHTWIDTH);
-          if (FACTOR > 2)
-            FACTOR = Math.log2(FACTOR);
-          $mapControls.css('width', `${mapControlsWidth/FACTOR}px`);
-          $mapControls.css('height', `${mapControlsHeight*2}px`);
-        }
+      // check if there enought space to expand mapcontrols
+      if (freeSpace > (mapControlsHeight * 2) && FACTOR > 2 ) {
+        const FACTOR = (mapControlsWidth/this.state.mapcontrolSize) > 2 ? Math.log2((mapControlsWidth/this.state.mapcontrolSize)): (mapControlsWidth/this.state.mapcontrolSize)
+        $mapControls.css('width', `${mapControlsWidth/FACTOR}px`);
+        $mapControls.css('height', `${mapControlsHeight*2}px`);
       }
     }
   } else {
-    // Horizzontal
-    //TODO
+    if (isMobile.any) {
+      this.setMapControlsAlignement('rv');
+    }
   }
 };
 

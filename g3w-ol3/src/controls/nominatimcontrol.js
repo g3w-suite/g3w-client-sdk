@@ -17,6 +17,7 @@ function NominatimControl(options) {
     debug: false,
     viewbox: options.bbox,
     bounded: 1,
+    classMobile: options.isMobile ? 'nominatim-mobile' : '',
     mapCrs: options.mapCrs,
     fontIcon: options.fontIcon || "fa fa-search fas fa-search"
   };
@@ -478,7 +479,7 @@ function NominatimControl(options) {
     let container, containerClass, elements;
 
     if (this.options.targetType === targetType.INPUT) {
-      containerClass = klasses.namespace + ' ' + klasses.inputText.container;
+      containerClass = klasses.namespace + ' ' + klasses.inputText.container + ' ' + this.options.classMobile;
       container = utils.createElement(
         ['div', { classname: containerClass }], Html.input);
       elements = {

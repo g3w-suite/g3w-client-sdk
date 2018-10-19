@@ -7,6 +7,7 @@ const SCALES = [
 ];
 
 const ScaleControl = function(options= {}) {
+  this.isMobile = options.isMobile || false;
   this.position = options.position || {
     bottom: true,
     right: true
@@ -26,7 +27,8 @@ proto.changelayout = function(map) {
   changeLayout({
     map,
     position,
-    element
+    element,
+    isMobile: this.isMobile
   });
 };
 
@@ -50,6 +52,7 @@ proto.layout = function(map) {
         return "Scala non valida";
       }
     },
+    minimumResultsForSearch: this.isMobile ? -1 : 0,
     createTag: function (params) {
       let newTag = null;
       let scale;
@@ -143,10 +146,12 @@ proto._createControl = function() {
     option.selected = index == 0  ? true : false;
     optgroup.appendChild(option);
   });
-  const optgroup_custom  = document.createElement('optgroup');
-  optgroup_custom.label = 'Custom';
   select.appendChild(optgroup);
-  select.appendChild(optgroup_custom);
+  if (!this.isMobile) {
+    const optgroup_custom  = document.createElement('optgroup');
+    optgroup_custom.label = 'Custom';
+    select.appendChild(optgroup_custom);
+  }
   controlDomElement.appendChild(select);
   // set element of control (it is necessary to visualize it)
   this.element = controlDomElement;

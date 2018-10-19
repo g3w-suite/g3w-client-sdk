@@ -72,10 +72,8 @@ proto.layout = function(map) {
   }
 };
 
-// change layout of controls
-proto.changelayout = function(map) {
-
-};
+// change layout of controls // overwrite to customize beahviour
+proto.changelayout = function(map) {};
 
 proto.showHide = function() {
   $(this.element).toggle();
