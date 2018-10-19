@@ -1,4 +1,5 @@
 const g3w = g3w || {};
+import config from './config';
 
 g3w.core = {
   G3WObject: require('core/g3wobject'),
@@ -116,9 +117,12 @@ g3w.utils = {
 
 };
 
+g3w.config = config;
+
 module.exports = {
   core: g3w.core,
   gui: g3w.gui,
   ol3: g3w.ol3,
-  utils: g3w.utils
+  utils: g3w.utils,
+  config: g3w.config
 };

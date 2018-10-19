@@ -11,7 +11,7 @@
                   <div class="title title_center">
                     <i :class="iconsClass.info" class="fa-2x" aria-hidden="true"></i>
                   </div>
-                  <div v-t="'metadata.groups.general.title'" class="tab-title"></div>
+                  <div v-t="'sdk.metadata.groups.general.title'" class="tab-title"></div>
                 </a>
               </li>
               <li>
@@ -19,14 +19,14 @@
                   <div class="title title_center">
                     <i :class="iconsClass.globe" class="fa-2x" aria-hidden="true"></i>
                   </div>
-                  <div v-t="'metadata.groups.spatial.title'" class="tab-title"></div>
+                  <div v-t="'sdk.metadata.groups.spatial.title'" class="tab-title"></div>
                 </a></li>
               <li>
                 <a data-toggle="tab" href="#layers"  class="metadata-item-tab layers">
                   <div class="title title_center">
                     <i :class="iconsClass.bars" class="fa-2x" aria-hidden="true"></i>
                   </div>
-                  <div v-t="'metadata.groups.layers.title'" class="tab-title"></div>
+                  <div v-t="'sdk.metadata.groups.layers.title'" class="tab-title"></div>
                 </a>
               </li>
             </ul>

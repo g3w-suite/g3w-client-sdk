@@ -17,7 +17,7 @@ const InternalComponent = Vue.extend({
 
 const MetadataComponent = function(options = {}) {
   base(this, options);
-  this.title = "metadata.title";
+  this.title = "sdk.metadata.title";
   const service = options.service || new MetadataService(options);
   this.setService(service);
   this._service.on('reload', () => {

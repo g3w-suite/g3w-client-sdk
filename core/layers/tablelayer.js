@@ -333,7 +333,7 @@ proto.getConfigUrl = function() {
 };
 
 proto.setConfigUrl = function(url) {
-  this.config.urls.config = url;
+  this.config.urls.index = url;
 };
 
 proto.getEditor = function() {

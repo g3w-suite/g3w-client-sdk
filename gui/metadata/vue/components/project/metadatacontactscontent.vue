@@ -6,12 +6,12 @@
         <div class="row">
           <div class="col-sm-3 metadata-contact-label">
             <i class="contact-icon" :class="iconsClass[key]" aria-hidden="true"></i>
-            <span v-t="'metadata.groups.general.fields.subfields.contactinformation.' + key"></span>
+            <span v-t="'sdk.metadata.groups.general.fields.subfields.contactinformation.' + key"></span>
           </div>
           <div class="col-sm-9">
             <template v-if="key === 'personprimary'" >
               <div v-for="(subvalue, key) in value">
-                <span v-t="'metadata.groups.general.fields.subfields.contactinformation.' + key" class="metadata-contact-label"></span>
+                <span v-t="'sdk.metadata.groups.general.fields.subfields.contactinformation.' + key" class="metadata-contact-label"></span>
                 <span>{{ subvalue }}</span>
               </div>
             </template>

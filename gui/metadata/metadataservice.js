@@ -2,11 +2,28 @@ const inherit = require('core/utils/utils').inherit;
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 const t = require('core/i18n/i18n.service').t;
-const addI18n = require('core/i18n/i18n.service').addI18n;
 const ProjectsRegistry = require('core/project/projectsregistry');
 const ProjectMetadataComponent = require('./vue/components/project/project');
-const MetadataI18n = require('./metadatai18n');
-
+const METADATAGROUPS = {
+  general: [
+    'title',
+    'name',
+    'description',
+    'abstract',
+    'keywords',
+    'fees',
+    'accessconstraints',
+    'contactinformation',
+    'wms_url'
+  ],
+  spatial: [
+    'crs',
+    'extent'
+  ],
+  layers: [
+    'layers'
+  ]
+};
 
 function MetadataService() {
   this.content = null;
@@ -15,8 +32,6 @@ function MetadataService() {
     name: '',
     groups: {}
   };
-  //add new traslation items to application
-  addI18n(MetadataI18n);
   this._buildProjectGroupMetadata();
 }
 
@@ -27,16 +42,14 @@ const proto = MetadataService.prototype;
 proto._buildProjectGroupMetadata = function() {
   const project = ProjectsRegistry.getCurrentProject().getState();
   this.state.name = project.title;
-  // get one group (it for example)
-  const projectGroups = MetadataI18n.it.metadata.groups;
   const groups = {};
-  Object.entries(projectGroups).forEach(([groupName, value]) => {
+  Object.entries(METADATAGROUPS).forEach(([groupName, value]) => {
     groups[groupName] = {};
-    Object.keys(value.fields).forEach((field) => {
-      const  fieldValue = project.metadata && project.metadata[field] ? project.metadata[field] : project[field];
+    value.forEach((field) => {
+      const fieldValue = project.metadata && project.metadata[field] ? project.metadata[field] : project[field];
       if (!!fieldValue) {
         groups[groupName][field] = {
-          label: t(['metadata','groups', groupName, 'fields', field].join('.')), // get traslation here
+          label: t(['sdk','metadata','groups', groupName, 'fields', field].join('.')), // get traslation here
           value: fieldValue
         }
       }
@@ -70,7 +83,7 @@ proto.showMetadata = function(bool) {
     });
     GUI.setContent({
       content: this.content,
-      title: t("metadata.title"),
+      title: t("sdk.metadata.title"),
       perc: 100
     });
     this.show = true;
