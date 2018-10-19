@@ -23,7 +23,7 @@ module.exports = {
           }
         } else {
           const previusControlWidth = previusControl.width();
-          const previousLeftPosition =  previusControlWidth < 10 ? 90 : previusControlWidth + 20;
+          const previousLeftPosition =  previusControlWidth < 10 ? 130 : previusControlWidth + 20;
           element.css('right', previousLeftPosition + 'px');
           element.css('bottom', '15px');
         }

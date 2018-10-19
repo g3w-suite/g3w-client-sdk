@@ -6,7 +6,6 @@ const RouterService = require('core/router');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const PluginsRegistry = require('core/plugin/pluginsregistry');
 const ClipboardService = require('core/clipboardservice');
-// store to centralize reactivity
 import store from './store/store';
 
 const G3W_VERSION = "{G3W_VERSION}";
@@ -178,8 +177,7 @@ const ApplicationService = function() {
 
   this.clearInitConfig = function() {
     window.initConfig = null;
-  }
-
+  };
 };
 
 inherit(ApplicationService,G3WObject);
