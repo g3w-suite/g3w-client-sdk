@@ -3,7 +3,7 @@
     <h2>{{ state.name }}</h2>
     <div id="project-catalog-container" class="container-fluid h_90">
       <div class="row h_100" >
-        <div class="col-md-3 left-vertical-tabs">
+        <div class="col-sm-4 metadata-header left-vertical-tabs">
           <div class="nav-tabs-wrapper stacked">
             <ul role="tablist" class="nav nav-tabs  nav-stacked">
               <li class="active">
@@ -32,7 +32,7 @@
             </ul>
         </div>
         </div>
-        <div class="col-md-9 metadata-body tab-content">
+        <div class="col-sm-8 metadata-body tab-content">
             <div id="general" class="tab-pane fade in active nano-content">
               <template>
                 <div v-for="(data, key) in state.groups.general" class="row h_100 row-info">
