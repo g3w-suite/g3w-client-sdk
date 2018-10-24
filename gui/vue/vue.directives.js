@@ -1,6 +1,15 @@
 const t = require('core/i18n/i18n.service').t;
+const tTemplate = require('core/i18n/i18n.service').tTemplate;
 const GlobalDirective = {
   install(Vue) {
+    const prePositioni18n = ({el, binding, i18nFnc = t }) => {
+      const position = binding.arg ? binding.arg : 'post';
+      if (position === 'pre')
+        el.innerHTML = i18nFnc(binding.value) + el.innerHTML;
+      else if (position === 'post')
+        el.innerHTML = el.innerHTML + i18nFnc(binding.value);
+    };
+
     Vue.directive("disabled",function(el, binding){
         if (binding.value){
           el.setAttribute('disabled','disabled');
@@ -30,7 +39,21 @@ const GlobalDirective = {
 
     Vue.directive("t", {
       bind: function (el, binding) {
-        el.innerHTML = el.innerHTML + t(binding.value)
+        prePositioni18n({
+          el,
+          binding,
+          i18nFnc: t
+        })
+      }
+    });
+
+    Vue.directive("t-template", {
+      bind: function (el, binding) {
+        prePositioni18n({
+          el,
+          binding,
+          i18nFnc: tTemplate
+        })
       }
     });
   }

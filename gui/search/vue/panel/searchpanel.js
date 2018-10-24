@@ -18,6 +18,17 @@ const SearchPanelComponet = Vue.extend({
     }
   },
   methods: {
+    onFocus(event) {
+      if (this.isMobile()) {
+        const top = $(event.target).position().top - 10 ;
+        this.$nextTick(()=> {
+          setTimeout(() => {
+            $('.sidebar').scrollTop(top);
+          }, 500)
+        });
+
+      }
+    },
     doSearch: function(event) {
       event.preventDefault();
       GUI.closeContent();

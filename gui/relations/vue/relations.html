@@ -2,7 +2,10 @@
   <div class="nano">
     <div class="nano-content">
       <div class="header">
-        <div><span v-t="'list_of_relations_feature'"></span><span v-for="info in featureInfo()"><b>{{ info.key }}</b>: {{ info.value }} </span></div>
+        <div>
+          <span v-t="'list_of_relations_feature'"></span>
+          <span v-for="info in featureInfo()"><b>{{ info.key }}</b>: {{ info.value }} </span>
+        </div>
       </div>
       <table class="table table-bordered table-hover">
         <thead>

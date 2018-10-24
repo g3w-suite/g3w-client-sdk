@@ -28,11 +28,7 @@ const TableComponent = function(options = {}) {
   };
 
   this.layout = function() {
-    internalComponent.$nextTick(() => {
-      const tableHeight = $(".content").height();
-      const tableHeaderHeight = $('#open_attribute_table  div.dataTables_scrollHeadInner').height();
-      $('#open_attribute_table  div.dataTables_scrollBody').height(tableHeight - tableHeaderHeight - 120);
-    });
+    internalComponent.reloadLayout();
   };
 };
 
@@ -48,7 +44,7 @@ proto.show = function(options = {}) {
       GUI.showContent({
         content: this,
         perc: 50,
-        split: 'v',
+        split: GUI.isMobile() ? 'h': 'v',
         push: false,
         title: options.title
       });

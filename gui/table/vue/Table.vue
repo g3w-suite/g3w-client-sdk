@@ -1,13 +1,13 @@
 <template>
   <div id="open_attribute_table">
-    <table v-if="hasHeaders()" id="layer_attribute_table" class="table table-striped" style="width:100%">
+    <table v-if="hasHeaders()" id="layer_attribute_table" class="table table-striped display compact nowrap" style="width:100%">
       <thead>
         <tr>
           <th v-for="header in state.headers">{{ header.label }}</th>
         </tr>
       </thead>
       <tbody>
-        <tr class="feature_attribute" :id="'open_table_row_' + index"  v-for="(feature, index) in state.features" :key="index" @mouseenter="zoomAndHighLightSelectedFeature(feature, false)" @click="zoomAndHighLightSelectedFeature(feature); toggleRow(index)" :class="[{geometry: state.hasGeometry}, {selected: selectedRow === index }]">
+        <tr class="feature_attribute" :id="'open_table_row_' + index"  v-for="(feature, index) in state.features" :key="index" @click="zoomAndHighLightSelectedFeature(feature); toggleRow(index)" :selected="selectedRow === index" :class="[{geometry: state.hasGeometry}]">
           <td v-for="header in state.headers">
             <field :state="{value: feature.attributes[header.name]}"></field>
           </td>
@@ -21,6 +21,7 @@
 
 <script>
   const Field = require('gui/fields/g3w-field.vue');
+  let dataTable;
   export default {
     name: "G3WTable",
     data: function() {
@@ -46,16 +47,28 @@
       },
       hasHeaders() {
         return !!this.state.headers.length;
+      },
+      reloadLayout() {
+        this.$nextTick(() => {
+          const tableHeight = $(".content").height();
+          const tableHeaderHeight = $('#open_attribute_table  div.dataTables_scrollHeadInner').height();
+          $('#open_attribute_table  div.dataTables_scrollBody').height(tableHeight - tableHeaderHeight - 130);
+          dataTable.columns.adjust();
+        });
       }
     },
-    created() {
-
-    },
+    created() {},
     mounted: function() {
+      const hideElements = () => {
+        $('.dataTables_info, .dataTables_length').hide();
+        $('#layer_attribute_table_previous, #layer_attribute_table_next').hide();
+        $('.dataTables_filter').css('float', 'right');
+        $('.dataTables_paginate').css('margin', '0px');
+      };
       this.$nextTick(() => {
         if (this.state.pagination) {
           //pagination
-          const table = $('#open_attribute_table table').DataTable({
+          dataTable = $('#open_attribute_table table').DataTable({
             "lengthMenu": this.state.pageLengths,
             "scrollX": true,
             "scrollCollapse": true,
@@ -68,21 +81,27 @@
                   this.$nextTick(() => {
                     $('#open_attribute_table table tr.odd').remove();
                     $('#open_attribute_table table tr.even').remove();
+                    hideElements();
                   })
                 })
             },
             "serverSide": true,
             "processing": true,
+            "responsive": true,
             "deferLoading": this.state.allfeatures
           });
         } else {
           // no pagination all data
-          const table = $('#open_attribute_table table').DataTable({
+          dataTable = $('#open_attribute_table table').DataTable({
             "lengthMenu": this.state.pageLengths,
             "scrollX": true,
             "scrollCollapse": true,
             "order": [ 0, 'asc' ],
+            "responsive": true,
           });
+        }
+        if (this.isMobile()) {
+          hideElements();
         }
       });
     }
@@ -97,5 +116,7 @@
     background-color: #ffffff;
     font-weight: bold;
     margin-top: 10px;
+  }
+  #open_attribute_table {
   }
   </style>

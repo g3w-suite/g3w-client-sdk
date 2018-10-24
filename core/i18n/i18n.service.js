@@ -44,6 +44,16 @@ const tPlugin = function(text) {
   return i18next.t(`plugins.${text}`);
 };
 
+const tTemplate = function(text) {
+  return i18next.t(`template.${text}`);
+};
+
+const tPrefix = function(filter) {
+  return function(text) {
+    return i18next.t(`${filter}.${text}`);
+  }
+};
+
 const addI18nPlugin = function({name, config}) {
   for (const language in config) {
     plugins18nConfig[language].plugins[name] = config[language];
@@ -63,6 +73,8 @@ module.exports = {
   init,
   t,
   tPlugin,
+  tTemplate,
+  tPrefix,
   addI18n,
   addI18nPlugin
 };

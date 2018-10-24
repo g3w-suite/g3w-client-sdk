@@ -2,6 +2,7 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const Component = require('gui/vue/component');
 const QueryResultsService = require('gui/queryresults/queryresultsservice');
+const GUI = require('gui/gui');
 const t = require('core/i18n/i18n.service').t;
 const fieldsMixin = require('gui/vue/vue.mixins').fieldsMixin;
 import Tabs from '../../tabs/tabs.vue';
@@ -220,6 +221,11 @@ const vueComponentOptions = {
           this.$options.queryResultsService.postRender(this.$el);
         })
       }
+    }
+  },
+  beforeMount() {
+    if (this.isMobile()) {
+      GUI.hideSidebar();
     }
   },
   mounted: function() {

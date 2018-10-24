@@ -1,0 +1,31 @@
+<div class="query-relation">
+  <div v-if="showrelationslist" class="back-btn" @click="back">
+    <span class="back-link">
+      <span  v-t="'back_to_relations'"><i :class="g3wtemplate.getFontClass('arrow-left')" style="margin-right: 5px;"></i></span>
+    </span>
+  </div>
+  <div class="header">
+    <div style="font-size: 1.5em">
+      <span v-t="'relation_data'"></span> <b>{{ relation.name }}</b>
+    </div>
+  </div>
+  <div class="nano" v-if="table.rows.length">
+    <div class="nano-content">
+      <table id="relationtable" class="table table-striped" width="100%">
+        <thead>
+          <tr>
+            <th v-for="column in table.columns">{{ column }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="row in table.rows">
+            <td v-for="value in row">
+              <field :state="{value:value}"></field>
+            </td>
+          </tr>
+        </tbody>
+        </table>
+    </div>
+  </div>
+  <div v-else v-t="'no_relations_found'"></div>
+</div>

@@ -59,6 +59,7 @@ function GUI() {
 
   this.notify = noop;
   this.dialog = noop;
+  this.isMobile = noop;
   //useful to registere setters
   base(this);
 }

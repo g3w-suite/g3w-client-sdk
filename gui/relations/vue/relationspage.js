@@ -3,8 +3,10 @@ const base = require('core/utils/utils').base;
 const Component = require('gui/vue/component');
 const Service = require('../relationsservice');
 const Field = require('gui/fields/g3w-field.vue');
+const RelationPageEventBus = new Vue();
 
-/* List of relaations */
+
+/* List of relations */
 const relationsComponent = {
   template: require('./relations.html'),
   props: ['relations', 'feature'],
@@ -31,7 +33,7 @@ const relationsComponent = {
   }
 };
 /*-----------------------------------*/
-
+let relationDataTable;
 /* Relation Table */
 const relationComponent = {
   template: require('./relation.html'),
@@ -48,6 +50,9 @@ const relationComponent = {
     }
   },
   methods: {
+    reloadLayout() {
+      relationDataTable.columns.adjust();
+    },
     back: function() {
       this.$parent.setRelationsList();
     },
@@ -76,16 +81,23 @@ const relationComponent = {
       return this.fieldIs(type, value);
     }
   },
+  created() {
+    RelationPageEventBus.$on('reload', () => {
+      this.reloadLayout();
+    })
+  },
   mounted () {
     this.relation.title = this.relation.name;
     this.$nextTick(() => {
       if (!this.one) {
         const tableHeight = $(".content").height();
-        $('#relationtable').DataTable( {
+        relationDataTable = $('#relationtable').DataTable( {
           "pageLength": 10,
           "bLengthChange": false,
           "scrollY": tableHeight / 2 +  "px",
           "scrollCollapse": true,
+          "scrollX": true,
+          "responsive": true,
           "order": [ 0, 'asc' ]
         } )
       }
@@ -112,6 +124,9 @@ const InternalComponent = Vue.extend({
     'relation': relationComponent
   },
   methods: {
+    reloadLayout() {
+      RelationPageEventBus.$emit('reload');
+    },
     isOneRelation() {
       return this.relations.length == 1 && this.relations[0].type == 'ONE'
     },
@@ -165,9 +180,14 @@ const RelationsPage = function(options={}) {
   });
   this.setInternalComponent(internalComponent);
   internalComponent.state = service.state;
+  this.layout = function() {
+    internalComponent.reloadLayout();
+  };
 };
+
 inherit(RelationsPage, Component);
 
+const proto = RelationsPage.prototype;
 
 module.exports = RelationsPage;
 

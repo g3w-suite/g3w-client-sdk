@@ -150,6 +150,9 @@ const vueComponentOptions = {
         layer
       });
       tableContent.on('show', () => {
+        if (this.isMobile()) {
+          GUI.hideSidebar();
+        }
         this.layerMenu.loading_data_table = false;
         this._hideMenu();
       });
@@ -243,7 +246,6 @@ const vueComponentOptions = {
       };
       nodes.map(checkNodes);
       CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayers(layersIds, isFolderChecked);
-
     });
 
     CatalogEventHub.$on('treenodeselected',function(storeid, node) {
@@ -390,8 +392,8 @@ Vue.component('tristate-tree', {
   methods: {
     toggle: function(isFolder) {
       if (isFolder) {
-        //check if group is mutually exclusive
-        if (this.layerstree.mutually_exclusive) {
+        //check if group is mutually exclusive and has children
+        if (this.layerstree.mutually_exclusive && this.layerstree.nodes.length) {
           if (!this.layerstree.lastLayerIdVisible) {
             let layerId;
             const getLayerId = (nodes) => {

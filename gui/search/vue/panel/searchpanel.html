@@ -6,9 +6,9 @@
         <label :for="forminput.id + ' '">{{ forminput.label }}</label>
         <input type="number" v-model="formInputValues[index].value" class="form-control" :id="index">
       </div>
-      <div v-if="forminput.input.type == 'textfield' || forminput.input.type == 'textField'" class="form-group text">
+      <div v-if="forminput.input.type == 'textfield' || forminput.input.type == 'textField'" class="form-group form-item-search  text">
         <label :for="forminput.id">{{ forminput.label }}</label>
-        <input type="text" v-model="formInputValues[index].value" class="form-control" :id="index">
+        <input @focus="onFocus" type="text" v-model="formInputValues[index].value" class="form-control" :id="index">
       </div>
       <div v-if="forminput.input.type == 'selectfield'" class="form-group text">
         <label :for="forminput.id">{{ forminput.label }}</label>
