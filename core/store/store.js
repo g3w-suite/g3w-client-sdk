@@ -1,5 +1,5 @@
+require('es6-promise').polyfill();
 import Vuex from 'vuex';
-
 Vue.use(Vuex);
 
 const store = new Vuex.Store({
@@ -29,7 +29,6 @@ const store = new Vuex.Store({
   actions: {},
   getters: {},
 });
-
 
 export default store;
 

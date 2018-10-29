@@ -952,11 +952,11 @@ proto._removeControls = function() {
   })
 };
 
-proto._unToggleControls = function() {
+proto._unToggleControls = function({close=true} = {}) {
   this._mapControls.forEach((controlObj) => {
     if (controlObj.control.isToggled && controlObj.control.isToggled()) {
       controlObj.control.toggle(false);
-      GUI.closeContent();
+      close && GUI.closeContent();
     }
   });
 

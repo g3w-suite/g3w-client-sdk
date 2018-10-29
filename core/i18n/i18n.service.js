@@ -62,11 +62,12 @@ const addI18nPlugin = function({name, config}) {
 };
 
 const addI18n = function(i18nObject) {
-  Object.entries(i18nObject).forEach(([lng, value]) => {
-    Object.keys(value).forEach((key) => {
-      i18next.addResource(lng, 'translation', key, value[key])
-    })
-  });
+  for (const lng in i18nObject) {
+    const lngObj = i18nObject[lng];
+    for (const key in lngObj)  {
+      i18next.addResource(lng, 'translation', key, lngObj[key])
+    }
+  }
 };
 
 module.exports = {

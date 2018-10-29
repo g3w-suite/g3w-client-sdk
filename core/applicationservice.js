@@ -8,6 +8,7 @@ const PluginsRegistry = require('core/plugin/pluginsregistry');
 const ClipboardService = require('core/clipboardservice');
 import store from './store/store';
 
+
 const G3W_VERSION = "{G3W_VERSION}";
 
 //Manage Application

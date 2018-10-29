@@ -497,14 +497,14 @@ Vue.component('layerslegend',{
         let _visiblelayers = [];
         const layerstree = this.layerstree.tree;
         let traverse = (obj) => {
-        Object.entries(obj).forEach(([key, layer]) => {
-              if (!_.isNil(layer.id) && layer.visible && !layer.exclude_from_legend) {
-                  _visiblelayers.push(layer);
-              }
-              if (!_.isNil(layer.nodes)) {
-                  traverse(layer.nodes);
-              }
-          })
+          for (const layer of obj) {
+            if (!_.isNil(layer.id) && layer.visible && !layer.exclude_from_legend) {
+              _visiblelayers.push(layer);
+            }
+            if (!_.isNil(layer.nodes)) {
+              traverse(layer.nodes);
+            }
+          }
         };
         traverse(layerstree);
         return _visiblelayers;

@@ -1,5 +1,6 @@
 const t = require('core/i18n/i18n.service').t;
 const tTemplate = require('core/i18n/i18n.service').tTemplate;
+const tPlugin = require('core/i18n/i18n.service').tPlugin;
 const GlobalDirective = {
   install(Vue) {
     const prePositioni18n = ({el, binding, i18nFnc = t }) => {
@@ -53,6 +54,16 @@ const GlobalDirective = {
           el,
           binding,
           i18nFnc: tTemplate
+        })
+      }
+    });
+
+    Vue.directive("t-plugin", {
+      bind: function (el, binding) {
+        prePositioni18n({
+          el,
+          binding,
+          i18nFnc: tPlugin
         })
       }
     });
