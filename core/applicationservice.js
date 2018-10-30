@@ -1,4 +1,5 @@
 const inherit = require('core/utils/utils').inherit;
+const XHR = require('core/utils/utils').XHR;
 const base = require('core/utils/utils').base;
 const G3WObject = require('core/g3wobject');
 const ApiService = require('core/apiservice');
@@ -90,9 +91,10 @@ const ApplicationService = function() {
         if (projectPath) {
           initUrl =  '/' + initUrl + '/' + projectPath;
         }
-        //get configuration from server
-        $.get(initUrl)
-          .then((initConfig) => {
+        // get configuration from server (return a promise)
+        XHR.get({
+          url: initUrl
+        }).then((initConfig) => {
             //initConfig conatin mai configuration
             //group, mediaurl, staticurl, user
             initConfig.staticurl = "../dist/"; // in development force  asset
@@ -102,9 +104,9 @@ const ApplicationService = function() {
             window.initConfig = initConfig;
             d.resolve(initConfig);
           })
-          .fail(function(error) {
+          .catch((error) => {
             d.reject(error);
-          })
+          });
       }
     }
     return d.promise();

@@ -65,7 +65,7 @@ const utils = {
     _uid+=1;
     return `${_uid}_${Date.now()}`;
   },
-  
+
   basemixin: function mixin(destination, source) {
       return utils.merge(destination.prototype, source);
   },
@@ -196,7 +196,27 @@ const utils = {
     };
     image.src = src;
   },
-  Base64: Base64
+  Base64: Base64,
+  XHR: {
+    get({url, params={}}={}) {
+      return new Promise((resolve, reject) => {
+        if (url) {
+          $.get(url, params)
+            .then((result) => {
+              resolve(result);
+            })
+            .fail((err) => {
+              reject(err);
+            })
+        } else {
+          reject('No url')
+        }
+      })
+    },
+    post() {
+
+    }
+  }
 };
 
 module.exports = utils;

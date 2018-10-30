@@ -72,15 +72,20 @@ function PluginsRegistry() {
     this.pluginsConfigs = config;
   };
 
+  this._loadScript = function(url, name) {
+    return $script(url, name);
+  };
+
   //load plugin script
   this._setup = function(name, pluginConfig) {
     if (!_.isNull(pluginConfig)) {
       const baseUrl = this.pluginsBaseUrl+name;
       const scriptUrl = baseUrl + '/js/plugin.js?'+Date.now();
-      const url = this.pluginsBaseUrl+name+'/js/plugin.js?'+Date.now();
       pluginConfig.baseUrl= this.pluginsBaseUrl;
-      $script(scriptUrl);
-      this._loadedPluginUrls.push(url);
+      this._loadScript(scriptUrl, name)
+        .ready(name, () => {
+          this._loadedPluginUrls.push(scriptUrl);
+        })
     }
   };
 
@@ -95,7 +100,7 @@ function PluginsRegistry() {
   this.getPlugin = function(pluginName) {
     return this._plugins[pluginName];
   };
-  
+
 }
 
 inherit(PluginsRegistry,G3WObject);
