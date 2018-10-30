@@ -1,34 +1,48 @@
+// required for Edge
 require('es6-promise').polyfill();
 import Vuex from 'vuex';
+
 Vue.use(Vuex);
 
-const store = new Vuex.Store({
+const Store = new Vuex.Store({
   state: {
-    project: {},
-    editing: {},
-    map: {
-      controls: {},
-      layers: {
-        base: {},
-        spatial: {
-          wms: {},
-          wfs: {},
-          vector: {}
-        },
-        table: {}
+    gui: {
+      map: {
+        show: true
+      },
+      content: {
+        show: false
       }
     },
-    catalog: {},
-    print: {},
-    query: {},
-    search: {},
-    metadata: {},
-    errors: {}
+    template: {},
+    plugins: {}
   },
-  mutations: {},
+  mutations: {
+    showMap: (state, show) => {
+      state.gui.map.show = show;
+    },
+    showContent: (state, show) => {
+      state.gui.content.show = show;
+    },
+    addPlugin: (state, options={}) => {
+      const name = options.name;
+      const plugin = options.plugin;
+      if(name && plugin)
+        state.plugins[name] = plugin;
+      else
+        throw new Error("Store 'addPlugin' mutation: No name or plugin provided")
+    }
+  },
   actions: {},
-  getters: {},
+  getters: {
+    mapShow: (state) => {
+      return state.gui.map.show;
+    },
+    contentShow: (state) => {
+      return state.gui.content.show;
+    }
+  },
 });
 
-export default store;
+export default Store;
 

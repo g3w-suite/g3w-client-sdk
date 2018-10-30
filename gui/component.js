@@ -126,8 +126,7 @@ proto.getInternalComponent = function() {
 proto.setInternalComponent = function(internalComponent) {
   if (!internalComponent && this.internalComponentClass) {
     this.internalComponent = new this.internalComponentClass;
-  }
-  else {
+  } else {
     this.internalComponent = internalComponent;
   }
 };

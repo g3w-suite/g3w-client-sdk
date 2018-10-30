@@ -123,7 +123,7 @@ const vueComponentOptions = {
       const headerLength = maxSubsetLength + this.state.layersactions[layer.id].length;
       const subsetLength = this.attributesSubsetLength(layer.attributes);
       const diff = headerLength - subsetLength;
-      actionsCellWidth = layer.hasgeometry ? headerActionsCellWidth : 0;
+      const actionsCellWidth = layer.hasgeometry ? headerActionsCellWidth : 0;
       const headerAttributeCellTotalWidth = 100 - headerExpandActionCellWidth - actionsCellWidth;
       const baseCellWidth = headerAttributeCellTotalWidth / maxSubsetLength;
       if ((index == subsetLength-1) && diff>0) {

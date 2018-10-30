@@ -6,14 +6,21 @@ const RouterService = require('core/router');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const PluginsRegistry = require('core/plugin/pluginsregistry');
 const ClipboardService = require('core/clipboardservice');
-import store from './store/store';
+const GlobalComponents = require('gui/vue/vue.globalcomponents');
+const GlobalDirective = require('gui/vue/vue.directives');
+import Store from './store/store';
+
+// install global components
+Vue.use(GlobalComponents);
+// install gloabl directive
+Vue.use(GlobalDirective);
 
 
 const G3W_VERSION = "{G3W_VERSION}";
 
 //Manage Application
 const ApplicationService = function() {
-  this._store = store;
+  this._appStore = Store;
   this.version = G3W_VERSION.indexOf("G3W_VERSION") == -1 ? G3W_VERSION  : "";
   this.secret = "### G3W Client Application Service ###";
   this.ready = false;
@@ -36,7 +43,7 @@ const ApplicationService = function() {
   };
 
   this.getStore = function() {
-    return this._store;
+    return this._appStore;
   };
 
   // get config

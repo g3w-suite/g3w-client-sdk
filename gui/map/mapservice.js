@@ -635,17 +635,17 @@ proto.setupControls = function() {
                 });
                 if (control) {
                   control.on('picked', (e) => {
-                    GUI.EventBus.$off('closecontent', closeContentFnc);
+                    GUI.off('closecontent', closeContentFnc);
                     const coordinates = e.coordinates;
                     const lonlat = ol.proj.transform(coordinates, this.getProjection().getCode(), 'EPSG:4326');
                     position.lat = lonlat[1];
                     position.lng = lonlat[0];
                     streetViewService.showStreetView(position);
-                    GUI.EventBus.$on('closecontent', closeContentFnc);
+                    GUI.on('closecontent', closeContentFnc);
                   });
                   control.on('disabled', () => {
                     GUI.closeContent();
-                    GUI.EventBus.$off('closecontent', closeContentFnc);
+                    GUI.off('closecontent', closeContentFnc);
                   })
                 }
               }
