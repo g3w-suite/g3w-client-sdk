@@ -23,7 +23,11 @@ function GUI() {
   this.showListing = noop;
   this.closeListing = noop;
   this.hideListing = noop;
-  this.showQueryResults = function(options) {};
+  // modal
+  this.setModal = noop;
+  this.showFullModal = noop;
+  // modal
+  this.showQueryResults = noop;
   this.hideQueryResults = noop;
   this.showPanel = noop;
   this.hidePanel = noop;

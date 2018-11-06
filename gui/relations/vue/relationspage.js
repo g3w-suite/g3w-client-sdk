@@ -1,5 +1,6 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
+const GUI = require('gui/gui');
 const Component = require('gui/vue/component');
 const Service = require('../relationsservice');
 const Field = require('gui/fields/g3w-field.vue');
@@ -134,6 +135,7 @@ const InternalComponent = Vue.extend({
       this.relation = relation;
       const field = relation.fieldRef.referencedField;
       const value = this.feature.attributes[field];
+      GUI.setLoadingContent(true);
       this.$options.service.getRelations({
         id: relation.id,
         value: value
@@ -144,8 +146,10 @@ const InternalComponent = Vue.extend({
         Vue.nextTick(() => {
           $(".query-relations .nano").nanoScroller();
         })
-      }).fail((err) => {
+      }).catch((err) => {
         console.log(err)
+      }).finally(() => {
+        GUI.setLoadingContent(false);
       })
     },
     setRelationsList: function() {

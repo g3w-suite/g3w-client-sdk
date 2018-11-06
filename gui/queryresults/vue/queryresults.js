@@ -165,7 +165,6 @@ const vueComponentOptions = {
           tabs: this.hasFormStructure(layer),
           show: !this.layersFeaturesBoxes[boxid].collapsed
         });
-        $('.queryresults-container .nano').nanoScroller()
       })
     },
     getBoxId(layer, feature, relation_index) {
@@ -232,7 +231,6 @@ const vueComponentOptions = {
     Vue.nextTick()
       .then(() => {
         $('[data-toggle="tooltip"]').tooltip();
-        $('.nano').nanoScroller();
     })
   }
 };

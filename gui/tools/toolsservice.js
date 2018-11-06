@@ -19,7 +19,7 @@ function ToolsService(){
       this._removeTools();
     }
   };
-  
+
   this.reload = function() {
     this.removeTools();
   };
@@ -35,7 +35,6 @@ function ToolsService(){
     }
     tools.forEach((tool) => {
       group.tools.push(tool);
-      this._addAction(tool);
     });
   };
 
@@ -55,25 +54,14 @@ function ToolsService(){
     return this.state;
   };
 
-  this.fireAction = function(actionId){
-    const action = this._actions[actionId];
-    action();
-  };
-
   this._getToolsGroup = function(groupName) {
     let group = null;
     this.state.toolsGroups.forEach((_group) => {
-      if (_group.name == groupName) {
+      if (_group.name === groupName) {
         group = _group;
       }
     });
     return group;
-  };
-
-  this._addAction = function(tool) {
-    const actionId = Math.floor(Math.random() * 1000000) + 1;
-    tool.actionId = actionId;
-    this._actions[actionId] = tool.action;
   };
 
   base(this);

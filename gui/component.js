@@ -13,7 +13,12 @@ const Component = function(options = {}) {
   this.title = options.title || '';
   this.state = {
     visible: options.visible || true, // visibile
-    open: options.open || false // open
+    open: options.open || false, // open,
+    resizable: options.resizable || false,
+    sizes: {
+      width:0,
+      height:0
+    }
   };
   //setters
   this.setters = {
@@ -224,13 +229,6 @@ proto.getInternalTemplate = function() {
   return this.vueComponent.template;
 };
 
-proto.mount = function(parent) {};
-
-proto.unmount = function() {};
-
-proto.ismount = function() {
-  return true;
-};
 
 // hook function to show componet
 proto.show = function() {};
@@ -241,6 +239,6 @@ proto._setVisible = function() {};
 
 proto._reload = function() {};
 
-proto.layout = function(parentWidth, parentHeight) {};
+
 
 module.exports = Component;

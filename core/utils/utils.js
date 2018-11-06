@@ -213,8 +213,43 @@ const utils = {
         }
       })
     },
-    post() {
-
+    post({url, data, formdata = false} = {}) {
+      return new Promise((resolve, reject) => {
+        if (formdata) {
+          const formdata = new FormData();
+          for (const param in data) {
+            formdata.append(param, data[param])
+          }
+          $.ajax({
+            type: 'POST',
+            url,
+            data: formdata,
+            processData: false,
+            contentType: false
+          }).then((response) => {
+              resolve(response)
+            })
+            .fail((error) => {
+              reject(error);
+            })
+        } else {
+          $.post(url, data);
+        }
+      })
+    },
+    fileDownload({url, data} = {}) {
+      return new Promise((resolve, reject) => {
+        $.fileDownload(url, {
+          httpMethod: "POST",
+          data,
+          successCallback() {
+            resolve()
+          },
+          failCallback() {
+            reject()
+          }
+        });
+      })
     }
   }
 };

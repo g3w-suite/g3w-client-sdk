@@ -5,7 +5,6 @@ const base = require('core/utils/utils').base;
 //class Componet Registry (singleton)
 // store all components added
 function ComponentsRegistry() {
-  
   this.components = {};
   this.registerComponent = function(component) {
     const id = component.getId();

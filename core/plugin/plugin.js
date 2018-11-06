@@ -9,6 +9,7 @@ const Plugin = function() {
   this.name = '(no name)';
   this.config = null;
   this.service = null;
+  this.dependencies = [];
 };
 
 inherit(Plugin,G3WObject);

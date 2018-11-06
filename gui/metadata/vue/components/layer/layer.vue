@@ -27,9 +27,9 @@
               <div v-t="'sdk.metadata.groups.layers.fields.subfields.name'" class="col-md-2 col-sm-12 metadata-label"></div>
               <div class="col-md-10 col-sm-12 value">{{ state.name }}</div>
             </div>
-            <div v-if="findMetadataAttribute('source')" class="row">
-              <div v-t="'sdk.metadata.groups.layers.fields.subfields.source'" class="col-md-2 col-sm-12 metadata-label"></div>
-              <div class="col-md-10 col-sm-12 value">{{ state.source.type }}</div>
+            <div v-if="findMetadataAttribute('source')" class="row metadata-layer-source">
+              <div v-t="'sdk.metadata.groups.layers.fields.subfields.source'" class="col-md-2 col-sm-12 metadata-label metadata-layer-source-value-key"></div>
+              <div class="col-md-10 col-sm-12 value metadata-layer-source-value">{{ state.source.type }}</div>
             </div>
             <div v-if="findAttributeFormMetadataAttribute('abstract')" class="row">
               <div v-t="'sdk.metadata.groups.layers.fields.subfields.abstract'" class="col-md-2 col-sm-12 metadata-label"></div>

@@ -195,6 +195,11 @@ proto.getMap = function() {
   return this.viewer.map;
 };
 
+proto.getMapCanvas = function() {
+  const mapTargetElement = this.viewer.map.getTarget();
+  return $(`#${mapTargetElement} canvas`)[0];
+};
+
 
 proto.getProjection = function() {
   return this.project.getProjection();
@@ -248,6 +253,8 @@ proto.getLayerByName = function(name) {
   });
   return layer;
 };
+
+
 
 // return layer by id
 proto.getLayerById = function(id) {
@@ -308,6 +315,24 @@ proto.getVectorLayerFeaturesFromCoordinates = function(layerId, coordinates) {
     }
   }
   return features;
+};
+
+proto.getQueryLayerByCoordinates = function({layer, coordinates} = {}) {
+  const mapProjection = this.getProjection();
+  const resolution = this.getResolution();
+  return new Promise((resolve, reject) => {
+    layer.query({
+      coordinates,
+      mapProjection,
+      resolution
+    })
+      .then((response) => {
+        resolve(response)
+      })
+      .fail((err) => {
+        reject(err)
+      })
+  })
 };
 
 proto.getQueryLayersPromisesByCoordinates = function(layerFilterObject, coordinates) {
@@ -612,44 +637,47 @@ proto.setupControls = function() {
           break;
         case 'streetview':
           // streetview
+          control = ControlsFactory.create({
+            type: controlType
+          });
+          control.setProjection(this.getProjection());
+          this.addControl(controlType, control, true, false);
+          this.on('viewerset', () => {
+            this.viewer.map.addLayer(control.getLayer());
+          });
           if (!isMobile.any) {
-            control = ControlsFactory.create({
-              type: controlType
-            });
-            control.setProjection(this.getProjection());
-            this.addControl(controlType, control);
-            this.on('viewerset', () => {
-              this.viewer.map.addLayer(control.getLayer());
-            });
             $script("https://maps.googleapis.com/maps/api/js?key=AIzaSyBCHtKGx3yXWZZ7_gwtJKG8a_6hArEFefs", () => {
-                let position = {
-                  lat: null,
-                  lng: null
-                };
-                const closeContentFnc = () => {
-                  control.clearMarker();
-                };
-                const streetViewService = new StreetViewService();
-                streetViewService.onafter('postRender', (position) => {
-                  control.setPosition(position);
+              let position = {
+                lat: null,
+                lng: null
+              };
+              const closeContentFnc = () => {
+                control.clearMarker();
+              };
+              const streetViewService = new StreetViewService();
+              streetViewService.onafter('postRender', (position) => {
+                control.setPosition(position);
+              });
+              if (control) {
+                this._setMapControlVisible({
+                  control,
+                  visible: true
                 });
-                if (control) {
-                  control.on('picked', (e) => {
-                    GUI.off('closecontent', closeContentFnc);
-                    const coordinates = e.coordinates;
-                    const lonlat = ol.proj.transform(coordinates, this.getProjection().getCode(), 'EPSG:4326');
-                    position.lat = lonlat[1];
-                    position.lng = lonlat[0];
-                    streetViewService.showStreetView(position);
-                    GUI.on('closecontent', closeContentFnc);
-                  });
-                  control.on('disabled', () => {
-                    GUI.closeContent();
-                    GUI.off('closecontent', closeContentFnc);
+                control.on('picked', (e) => {
+                  GUI.off('closecontent', closeContentFnc);
+                  const coordinates = e.coordinates;
+                  const lonlat = ol.proj.transform(coordinates, this.getProjection().getCode(), 'EPSG:4326');
+                  position.lat = lonlat[1];
+                  position.lng = lonlat[0];
+                  streetViewService.showStreetView(position);
+                  GUI.on('closecontent', closeContentFnc);
+                });
+                control.on('disabled', () => {
+                  GUI.closeContent();
+                  GUI.off('closecontent', closeContentFnc);
                   })
                 }
-              }
-            )
+            })
           }
           break;
         case 'scaleline':
@@ -684,6 +712,12 @@ proto.setupControls = function() {
                 this.addControl(controlType,control, false);
               });
             }
+          }
+          break;
+        // controlo to save image
+        case 'mapimage':
+          if (!isMobile.any) {
+
           }
           break;
         case 'nominatim':
@@ -851,12 +885,18 @@ proto._updateMapControlsLayout = function({width, height}) {
   }
 };
 
-proto._addControlToMapControls = function(control) {
+proto._setMapControlVisible = function({control, visible=true}) {
+   control && (visible && $(control.element).show() || $(control.element).hide());
+};
+
+proto._addControlToMapControls = function(control, visible=true) {
   const controlElement = control.element;
+  if (!visible)
+    control.element.style.display = "none";
   $('.g3w-map-controls').append(controlElement)
 };
 
-proto.addControl = function(type, control, addToMapControls=true) {
+proto.addControl = function(type, control, addToMapControls=true, visible=true) {
   this.viewer.map.addControl(control);
   this._mapControls.push({
     type: type,
@@ -873,7 +913,7 @@ proto.addControl = function(type, control, addToMapControls=true) {
   });
 
   if (addToMapControls)
-    this._addControlToMapControls(control);
+    this._addControlToMapControls(control, visible);
   else {
     const $mapElement = $(`#${this.getMap().getTarget()}`);
     this._updateMapControlsLayout({
@@ -959,7 +999,12 @@ proto._unToggleControls = function({close=true} = {}) {
       close && GUI.closeContent();
     }
   });
+};
 
+proto.deactiveMapControls = function() {
+  this._unToggleControls({
+    close: false
+  })
 };
 
 proto.addMapLayers = function(mapLayers) {

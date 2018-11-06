@@ -70,7 +70,6 @@ const MediaInput = Vue.extend({
       reader.readAsDataURL(file);
     },
     checkFileSrc: function(value) {
-      var value = value;
       if (_.isNil(value)) {
         value = ''
       }

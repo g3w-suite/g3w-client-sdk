@@ -3,7 +3,7 @@ const base = require('core/utils/utils').base;
 const GUI = require('gui/gui');
 const Component = require('gui/vue/component');
 const ToolsService = require('gui/tools/toolsservice');
-
+import G3wTool from './tool';
 const InternalComponent = Vue.extend({
   template: require('./tools.html'),
   data: function() {
@@ -11,14 +11,8 @@ const InternalComponent = Vue.extend({
       state: null
     }
   },
-  methods: {
-    fireAction: function(actionId) {
-      this.$options.toolsService.fireAction(actionId);
-    }
-  },
-  mounted() {
-    this.$nextTick(() => {
-    })
+  components: {
+    G3wTool
   }
 });
 

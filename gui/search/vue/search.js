@@ -3,6 +3,7 @@ const base = require('core/utils/utils').base;
 const Component = require('gui/vue/component');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const SearchesService = require('gui/search/searchesservice');
+import Tool from 'gui/tools/vue/tool'
 
 const vueComponentOptions = {
    template: require('./search.html'),
@@ -11,21 +12,23 @@ const vueComponentOptions = {
     	  state: null
     	};
    },
+  components: {
+    Tool
+  },
    methods: {
     showSearchPanel: function(search) {
         this.$options.service.showSearchPanel(search);
     }
   }
-  
 };
 
 const InternalComponent = Vue.extend(vueComponentOptions);
 
 function SearchComponent(options){
   base(this,options);
-  this.id = "search-component";
-  this.title = "search";
+  this.id = "search";
   this._service = new SearchesService();
+  this.title = this._service.getTitle();
   this.internalComponent = new InternalComponent({
     service: this._service
   });

@@ -45,7 +45,9 @@ function PluginsRegistry() {
   // reaload plugin in case of change map
   this.reloadPlugins = function(initConfig, project) {
     const scripts = $('script');
-    Object.entries(this.getPlugins()).forEach(([pluginName, plugin]) => {
+    const plugins = this.getPlugins();
+    for (const pluginName in plugins) {
+      const plugin = plugins[pluginName];
       // unload plugin e remove from DOM
       plugin.unload();
       delete this._plugins[pluginName];
@@ -57,7 +59,7 @@ function PluginsRegistry() {
             return false;
           }})
       });
-    });
+    }
     this._loadedPluginUrls = [];
     //setup plugins
     this.otherPluginsConfig = project.getState();

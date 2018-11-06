@@ -3,4 +3,7 @@
     <i :class="g3wtemplate.getFontClass('empty-circle')"></i>
     <span>{{ search.name }}</span>
   </li>
+  <li v-for="searchtool in state.searchtools">
+    <tool :tool="searchtool"></tool>
+  </li>
 </ul>

@@ -4,14 +4,22 @@ const ProjectsRegistry = require('core/project/projectsregistry');
 const G3WObject = require('core/g3wobject');
 const SearchPanel = require('gui/search/vue/panel/searchpanel');
 
-function SearchesService(){
+function SearchesService() {
+  const currentProjectState = ProjectsRegistry.getCurrentProject().state;
+  this.title = currentProjectState.search_title || "search";
   this.init = function(searchesObject) {
-    const searches = searchesObject || ProjectsRegistry.getCurrentProject().state.search;
+    const searches = searchesObject || currentProjectState.search;
     this.state.searches = searches;
   };
   this.state = {
-    searches: []
+    searches: [],
+    searchtools: []
   };
+
+  this.getTitle = function() {
+    return this.title;
+  };
+
   this.showSearchPanel = function(panelConfig) {
     const panel =  new SearchPanel();
     panel.init(panelConfig);
@@ -27,6 +35,10 @@ function SearchesService(){
     const d = $.Deferred();
     d.resolve();
     return d.promise();
+  };
+
+  this.addSearchTool = function(searchTool) {
+    this.state.searchtools.push(searchTool);
   };
 
   this.reload = function() {

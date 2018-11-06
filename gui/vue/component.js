@@ -4,7 +4,8 @@ const resolve = require('core/utils/utils').resolve;
 const BaseComponent = require('gui/component');
 
 // class component
-const Component = function(options) {
+const Component = function(options={}) {
+  this._firstLayout = true;
   base(this, options);
 };
 
@@ -20,11 +21,10 @@ proto.mount = function(parent, append) {
   if (append) {
     const iCinstance = this.internalComponent.$mount();
     $(parent).append(iCinstance.$el);
-  }
-  else {
+  } else {
     this.internalComponent.$mount(parent);
   }
-  Vue.nextTick(() => {
+  this.internalComponent.$nextTick(() => {
     $(parent).localize();
     this.emit('ready');
     d.resolve(true);
@@ -36,6 +36,9 @@ proto.unmount = function() {
   if (_.isNil(this.internalComponent)) {
     return resolve();
   }
+  if (this.state.resizable) {
+    this.internalComponent.$off('resize-component', this.internalComponent.layout);
+  }
   // destroy vue component
   this.internalComponent.$destroy(true);
   // remove dom element
@@ -45,10 +48,22 @@ proto.unmount = function() {
   // resolve
   return resolve();
 };
+
 proto.ismount = function() {
   return this.internalComponent && this.internalComponent.$el;
 };
 
-proto.layout = function(width,height) {};
+proto.layout = function(width, height) {
+  if (this.state.resizable && this._firstLayout) {
+    this.internalComponent.$on('resize-component', this.internalComponent.layout);
+    this._firstLayout = false;
+  }
+  this.internalComponent.$nextTick(() => {
+    this.internalComponent.$emit('resize-component', {
+      width,
+      height
+    })
+  })
+};
 
 module.exports = Component;

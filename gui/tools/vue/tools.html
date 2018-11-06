@@ -5,18 +5,7 @@
       <span style="">{{ group.name }}</span>
     </div>
     <div :id="group.name + '-tools'" class="tool-box">
-      <template v-for="tool in group.tools">
-        <div v-if="tool.type == 'checkbox' " class="checkbox">
-          <label>
-            <input style="cursor:pointer" :id="tool.layerName" v-model="tool.isCheck" type="checkbox" :value="tool.layerName" @click="fireAction(tool.actionId)">{{ tool.name }}
-          </label>
-        </div>
-        <div v-else class="tool" @click="fireAction(tool.actionId)">
-          <i :class="g3wtemplate.getFontClass('caret-right')"></i>
-          <span >{{ tool.name }}</span>
-        </div>
-      </template>
+      <g3w-tool v-for="tool in group.tools" :key="tool.name" :tool="tool"></g3w-tool>
     </div>
   </li>
 </ul>
-

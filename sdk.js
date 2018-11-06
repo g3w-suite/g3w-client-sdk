@@ -89,7 +89,7 @@ g3w.gui = {
     MapComponent: require('gui/map/vue/map'),
     ToolsComponent: require('gui/tools/vue/tools'),
     QueryResultsComponent : require('gui/queryresults/vue/queryresults'),
-    // main Form
+    // main Form Component
     FormComponent: require('gui/form/vue/form'),
     // Form Components
     FormComponents: {
@@ -103,10 +103,10 @@ g3w.gui = {
   }
 };
 
-g3w.ol3 = {
+g3w.ol = {
   interactions : {
     PickFeatureInteraction : require('g3w-ol3/src/interactions/pickfeatureinteraction'),
-    PickCoordsInteraction: require('g3w-ol3/src/interactions/pickcoordinatesinteraction'),
+    PickCoordinatesInteraction: require('g3w-ol3/src/interactions/pickcoordinatesinteraction'),
     DeleteFeatureInteraction: require('g3w-ol3/src/interactions/deletefeatureinteraction')
   },
   controls: {
@@ -122,7 +122,7 @@ g3w.config = config;
 module.exports = {
   core: g3w.core,
   gui: g3w.gui,
-  ol3: g3w.ol3,
+  ol: g3w.ol,
   utils: g3w.utils,
   config: g3w.config
 };

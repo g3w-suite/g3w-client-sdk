@@ -1,6 +1,9 @@
 export default {
     "it": {
       "sdk": {
+        search: {
+          all: 'TUTTE'
+        },
         'metadata': {
           "title": "Metadati",
           'groups': {
@@ -65,6 +68,9 @@ export default {
     },
     "en": {
       "sdk": {
+        search: {
+          all: 'ALL'
+        },
         'metadata': {
           'title': 'Metadata',
           'groups': {
