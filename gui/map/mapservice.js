@@ -1073,15 +1073,17 @@ proto._setupViewer = function(width,height) {
   const maxResolution = Math.max(maxxRes,minyRes);
   const initxRes = ol.extent.getWidth(initextent) / width;
   const inityRes = ol.extent.getHeight(initextent) / height;
-  const initResolution = Math.max(initxRes,inityRes);
+  const resolution = Math.max(initxRes,inityRes);
+  const center = ol.extent.getCenter(initextent);
 
   this.viewer = ol3helpers.createViewer({
     id: this.target,
     view: {
-      projection: projection,
-      center: ol.extent.getCenter(initextent),
-      extent: extent,
-      maxResolution: maxResolution
+      projection,
+      center,
+      extent,
+      maxResolution,
+      resolution
     }
   });
 
@@ -1102,8 +1104,6 @@ proto._setupViewer = function(width,height) {
   this.viewer.map.getInteractions().on('remove',(interaction) => {
     //this._onRemoveInteraction(interaction);
   });
-
-  this.viewer.map.getView().setResolution(initResolution);
 
   this._marker = new ol.Overlay({
     position: undefined,
