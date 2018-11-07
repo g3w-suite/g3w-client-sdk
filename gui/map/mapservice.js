@@ -170,9 +170,7 @@ const proto = MapService.prototype;
 proto.getApplicationAttribution = function() {
   const {header_terms_of_use_link, header_terms_of_use_text} = this.config.group;
   if (header_terms_of_use_text) {
-    return  new ol.Attribution({
-      html: `<a href="${header_terms_of_use_link}">${header_terms_of_use_text}</a>`
-    })
+    return `<a href="${header_terms_of_use_link}">${header_terms_of_use_text}</a>`;
   } else {
     return false
   }
