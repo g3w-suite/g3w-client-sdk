@@ -29,6 +29,8 @@ proto.mount = function(parent, append) {
     this.emit('ready');
     d.resolve(true);
   });
+  // emit mount event
+  this.emit('mount');
   return d.promise();
 };
 
@@ -45,7 +47,8 @@ proto.unmount = function() {
   $(this.internalComponent.$el).remove();
   // set internal componet to null (for GC)
   this.internalComponent = null;
-  // resolve
+  // emit unmount event
+  this.emit('unmount');
   return resolve();
 };
 
@@ -63,7 +66,9 @@ proto.layout = function(width, height) {
       width,
       height
     })
-  })
+  });
+  // emit layout event
+  this.emit('layout');
 };
 
 module.exports = Component;

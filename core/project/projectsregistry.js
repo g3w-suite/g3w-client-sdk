@@ -142,7 +142,7 @@ proto.getProject = function(projectGid) {
   let pendingProject;
   let project = null;
   this._pendingProjects.find((_pendingProject) => {
-    if (_pendingProject.gid == projectGid) {
+    if (_pendingProject.gid === projectGid) {
       pendingProject = _pendingProject;
       project = this._projects[projectGid];
       return true;
@@ -150,6 +150,7 @@ proto.getProject = function(projectGid) {
   });
   if (!pendingProject) {
     d.reject("Project doesn't exist");
+    return d.promise();
   }
   if (project) {
     d.resolve(project);
