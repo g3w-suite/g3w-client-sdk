@@ -1,0 +1,13 @@
+<baseinput :state="state">
+  <select
+    :id="id"
+    slot="body"
+    style="width:100%"
+    @change="changeSelect"
+    v-disabled="!isEditable()"
+    :class="[{'input-error-validation' : !state.validate.valid}]"
+    v-model="state.value"
+    class="form-control">
+    <option :value="getValue(value)" v-for="value in state.input.options.values">{{ getValue(value) }}</option>
+  </select>
+</baseinput>

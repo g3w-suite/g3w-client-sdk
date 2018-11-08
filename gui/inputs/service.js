@@ -2,10 +2,11 @@ const Validators = require('core/validators/inputs/validators');
 const t = require('core/i18n/i18n.service').t;
 
 function Service(options = {}) {
+  // set state of input
   this.state = options.state || {};
+  // type of input
   const validatorType = this.state.type;
   this._validatorOptions = options.validatorOptions || this.state.input.options || {};
-  this._getValidatorType(this.state);
   // useful for the validator to validate imput
   this._validator = Validators.get(validatorType);
 }
@@ -28,8 +29,8 @@ proto.addValueToValues = function(value) {
   this.state.input.options.values.push(value)
 };
 
-proto._getValidatorType = function(input) {
-  //console.log(input)
+proto._getValidatorType = function() {
+  return this.state.type;
 };
 
 proto.setState = function(state) {

@@ -10,7 +10,8 @@ const InputsComponents = {
   'datetimepicker_input': require('./datetimepicker/vue/datetimepicker'),
   'unique_input': require('./unique/vue/unique'),
   'select_input': require('./select/vue/select'),
-  'media_input': require('./media/vue/media')
+  'media_input': require('./media/vue/media'),
+  'value_relations_input': require('./value_relations/vue/value_relations')
 };
 
 module.exports = InputsComponents;
