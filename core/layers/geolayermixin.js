@@ -5,7 +5,6 @@ function GeoLayerMixin(config) {}
 const proto = GeoLayerMixin.prototype;
 
 proto.setup = function(config) {
-
   if (!this.config) {
     console.log("GeoLayerMixin must be used from a valid (geo) Layer instance");
     return;

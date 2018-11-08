@@ -1,5 +1,5 @@
 <div id="search-results" class="queryresults-wrapper ">
-  <div v-show="state.loading" class="bar-loader"></div>
+  <bar-loader :loading="state.loading"></bar-loader>
   <div class="queryresults-container">
     <template v-if="!state.loading">
       <ul v-if="hasLayers" class="queryresults" id="queryresults" style="position: relative">

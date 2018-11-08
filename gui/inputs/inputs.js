@@ -11,7 +11,7 @@ const InputsComponents = {
   'unique_input': require('./unique/vue/unique'),
   'select_input': require('./select/vue/select'),
   'media_input': require('./media/vue/media'),
-  'value_relations_input': require('./value_relations/vue/value_relations')
+  'value_relations': require('./unique/vue/unique')
 };
 
 module.exports = InputsComponents;

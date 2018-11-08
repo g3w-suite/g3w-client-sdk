@@ -38,12 +38,6 @@ const BodyFormComponent = Vue.extend({
     hasFormStructure() {
       return !!this.state.formstructure;
     }
-  },
-  created() {
-    console.log(this.state.fields)
-  },
-  mounted() {
-    this.$nextTick(() => {})
   }
 });
 

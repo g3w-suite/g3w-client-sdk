@@ -1,6 +1,7 @@
 <baseinput :state="state">
   <div slot="body">
     <input
+      style="margin-bottom: 3px;"
       :name="state.name"
       :data-url="state.input.options.uploadurl"
       @change="onChange"
@@ -8,7 +9,7 @@
       v-disabled="!isEditable()"
       :class="{'input-error-validation' : !state.validate.valid}"
       type="file">
-    <div v-if="loading" class="bar-loader" style="margin-top: 3px;"></div>
+    <bar-loader :loading="loading"></bar-loader>
     <div class="preview" v-if="value">
       <a :href="value" target="_blank">
         <div class="previewtype" :class="media.type">

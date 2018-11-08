@@ -138,7 +138,10 @@ function TableLayer(config, options={}) {
       })
       .fail((err) => {
         this.setReady(false);
-      });
+      })
+      .always(() => {
+        this.emit('layer-config-ready', this.config);
+      })
   }
   this._featuresStore = new FeaturesStore({
     provider: this.providers.data

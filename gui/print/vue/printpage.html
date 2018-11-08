@@ -1,6 +1,6 @@
 <div id="pdf-output" style="height:100%">
   <transition :duration="500" name="fade">
-    <div v-if="state.loading" class="bar-loader"></div>
+    <bar-loader :loading="state.loading"></bar-loader>
   </transition>
   <div v-if="showdownloadbutton" style="display:flex; justify-content: flex-end; margin-bottom: 5px;">
     <a :href="jpegimageurl" download="download.jpeg">
