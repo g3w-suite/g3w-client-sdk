@@ -138,7 +138,7 @@ function MapService(options) {
     for (let i = 0; i< this._mapControls.length; i++) {
       const mapcontrol = this._mapControls[i];
       mapcontrol.control._onSelectLayer && mapcontrol.control.setEnable(false);
-      this.off('cataloglayertoggled')
+      this.removeAllListeners('cataloglayertoggled')
     }
   };
 
