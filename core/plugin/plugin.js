@@ -1,6 +1,7 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const G3WObject = require('core/g3wobject');
+const GUI = require('gui/gui');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const PluginsRegistry = require('./pluginsregistry');
 
@@ -10,6 +11,11 @@ const Plugin = function() {
   this.config = null;
   this.service = null;
   this.dependencies = [];
+  this._hook = null;
+  this._services = {
+    'search': GUI.getComponent('search').getService(),
+    'tools': GUI.getComponent('tools').getService()
+  }
 };
 
 inherit(Plugin,G3WObject);
@@ -83,6 +89,23 @@ proto.getDependencyPlugin = function(pluginName) {
       })
     }
   })
+};
+
+proto.addTools = function({hook="tools", action} = {}, options) {
+  this._hook = hook;
+  const service = this._services[hook];
+  const configs = this.config.configs || [this.config];
+  for (const config of configs) {
+    service.addTools([{
+      name: config.name,
+      action: action.bind(this, config)
+    }], options);
+  }
+};
+
+proto.removeTools = function() {
+  const service = this._services[this._hook];
+  service.removeTools();
 };
 
 // unload (case change map)

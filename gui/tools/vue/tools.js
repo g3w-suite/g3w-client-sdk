@@ -3,7 +3,7 @@ const base = require('core/utils/utils').base;
 const GUI = require('gui/gui');
 const Component = require('gui/vue/component');
 const ToolsService = require('gui/tools/toolsservice');
-import G3wTool from './tool';
+import G3wTool from './tool.vue';
 const InternalComponent = Vue.extend({
   template: require('./tools.html'),
   data: function() {

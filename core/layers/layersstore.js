@@ -25,9 +25,13 @@ function LayersStore(config) {
 
   this.setters = {
     setLayersVisible: function (layersIds, visible) {
+      const layers = [];
       layersIds.forEach((layerId) => {
-        this.getLayerById(layerId).state.visible = visible;
-      })
+        const layer = this.getLayerById(layerId);
+        layer.state.visible = visible;
+        layers.push(layer);
+      });
+      return layers;
     },
     setLayerSelected: function(layerId, selected) {
       const layers = this.getLayers();
@@ -90,11 +94,10 @@ proto.removeLayers = function() {
   })
 };
 
-proto.getLayersDict = function(options) {
+proto.getLayersDict = function(options = {}) {
   if (!options) {
     return this._layers;
   }
-  options = options || {};
   const filterActive = options.ACTIVE;
   const filterQueryable = options.QUERYABLE;
   const filterFilterable = options.FILTERABLE;
@@ -343,10 +346,11 @@ proto.toggleLayer = function(layerId, visible, mutually_exclusive) {
     this._mutuallyExclude(layerId)
   }
   this.setLayersVisible([layerId],visible);
+  return layer;
 };
 
 proto.toggleLayers = function(layersIds, visible) {
-  this.setLayersVisible(layersIds, visible);
+  return this.setLayersVisible(layersIds, visible)
 };
 
 proto.selectLayer = function(layerId){

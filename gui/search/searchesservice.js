@@ -37,8 +37,22 @@ function SearchesService() {
     return d.promise();
   };
 
-  this.addSearchTool = function(searchTool) {
+  this.addTool = function(searchTool) {
     this.state.searchtools.push(searchTool);
+  };
+
+  this.addTools = function(searchTools) {
+    for (const searchTool of searchTools) {
+      this.addTool(searchTool);
+    }
+  };
+
+  this.removeTool = function(searchTool) {
+    //TODO
+  };
+
+  this.removeTools = function() {
+    this.state.searchtools.splice(0)
   };
 
   this.reload = function() {

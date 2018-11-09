@@ -3,7 +3,7 @@ const base = require('core/utils/utils').base;
 const Component = require('gui/vue/component');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const SearchesService = require('gui/search/searchesservice');
-import Tool from 'gui/tools/vue/tool'
+import G3wTool from 'gui/tools/vue/tool.vue'
 
 const vueComponentOptions = {
    template: require('./search.html'),
@@ -13,7 +13,7 @@ const vueComponentOptions = {
     	};
    },
   components: {
-    Tool
+    G3wTool
   },
    methods: {
     showSearchPanel: function(search) {
