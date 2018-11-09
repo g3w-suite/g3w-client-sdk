@@ -24,7 +24,7 @@ function ToolsService(){
     this.removeTools();
   };
 
-  this._addTools = function(order, groupName, tools) {
+  this._addTools = function(tools, {position : order, title: groupName}) {
     let group = this._getToolsGroup(groupName);
     if (!group) {
       group = {
@@ -43,7 +43,7 @@ function ToolsService(){
   };
 
   this._removeTools = function() {
-    this.state.toolsGroups = []
+    this.state.toolsGroups.splice(0);
   };
 
   this.updateToolsGroup = function(order, groupConfig) {

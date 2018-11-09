@@ -1,6 +1,6 @@
 const Control = require('./control');
 
-const InteractionControl = function(options) {
+const InteractionControl = function(options = {}) {
   this._visible = options.visible === false ? false : true;
   this._toggled = this._toggled || false;
   this._interactionClass = options.interactionClass || null;

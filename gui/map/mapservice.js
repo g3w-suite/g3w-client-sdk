@@ -114,28 +114,35 @@ function MapService(options) {
     controlClick: function() {}
   };
 
-  this.on('cataloglayerselected', (layer) => {
-    // added querable
-   if (layer && layer.isQueryable()) {
-     _.forEach(this._mapControls, function(mapcontrol) {
-       if (_.indexOf(_.keysIn(mapcontrol.control), 'onSelectLayer') > -1 && mapcontrol.control.onSelectLayer()) {
-         if (mapcontrol.control.getGeometryTypes().indexOf(layer.getGeometryType()) > -1 ) {
-           mapcontrol.control.setEnable(true);
-         } else {
-           mapcontrol.control.setEnable(false);
-         }
-       }
-     })
-   }
-  });
-
-  this.on('cataloglayerunselected', (layer) => {
-    _.forEach(this._mapControls, function(mapcontrol) {
-      if (_.indexOf(_.keysIn(mapcontrol.control),'onSelectLayer') > -1 && mapcontrol.control.onSelectLayer()) {
-        mapcontrol.control.setEnable(false);
+  this._onCatalogSelectLayer = function(layer) {
+    if (layer && layer.isQueryable()) {
+      for (let i = 0; i< this._mapControls.length; i++) {
+        const mapcontrol = this._mapControls[i];
+        if (mapcontrol.control._onSelectLayer && mapcontrol.control.getGeometryTypes().indexOf(layer.getGeometryType()) > -1) {
+          mapcontrol.control.setEnable(layer.isVisible());
+          // listen changes
+          this.on('cataloglayertoggled', (_toggledLayer) => {
+            if (layer === _toggledLayer) {
+              mapcontrol.control.setEnable(layer.isVisible())
+            }
+          })
+        }
       }
-    })
-  });
+    }
+  };
+
+
+  this.on('cataloglayerselected', this._onCatalogSelectLayer);
+
+  this._onCatalogUnSelectLayer = function() {
+    for (let i = 0; i< this._mapControls.length; i++) {
+      const mapcontrol = this._mapControls[i];
+      mapcontrol.control._onSelectLayer && mapcontrol.control.setEnable(false);
+      this.off('cataloglayertoggled')
+    }
+  };
+
+  this.on('cataloglayerunselected', this._onCatalogUnSelectLayer);
 
   this.on('extraParamsSet',(extraParams, update) => {
     if (update) {
@@ -489,13 +496,12 @@ proto.setupControls = function() {
         case 'querybypolygon':
           const controlLayers = this.getLayers({
             QUERYABLE: true,
-            SELECTEDORALL: true,
-            VISIBLE: true
+            SELECTEDORALL: true
           });
           control = ControlsFactory.create({
             type: controlType,
             layers: controlLayers,
-            help: t("mapcontrols.querybypolygon.help")
+            help: t("sdk.mapcontrols.querybypolygon.help")
           });
           if (control) {
             const showQueryResults = GUI.showContentFactory('query');
@@ -579,7 +585,7 @@ proto.setupControls = function() {
             control = ControlsFactory.create({
               type: controlType,
               layers: controlLayers,
-              help: t("mapcontrols.querybybbox.help")
+              help: t("sdk.mapcontrols.querybybbox.help")
             });
             if (control) {
               control.on('bboxend', (e) => {

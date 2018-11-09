@@ -202,7 +202,8 @@ const vueComponentOptions = {
         let layer = mapService.getLayerById(node.id);
         layer.setVisible(node.visible);
       } else {
-        CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayer(node.id, null, parent_mutually_exclusive);
+        let layer = CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayer(node.id, null, parent_mutually_exclusive);
+        mapService.emit('cataloglayertoggled', layer);
       }
     });
 
@@ -245,7 +246,12 @@ const vueComponentOptions = {
         }
       };
       nodes.map(checkNodes);
-      CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayers(layersIds, isFolderChecked);
+      CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayers(layersIds, isFolderChecked).then((layers) => {
+        const mapService = GUI.getComponent('map').getService();
+        for (const layer of layers) {
+          mapService.emit('cataloglayertoggled', layer);
+        }
+      })
     });
 
     CatalogEventHub.$on('treenodeselected',function(storeid, node) {
@@ -271,14 +277,16 @@ const vueComponentOptions = {
     });
 
     ControlsRegistry.onafter('registerControl', (id, control) => {
-      if (id == 'querybbox') {
+      if (id === 'querybbox') {
+
         control.getInteraction().on('propertychange', (evt) => {
-          if (evt.key == 'active') {
+          if (evt.key === 'active') {
             this.state.highlightlayers=!evt.oldValue;
           }
         })
       }
     });
+
     $('input:file').filestyle({
       buttonText: "",
       input: false,
@@ -314,6 +322,7 @@ Vue.component('tristate-tree', {
       isFolderChecked: true,
       controltoggled: false,
       n_childs: null,
+      ishighligtable: false
     }
   },
   computed: {
@@ -379,14 +388,7 @@ Vue.component('tristate-tree', {
       return isSelected;
     },
     isHighLight: function() {
-      let layer;
-      const catalogLayers = CatalogLayersStoresRegistry.getLayers();
-      catalogLayers.some((lyr) => {
-        layer = lyr.getId() == this.layerstree.id ? lyr : null;
-        if (layer)
-          return true;
-      });
-      return this.highlightlayers && layer && layer.isFilterable() && layer.getProject();
+      return this.highlightlayers && !this.isFolder && this.ishighligtable && this.layerstree.visible;
     }
   },
   methods: {
@@ -472,6 +474,12 @@ Vue.component('tristate-tree', {
       if (!this.isFolder && (this.layerstree.openattributetable || this.layerstree.geolayer || this.layerstree.external)) {
         CatalogEventHub.$emit('showmenulayer', layerstree, evt);
       }
+    }
+  },
+  created() {
+    if (!this.isFolder) {
+      const layer = CatalogLayersStoresRegistry.getLayerById(this.layerstree.id);
+      this.ishighligtable = layer && layer.isFilterable();
     }
   },
   mounted: function() {

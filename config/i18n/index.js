@@ -63,6 +63,22 @@ export default {
               }
             }
           }
+        },
+        mapcontrols: {
+          querybypolygon: {
+            help: `<h4>Guida - Query By Polygon</h4>'
+                  <ul>
+                    <li>Seleziona uno strato poligonale in legenda.</li>
+                    <li>Assicurati che lo strato sia visibile in mappa.</li>
+                    <li>Clicca su una geometria dello strato selezionato.</li>
+                  </ul>`
+          },
+          querybybbox: {
+            help: `<h4>Guida - Query BBox layer</h4>
+                   <ul>
+                    <li>Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li>
+                   </ul>`
+          }
         }
       }
     },
@@ -130,6 +146,22 @@ export default {
                 'spatial': 'SPATIAL'
               }
             }
+          }
+        },
+        mapcontrols: {
+          querybypolygon: {
+            help: `<h4>Guide - Query By Polygon</h4>'
+                  <ul>
+                    <li>Select a polygon layer on TOC.</li>
+                    <li>Be sure that layer is visible.</li>
+                    <li>Click on a feature of selected layer.</li>
+                  </ul>`
+          },
+          querybybbox: {
+            help: `<h4>Guide - Query BBox layer</h4>
+                   <ul>
+                    <li>Draw a square on map to query underlined layers on TOC</li>
+                   </ul>`
           }
         }
       }

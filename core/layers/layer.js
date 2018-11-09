@@ -331,8 +331,9 @@ proto.isVisible = function() {
 proto.setVisible = function(bool) {
   this.state.visible = bool;
 };
+
 // set a parametre map to check if request from map point of view or just a capabilities info layer
-proto.isQueryable = function({onMap} = {onMap:true}) {
+proto.isQueryable = function({onMap} = {onMap:false}) {
   let queryEnabled = false;
   const queryableForCababilities = !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.QUERYABLE));
   if (!onMap) {

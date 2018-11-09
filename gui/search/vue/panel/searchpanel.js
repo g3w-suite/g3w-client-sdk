@@ -144,8 +144,9 @@ function SearchPanel(options = {}) {
         input.id = id;
         input.input.type = input.input.type || 'textfield';
         formValue.type = input.input.type;
-        if (input.input.type == 'selectfield') {
-          input.input.options.values.unshift('');
+        if (input.input.type === 'selectfield') {
+          if (input.input.options.values[0] !== '')
+            input.input.options.values.unshift('');
           formValue.value = '';
         } else
           formValue.value = null;
