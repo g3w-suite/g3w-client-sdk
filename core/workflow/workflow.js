@@ -27,6 +27,16 @@ inherit(Workflow, G3WObject);
 
 const proto = Workflow.prototype;
 
+proto.getContextService = function() {
+  const context = this.getContext();
+  return context.service;
+};
+
+proto.setContextService = function(service) {
+  const context = this.getContext();
+  context.service = service;
+};
+
 proto.getStackIndex = function() {
   return this._stackIndex;
 };
@@ -133,8 +143,9 @@ proto.start = function(options) {
   this._inputs = options.inputs;
   this._context = options.context || {};
   //check if are workflow running
-  if (WorkflowsStack.getLength() && WorkflowsStack.getLast() != this)
-    WorkflowsStack.getLast().addChild(this);
+  if (WorkflowsStack.getLength() && WorkflowsStack.getCurrent() != this) {
+    WorkflowsStack.getCurrent().addChild(this);
+  }
   this._stackIndex = WorkflowsStack.push(this);
   this._flow = options.flow || this._flow;
   this._steps = options.steps || this._steps;

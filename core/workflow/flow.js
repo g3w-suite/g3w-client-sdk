@@ -48,7 +48,6 @@ function Flow() {
   this.onDone = function(outputs) {
     counter++;
     if (counter == steps.length) {
-      console.log('sono arrivato in fondo agli steps senza errori');
       counter = 0;
       d.resolve(outputs);
       return;

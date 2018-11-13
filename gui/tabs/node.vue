@@ -34,7 +34,7 @@
                 </span>
               </div>
               <template v-else>
-                <div class="form_editing_relation_input" v-t="'editing.messages.qgis_input_widget_relation'">
+                <div class="form_editing_relation_input" v-t="'sdk.form.messages.qgis_input_widget_relation'">
                   <span class="info_helptext_button">i</span>
                 </div>
               </template>

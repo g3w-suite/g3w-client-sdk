@@ -21,6 +21,7 @@ const vueComponentObject = {
   transitions: {'addremovetransition': 'showhide'},
   methods: {
     switchComponent(index) {
+      this.$options.service.setIndexHeader(index);
       this.$options.service.setComponent(this.state.components[index]);
     },
     changeInput: function(input) {
@@ -38,12 +39,17 @@ const vueComponentObject = {
         return;
       const footerHeight = $('.g3wform_footer').height() ? $('.g3wform_footer').height() + 50 : 50;
       $(this.$el).find(".g3wform_body").height(height - ($('.g3wform_header').height() +  footerHeight));
-    }
+    },
   },
-  mounted: function() {
-    this.$options.service.getEventBus().$on('addtovalidate', this.addToValidate);
-    this.$nextTick(() => {
+  created() {
+    this.$options.service.getEventBus().$on('set-main-component', () => {
+      this.switchComponent(0);
     });
+    this.$options.service.getEventBus().$on('addtovalidate', this.addToValidate);
+  },
+  beforeDestroy() {
+    this.$options.service.getEventBus().$off('addtovalidate');
+    this.$options.service.getEventBus().$off('set-main-component');
   }
 };
 
