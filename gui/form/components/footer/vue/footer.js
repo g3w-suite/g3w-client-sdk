@@ -4,7 +4,7 @@ const FooterFormComponent = Vue.extend({
   props: ['state'],
   methods: {
     exec: function(cbk) {
-      _.isFunction(cbk) ? cbk(this.state.fields): (function() { return this.state.fields})();
+      cbk instanceof Function ? cbk(this.state.fields): (function() { return this.state.fields})();
     },
     btnEnabled: function(button) {
       return button.type != 'save' || (button.type == 'save' && this.isValid());

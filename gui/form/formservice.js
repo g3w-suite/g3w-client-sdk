@@ -7,6 +7,7 @@ function FormService() {
   this.eventBus = new Vue();
   this.setters = {
     setInitForm: function(options) {
+      console.log(options)
       this._setInitForm(options);
     },
     setFormStructure: function(formStructure) {
@@ -46,6 +47,7 @@ function FormService() {
       components: [],
       component: null,
       headers: [],
+      currentheaderindex: 0,
       fields: null,
       buttons: this.buttons,
       disabled: false,
@@ -112,6 +114,10 @@ function FormService() {
 
   this.init = function(options) {
     this._setInitForm(options);
+  };
+
+  this.setIndexHeader = function(index) {
+    this.state.currentheaderindex = index;
   };
 
   base(this);

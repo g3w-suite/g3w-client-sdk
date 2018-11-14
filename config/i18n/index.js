@@ -79,6 +79,11 @@ export default {
                     <li>Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li>
                    </ul>`
           }
+        },
+        form: {
+          messages: {
+            qgis_input_widget_relation: "Gestisci le relazioni tramite form dedicato"
+          }
         }
       }
     },
@@ -162,6 +167,11 @@ export default {
                    <ul>
                     <li>Draw a square on map to query underlined layers on TOC</li>
                    </ul>`
+          }
+        },
+        form: {
+          messages: {
+            qgis_input_widget_relation: "Use relation specific form to work with relation"
           }
         }
       }

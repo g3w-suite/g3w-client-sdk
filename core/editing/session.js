@@ -115,23 +115,21 @@ proto.getFeaturesStore = function() {
 // questa funzione sarà adibita al salvataggio (temporaneo) delle modifiche
 // al layer sia nella history che nel featuresstore
 proto.save = function(options) {
-  //vado a pololare la history
-  console.log("Session Saving .... ");
+  //fill history
+  //console.log("Session Saving .... ");
   var self = this;
   var d = $.Deferred();
-  // vado a d aggiungere tutte le modifiche temporanee alla history
-  // rendendole parte della sessione solo se esisitono
+  // add temporary modify to history
   if (this._temporarychanges.length) {
     options = options || {};
     var uniqueId = options.id || Date.now();
     this._history.add(uniqueId, this._temporarychanges)
       .then(function() {
-        // vado a fare il clear dei cambiamenti temporanei
+        // clear to trmporary changes
         self._temporarychanges = [];
-        // risolvo ritornando l'id unico
+        // resolve if uniqeu id
         d.resolve(uniqueId);
       });
-    // andarà a popolare la history
   } else {
     d.resolve(null);
   }
@@ -236,7 +234,7 @@ proto._filterChanges = function() {
 // e nel featuresstore della sessione ma riapplicate al contrario
 proto.rollback = function(changes) {
   //vado a after il rollback dellle feature temporanee salvate in sessione
-  console.log('Session Rollback.....', changes);
+  //console.log('Session Rollback.....', changes);
   var d = $.Deferred();
   if (changes) {
     this._applyChanges(changes, true);

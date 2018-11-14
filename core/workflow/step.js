@@ -1,5 +1,4 @@
 const inherit = require('core/utils/utils').inherit;
-const t = require('core/i18n/i18n.service').t;
 const base = require('core/utils//utils').base;
 const G3WObject = require('core/g3wobject');
 
@@ -12,7 +11,7 @@ function Step(options={}) {
   this.state = {
     id: options.id || null,
     name: options.name || null,
-    help: options.help ? t(options.help) : null, // help to show wat the user has to do
+    help: options.help || null, // help to show wat the user has to do
     running: false, // running
     error: null, // error
     message: options.message || null // message
