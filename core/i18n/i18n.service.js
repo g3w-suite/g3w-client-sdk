@@ -33,6 +33,12 @@ function init(config) {
   })
 
 }
+const getAppLanguage = function() {
+  const ApplicationService = require('core/applicationservice');
+  const config = ApplicationService.getConfig();
+  return config.user.i18n || "en";
+};
+
 
 // function to translate
 const t = function(text) {
@@ -77,5 +83,6 @@ module.exports = {
   tTemplate,
   tPrefix,
   addI18n,
-  addI18nPlugin
+  addI18nPlugin,
+  getAppLanguage
 };

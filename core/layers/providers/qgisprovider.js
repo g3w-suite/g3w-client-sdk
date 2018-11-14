@@ -134,7 +134,7 @@ proto.getFeatures = function(options = {}, params = {}) {
   Object.entries(params).forEach(([key, value]) => {
     if (value === null)
       delete params[key]
-  })
+  });
   const layerType = options.type || 'vector'; //layer type
   // check if data are requested in read or write mode;
   let url;

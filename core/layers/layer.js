@@ -85,23 +85,23 @@ inherit(Layer, G3WObject);
 
 const proto = Layer.prototype;
 
-proto.getDataTable = function({ page, page_size, ordering, search } = {}) {
+proto.getDataTable = function({ page = null, page_size=null, ordering=null, search=null, suggest=null } = {}) {
   const d = $.Deferred();
   let provider;
-  if (!(this.getProvider('filter')  || this.getProvider('data'))){
+  const params = {
+    page,
+    page_size,
+    ordering,
+    search,
+    suggest
+  };
+  if (!(this.getProvider('filter')  || this.getProvider('data'))) {
    d.reject();
   } else {
     if (this.getServerType() == 'QGIS' && [Layer.SourceTypes.POSTGIS,Layer.SourceTypes.SPATIALITE].indexOf(this.config.source.type) != -1) {
       provider = this.getProvider('data');
-      provider.getFeatures({
-        editing:false
-        }, {
-          page,
-          page_size,
-          ordering,
-          search
-        }
-      ).done((response) => {
+      provider.getFeatures({editing: false}, params)
+        .done((response) => {
           let pkProperties;
           const data = response.data;
           const count = response.count;
