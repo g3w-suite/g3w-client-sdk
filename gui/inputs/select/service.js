@@ -22,8 +22,31 @@ proto.getLanguage = function() {
   return getAppLanguage();
 };
 
-proto.getData = function({layer_id, value, key, search} = {}) {
-  const search_value = `${key}_${search}`;
+proto.addValue = function(value) {
+  this.state.input.options.values.push(value);
+};
+
+proto.getKeyByValue = function({search}={}) {
+  const options = this.state.input.options;
+  const {value, key} = options;
+  this.getData({
+    key:value,
+    value: key,
+    search
+  }).then((arrayValues) => {
+    const [_value] = arrayValues;
+    const {$value : key, text: value} = _value;
+    this.addValue({
+      key,
+      value
+    })
+  }).catch((err) => {
+    console.log(err);
+  })
+};
+
+proto.getData = function({layer_id= this.state.input.options.layer_id, key=this.state.input.options.key, value=this.state.input.options.value, search} = {}) {
+  const search_value = `${key}|${search}`.trim();
   return new Promise((resolve, reject) => {
     if (!this._layer) {
       this._layer = this._getLayerById(layer_id);

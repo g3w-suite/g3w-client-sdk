@@ -25,6 +25,11 @@ function ToolsComponent(options) {
   this._service.onafter('addTools', () => {
     this.state.visible = this._service.state.toolsGroups.length > 0;
   });
+
+  this._service.onafter('addToolGroup', () => {
+    this.state.visible = this._service.state.toolsGroups.length > 0;
+  });
+
   this._service.onafter('removeTools', () => {
     this.state.visible = this._service.state.toolsGroups.length > 0;
 

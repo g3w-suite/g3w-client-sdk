@@ -15,9 +15,8 @@ var SelectInput = Vue.extend({
   template: require('./select.html'),
   created() {
     if (this.autocomplete && this.state.value) {
-      this.state.input.options.values.push({
-        key: 'Pippo',
-        value: this.state.value
+      this.service.getKeyByValue({
+        search: this.state.value
       })
     }
   },
@@ -27,8 +26,6 @@ var SelectInput = Vue.extend({
       let select2;
       const language = this.service.getLanguage();
       if (this.autocomplete) {
-        const options = this.state.input.options;
-        const {key, value, layer_id} = options;
         select2 = selectElement.select2({
           minimumInputLength: 1,
           language,
@@ -37,9 +34,6 @@ var SelectInput = Vue.extend({
               const search = params.data.term;
               this.resetValues();
               this.service.getData({
-                layer_id,
-                value,
-                key,
                 search
               }).then((values) => {
                 success(values)

@@ -14,6 +14,9 @@ var selectMixin = {
   computed: {
     autocomplete() {
       return this.state.input.type === 'select_autocomplete' && this.state.input.options.usecompleter;
+    },
+    loadingState() {
+      return this.state.input.options.loading ? this.state.input.options.loading.state : null;
     }
   }
 };

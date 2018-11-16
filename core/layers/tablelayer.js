@@ -243,10 +243,6 @@ proto._setPkEditable = function(fields) {
   })
 };
 
-// return fields of editing
-proto.getEditingFields = function() {
-  return this.config.editing.fields;
-};
 
 // raw data
 proto.getEditingFormat = function() {
@@ -277,6 +273,12 @@ proto.getEditingConfig = function(options={}) {
       d.reject(err)
     });
   return d.promise()
+};
+
+proto.addEditingConfigFieldOption = function({field, key, value} = {}) {
+  const options = field.input.options;
+  options[key] = value;
+  return options[key];
 };
 
 proto.getWidgetData = function(options) {
@@ -411,20 +413,16 @@ proto.setFieldsWithValues = function(feature, fields) {
   });
   feature.setProperties(attributes);
   return attributes;
-
 };
 
-proto.getFieldsWithValues = function(obj, options) {
-  options = options || {};
+proto.getFieldsWithValues = function(obj, options={}) {
   const exclude = options.exclude || [];
   const relation = options.relation || false;
-  // colne fields
   let fields = _.cloneDeep(this.getEditingFields());
   let feature, attributes;
   if (obj instanceof Feature){
     feature = obj;
-  }
-  else if (obj){
+  } else if (obj){
     feature = this.getFeatureById(obj);
   }
   if (feature) {
@@ -453,8 +451,14 @@ proto.getFieldsWithValues = function(obj, options) {
       } else {
         field.value = attributes[field.name];
       }
-    }
-    else{
+      if (field.input.type === 'select_autocomplete') {
+        const _configField = this.getEditingFields().find((_field) => {
+          return _field.name === field.name
+        });
+        field.input.options.loading = _configField.input.options.loading;
+      }
+
+    } else {
       field.value = null;
     }
   });

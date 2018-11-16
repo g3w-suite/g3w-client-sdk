@@ -91,6 +91,20 @@ proto.getDependencyPlugin = function(pluginName) {
   })
 };
 
+proto.setHookLoading = function({hook="tools", loading=false} = {}) {
+  const service = this._services[hook];
+  service.setLoading(loading);
+};
+
+proto.getHookService = function(hook="tools") {
+  return this._services[hook];
+};
+
+proto.addToolGroup = function({hook="tools", position:order, title:group} = {}) {
+  const service = this.getHookService(hook);
+  service.addToolGroup(order, group);
+};
+
 proto.addTools = function({hook="tools", action} = {}, options) {
   this._hook = hook;
   const service = this._services[hook];

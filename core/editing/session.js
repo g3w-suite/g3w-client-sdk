@@ -7,10 +7,8 @@ const ChangesManager = require('./changesmanager');
 const SessionsRegistry = require('./sessionsregistry');
 
 // classe Session
-function Session(options) {
-  options = options || {};
+function Session(options = {}) {
   this.setters = {
-    // setter per start
     start: function(options) {
       return this._start(options);
     },
@@ -22,9 +20,8 @@ function Session(options) {
     }
   };
   base(this, options);
-  //attributo che stabilisce se la sessione è partita
   this.state = {
-    id: options.id, // id della sessione che fa riferimento all'id del layer editato
+    id: options.id, // id session is the same of id layer
     started: false
   };
   // editor
@@ -323,16 +320,14 @@ proto.getCommitItems = function() {
 
 // funzione che serializzerà tutto che è stato scritto nella history e passato al server
 // per poterlo salvare nel database
-proto.commit = function(options) {
-  options = options || {};
-  var self = this;
-  var d = $.Deferred();
-  var commitItems;
-  console.log("Sessione Committing...");
+proto.commit = function(options= {}) {
+  const d = $.Deferred();
+  let commitItems;
+  //console.log("Sessione Committing...");
   //vado a verificare se nell'opzione del commit
   // è stato passato gli gli ids degli stati che devono essere committati,
   //nel caso di non specifica committo tutto
-  var ids = options.ids || null;
+  const ids = options.ids || null;
   // vado a leggete l'id dal layer necessario al server
   if (ids) {
     commitItems = this._history.commit(ids);
@@ -345,13 +340,13 @@ proto.commit = function(options) {
     commitItems = this._serializeCommit(commitItems);
     // passo all'editor un secondo parametro.
     this._editor.commit(commitItems, this._featuresstore)
-      .then(function(response) {
+      .then((response) => {
         // poi vado a fare tutto quello che devo fare (server etc..)
         //vado a vare il clean della history
-        self._history.clear();
+        this._history.clear();
         d.resolve(commitItems, response)
       })
-      .fail(function(err) {
+      .fail((err) => {
         d.reject(err);
       });
   }
@@ -359,28 +354,27 @@ proto.commit = function(options) {
   return d.promise();
 };
 
-//funzione di stop della sessione
+//stop session
 proto._stop = function() {
-  var self = this;
-  var d = $.Deferred();
+  const d = $.Deferred();
   // vado a unregistrare la sessione
   SessionsRegistry.unregister(this.getId());
-  console.log('Sessione stopping ..');
+  //console.log('Sessione stopping ..');
   this._editor.stop()
-    .then(function() {
-      self.state.started = false;
-      self.clear();
+    .then(() => {
+      this.state.started = false;
+      this.clear();
       d.resolve();
     })
-    .fail(function(err) {
-      console.log(err);
+    .fail((err) =>  {
+      //console.log(err);
       d.reject(err);
     });
   return d.promise();
 
 };
 
-// clear di tutte le cose associate alla sessione
+// clear all things bind to session
 proto.clear = function() {
   this._editor.clear();
   // vado a ripulire la storia
@@ -389,12 +383,12 @@ proto.clear = function() {
   this._featuresstore.clear();
 };
 
-//ritorna l'history così che lo chiama può fare direttanmente undo e redo della history
+//return l'history
 proto.getHistory = function() {
   return this._history;
 };
 
-// funzione che fa il cera della history
+// clear history
 proto._clearHistory = function() {
   this._history.clear();
 };

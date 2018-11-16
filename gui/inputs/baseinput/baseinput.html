@@ -5,6 +5,7 @@
     </label>
   </slot>
   <div class="col-sm-8">
+    <slot name="loading"></slot>
     <slot name="body">
       <input
         @keyup="change()"
@@ -16,6 +17,8 @@
         :id="state.name"
         :placeholder="state.input.label">
     </slot>
-    <p v-if="!state.validate.valid" class="error-input-message">{{ state.validate.message }}</p>
+    <slot name="message">
+      <p v-if="!state.validate.valid" class="error-input-message">{{ state.validate.message }}</p>
+    </slot>
   </div>
 </div>

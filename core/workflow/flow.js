@@ -58,7 +58,7 @@ function Flow() {
   // in case of error
   this.onError = function(err) {
     // error step
-    console.log('step error: ', err);
+    //console.log('step error: ', err);
     // reset counter to 0
     counter = 0;
     d.reject(err);

@@ -6,14 +6,15 @@ function ToolsService(){
   this.config = null;
   this._actions = {};
   this.state = {
-    toolsGroups: []
+    toolsGroups: [],
+    loading: false
   };
   this.setters = {
     addTools: function(order, groupName, tools) {
       this._addTools(order, groupName, tools);
     },
-    addToolGroup: function(order, group) {
-      this.state.toolsGroups.splice(order, 0, group);
+    addToolGroup: function(order, name) {
+      this._addToolGroup(order, name);
     },
     removeTools:function() {
       this._removeTools();
@@ -24,18 +25,15 @@ function ToolsService(){
     this.removeTools();
   };
 
-  this._addTools = function(tools, {position : order, title: groupName}) {
-    let group = this._getToolsGroup(groupName);
-    if (!group) {
-      group = {
-        name: groupName,
-        tools: []
-      };
-      this.addToolGroup(order, group);
-    }
+  this._addTools = function(tools, {position : order, title: name}) {
+    let group = this._addToolGroup(order, name);
     tools.forEach((tool) => {
       group.tools.push(tool);
     });
+  };
+
+  this.setLoading = function(bool=false) {
+    this.state.loading = bool;
   };
 
   this._removeTool = function(toolIdx) {
@@ -54,13 +52,17 @@ function ToolsService(){
     return this.state;
   };
 
-  this._getToolsGroup = function(groupName) {
-    let group = null;
-    this.state.toolsGroups.forEach((_group) => {
-      if (_group.name === groupName) {
-        group = _group;
-      }
+  this._addToolGroup = function(order, name) {
+    let group = this.state.toolsGroups.find((_group) => {
+      return _group.name === name
     });
+    if (!group) {
+      group = {
+        name,
+        tools: []
+      };
+      this.state.toolsGroups.splice(order, 0, group);
+    }
     return group;
   };
 
