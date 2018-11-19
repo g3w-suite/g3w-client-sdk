@@ -52,7 +52,8 @@ proto.getData = function({layer_id= this.state.input.options.layer_id, key=this.
       this._layer = this._getLayerById(layer_id);
     }
     this._layer.getDataTable({
-      suggest: search_value
+      suggest: search_value,
+      ordering: key
     }).then((response) => {
       const values = [];
       const features = response.features;

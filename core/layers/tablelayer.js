@@ -451,13 +451,15 @@ proto.getFieldsWithValues = function(obj, options={}) {
       } else {
         field.value = attributes[field.name];
       }
-      if (field.input.type === 'select_autocomplete') {
+
+      if (field.input.type === 'select_autocomplete' && !field.input.options.usecompleter) {
         const _configField = this.getEditingFields().find((_field) => {
           return _field.name === field.name
         });
-        field.input.options.loading = _configField.input.options.loading;
+        const options = _configField.input.options;
+        field.input.options.loading = options.loading;
+        field.input.options.values = options.values;
       }
-
     } else {
       field.value = null;
     }

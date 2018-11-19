@@ -1,6 +1,6 @@
-// oggetto base utilizzato per i mixins
 const Input = require('gui/inputs/input');
 const Service = require('../service');
+const getUniqueDomId = require('core/utils/utils').getUniqueDomId;
 const WidgetMixins = require('gui/inputs/widgetmixins');
 
 const CheckBoxInput = Vue.extend({
@@ -21,7 +21,7 @@ const CheckBoxInput = Vue.extend({
       }),
       value: false,
       label: label,
-      id: 'checkboxinput_' + Date.now() // vado a mettere un id nuovo sempre per le label
+      id: getUniqueDomId() // new id
     }
   },
   methods: {
