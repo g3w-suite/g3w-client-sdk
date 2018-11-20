@@ -4,7 +4,6 @@ const Service = require('gui/inputs/service');
 
 function RadioService(options) {
   options = options || {};
-  options.validator = RadioValidator;
   base(this, options);
 }
 

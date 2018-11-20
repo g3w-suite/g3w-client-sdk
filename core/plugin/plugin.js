@@ -11,7 +11,9 @@ const Plugin = function() {
   this.config = null;
   this.service = null;
   this.dependencies = [];
+  this._api = null;
   this._hook = null;
+  this._ready;
   this._services = {
     'search': GUI.getComponent('search').getService(),
     'tools': GUI.getComponent('tools').getService()
@@ -21,6 +23,32 @@ const Plugin = function() {
 inherit(Plugin,G3WObject);
 
 const proto = Plugin.prototype;
+
+//API Plugin
+proto.getApi = function() {
+  return this._api;
+};
+
+proto.setApi = function(api) {
+  this._api = api;
+};
+
+proto.setReady = function(bool) {
+  this._ready = bool;
+  this.emit('set-state', bool)
+};
+
+proto.isReady = function() {
+  return new Promise((resolve, reject) => {
+    if (this._ready !== undefined) {
+      this._ready && resolve() || reject()
+    } else {
+      this.once('set-state', (bool) => {
+        bool && resolve() || reject()
+      })
+    }
+  })
+};
 
 //return plugin service
 proto.getService = function() {
@@ -81,11 +109,15 @@ proto.getDependencyPlugin = function(pluginName) {
   return new Promise((resolve, reject) => {
     const plugin = PluginsRegistry.getPlugin(pluginName);
     if (plugin) {
-      resolve(plugin)
+      plugin.isReady().then(() => {
+        resolve(plugin.getApi())
+      })
     } else {
       PluginsRegistry.onafter('registerPlugin', (plugin) => {
         if (plugin.name === pluginName)
-          resolve(plugin)
+          plugin.isReady().then(() => {
+            resolve(plugin.getApi())
+          })
       })
     }
   })

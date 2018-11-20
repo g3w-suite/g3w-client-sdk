@@ -5,6 +5,7 @@ const Validators = {
     datetimepicker: require('./datetimepicker'),
     text: require('./validator'),
     string: require('./validator'),
+    radio: require('./radio'),
     default: require('./validator'),
   },
 

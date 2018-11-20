@@ -340,6 +340,22 @@ proto.getQueryLayerByCoordinates = function({layer, coordinates} = {}) {
   })
 };
 
+proto.getQueryLayerPromiseByCoordinates = function({layer, coordinates} = {}) {
+  return new Promise((resolve, reject) => {
+    const mapProjection = this.getProjection();
+    const resolution = this.getResolution();
+    layer.query({
+      coordinates,
+      mapProjection,
+      resolution
+    }).then((response) => {
+      resolve(response)
+    }).fail((error)=> {
+      reject(error);
+    })
+  })
+};
+
 proto.getQueryLayersPromisesByCoordinates = function(layerFilterObject, coordinates) {
   const d = $.Deferred();
   const layers = this.getLayers(layerFilterObject);
@@ -800,7 +816,7 @@ proto.getLayers = function(filter) {
   };
   Object.assign(filter, mapFilter);
   let layers = [];
-  _.forEach(MapLayersStoreRegistry.getQuerableLayersStores(), function(layerStore) {
+  MapLayersStoreRegistry.getQuerableLayersStores().forEach((layerStore) => {
     _.merge(layers, layerStore.getLayers(filter));
   });
   return layers;
@@ -1044,12 +1060,7 @@ proto.getMapLayerForLayer = function(layer) {
 };
 
 proto.getProjectLayer = function(layerId) {
-  let layer = null;
-  MapLayersStoreRegistry.getLayersStores().some((layerStore) => {
-    layer = layerStore.getLayerById(layerId);
-    return layer
-  });
-  return layer;
+  return MapLayersStoreRegistry.getLayerById(layerId);
 };
 
 proto._resetView = function() {

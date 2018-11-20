@@ -1,11 +1,17 @@
 <baseinput :state="state">
-  <input
-    @change="change"
-    style="width:100%"
-    v-disabled="!isEditable()"
-    :class="{'input-error-validation' : !state.validate.valid}"
-    class="magic-radio"
-    v-model="state.value"
-    slot="body"
-    type="radio">
+  <div slot="body">
+    <template v-for="(value, index) in state.input.options.values" :key="value.key">
+      <input
+        :id="ids[index]"
+        :name="name"
+        :value="value.value"
+        style="width:100%"
+        v-disabled="!isEditable()"
+        :class="{'input-error-validation' : !state.validate.valid}"
+        class="magic-radio"
+        v-model="radio_value"
+        type="radio">
+      <label :for="ids[index]">{{ value.key }}</label>
+    </template>
+  </div>
 </baseinput>
