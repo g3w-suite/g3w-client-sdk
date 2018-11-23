@@ -94,8 +94,8 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     layerRelationsAttributes,
     layerTitle,
     layerId;
-  let formStructure;
   featuresForLayers.forEach((featuresForLayer) => {
+    let formStructure;
     const layer = featuresForLayer.layer;
     if (layer instanceof Layer) {
       layerAttributes = layer.getAttributes();
