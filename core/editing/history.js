@@ -290,20 +290,20 @@ proto.commit = function() {
   let commitItems = {};
   let feature;
   let layerId;
-  let add = true;
   const statesToCommit = this._getStatesToCommit();
   // inzioa ascorrere sugli stati della history
   statesToCommit.forEach((state) => {
     //ciclo sugli items dello stato
     state.items.forEach((item) => {
+      let add = true;
       // nel caso di un array, quindi di fronte ad un update
-      if (_.isArray(item))
+      if (Array.isArray(item))
         // vado a prendere il secondo valore che è quello modificato
-        item = item[1];
+        item = item.pop();
       //vado a ciclare sugli evtnuali stati committati cioè aggiunti
       _.forEach(commitItems[item.layerId], (commitItem, idx) => {
         //verifico se presente uno stesso ite
-        if (commitItem.getId() == item.feature.getId()) {
+        if (commitItem.getId() === item.feature.getId()) {
           // verifcio inoltre se è una feature nuova, se non è stata cancellata (già presente nei commitItems) e se aggiunta
           // perchè allora setto come add
           if (item.feature.isNew() && !commitItem.isDeleted()  && item.feature.isAdded()) {
@@ -325,8 +325,6 @@ proto.commit = function() {
           commitItems[layerId].push(feature);
         }
       }
-      // risetto a true
-      add = true;
     });
   });
   return commitItems;

@@ -53,8 +53,6 @@ proto._start = function(options) {
   this._editor.start(options)
     .then((features) => {
       features = this._cloneFeatures(features);
-      // vado a popolare il featuresstore della sessione con le features
-      //che vengono caricate via via dall'editor
       this._featuresstore.setFeatures(features);
       this.state.started = true;
       d.resolve(features);
@@ -109,21 +107,19 @@ proto.getFeaturesStore = function() {
   return this._featuresstore;
 };
 
-// questa funzione sarà adibita al salvataggio (temporaneo) delle modifiche
-// al layer sia nella history che nel featuresstore
-proto.save = function(options) {
+// it used to save temporary changes to the layer
+// in history instance and feature store
+proto.save = function(options={}) {
   //fill history
   //console.log("Session Saving .... ");
-  var self = this;
-  var d = $.Deferred();
+  const d = $.Deferred();
   // add temporary modify to history
   if (this._temporarychanges.length) {
-    options = options || {};
     var uniqueId = options.id || Date.now();
     this._history.add(uniqueId, this._temporarychanges)
-      .then(function() {
-        // clear to trmporary changes
-        self._temporarychanges = [];
+      .then(() => {
+        // clear to temporary changes
+        this._temporarychanges = [];
         // resolve if uniqeu id
         d.resolve(uniqueId);
       });
@@ -133,6 +129,7 @@ proto.save = function(options) {
   return d.promise();
 };
 
+// method to add temporary feature
 proto.pushAdd = function(layerId, feature) {
   this.push({
     layerId: layerId,
@@ -140,8 +137,7 @@ proto.pushAdd = function(layerId, feature) {
   })
 };
 
-
-// metodo per aggiungere la cancellazione di una feature temporaneamente
+// delete temporary feature
 proto.pushDelete = function(layerId, feature) {
   this.push({
     layerId: layerId,
@@ -149,11 +145,9 @@ proto.pushDelete = function(layerId, feature) {
   })
 };
 
-// metodo per aggiungere temporaneamente la modifica di una feature
+// add temporary feature changes
 proto.pushUpdate = function(layerId, newFeature, oldFeature) {
-
-  this.push(
-    {
+  this.push({
       layerId: layerId,
       feature: newFeature.update()
     },
@@ -164,8 +158,8 @@ proto.pushUpdate = function(layerId, newFeature, oldFeature) {
     })
 };
 
-// metodo che server ad aggiungere features temporanee che poi andranno salvate
-// tramite il metodo save della sessione
+// it used to add temporary features
+// tahnt will be added with save method
 proto.push = function(New, Old) {
   /*
   New e Old saranno oggetti contenti {
@@ -173,7 +167,7 @@ proto.push = function(New, Old) {
       feature: feature
     }
    */
-  // verifico se è stata passata anche l'olfFeature
+  // check is set old (edit)
   var feature = Old? [Old, New]: New;
   this._temporarychanges.push(feature);
 };
@@ -273,13 +267,16 @@ proto._serializeCommit = function(itemsToCommit) {
     delete: [],
     relations: {}
   };
-  _.forEach(itemsToCommit, function(items, key) {
-    if (key != id) {
-      // vado a recuperare i lockId del layer relaione
-      var lockids = SessionsRegistry.getSession(key).getEditor().getLayer().getFeaturesStore().getLockIds();
+  for (const key in itemsToCommit) {
+    let isRelation = false;
+    const items = itemsToCommit[key];
+    if (key !== id) {
+      isRelation = true;
+      // check running session otherwise (case no layer relation in editing) return empty lockids
+      var lockids = SessionsRegistry.getSession(key) ? SessionsRegistry.getSession(key).getEditor().getLayer().getFeaturesStore().getLockIds(): [];
       // vado a creare una nuova chiave nelle relazioni
       commitObj.relations[key] = {
-        lockids:lockids,
+        lockids,
         add: [],
         update: [],
         delete: []
@@ -289,7 +286,7 @@ proto._serializeCommit = function(itemsToCommit) {
     } else {
       layer = commitObj
     }
-    _.forEach(items, function(item) {
+    items.forEach((item) => {
       state = item.getState();
       var GeoJSONFormat = new ol.format.GeoJSON();
       switch (state) {
@@ -307,7 +304,11 @@ proto._serializeCommit = function(itemsToCommit) {
           break;
       }
     });
-  });
+    // check in case of no edit remove relation key
+    if (isRelation && !layer.add.length && !layer.update.lenght && !layer.delete.length) {
+      delete commitObj.relations[key];
+    }
+  }
   return commitObj;
 };
 
@@ -362,21 +363,20 @@ proto._stop = function() {
   //console.log('Sessione stopping ..');
   this._editor.stop()
     .then(() => {
-      this.state.started = false;
-      this.clear();
       d.resolve();
     })
     .fail((err) =>  {
       //console.log(err);
       d.reject(err);
     });
+  this.clear();
   return d.promise();
 
 };
 
 // clear all things bind to session
 proto.clear = function() {
-  this._editor.clear();
+  this.state.started = false;
   // vado a ripulire la storia
   this._clearHistory();
   // risetto il featurestore a nuovo

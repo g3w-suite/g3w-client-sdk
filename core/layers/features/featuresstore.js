@@ -126,7 +126,7 @@ proto._commit = function(commitItems, featurestore) {
   return d.promise();
 };
 
-// recupera una feature dal suo id
+// get feature from id
 proto.getFeatureById = function(featureId) {
   let feat;
   this._features.find((feature) => {
@@ -142,7 +142,7 @@ proto._addFeature = function(feature) {
   this._features.push(feature);
 };
 
-//vado ad eseguire in pratica la sostituzione della feature dopo una modifica
+//substitute feature after update
 proto._updateFeature = function(feature) {
   this._features.find((feat, idx) => {
     if (feat.getId() == feature.getId()) {
@@ -167,17 +167,14 @@ proto._removeFeature = function(feature) {
 };
 
 proto._clearFeatures = function() {
-  // vado a rimuovere le feature in modo reattivo (per vue) utlizzando metodi che vue
-  // possa reagire allacancellazione di elementi di un array
-  this._features.splice(0, this._features.length);
+  this._features.splice(0);
 };
 
 proto.getDataProvider = function() {
   return this._dataprovider;
 };
 
-// metodo che a differenza del getFeatures prevede di fare
-// la lettura delle features attualmente sul featuressotre
+// only read downloaded features
 proto.readFeatures = function() {
   return this._features;
 };

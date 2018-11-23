@@ -130,6 +130,7 @@ proto.stop = function() {
   this._layer.unlock()
     .then((response) => {
       this._started = false;
+      this.clear();
       d.resolve(response);
     })
     .fail((err) => {
