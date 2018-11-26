@@ -1,11 +1,10 @@
 <baseinput :state="state">
   <div slot="body">
     <input
-      style="margin-bottom: 3px;"
+      style="margin-bottom: 3px; width:100%"
       :name="state.name"
       :data-url="state.input.options.uploadurl"
       @change="onChange"
-      style="width:100%"
       v-disabled="!isEditable()"
       :class="{'input-error-validation' : !state.validate.valid}"
       type="file">

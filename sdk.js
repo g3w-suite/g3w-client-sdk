@@ -96,10 +96,11 @@ g3w.gui = {
       Body: require('gui/form/components/body/vue/body'),
       Footer: require('gui/form/components/footer/vue/footer')
     },
-    inputs: {
+    Inputs: {
       InputsComponents: require('gui/inputs/inputs')
     },
-    mixins: require('gui/vue/vue.mixins')
+    Fields : require('gui/fields/fields'),
+    Mixins: require('gui/vue/vue.mixins')
   }
 };
 
