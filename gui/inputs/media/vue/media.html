@@ -1,25 +1,18 @@
 <baseinput :state="state">
   <div slot="body">
     <input
-      style="margin-bottom: 3px;"
+      style="margin-bottom: 3px; width:100%"
       :name="state.name"
       :data-url="state.input.options.uploadurl"
       @change="onChange"
-      style="width:100%"
       v-disabled="!isEditable()"
       :class="{'input-error-validation' : !state.validate.valid}"
       type="file">
     <bar-loader :loading="loading"></bar-loader>
-    <div class="preview" v-if="value">
-      <a :href="value" target="_blank">
-        <div class="previewtype" :class="media.type">
-          <i class="fa-2x" :class="g3wtemplate.font[media.type]"></i>
-        </div>
-      </a>
-      <div class="filename">{{ filename }}</div>
+    <g3w-media :state="data">
       <div class="clearmedia" @click="clearMedia()">
         <i :class="g3wtemplate.font['trash-o']" class="g3w-icon"></i>
       </div>
-    </div>
+    </g3w-media>
   </div>
 </baseinput>

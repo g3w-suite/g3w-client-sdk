@@ -1582,8 +1582,7 @@ proto._resetDrawShadowInner = function() {
   };
 };
 
-proto.setInnerGreyCoverBBox = function(options) {
-  options = options || {};
+proto.setInnerGreyCoverBBox = function(options={}) {
   const map = this.viewer.map;
   const type = options.type || 'coordinate';
   const inner = options.inner || null;
@@ -1680,10 +1679,9 @@ proto.stopDrawGreyCover = function() {
   if (this._greyListenerKey) {
     ol.Observable.unByKey(this._greyListenerKey);
     this._greyListenerKey = null;
-  }
-
-  if (this._drawShadow.inner.length) {
-    this._resetDrawShadowInner();
+    if (this._drawShadow.inner.length) {
+      this._resetDrawShadowInner();
+    }
   }
   map.render();
 };

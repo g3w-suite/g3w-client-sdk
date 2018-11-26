@@ -102,7 +102,7 @@ function PrintComponentService() {
   this.setPrintAreaAfterCloseContent = function() {
     this._map.on('postrender', () => {
       this._setPrintArea()
-    })
+    });
     this.stopLoading()
   };
 

@@ -2,23 +2,23 @@
 const InputMixins = require('gui/inputs/input');
 const getUniqueDomId = require('core/utils/utils').getUniqueDomId;
 const Service = require('../service');
+const MediaField = require('gui/fields/fields').media_field;
 const GUI = require('gui/gui');
-const MediaMixin = require('gui/vue/vue.mixins').mediaMixin;
 
 const MediaInput = Vue.extend({
-  mixins: [InputMixins, MediaMixin],
+  mixins: [InputMixins],
+  components: {
+    'g3w-media': MediaField
+  },
   data: function() {
     return {
       service: new Service({
         state: this.state
       }),
-      media: {
-        type: null,
-        options: {
-          format: null
-        }
+      data: {
+        value: null,
+        mime_type: null
       },
-      value: null,
       mediaid: `media_${getUniqueDomId()}`,
       loading: false
     }
@@ -43,12 +43,9 @@ const MediaInput = Vue.extend({
         done: (e, data) => {
           const response = data.result[fieldName];
           if (response) {
-            self.value = response.value;
-            self.media = {...self.getMediaType(response.mime_type)};
-            self.state.value =  {
-              value: self.value,
-              mime_type: response.mime_type
-            };
+            self.data.value = response.value;
+            self.data.mime_type = response.mime_type;
+            self.state.value =  self.data;
             self.setFileNameInput();
             self.change();
           }
@@ -76,7 +73,7 @@ const MediaInput = Vue.extend({
       return value
     },
     clearMedia() {
-      this.value = this.state.value = null;
+      this.data.value = this.data.mime_type = this.state.value = null;
       this.setFileNameInput();
     },
     setFileNameInput() {
@@ -85,8 +82,8 @@ const MediaInput = Vue.extend({
   },
   created() {
     if (this.state.value) {
-      this.value = this.state.value.value;
-      this.media = this.getMediaType(this.state.value.mime_type);
+      this.data.value = this.state.value.value;
+      this.data.mime_type = this.state.value.mime_type;
     }
   },
   mounted() {
