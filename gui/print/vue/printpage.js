@@ -35,8 +35,9 @@ const InternalComponent = Vue.extend({
     }
   },
   mounted: function() {
-    this.$options.service.startLoading();
-    this.$nextTick(() => {});
+    this.$nextTick(() => {
+      this.$options.service.startLoading();
+    });
   }
 });
 

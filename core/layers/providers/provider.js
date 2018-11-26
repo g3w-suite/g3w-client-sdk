@@ -243,9 +243,10 @@ proto._parseLayerFeatureCollection = function(data, layerName, projections) {
         feature.setGeometry(geometry.transform(projections.layer.getCode(), projections.map.getCode()))
       })
     }
+    if (invertedAxis)
+      features = this._reverseFeaturesCoordinates(features)
   }
-  if (invertedAxis)
-    features = this._reverseFeaturesCoordinates(features)
+
   return features
 };
 

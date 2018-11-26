@@ -1582,8 +1582,7 @@ proto._resetDrawShadowInner = function() {
   };
 };
 
-proto.setInnerGreyCoverBBox = function(options) {
-  options = options || {};
+proto.setInnerGreyCoverBBox = function(options={}) {
   const map = this.viewer.map;
   const type = options.type || 'coordinate';
   const inner = options.inner || null;
@@ -1631,11 +1630,7 @@ proto.startDrawGreyCover = function() {
   // after rendering the layer, restore the canvas context
   const map = this.viewer.map;
   let x_min, x_max, y_min, y_max, rotation, scale;
-  //check if exist an listener
-  if (this._greyListenerKey) {
-      this.stopDrawGreyCover();
-  }
-
+  this.stopDrawGreyCover();
   const postcompose = (evt) => {
     const ctx = evt.context;
     const size = this.getMap().getSize();
@@ -1676,16 +1671,17 @@ proto.startDrawGreyCover = function() {
     ctx.fill();
     ctx.restore();
   };
-
   this._greyListenerKey = map.on('postcompose', postcompose);
 };
 
 proto.stopDrawGreyCover = function() {
-  const map = this.viewer.map;
-  ol.Observable.unByKey(this._greyListenerKey);
-  this._greyListenerKey = null;
-  if (this._drawShadow.inner.length) {
-    this._resetDrawShadowInner();
+  const map = this.getMap();
+  if (this._greyListenerKey) {
+    ol.Observable.unByKey(this._greyListenerKey);
+    this._greyListenerKey = null;
+    if (this._drawShadow.inner.length) {
+      this._resetDrawShadowInner();
+    }
   }
   map.render();
 };
