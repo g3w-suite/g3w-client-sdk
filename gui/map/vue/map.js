@@ -114,9 +114,11 @@ const AddLayerComponent = {
 const vueComponentOptions = {
   template: require('./map.html'),
   data: function() {
+    const {service} = this.$options;
     return {
       target: 'map',
-      service: this.$options.mapService
+      service,
+      hidemaps: this.$options.service.state.hidemaps
     }
   },
   components: {
@@ -128,7 +130,7 @@ const vueComponentOptions = {
     }
   },
   mounted: function() {
-    const mapService = this.$options.mapService;
+    const mapService = this.$options.service;
     this.crs = mapService.getCrs();
     this.$nextTick(() => {
       mapService.setTarget(this.$el.id);
@@ -137,10 +139,15 @@ const vueComponentOptions = {
     mapService.onafter('setupViewer',() => {
       mapService.setTarget(this.$el.id);
     });
+    mapService.onafter('addHideMap', ({layers=[]} = {}) => {
+      this.$nextTick(() => {
+        mapService._addHideMap({layers});
+      })
+    })
   },
   methods: {
     showHideControls: function () {
-      const mapControls = this.$options.mapService.getMapControls();
+      const mapControls = this.$options.service.getMapControls();
       mapControls.forEach((control) => {
         if (control.type != "scaleline")
           control.control.showHide();
@@ -161,7 +168,7 @@ function MapComponent(options) {
   this.setService(new MapService(options));
   merge(this, options);
   this.internalComponent = new InternalComponent({
-    mapService: this._service
+    service: this._service
   });
   this.internalComponent.target = this.target;
 }

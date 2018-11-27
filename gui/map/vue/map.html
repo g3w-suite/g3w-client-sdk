@@ -3,6 +3,11 @@
   <div style="display: none;">
     <div id="marker"></div>
   </div>
+  <div v-for="hidemap in hidemaps"
+       :id="hidemap.id"
+       :key="hidemap.id"
+       style="position: absolute; width:100%; height: 100%; background-color: #ffffff;">
+  </div>
   <addlayer :service="service"></addlayer>
 </div>
 

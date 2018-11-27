@@ -11,7 +11,7 @@ const _Viewer = function(opts) {
   const controls = ol.control.defaults({
     attribution: false,
     zoom: false
-  })
+  });
 
   const interactions = ol.interaction.defaults()
     .extend([

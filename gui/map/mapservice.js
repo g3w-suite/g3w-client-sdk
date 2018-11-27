@@ -28,6 +28,7 @@ function MapService(options) {
   this.layersExtraParams = {};
   this.state = {
     bbox: [],
+    hidemaps:[],
     resolution: null,
     center: null,
     loading: false,
@@ -86,6 +87,16 @@ function MapService(options) {
   this._marker = null;
 
   this.setters = {
+    addHideMap: function({layers=[]} = {}) {
+      const id = 'hidemap_'+ Date.now();
+      const mapId = {
+        id,
+        map: null
+      };
+      this.state.hidemaps.push(mapId);
+      return mapId;
+
+    },
     updateMapView: function(bbox, resolution, center) {
       this.state.bbox = bbox;
       this.state.resolution = resolution;
@@ -174,6 +185,48 @@ inherit(MapService, G3WObject);
 
 const proto = MapService.prototype;
 
+proto._addHideMap = function({layers}) {
+  const mapId = this.state.hidemaps[this.state.hidemaps.length - 1 ];
+  const view = this.getMap().getView();
+  const view_options = {
+    projection: view.getProjection(),
+    center: view.getCenter(),
+    extent: view.calculateExtent(),
+    resolution: this.getResolution()
+  };
+  const new_view = ol3helpers.createViewer({
+    id: mapId.id,
+    view: view_options
+  });
+  mapId.map = new_view.getMap();
+  for (let i=0; i < layers.length; i++) {
+    const layer = layers[i];
+    mapId.map.addLayer(layer);
+  }
+  return mapId.map;
+};
+
+proto.removeHideMap = function(id) {
+
+};
+
+proto.createMapImage = function({map=this.getMap(), background} = {}) {
+  return new Promise((resolve, reject) => {
+    try {
+     const canvas = this.getMapCanvas(map);
+      if (navigator.msSaveBlob) {
+        resolve(canvas.msToBlob());
+      } else {
+        canvas.toBlob(function(blob) {
+          resolve(blob);
+        });
+      }
+    } catch (err) {
+      reject(err);
+    }
+  })
+};
+
 proto.getApplicationAttribution = function() {
   const {header_terms_of_use_link, header_terms_of_use_text} = this.config.group;
   if (header_terms_of_use_text) {
@@ -200,8 +253,8 @@ proto.getMap = function() {
   return this.viewer.map;
 };
 
-proto.getMapCanvas = function() {
-  const mapTargetElement = this.viewer.map.getTarget();
+proto.getMapCanvas = function(map=this.getMap) {
+  const mapTargetElement = map.getTarget();
   return $(`#${mapTargetElement} canvas`)[0];
 };
 
@@ -1267,6 +1320,17 @@ proto._setupVectorLayers = function() {
     const mapVectorLayer = layer.getMapLayer();
     this.addLayerToMap(mapVectorLayer)
   })
+};
+
+proto.createMapLayer = function(layer) {
+  this._setMapProjectionToLayers([layer]);
+  const multilayerId = 'layer_'+layer.getMultiLayerId();
+  const mapLayer = layer.getMapLayer({
+    id: multilayerId,
+    projection: this.getProjection()
+  }, this.layersExtraParams);
+  mapLayer.addLayer(layer);
+ return mapLayer;
 };
 
 //SETUP MAPLAYERS

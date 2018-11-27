@@ -21,11 +21,9 @@ inherit(WMSLayer, MapLayer);
 const proto = WMSLayer.prototype;
 
 proto.getOLLayer = function(withLayers) {
-  let olLayer = this._olLayer;
-  if (!olLayer){
-    olLayer = this._olLayer = this._makeOlLayer(withLayers);
-  }
-  return olLayer;
+  if (!this._olLayer)
+    this._olLayer = this._makeOlLayer(withLayers);
+  return this._olLayer;
 };
 
 proto.getSource = function() {

@@ -107,6 +107,6 @@ proto.setMapProjection = function(mapProjection) {
 
 proto.getMapProjection = function() {
   return this._mapProjection;
-}
+};
 
 module.exports = GeoLayerMixin;
