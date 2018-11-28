@@ -139,6 +139,7 @@ const vueComponentOptions = {
     mapService.onafter('setupViewer',() => {
       mapService.setTarget(this.$el.id);
     });
+    // listen of after addHideMap
     mapService.onafter('addHideMap', ({layers=[]} = {}) => {
       this.$nextTick(() => {
         mapService._addHideMap({layers});

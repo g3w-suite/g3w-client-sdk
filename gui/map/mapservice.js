@@ -89,12 +89,12 @@ function MapService(options) {
   this.setters = {
     addHideMap: function({layers=[]} = {}) {
       const id = 'hidemap_'+ Date.now();
-      const mapId = {
+      const idMap = {
         id,
         map: null
       };
-      this.state.hidemaps.push(mapId);
-      return mapId;
+      this.state.hidemaps.push(idMap);
+      return idMap;
 
     },
     updateMapView: function(bbox, resolution, center) {
@@ -186,28 +186,37 @@ inherit(MapService, G3WObject);
 const proto = MapService.prototype;
 
 proto._addHideMap = function({layers}) {
-  const mapId = this.state.hidemaps[this.state.hidemaps.length - 1 ];
+  const idMap = this.state.hidemaps[this.state.hidemaps.length - 1 ];
   const view = this.getMap().getView();
   const view_options = {
     projection: view.getProjection(),
     center: view.getCenter(),
-    extent: view.calculateExtent(),
     resolution: this.getResolution()
   };
-  const new_view = ol3helpers.createViewer({
-    id: mapId.id,
+  const viewer = ol3helpers.createViewer({
+    id: idMap.id,
     view: view_options
   });
-  mapId.map = new_view.getMap();
+  // set Map
+  idMap.map = viewer.getMap();
+
   for (let i=0; i < layers.length; i++) {
     const layer = layers[i];
-    mapId.map.addLayer(layer);
+    idMap.map.addLayer(layer);
   }
-  return mapId.map;
+  return idMap.map;
 };
 
 proto.removeHideMap = function(id) {
-
+  let index;
+  for (let i = 0; i < this.state.hidemaps.length; i++) {
+    if (id === this.state.hidemaps[i].id){
+      index = i;
+      break;
+    }
+  }
+  if (index !== undefined)
+    this.state.hidemaps.splice(index,1);
 };
 
 proto.createMapImage = function({map=this.getMap(), background} = {}) {
@@ -253,9 +262,9 @@ proto.getMap = function() {
   return this.viewer.map;
 };
 
-proto.getMapCanvas = function(map=this.getMap) {
-  const mapTargetElement = map.getTarget();
-  return $(`#${mapTargetElement} canvas`)[0];
+proto.getMapCanvas = function(map) {
+  const mapElementId = map.getTarget();
+  return $(`#${mapElementId} > div.ol-viewport > canvas`)[0];
 };
 
 
@@ -489,7 +498,7 @@ proto.setupControls = function() {
             control.on('zoomend', (e) => {
               this.viewer.fit(e.extent);
             });
-            this.addControl(controlType,control, true);
+            this.addControl(controlType,control);
           }
           break;
         case 'zoomtoextent':
@@ -511,6 +520,22 @@ proto.setupControls = function() {
               projection: this.getCrs()
             });
             this.addControl(controlType, control, false);
+          }
+          break;
+        case 'screenshot':
+          if (!isMobile.any) {
+            control = ControlsFactory.create({
+              type: controlType,
+              onclick: () => {
+                return new Promise((resolve, reject) => {
+                  this.createMapImage().then((blobImage) => {
+                    saveAs(blobImage, `map_${Date.now()}.png`);
+                    resolve()
+                  })
+                });
+              }
+            });
+            this.addControl(controlType, control);
           }
           break;
         case 'scale':
@@ -714,7 +739,7 @@ proto.setupControls = function() {
             type: controlType
           });
           control.setProjection(this.getProjection());
-          this.addControl(controlType, control, true, false);
+          this.addControl(controlType, control);
           this.on('viewerset', () => {
             this.viewer.map.addLayer(control.getLayer());
           });
@@ -785,12 +810,6 @@ proto.setupControls = function() {
                 this.addControl(controlType,control, false);
               });
             }
-          }
-          break;
-        // controlo to save image
-        case 'mapimage':
-          if (!isMobile.any) {
-
           }
           break;
         case 'nominatim':
@@ -916,7 +935,7 @@ proto.flipMapControlsVertically = function() {
 
 
 proto._updateMapControlsLayout = function({width, height}) {
-  const MAXFACTOR = 4;
+  const MAXFACTOR = 8;
   // mapcontrols element
   const $mapControls = $('.g3w-map-controls');
   // compaconstol height
@@ -924,31 +943,40 @@ proto._updateMapControlsLayout = function({width, height}) {
   // mapcontrols width
   const mapControlsWidth = $mapControls.width();
   // force to udpdate control that are outside mapControls element
+  let controlInMapControl = 1;
   this._mapControls.forEach((control) => {
     const map = this.getMap();
+    controlInMapControl+=control.mapcontrol ? 1: 0;
     control.control.changelayout ? control.control.changelayout(map) : null;
   });
   // check if is vertical
   if (this.isMapControlsVerticalAlignement()) {
     this.state.mapcontrolSize = this.state.mapcontrolSize ? this.state.mapcontrolSize : mapControlsWidth;
+    const totalMapControlHeight = controlInMapControl * this.state.mapcontrolSize;
     const fullMapControlsHeight = mapControlsHeight + $mapControls.position().top;
     const bottomMapControls =  $(`.ol-control-b${this.getMapControlsAlignement()[0]}`);
     const bottomMapControlTop = bottomMapControls.length ? $(bottomMapControls[bottomMapControls.length - 1]).position().top: fullMapControlsHeight;
     const freeSpace = bottomMapControlTop > 0 ? bottomMapControlTop - fullMapControlsHeight : height - this.state.mapcontrolSize;
     let FACTOR = (mapControlsWidth/this.state.mapcontrolSize) * 2;
+    const newMapControlsHeight = mapControlsHeight/2;
+    const customFactor = (totalMapControlHeight /newMapControlsHeight) > 2 ? 1: 0;
+    FACTOR+=customFactor;
     if (freeSpace < 10) {
       if (isMobile.any) {
         this.setMapControlsAlignement('rh');
       } else if (FACTOR <= MAXFACTOR) {
-        $mapControls.css('height', `${mapControlsHeight/2}px`);
-        $mapControls.css('width', `${this.state.mapcontrolSize*FACTOR}px`);
+        $mapControls.css('height', `${newMapControlsHeight}px`);
+        $mapControls.css('width', `${this.state.mapcontrolSize*(FACTOR)}px`);
       }
     } else {
+      const freeSpace = bottomMapControlTop > 0 ? bottomMapControlTop - $mapControls.position().top : height - this.state.mapcontrolSize;
       // check if there enought space to expand mapcontrols
       if (freeSpace > (mapControlsHeight * 2) && FACTOR > 2 ) {
-        const FACTOR = (mapControlsWidth/this.state.mapcontrolSize) > 2 ? Math.log2((mapControlsWidth/this.state.mapcontrolSize)): (mapControlsWidth/this.state.mapcontrolSize)
+        const FACTOR = (mapControlsWidth/this.state.mapcontrolSize) > 2 ? Math.log2((mapControlsWidth/this.state.mapcontrolSize)): (mapControlsWidth/this.state.mapcontrolSize);
         $mapControls.css('width', `${mapControlsWidth/FACTOR}px`);
         $mapControls.css('height', `${mapControlsHeight*2}px`);
+      } else {
+        $mapControls.css('height', 'auto');
       }
     }
   } else {
@@ -974,7 +1002,8 @@ proto.addControl = function(type, control, addToMapControls=true, visible=true) 
   this._mapControls.push({
     type: type,
     control: control,
-    visible: true
+    visible,
+    mapcontrol: addToMapControls && visible
   });
   control.on('controlclick', () => {
     this.controlClick();
@@ -1323,7 +1352,7 @@ proto._setupVectorLayers = function() {
 };
 
 proto.createMapLayer = function(layer) {
-  this._setMapProjectionToLayers([layer]);
+  layer.setMapProjection(this.getProjection());
   const multilayerId = 'layer_'+layer.getMultiLayerId();
   const mapLayer = layer.getMapLayer({
     id: multilayerId,

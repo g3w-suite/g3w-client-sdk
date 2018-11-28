@@ -13,6 +13,7 @@ const OLControl = require('g3w-ol3/src/controls/olcontrol');
 const NominatimControl = require('g3w-ol3/src/controls/nominatimcontrol');
 const MousePositionControl = require('g3w-ol3/src/controls/mousepositioncontrol');
 const ScaleControl = require('g3w-ol3/src/controls/scalecontrol');
+const ScreenshotControl = require('g3w-ol3/src/controls/screenshotcontrol');
 
 
 const ControlsFactory = {
@@ -45,7 +46,8 @@ ControlsFactory.CONTROLS = {
   'length': LengthControl,
   'area': AreaControl,
   'mouseposition': MousePositionControl,
-  'scale': ScaleControl
+  'scale': ScaleControl,
+  'screenshot': ScreenshotControl
 };
 
 module.exports = ControlsFactory;
