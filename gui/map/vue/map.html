@@ -1,15 +1,15 @@
-<div id="g3w-maps" style="postion: relative;width:100%;height:100%">
-  <div :id="target" style="position:absolute; width:100%;height:100%">
+<div :id="maps_container">
+  <div v-for="hidemap in hidemaps"
+       :id="hidemap.id"
+       :key="hidemap.id"
+       class="g3w-map hidemap">
+  </div>
+  <div :id="target" class="g3w-map">
     <div class="g3w-map-controls" :class="mapcontrolsalignement"></div>
     <div style="display: none;">
       <div id="marker"></div>
     </div>
     <addlayer :service="service"></addlayer>
-  </div>
-  <div v-for="hidemap in hidemaps"
-       :id="hidemap.id"
-       :key="hidemap.id"
-       class="hidemap">
   </div>
 </div>
 

@@ -22,10 +22,10 @@ proto.setMap = function(map) {
     if (!cliccked) {
       cliccked = true;
       buttonControl.addClass('g3w-ol-disabled');
-      this._onclick && this._onclick().then(() => {
+      this._onclick && this._onclick().then(() => {}).then(()=> {
         buttonControl.removeClass('g3w-ol-disabled');
         cliccked = false;
-      });
+      })
     }
   })
 };

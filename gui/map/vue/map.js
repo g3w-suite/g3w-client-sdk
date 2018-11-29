@@ -116,7 +116,8 @@ const vueComponentOptions = {
   data: function() {
     const {service} = this.$options;
     return {
-      target: 'map',
+      target: this.$options.target,
+      maps_container: this.$options.maps_container,
       service,
       hidemaps: this.$options.service.state.hidemaps
     }
@@ -132,17 +133,10 @@ const vueComponentOptions = {
   mounted: function() {
     const mapService = this.$options.service;
     this.crs = mapService.getCrs();
-    this.$nextTick(() => {
-      mapService.setTarget(this.$el.id);
-    });
-    // it useful when a map is changed by chage map button
-    mapService.onafter('setupViewer',() => {
-      mapService.setTarget(this.$el.id);
-    });
     // listen of after addHideMap
-    mapService.onafter('addHideMap', ({layers=[]} = {}) => {
+    mapService.onafter('addHideMap', ({layers=[], mainview=false, switchable=false} = {}) => {
       this.$nextTick(() => {
-        mapService._addHideMap({layers});
+        mapService._addHideMap({layers, mainview, switchable});
       })
     })
   },
@@ -161,17 +155,21 @@ const InternalComponent = Vue.extend(vueComponentOptions);
 
 Vue.component('g3w-map', vueComponentOptions);
 
-function MapComponent(options) {
+function MapComponent(options = {}) {
   base(this, options);
   this.id = "map-component";
   this.title = "Catalogo dati";
-  this.target = options.target || 'map';
+  const target = options.target || "map";
+  const maps_container = options.maps_container || "g3w-maps";
+  options.target = target;
+  options.maps_container = maps_container;
   this.setService(new MapService(options));
   merge(this, options);
   this.internalComponent = new InternalComponent({
-    service: this._service
+    service: this._service,
+    target,
+    maps_container
   });
-  this.internalComponent.target = this.target;
 }
 
 inherit(MapComponent, Component);

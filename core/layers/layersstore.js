@@ -2,9 +2,8 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils//utils').base;
 const G3WObject = require('core/g3wobject');
 
-// Interface fro Layers
-function LayersStore(config) {
-  config = config || {};
+// Interface for Layers
+function LayersStore(config={}) {
   this.config = {
     id: config.id || Date.now(),
     projection: config.projection,

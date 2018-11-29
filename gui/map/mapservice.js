@@ -16,10 +16,11 @@ const ControlsRegistry = require('gui/map/control/registry');
 const Projections = require('g3w-ol3/src/projection/projections');
 const VectorLayer = require('core/layers/vectorlayer');
 
-function MapService(options) {
+function MapService(options={}) {
   this.id = 'MapService';
   this.viewer = null;
-  this.target = null;
+  this.target = options.target || null;
+  this.maps_container = options.maps_container || null;
   this._layersStoresEventKeys = {};
   this.project   = null;
   this._mapControls = [];
@@ -87,11 +88,12 @@ function MapService(options) {
   this._marker = null;
 
   this.setters = {
-    addHideMap: function({layers=[]} = {}) {
+    addHideMap: function({layers=[], mainview=false, switchable=false} = {}) {
       const id = 'hidemap_'+ Date.now();
       const idMap = {
         id,
-        map: null
+        map: null,
+        switchable
       };
       this.state.hidemaps.push(idMap);
       return idMap;
@@ -106,7 +108,7 @@ function MapService(options) {
     setHidden: function(bool) {
       this.state.hidden = bool;
     },
-    setupViewer: function(width,height){
+    setupViewer: function(width,height) {
       if (width == 0 || height == 0) {
         return
       }
@@ -185,7 +187,7 @@ inherit(MapService, G3WObject);
 
 const proto = MapService.prototype;
 
-proto._addHideMap = function({layers}) {
+proto._addHideMap = function({layers=[], mainview=false} = {}) {
   const idMap = this.state.hidemaps[this.state.hidemaps.length - 1 ];
   const view = this.getMap().getView();
   const view_options = {
@@ -195,7 +197,7 @@ proto._addHideMap = function({layers}) {
   };
   const viewer = ol3helpers.createViewer({
     id: idMap.id,
-    view: view_options
+    view: mainview ? view: view_options
   });
   // set Map
   idMap.map = viewer.getMap();
@@ -219,7 +221,11 @@ proto.removeHideMap = function(id) {
     this.state.hidemaps.splice(index,1);
 };
 
-proto.createMapImage = function({map=this.getMap(), background} = {}) {
+proto._showHideMapElement = function({map, show=false} = {}) {
+  show ? $(map.getTargetElement()).addClass('show') : $(map.getTargetElement()).removeClass('show');
+};
+
+proto.createMapImage = function({map, background} = {}) {
   return new Promise((resolve, reject) => {
     try {
      const canvas = this.getMapCanvas(map);
@@ -263,8 +269,13 @@ proto.getMap = function() {
 };
 
 proto.getMapCanvas = function(map) {
-  const mapElementId = map.getTarget();
-  return $(`#${mapElementId} > div.ol-viewport > canvas`)[0];
+  let viewport;
+  if (!map)
+    viewport = $(`#${this.maps_container} .g3w-map`).last().children('.ol-viewport')[0];
+  else {
+    viewport = map.getViewport();
+  }
+  return $(viewport).children('canvas')[0];
 };
 
 
@@ -526,13 +537,14 @@ proto.setupControls = function() {
           if (!isMobile.any) {
             control = ControlsFactory.create({
               type: controlType,
-              onclick: () => {
-                return new Promise((resolve, reject) => {
-                  this.createMapImage().then((blobImage) => {
-                    saveAs(blobImage, `map_${Date.now()}.png`);
-                    resolve()
-                  })
-                });
+              onclick: async () => {
+                try {
+                  const blobImage = await this.createMapImage();
+                  saveAs(blobImage, `map_${Date.now()}.png`);
+                } catch (e) {
+                  GUI.notify.error(t("info.server_error"));
+                }
+                return true;
               }
             });
             this.addControl(controlType, control);
@@ -1174,7 +1186,6 @@ proto._setupViewer = function(width,height) {
   const inityRes = ol.extent.getHeight(initextent) / height;
   const resolution = Math.max(initxRes,inityRes);
   const center = ol.extent.getCenter(initextent);
-
   this.viewer = ol3helpers.createViewer({
     id: this.target,
     view: {
@@ -1461,7 +1472,7 @@ proto.unregisterMapLayerListeners = function(mapLayer) {
   mapLayer.un('loadend', this._decrementLoaders );
 };
 
-proto.setTarget = function(elId){
+proto.setTarget = function(elId) {
   this.target = elId;
 };
 

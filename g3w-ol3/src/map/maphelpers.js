@@ -22,18 +22,18 @@ const _Viewer = function(opts) {
   let view;
   if (opts.view instanceof ol.View) {
     view = opts.view;
-  }
-  else {
+  } else {
     view = new ol.View(opts.view);
   }
+  
   const options = {
-    controls: controls,
-    interactions: interactions,
+    controls,
+    interactions,
     ol3Logo: false,
-    view: view,
+    view,
     keyboardEventTarget: document
   };
-  if (opts.id){
+  if (opts.id) {
     options.target = opts.id;
   }
   const map  = new ol.Map(options);
