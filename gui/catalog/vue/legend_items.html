@@ -1,0 +1,6 @@
+<div  @mouseenter="updateLegendScroll($event)">
+  <div class="legend-item"v-for="legendurl in legendurls">
+    <img :src="legendurl">
+    <span class="divider"></span>
+  </div>
+</div>

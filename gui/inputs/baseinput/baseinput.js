@@ -25,8 +25,8 @@ const BaseInput = {
     isVisible: function() {}
   },
   created() {
-    Vue.set(this.state.validate, 'valid', true);
-    Vue.set(this.state.validate, 'message', null);
+    this.$set(this.state.validate, 'valid', true);
+    this.$set(this.state.validate, 'message', null);
     this.change();
   },
   mounted: function() {

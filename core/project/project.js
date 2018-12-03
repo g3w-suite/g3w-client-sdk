@@ -5,7 +5,7 @@ const LayerFactory = require('core/layers/layerfactory');
 const LayersStore = require('core/layers/layersstore');
 const Projections = require('g3w-ol3/src/projection/projections');
 
-function Project(projectConfig) {
+function Project(config={}) {
   /* structure 'project' object
   {
     id,
@@ -23,8 +23,8 @@ function Project(projectConfig) {
     initbaselayer
   }
   */
-  this.state = projectConfig;
-  // proess layers
+  this.state = config;
+  // process layers
   this._processLayers();
   // set the project projection
   this._projection = Projections.get(this.state.crs, this.state.proj4);
@@ -57,57 +57,47 @@ proto.getRelationById = function(relationId){
   })
 };
 
-// process layers of the project
+// process layerstree and baselayers of the project
 proto._processLayers = function() {
   //info useful for catalog
-  let traverse = (obj) => {
-    Object.entries(obj).forEach(([key, layer]) => {
+  const traverse = (tree) => {
+    for (let i = 0; i < tree.length; i++) {
+      const layer = tree[i];
       let layer_name_originale;
-      let fulllayer;
       //check if layer (node) of folder
-      if (!_.isNil(layer.id)) {
-        let layers = this.state.layers;
-        layers.forEach((lyr) => {
-          layer_name_originale = lyr.name;
-          if (layer.id == lyr.id) {
-            lyr.wmsUrl = this.getWmsUrl();
-            lyr.project = this;
-            fulllayer = _.merge(lyr, layer);
-            fulllayer.name = layer_name_originale;
+      if (layer.id !== undefined) {
+        this.state.layers.forEach((_layer) => {
+          layer_name_originale = _layer.name;
+          if (layer.id === _layer.id) {
+            layer.name = _layer.name;
+            _layer.wmsUrl = this.getWmsUrl();
+            _layer.project = this;
+            tree[i] = Object.assign(_layer, layer);
             return false
           }
         });
-        obj[parseInt(key)] = fulllayer;
       }
-      if (!_.isNil(layer.nodes)) {
+      if (Array.isArray(layer.nodes)) {
         //add title to tree
         layer.title = layer.name;
         traverse(layer.nodes);
       }
-    });
+    }
   };
-
   // call trasverse function to
   traverse(this.state.layerstree);
-
-  const baseLayers = this.state.baselayers;
-  baseLayers.forEach((layerConfig) => {
-    let visible = false;
-    if (this.state.initbaselayer) {
-      visible = (layerConfig.id == (this.state.initbaselayer));
-    }
-    if (layerConfig.fixed) {
-      visible = layerConfig.fixed;
-    }
-    layerConfig.visible = visible;
-    layerConfig.baselayer = true;
-  });
+  for (let i=0; i < this.state.baselayers.length; i++) {
+    const baseLayerConfig = this.state.baselayers[i];
+    baseLayerConfig.visible = this.state.initbaselayer && (baseLayerConfig.id === this.state.initbaselayer) || !!baseLayerConfig.fixed ;
+    baseLayerConfig.baselayer = true;
+  }
 };
 
 // build layersstore and create layersstree
 proto._buildLayersStore = function() {
   // create a layersStore object
   const layersStore = new LayersStore();
+  //check if we have owerview project
   const overviewprojectgid = this.state.overviewprojectgid ? this.state.overviewprojectgid.gid : null;
   layersStore.setOptions({
     id: this.state.gid,
@@ -115,7 +105,7 @@ proto._buildLayersStore = function() {
     extent: this.state.extent,
     initextent: this.state.initextent,
     wmsUrl: this.state.WMSUrl,
-    catalog: this.state.gid != overviewprojectgid
+    catalog: this.state.gid !== overviewprojectgid
   });
 
   // instance each layer ad area added to layersstore
@@ -136,7 +126,7 @@ proto._buildLayersStore = function() {
 };
 
 proto.getLayers = function() {
-  return _.concat(this.state.layers,this.state.baselayers);
+  return [...this.state.layers, ...this.state.baselayers];
 };
 
 proto.getThumbnail = function() {

@@ -24,9 +24,7 @@ const vueComponentObject = {
       this.$options.service.setIndexHeader(index);
       this.$options.service.setComponent(this.state.components[index]);
     },
-    changeInput: function(input) {
-      //emit change input of body input
-      this.$options.service.eventBus.$emit('changeinput', input);
+    changeInput: function() {
       return this.$options.service.isValid();
     },
     addToValidate: function(validate) {

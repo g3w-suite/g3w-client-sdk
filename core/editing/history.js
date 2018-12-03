@@ -272,10 +272,10 @@ proto.canRedo = function() {
 
 proto._getStatesToCommit = function() {
   // devo clonare lo states altrimenti ho problem con il reverse per undo e redo
-  let statesToCommit = this._current ? _.clone(this._states): [];
+  let statesToCommit = this._current ? [...this._states]: [];
   // qui ricavo solo la parte degli state che mi servono per ricostruire la storia
   statesToCommit.reverse().forEach((state, idx) => {
-    if (this.getCurrentState() == state) {
+    if (this.getCurrentState() === state) {
       // in pratica taglio il pezzo di storia "dopo" il current
       statesToCommit = statesToCommit.slice(idx, statesToCommit.length);
       return false;
@@ -283,6 +283,7 @@ proto._getStatesToCommit = function() {
   });
   return statesToCommit;
 };
+
 
 //funzione che restituisce tutte le modifche uniche da applicare (mandare al server)
 proto.commit = function() {
@@ -299,9 +300,9 @@ proto.commit = function() {
       // nel caso di un array, quindi di fronte ad un update
       if (Array.isArray(item))
         // vado a prendere il secondo valore che è quello modificato
-        item = item.pop();
+        item = item[1];
       //vado a ciclare sugli evtnuali stati committati cioè aggiunti
-      _.forEach(commitItems[item.layerId], (commitItem, idx) => {
+      commitItems[item.layerId] && commitItems[item.layerId].forEach((commitItem) => {
         //verifico se presente uno stesso ite
         if (commitItem.getId() === item.feature.getId()) {
           // verifcio inoltre se è una feature nuova, se non è stata cancellata (già presente nei commitItems) e se aggiunta

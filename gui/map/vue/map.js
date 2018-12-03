@@ -133,6 +133,9 @@ const vueComponentOptions = {
   mounted: function() {
     const mapService = this.$options.service;
     this.crs = mapService.getCrs();
+    this.$nextTick(() => {
+      mapService.setMapControlsContainer($('.g3w-map-controls'));
+    });
     // listen of after addHideMap
     mapService.onafter('addHideMap', ({layers=[], mainview=false, switchable=false} = {}) => {
       this.$nextTick(() => {

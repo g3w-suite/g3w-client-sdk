@@ -50,9 +50,6 @@
       },
       reloadLayout() {
         this.$nextTick(() => {
-          const tableHeight = $(".content").height();
-          const tableHeaderHeight = $('#open_attribute_table  div.dataTables_scrollHeadInner').height();
-          $('#open_attribute_table  div.dataTables_scrollBody').height(tableHeight - tableHeaderHeight - 130);
           dataTable.columns.adjust();
         });
       }
@@ -103,7 +100,13 @@
         if (this.isMobile()) {
           hideElements();
         }
+        const tableHeight = $(".content").height();
+        const tableHeaderHeight = $('#open_attribute_table  div.dataTables_scrollHeadInner').height();
+        $('#open_attribute_table  div.dataTables_scrollBody').height(tableHeight - tableHeaderHeight - 130);
       });
+    },
+    beforeDestroy() {
+      dataTable.destroy();
     }
   }
 </script>

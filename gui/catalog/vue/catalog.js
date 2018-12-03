@@ -16,6 +16,7 @@ const vueComponentOptions = {
   data: function() {
     return {
       state: null,
+      showlegend: false,
       // to show context menu right click
       layerMenu: {
         show: false,
@@ -72,13 +73,6 @@ const vueComponentOptions = {
     hasBaseLayers: function(){
       return this.project.state.baselayers.length>0;
     },
-    showLegend: function() {
-      let layerstresslength = 0;
-      _.forEach(this.state.layerstrees, function(layerstree) {
-        layerstresslength+=layerstree.tree.length;
-      });
-      return layerstresslength >0
-    },
     hasLayers: function() {
       let layerstresslength = 0;
       _.forEach(this.state.layerstrees, function(layerstree) {
@@ -98,6 +92,9 @@ const vueComponentOptions = {
     }
   },
   methods: {
+    showLegend: function(bool) {
+      this.showlegend = bool;
+    },
     setBaseLayer: function(id) {
       this.project.setBaseLayer(id);
     },
@@ -522,32 +519,57 @@ Vue.component('layerslegend',{
       'layerstree': {
         handler: function(val, old){},
         deep: true
+      },
+      'visiblelayers'(n, o) {
+        o.length === 0 ? this.$emit('showlegend', true): n.length === 0 ? this.$emit('showlegend', false) : null;
       }
     },
+    created() {
+      this.$emit('showlegend', !!this.visiblelayers.length);
+    },
     mounted: function() {
-      Vue.nextTick(function() {
+      this.$nextTick(function() {
         $('.legend-item').perfectScrollbar();
+
       });
     }
 });
 
-Vue.component('layerslegend-item',{
-  template: require('./legend_item.html'),
-  props: ['layer'],
+Vue.component('layerslegend-items',{
+  template: require('./legend_items.html'),
+  props: ['layers'],
   computed: {
-    legendurl: function() {
+    legendurls() {
+      const urlLayersName = {};
+      const legendUrls = [];
+      const layers = this.layers.reverse();
+      for (let i=0; i< layers.length; i++) {
+        const layer = layers[i];
+        const url = this.getLegendUrl(layer);
+        const [prefix, layerName] = url.split('LAYER=');
+        if (!urlLayersName[prefix])
+          urlLayersName[prefix] = [];
+        urlLayersName[prefix].push(layerName)
+      }
+      for (const url in urlLayersName) {
+        const legendUrl = `${url}&LAYER=${urlLayersName[url].join(',')}`;
+        legendUrls.push(legendUrl);
+      }
+      return legendUrls
+    }
+  },
+  methods: {
+    getLegendUrl: function(layer) {
       let _legendurl;
       const catalogLayers = CatalogLayersStoresRegistry.getLayersStores();
       catalogLayers.forEach((layerStore) => {
-        if (layerStore.getLayerById(this.layer.id)){
-          _legendurl = layerStore.getLayerById(this.layer.id).getLegendUrl();
+        if (layerStore.getLayerById(layer.id)){
+          _legendurl = layerStore.getLayerById(layer.id).getLegendUrl();
           return false
         }
       });
       return _legendurl;
-    }
-  },
-  methods: {
+    },
     updateLegendScroll: function(evt) {
       $(evt.target).perfectScrollbar('update');
     }

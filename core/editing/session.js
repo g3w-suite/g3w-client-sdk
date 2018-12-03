@@ -315,7 +315,7 @@ proto._serializeCommit = function(itemsToCommit) {
 // funzione che mi server per ricavare quali saranno
 // gli items da committare
 proto.getCommitItems = function() {
-  var commitItems = this._history.commit();
+  const commitItems = this._history.commit();
   return this._serializeCommit(commitItems);
 };
 

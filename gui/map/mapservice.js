@@ -36,7 +36,19 @@ function MapService(options={}) {
     hidden: true,
     scale: 0,
     mapcontrolsalignement: 'rv',
-    mapcontrolSize: null
+    mapcontrolDOM: null,
+    mapcontrolready: false,
+    mapcontrolSizes: {
+      height: 47,
+      width: 47,
+      minWidth: 47,
+      minHeight: 47
+    },
+    mapControl: {
+      grid: [],
+      length: 0,
+      currentIndex: 0
+    },
   };
 
   this._greyListenerKey = null;
@@ -889,7 +901,61 @@ proto.setupControls = function() {
           break;
       }
     });
+    this._setMapControlsInsideContainerLenght();
+    this.state.mapcontrolready = true;
   }
+};
+
+proto._setMapControlsGrid = function(length) {
+  const grid = this.state.mapControl.grid;
+    if (length < 2) {
+      const rC = grid[grid.length - 1];
+      grid.push({
+        rows: rC.rows * 2 ,
+        columns: 2
+      });
+      return;
+    }
+    if (length === 2) {
+      if (grid.length) {
+        const rC = grid[grid.length - 1];
+        grid.push({
+          rows: rC.columns ,
+          columns: rC.rows
+        })
+      } else {
+        grid.push({
+          rows: 1,
+          columns: 2
+        })
+      }
+    } else if (length === 3) {
+      const rC = grid[grid.length - 1];
+      grid.push({
+        rows: 2 * rC.rows,
+        columns: length
+      })
+    } else {
+      grid.push({
+        rows: grid.length + 1 + (Number.isInteger(length) ? 0 : 1),
+        columns: Number.isInteger(length) ? length: parseInt(length) + 1
+      });
+      const _length = Number.isInteger(length) ? length: parseInt(length);
+      this._setMapControlsGrid(_length/2);
+    }
+};
+
+proto._setMapControlsInsideContainerLenght = function() {
+  this.state.mapControl.length = 1;
+  // count the mapcontrol insied g3w-map-control container
+  this._mapControls.forEach((control) => {
+    const map = this.getMap();
+    this.state.mapControl.length+=control.mapcontrol ? 1: 0;
+    control.control.changelayout ? control.control.changelayout(map) : null;
+  });
+  // add 1 id odd number
+  this.state.mapControl.length += this.state.mapControl.length% 2;
+  this._setMapControlsGrid(this.state.mapControl.length);
 };
 
 // get layers from layersstore
@@ -945,55 +1011,52 @@ proto.flipMapControlsVertically = function() {
   this.state.mapcontrolsalignment = this.state.mapcontrolsalignement[1] === 'v' ? this.state.mapcontrolsalignement[0] + 'h' :  this.state.mapcontrolsalignement[0] + 'v'
 };
 
+proto.setMapControlsContainer = function(mapControlDom) {
+  this.state.mapcontrolDOM = mapControlDom;
+};
 
 proto._updateMapControlsLayout = function({width, height}) {
-  const MAXFACTOR = 8;
-  // mapcontrols element
-  const $mapControls = $('.g3w-map-controls');
-  // compaconstol height
-  const mapControlsHeight = $mapControls.height();
-  // mapcontrols width
-  const mapControlsWidth = $mapControls.width();
-  // force to udpdate control that are outside mapControls element
-  let controlInMapControl = 1;
-  this._mapControls.forEach((control) => {
-    const map = this.getMap();
-    controlInMapControl+=control.mapcontrol ? 1: 0;
-    control.control.changelayout ? control.control.changelayout(map) : null;
-  });
-  // check if is vertical
-  if (this.isMapControlsVerticalAlignement()) {
-    this.state.mapcontrolSize = this.state.mapcontrolSize ? this.state.mapcontrolSize : mapControlsWidth;
-    const totalMapControlHeight = controlInMapControl * this.state.mapcontrolSize;
-    const fullMapControlsHeight = mapControlsHeight + $mapControls.position().top;
-    const bottomMapControls =  $(`.ol-control-b${this.getMapControlsAlignement()[0]}`);
-    const bottomMapControlTop = bottomMapControls.length ? $(bottomMapControls[bottomMapControls.length - 1]).position().top: fullMapControlsHeight;
-    const freeSpace = bottomMapControlTop > 0 ? bottomMapControlTop - fullMapControlsHeight : height - this.state.mapcontrolSize;
-    let FACTOR = (mapControlsWidth/this.state.mapcontrolSize) * 2;
-    const newMapControlsHeight = mapControlsHeight/2;
-    const customFactor = (totalMapControlHeight /newMapControlsHeight) > 2 ? 1: 0;
-    FACTOR+=customFactor;
-    if (freeSpace < 10) {
-      if (isMobile.any) {
-        this.setMapControlsAlignement('rh');
-      } else if (FACTOR <= MAXFACTOR) {
-        $mapControls.css('height', `${newMapControlsHeight}px`);
-        $mapControls.css('width', `${this.state.mapcontrolSize*(FACTOR)}px`);
+  // update only when all control are ready
+  if (this.state.mapcontrolready) {
+    let changed = false;
+    // count the mapcontrol insied g3w-map-control container
+    this._mapControls.forEach((control) => {
+      const map = this.getMap();
+      control.control.changelayout ? control.control.changelayout(map) : null;
+    });
+    // check if is vertical
+    if (this.isMapControlsVerticalAlignement()) {
+      let mapControslHeight = this.state.mapControl.grid[this.state.mapControl.currentIndex].columns * this.state.mapcontrolSizes.minWidth;
+      // get bottom controls
+      const bottomMapControls =  $(`.ol-control-b${this.getMapControlsAlignement()[0]}`);
+      const bottomMapControlTop = bottomMapControls.length ? $(bottomMapControls[bottomMapControls.length - 1]).position().top: mapControslHeight;
+      const freeSpace = bottomMapControlTop > 0 ? bottomMapControlTop - mapControslHeight : height - mapControslHeight;
+      if (freeSpace < 10) {
+        if (isMobile.any) {
+          this.setMapControlsAlignement('rh');
+          return;
+        } else {
+          this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === this.state.mapControl.grid.length - 1 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex +1;
+        }
+        changed = true;
+      } else {
+        // check if there enought space to expand mapcontrols
+        const nextHeight = this.state.mapControl.currentIndex > 0 ? (this.state.mapControl.grid[this.state.mapControl.currentIndex -1].columns * this.state.mapcontrolSizes.minWidth) - mapControslHeight : mapControslHeight;
+        if (freeSpace  > nextHeight) {
+          changed = true;
+          this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === 0 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex  - 1;
+        }
+      }
+      if (changed) {
+        mapControslHeight = this.state.mapControl.grid[this.state.mapControl.currentIndex].columns * this.state.mapcontrolSizes.minWidth;
+        mapControlsWidth = this.state.mapControl.grid[this.state.mapControl.currentIndex].rows * this.state.mapcontrolSizes.minWidth;
+        this.state.mapcontrolDOM.css('height', `${mapControslHeight}px`);
+        this.state.mapcontrolDOM.css('width', `${mapControlsWidth}px`);
       }
     } else {
-      const freeSpace = bottomMapControlTop > 0 ? bottomMapControlTop - $mapControls.position().top : height - this.state.mapcontrolSize;
-      // check if there enought space to expand mapcontrols
-      if (freeSpace > (mapControlsHeight * 2) && FACTOR > 2 ) {
-        const FACTOR = (mapControlsWidth/this.state.mapcontrolSize) > 2 ? Math.log2((mapControlsWidth/this.state.mapcontrolSize)): (mapControlsWidth/this.state.mapcontrolSize);
-        $mapControls.css('width', `${mapControlsWidth/FACTOR}px`);
-        $mapControls.css('height', `${mapControlsHeight*2}px`);
-      } else {
-        $mapControls.css('height', 'auto');
+      if (isMobile.any) {
+        this.setMapControlsAlignement('rv');
       }
-    }
-  } else {
-    if (isMobile.any) {
-      this.setMapControlsAlignement('rv');
     }
   }
 };
