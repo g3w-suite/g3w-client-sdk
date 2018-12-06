@@ -237,10 +237,10 @@ const utils = {
         }
       })
     },
-    fileDownload({url, data} = {}) {
+    fileDownload({url, data, httpMethod="POST"} = {}) {
       return new Promise((resolve, reject) => {
         $.fileDownload(url, {
-          httpMethod: "POST",
+          httpMethod,
           data,
           successCallback() {
             resolve()

@@ -33,6 +33,10 @@ proto.setup = function(config) {
   }
 };
 
+proto.setVisible = function(visible) {
+  this.state.visible = visible;
+};
+
 proto.getStyle = function() {
   return this.config.style;
 };

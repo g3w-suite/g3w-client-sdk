@@ -13,7 +13,6 @@ const ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 const ControlsFactory = require('gui/map/control/factory');
 const StreetViewService = require('gui/streetview/streetviewservice');
 const ControlsRegistry = require('gui/map/control/registry');
-const Projections = require('g3w-ol3/src/projection/projections');
 const VectorLayer = require('core/layers/vectorlayer');
 
 function MapService(options={}) {
@@ -136,7 +135,9 @@ function MapService(options={}) {
       this.setupControls();
       this.emit('viewerset');
     },
-    controlClick: function() {}
+    controlClick: function(active) {
+      //HOOK to register map control activated
+    }
   };
 
   this._onCatalogSelectLayer = function(layer) {
@@ -1080,8 +1081,8 @@ proto.addControl = function(type, control, addToMapControls=true, visible=true) 
     visible,
     mapcontrol: addToMapControls && visible
   });
-  control.on('controlclick', () => {
-    this.controlClick();
+  control.on('controlclick', (active) => {
+    this.controlClick(active);
   });
 
   $(control.element).find('button').tooltip({
@@ -1868,17 +1869,12 @@ proto.addExternalLayer = function(externalLayer) {
     vectorSource,
     vectorLayer,
     extent;
+  const {name, crs, data, color, type} = externalLayer;
   const map = this.viewer.map;
-  const name = externalLayer.name;
-  const color = externalLayer.color;
-  const type = externalLayer.type;
-  let crs = externalLayer.crs;
-  let layer_epsg = crs;
-  let data = externalLayer.data;
   const catalogService = GUI.getComponent('catalog').getService();
   const QueryResultService = GUI.getComponent('queryresults').getService();
   const layer = this.getLayerByName(name);
-  const loadExternalLayer = (format, data, epsg=layer_epsg) => {
+  const loadExternalLayer = (format, data, epsg=crs) => {
     features = format.readFeatures(data, {
       dataProjection: epsg,
       featureProjection: this.getEpsg()
@@ -1904,19 +1900,6 @@ proto.addExternalLayer = function(externalLayer) {
     map.getView().fit(vectorSource.getExtent());
   };
   if (!layer) {
-    if (layer_epsg != this.getCrs()) {
-      switch (layer_epsg) {
-        case 'EPSG:3003':
-          Projections.get("EPSG:3003", "+proj=tmerc +lat_0=0 +lon_0=9 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +units=m +no_defs");
-          break;
-        case 'EPSG:3045':
-          Projections.get("EPSG:3045", "+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
-          break;
-        case 'EPSG:6708':
-          Projections.get("EPSG:6708", "+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
-          break;
-      }
-    }
     switch (type) {
       case 'geojson':
         format = new ol.format.GeoJSON();
@@ -1934,7 +1917,7 @@ proto.addExternalLayer = function(externalLayer) {
           encoding: 'big5',
           EPSG: crs
         }, (geojson) => {
-          data = JSON.stringify(geojson);
+          const data = JSON.stringify(geojson);
           format = new ol.format.GeoJSON({});
           loadExternalLayer(format, data, "EPSG:4326");
         });

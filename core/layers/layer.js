@@ -1,5 +1,6 @@
 const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils//utils').base;
+const base = require('core/utils/utils').base;
+const XHR = require('core/utils/utils').XHR;
 const G3WObject = require('core/g3wobject');
 const Filter = require('core/layers/filter/filter');
 const ProviderFactory = require('core/layers/providers/providersfactory');
@@ -11,10 +12,11 @@ function Layer(config = {}) {
     const projectType = project.getType();
     const projectId = project.getId();
     const suffixUrl = projectType + '/' + projectId + '/' + config.id + '/';
-    this.config.urls.data = initConfig.vectorurl + 'data/' + suffixUrl;
+    const vectorUrl = initConfig.vectorurl;
+    this.config.urls.data = `${vectorUrl}data/${suffixUrl}`;
+    this.config.urls.shp = `${vectorUrl}shp/${suffixUrl}`;
   });
-  // static configuration of layer
-  // merging all common attributes
+
   this.config = _.merge({
     id: config.id || 'Layer' ,
     title: config.title  || config.name,
@@ -84,6 +86,14 @@ function Layer(config = {}) {
 inherit(Layer, G3WObject);
 
 const proto = Layer.prototype;
+
+proto.getShp = function() {
+  const url = this.getUrl('shp');
+  return XHR.fileDownload({
+    url,
+    httpMethod: "GET"
+  })
+};
 
 proto.getDataTable = function({ page = null, page_size=null, ordering=null, search=null, suggest=null } = {}) {
   const d = $.Deferred();
@@ -185,8 +195,7 @@ proto.search = function(options) {
 };
 
 //Info from layer (only for querable layers)
-proto.query = function(options) {
-  options = options || {};
+proto.query = function(options={}) {
   const d = $.Deferred();
   let provider = this.getProvider('query');
   // in case filter
@@ -248,8 +257,14 @@ proto.getState = function() {
 };
 
 proto.getSource = function() {
-  return this.state.source
+  return this.state.source;
 };
+
+proto.isShpDownlodable = function() {
+  const type = this.getSource().type;
+  return type === 'postgres' || type === 'sqlite' || type === 'spatialite';
+};
+
 
 proto.getEditingLayer = function() {
   return this._editingLayer;
@@ -305,7 +320,7 @@ proto.getType = function() {
 };
 
 proto.isType = function(type) {
-  return this.getType() == type;
+  return this.getType() === type;
 };
 
 proto.setType = function(type) {

@@ -18,22 +18,22 @@
         v-show="!layerstree.hidden"
         :class="[parentFolder ? 'child' : 'root', g3wtemplate.getFontClass('table')]">
   </span>
-  <span v-else
-    v-show="!layerstree.hidden"
-    @click.stop="!layerstree.uncheckable ? toggle(false) : null"
-    :class="[layerstree.visible  ? g3wtemplate.getFontClass('check'): g3wtemplate.getFontClass('uncheck'), layerstree.disabled  ? 'disabled': '',  parentFolder ? 'child' : 'root' ]"
-    class="checkbox-layer">
-  </span>
+  <template v-else>
+    <span style="color: red" v-if="layerstree.external && layerstree.removable"
+          :class="g3wtemplate.getFontClass('trash')"
+          @click="removeExternalLayer(layerstree.name)">
+    </span>
+    <span v-show="!layerstree.hidden"
+      @click.stop="!layerstree.uncheckable ? toggle(false) : null"
+      :class="[layerstree.visible  ? g3wtemplate.getFontClass('check'): g3wtemplate.getFontClass('uncheck'), layerstree.disabled  ? 'disabled': '',  parentFolder ? 'child' : 'root' ]"
+      class="checkbox-layer"></span>
+  </template>
 
   <span v-show="!layerstree.hidden || isFolder"
     class="tree-node-title"
     :class="{'bold': isFolder, 'disabled': layerstree.disabled, 'highlightlayer': isHighLight }"> {{ layerstree.title }}
   </span>
 
-  <i v-if="layerstree.external && layerstree.removable"
-    :class="g3wtemplate.getFontClass('trash')" class="link trash pull-right"
-    @click="removeExternalLayer(layerstree.name)">
-  </i>
   <ul v-if="isFolder" v-show="layerstree.expanded">
     <tristate-tree
       :root="false"

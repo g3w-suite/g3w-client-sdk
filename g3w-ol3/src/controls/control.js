@@ -55,7 +55,7 @@ proto._handleClick = function(event) {
   if (!this._toggled && resetControl) {
     resetControl.toggle(true);
   }
-  this.dispatchEvent('controlclick');
+  this.dispatchEvent('controlclick', this.toggled);
 };
 
 //shift of control position

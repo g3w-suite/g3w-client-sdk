@@ -26,6 +26,15 @@ proto._makeOlLayer = function() {
   //TO OVERWRITE
 };
 
+proto._registerLoadingEvent = function() {
+  this._olLayer.getSource().on('imageloadstart', () => {
+    this.emit("loadstart");
+  });
+  this._olLayer.getSource().on('imageloadend', () => {
+    this.emit("loadend");
+  });
+};
+
 proto.getSource = function(){
   return this.getOLLayer().getSource();
 };
@@ -42,6 +51,7 @@ proto.getOLLayer = function() {
   let olLayer = this._olLayer;
   if (!olLayer) {
     olLayer = this._olLayer = this._makeOlLayer();
+    this._registerLoadingEvent();
     if (this._mapLayer.config.attributions) {
       this._olLayer.setAttributions(this.layer.config.attributions)
     }

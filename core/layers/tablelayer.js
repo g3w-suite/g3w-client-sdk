@@ -430,10 +430,10 @@ proto.getFieldsWithValues = function(obj, options={}) {
   }
   fields = fields.filter((field) =>  {
     //check if field is pk and if is new nad if is not editable
-    if (!relation && (field.name == this.config.editing.pk) && feature.isNew() && !this.isPkEditable()) {
+    if (!relation && (field.name === this.config.editing.pk) && feature.isNew() && !this.isPkEditable()) {
         return false;
     }
-    return exclude.indexOf(field.name) == -1;
+    return exclude.indexOf(field.name) === -1;
   });
   fields.forEach((field) => {
     if (feature) {

@@ -117,9 +117,6 @@ function SearchPanel(options = {}) {
     this.name = this.config.name || this.name;
     this.id = this.config.id || this.id;
     this.filter = this.config.options.filter || this.filter;
-    // const input = this.filter.AND[0].input;
-    // input.type = 'selectfield';
-    // input.options.values = ['pippo','pluto', 'paperino49', 'pluto48', '49', '48'];
     this.internalPanel.queryurl = this.config.options.queryurl || null;
     const queryLayerId = this.config.options.querylayerid || this.querylayerid;
     this.queryLayer = ProjectsRegistry.getCurrentProject().getLayersStore().getLayerById(queryLayerId);
@@ -217,8 +214,7 @@ function SearchPanel(options = {}) {
     return queryFilter;
   };
 
-  this.createQueryFilterObject = function(options) {
-    options = options || {};
+  this.createQueryFilterObject = function(options={}) {
     const queryLayer = options.queryLayer || [];
     const ogcService = options.ogcService || 'wms';
     const filter =  options.filter || {};

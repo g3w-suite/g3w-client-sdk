@@ -3,18 +3,19 @@ const base = require('core/utils/utils').base;
 const BaseLayer = require('core/layers/baselayers/baselayer');
 const BasesLayers = require('g3w-ol3/src/layers/bases');
 
-function OSMLayer(options){
+function TMSLayer(options={}){
   base(this,options);
 }
 
-inherit(OSMLayer, BaseLayer);
+inherit(TMSLayer, BaseLayer);
 
-const proto = OSMLayer.prototype;
+const proto = TMSLayer.prototype;
 
 proto._makeOlLayer = function() {
-  const olLayer = BasesLayers.OSM;
+  // here configuration to create TMS
+  const olLayer = BasesLayers.TMS.get({});
   return olLayer
 };
 
 
-module.exports = OSMLayer;
+module.exports = TMSLayer;

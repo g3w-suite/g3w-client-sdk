@@ -17,6 +17,7 @@ const vueComponentOptions = {
     return {
       state: null,
       showlegend: false,
+      copywmsurltooltip: t('sdk.catalog.menu.wms.copy'),
       // to show context menu right click
       layerMenu: {
         show: false,
@@ -24,7 +25,10 @@ const vueComponentOptions = {
         left:0,
         name: '',
         layer: null,
-        loading_data_table : false,
+        loading: {
+          data_table: false,
+          shp: false
+        },
         items: {
           zoomtolayer: t("catalog_items.contextmenu.zoomtolayer"),
           open_attribute_table: t("catalog_items.contextmenu.open_attribute_table"),
@@ -130,19 +134,48 @@ const vueComponentOptions = {
       mapService.goToBBox(bbox);
       this._hideMenu();
     },
+    canShowWmsUrl(layerId) {
+      const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      return !!originalLayer.getWmsUrl
+    },
+    canDownloadShp(layerId) {
+      const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      return layer.isShpDownlodable();
+    },
+    copyWmsUrl(evt, url) {
+      $(evt.target).tooltip('hide');
+      let ancorEement = document.createElement('a');
+      ancorEement.href = url;
+      const tempInput = document.createElement('input');
+      tempInput.value = ancorEement.href;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand("copy");
+      $(evt.target).attr('title', t('sdk.catalog.menu.wms.copied')).tooltip('fixTitle').tooltip('show');
+      $(evt.target).attr('title', this.copywmsurltooltip).tooltip('fixTitle');
+      document.body.removeChild(tempInput);
+      ancorEement = null;
+      this._hideMenu();
+    },
+    showWMSUrl(layerId) {
+      const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      return originalLayer.getFullWmsUrl();
+    },
+    downloadShp(layerId) {
+      this.layerMenu.loading.shp = true;
+      const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      layer.getShp().catch((err) => {
+        GUI.notify.error(t("info.server_error"));
+      }).finally(() => {
+        this.layerMenu.loading.shp = false;
+        this._hideMenu();
+      })
+    },
     showAttributeTable: function(layerId) {
-      this.layerMenu.loading_data_table = false;
+      this.layerMenu.loading.data_table = false;
       GUI.closeContent();
-      let layer;
-      const catallogLayersStores = CatalogLayersStoresRegistry.getLayersStores();
-      catallogLayersStores.find((layerStore) => {
-        layer = layerStore.getLayerById(layerId);
-        if (layer) {
-          layer.getLayerForEditing();
-          return true;
-        }
-      });
-      this.layerMenu.loading_data_table = true;
+      const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      this.layerMenu.loading.data_table = true;
       const tableContent = new TableComponent({
         layer
       });
@@ -150,7 +183,7 @@ const vueComponentOptions = {
         if (this.isMobile()) {
           GUI.hideSidebar();
         }
-        this.layerMenu.loading_data_table = false;
+        this.layerMenu.loading.data_table = false;
         this._hideMenu();
       });
       tableContent.show({
@@ -185,16 +218,19 @@ const vueComponentOptions = {
         this.layerMenu.colorMenu.left = elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) /2);
       }
       this.layerMenu.colorMenu.show = bool;
+    },
+    layout(size) {
+      console.log(size)
     }
   },
-  mounted: function() {
-    CatalogEventHub.$on('treenodetoogled',(storeid, node, parent_mutually_exclusive) => {
+  created() {
+    CatalogEventHub.$on('treenodetoogled', (storeid, node, parent_mutually_exclusive) => {
       const mapService = GUI.getComponent('map').getService();
-      if (node.external) {
+      if(node.external) {
         let layer = mapService.getLayerByName(node.name);
         layer.setVisible(!layer.getVisible());
         node.visible = !node.visible;
-      } else if (!storeid) {
+      } else if(!storeid) {
         node.visible = !node.visible;
         let layer = mapService.getLayerById(node.id);
         layer.setVisible(node.visible);
@@ -203,23 +239,22 @@ const vueComponentOptions = {
         mapService.emit('cataloglayertoggled', layer);
       }
     });
-
     // event that set all visible or not all children layer of the folder and if parent is mutually exclusive turn off all layer
     CatalogEventHub.$on('treenodestoogled', (storeid, nodes, isFolderChecked) => {
       let layersIds = [];
       let checkNodes = (obj) => {
-        if (obj.nodes) {
-          if (obj.mutually_exclusive) {
-            if (obj.lastLayerIdVisible)
+        if(obj.nodes) {
+          if(obj.mutually_exclusive) {
+            if(obj.lastLayerIdVisible)
               layersIds.push(obj.lastLayerIdVisible);
             else {
-              if (!isFolderChecked) {
+              if(!isFolderChecked) {
                 layersIds = CatalogLayersStoresRegistry.getLayersStore(storeid)._getAllSiblingsChildrenLayersId(obj);
               } else {
                 const getLayerIds = (nodes) => {
                   nodes.some((node) => {
-                    if (node.id) {
-                      if (node.geolayer) {
+                    if(node.id) {
+                      if(node.geolayer) {
                         layersIds.push(node.id);
                         return true;
                       }
@@ -233,12 +268,12 @@ const vueComponentOptions = {
               }
             }
           } else {
-            obj.nodes.forEach((node) =>{
+            obj.nodes.forEach((node) => {
               checkNodes(node);
             });
           }
         } else {
-          if (obj.geolayer)
+          if(obj.geolayer)
             layersIds.push(obj.id);
         }
       };
@@ -251,10 +286,10 @@ const vueComponentOptions = {
       })
     });
 
-    CatalogEventHub.$on('treenodeselected',function(storeid, node) {
+    CatalogEventHub.$on('treenodeselected', function (storeid, node) {
       const mapservice = GUI.getComponent('map').getService();
       let layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(node.id);
-      if (!layer.isSelected()) {
+      if(!layer.isSelected()) {
         CatalogLayersStoresRegistry.getLayersStore(storeid).selectLayer(node.id);
         // emit signal of select layer from catalog
         mapservice.emit('cataloglayerselected', layer);
@@ -265,7 +300,15 @@ const vueComponentOptions = {
     });
 
     CatalogEventHub.$on('showmenulayer', (layerstree, evt) => {
-      this.layerMenu.top = evt.y;
+      const layerId = layerstree.id;
+      const constMenuHeight = ((layerId) => {
+        return (1*this.canShowWmsUrl(layerId)
+          + 1*!!layerstree.bbox
+          + 1*!!layerstree.openattributetable
+          + 1*!!layerstree.color
+          + 1*this.canDownloadShp(layerId)) * 30;
+      })(layerId);
+      this.layerMenu.top = evt.y - constMenuHeight;
       this.layerMenu.left = evt.x;
       this.layerMenu.name = layerstree.name;
       this.layerMenu.layer = layerstree;
@@ -275,21 +318,18 @@ const vueComponentOptions = {
 
     ControlsRegistry.onafter('registerControl', (id, control) => {
       if (id === 'querybbox') {
-
         control.getInteraction().on('propertychange', (evt) => {
-          if (evt.key === 'active') {
-            this.state.highlightlayers=!evt.oldValue;
+          if(evt.key === 'active') {
+            this.state.highlightlayers = !evt.oldValue;
           }
         })
       }
     });
-
-    $('input:file').filestyle({
-      buttonText: "",
-      input: false,
-      buttonName: "btn-primary",
-      iconName: this.g3wtemplate.getFontClass('plus')
-    });
+  },
+  mounted() {
+    this.$nextTick(() => {
+      $('.catalog-menu-wms').tooltip();
+    })
   }
 };
 
@@ -520,8 +560,9 @@ Vue.component('layerslegend',{
         handler: function(val, old){},
         deep: true
       },
-      'visiblelayers'(n, o) {
-        o.length === 0 ? this.$emit('showlegend', true): n.length === 0 ? this.$emit('showlegend', false) : null;
+      'visiblelayers'(visibleLayers) {
+        const show = !!visibleLayers.length;
+        this.$emit('showlegend', show)
       }
     },
     created() {
@@ -530,7 +571,6 @@ Vue.component('layerslegend',{
     mounted: function() {
       this.$nextTick(function() {
         $('.legend-item').perfectScrollbar();
-
       });
     }
 });
@@ -577,7 +617,8 @@ Vue.component('layerslegend-items',{
 });
 
 
-function CatalogComponent(options) {
+function CatalogComponent(options={}) {
+  options.resizable = true;
   base(this, options);
   this.title = "catalog";
   this.mapComponentId = options.mapcomponentid;

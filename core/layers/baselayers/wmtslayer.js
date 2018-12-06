@@ -3,18 +3,19 @@ const base = require('core/utils/utils').base;
 const BaseLayer = require('core/layers/baselayers/baselayer');
 const BasesLayers = require('g3w-ol3/src/layers/bases');
 
-function OSMLayer(options){
+function WMTSLayer(options={}){
   base(this,options);
 }
 
-inherit(OSMLayer, BaseLayer);
+inherit(WMTSLayer, BaseLayer);
 
-const proto = OSMLayer.prototype;
+const proto = WMTSLayer.prototype;
 
 proto._makeOlLayer = function() {
-  const olLayer = BasesLayers.OSM;
+  //use this config to get params
+  const olLayer = BasesLayers.WMTS.get({});
   return olLayer
 };
 
 
-module.exports = OSMLayer;
+module.exports = WMTSLayer;

@@ -113,7 +113,7 @@ proto._makeOlLayer = function(withLayers) {
   }
   const representativeLayer = this.layers[0];
 
-  if (representativeLayer.state.source && representativeLayer.state.source.type == 'wms' && representativeLayer.state.source.url){
+  if (representativeLayer && representativeLayer.state.source && representativeLayer.state.source.type == 'wms' && representativeLayer.state.source.url){
     wmsConfig.url = representativeLayer.state.source.url;
   }
   const olLayer = new RasterLayers.WMSLayer(wmsConfig,this.extraParams);

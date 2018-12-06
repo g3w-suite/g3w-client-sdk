@@ -28,12 +28,6 @@ proto._makeOlLayer = function(){
       olLayer = BasesLayers.BING.Aerial;
       break;
   }
-  olLayer.getSource().on('imageloadstart', () => {
-        this.emit("loadstart");
-      });
-  olLayer.getSource().on('imageloadend', () => {
-      this.emit("loadend");
-  });
 
   return olLayer
 };

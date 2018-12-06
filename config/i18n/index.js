@@ -84,6 +84,15 @@ export default {
           messages: {
             qgis_input_widget_relation: "Gestisci le relazioni tramite form dedicato"
           }
+        },
+        catalog: {
+          menu: {
+            wms: {
+              title:"",
+              copy: "Clicca qui per copiare url",
+              copied: "Copiato"
+            }
+          }
         }
       }
     },
@@ -172,6 +181,15 @@ export default {
         form: {
           messages: {
             qgis_input_widget_relation: "Use relation specific form to work with relation"
+          }
+        },
+        catalog: {
+          menu: {
+            wms: {
+              titel:"",
+              copy: "Click here to copy url",
+              copied: "Copied"
+            }
           }
         }
       }

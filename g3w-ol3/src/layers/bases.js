@@ -23,6 +23,34 @@ BaseLayers.BING.Road = new ol.layer.Tile({
   basemap: true
 });
 
+BaseLayers.TMS =  {
+  get: function({visible=false, url=null, attributions}={}) {
+    return new ol.layer.Tile({
+      visible,
+      source: new ol.source.XYZ({
+        url,
+        attributions
+      }),
+      basemap: true
+    })
+  }
+};
+
+
+BaseLayers.WMTS = {
+  get: function({url, layer, visible, attributions, projection, format='image/png', opacity=0.7} = {}) {
+    return new ol.layer.Tile({
+      opacity,
+      source: new ol.source.WMTS({
+        attributions,
+        url,
+        layer,
+        format,
+        projection
+      })
+    })
+  }
+};
 
 BaseLayers.BING.AerialWithLabels = new ol.layer.Tile({
   name: 'AerialWithLabels',

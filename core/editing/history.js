@@ -271,17 +271,8 @@ proto.canRedo = function() {
 };
 
 proto._getStatesToCommit = function() {
-  // devo clonare lo states altrimenti ho problem con il reverse per undo e redo
-  let statesToCommit = this._current ? [...this._states]: [];
-  // qui ricavo solo la parte degli state che mi servono per ricostruire la storia
-  statesToCommit.reverse().forEach((state, idx) => {
-    if (this.getCurrentState() === state) {
-      // in pratica taglio il pezzo di storia "dopo" il current
-      statesToCommit = statesToCommit.slice(idx, statesToCommit.length);
-      return false;
-    }
-  });
-  return statesToCommit;
+  const cutIndex = this._current? this._current+1 : 0;
+  return this._states.slice(0, cutIndex);
 };
 
 

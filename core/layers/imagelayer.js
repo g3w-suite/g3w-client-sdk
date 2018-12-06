@@ -7,8 +7,7 @@ const WMSLayer = require('./map/wmslayer');
 const XYZLayer = require('./map/xyzlayer');
 const GeoLayerMixin = require('./geolayermixin');
 
-function ImageLayer(config) {
-  config = config || {};
+function ImageLayer(config={}) {
   /*{
     id,
     title,
@@ -81,6 +80,17 @@ proto.getWMSLayerName = function() {
   return layerName;
 };
 
+proto.getStringBBox = function() {
+  const bbox = this.config.bbox;
+  return `${bbox.minx},${bbox.miny},${bbox.maxx},${bbox.maxy}`;
+};
+
+proto.getFullWmsUrl = function() {
+  const url = this.getWmsUrl();
+  const sep = (url.indexOf('?') > -1) ? '&' : '?';
+  return `${url}${sep}SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=${this.getWMSLayerName()}&FORMAT=image/png&TRANSPARENT=true&WIDTH=1024&HEIGHT=1024&BBOX=${this.getStringBBox()}&CRS=${this.config.projection.getCode()}`;
+};
+
 proto.getWmsUrl = function() {
   let url;
   if (this.config.source && this.config.source.type == 'wms' && this.config.source.url) {
@@ -101,7 +111,7 @@ proto.getQueryUrl = function() {
 
 proto.getLegendUrl = function() {
   let url = this.getWmsUrl();
-  sep = (url.indexOf('?') > -1) ? '&' : '?';
+  const sep = (url.indexOf('?') > -1) ? '&' : '?';
   return url+sep+'SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.1.0&FORMAT=image/png&TRANSPARENT=true&ITEMFONTCOLOR=white&LAYERTITLE=True&ITEMFONTSIZE=10&WIDTH=300&LAYER='+this.getWMSLayerName();
 };
 

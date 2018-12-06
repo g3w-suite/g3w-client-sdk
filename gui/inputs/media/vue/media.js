@@ -32,7 +32,7 @@ const MediaInput = Vue.extend({
         name: fieldName
       };
       //check if token exist di django
-      var csrftoken = this.$cookie.get('csrftoken');
+      const csrftoken = this.$cookie.get('csrftoken');
       if (csrftoken) {
         formData.csrfmiddlewaretoken = csrftoken;
       }

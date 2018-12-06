@@ -115,7 +115,7 @@ proto.save = function(options={}) {
   const d = $.Deferred();
   // add temporary modify to history
   if (this._temporarychanges.length) {
-    var uniqueId = options.id || Date.now();
+    const uniqueId = options.id || Date.now();
     this._history.add(uniqueId, this._temporarychanges)
       .then(() => {
         // clear to temporary changes
@@ -305,8 +305,8 @@ proto._serializeCommit = function(itemsToCommit) {
       }
     });
     // check in case of no edit remove relation key
-    if (isRelation && !layer.add.length && !layer.update.lenght && !layer.delete.length) {
-      delete commitObj.relations[key];
+    if (isRelation && !layer.add.length && !layer.update.length && !layer.delete.length) {
+      delete commitObj.relations[layerId];
     }
   }
   return commitObj;

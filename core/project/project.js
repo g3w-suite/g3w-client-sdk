@@ -5,7 +5,7 @@ const LayerFactory = require('core/layers/layerfactory');
 const LayersStore = require('core/layers/layersstore');
 const Projections = require('g3w-ol3/src/projection/projections');
 
-function Project(config={}) {
+function Project(config={}, options={}) {
   /* structure 'project' object
   {
     id,
