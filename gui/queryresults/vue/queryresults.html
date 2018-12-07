@@ -18,7 +18,7 @@
                     <tr>
                       <th v-for="n in state.layersactions[layer.id]" :style="{ width:headerExpandActionCellWidth + '%' }"></th>
                       <th v-for="(attribute, index) in attributesSubset(layer.attributes)">{{attribute.label}}</th>
-                      <th v-show="!hasOneLayerAndOneFeature"></th>
+                      <th v-show="!hasOneLayerAndOneFeature(layer)"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -33,11 +33,11 @@
                           <span>{{feature.attributes[attribute.name]}}</span>
                         </td>
                         <td class="action-cell right">
-                          <span v-if="!hasOneLayerAndOneFeature" class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? g3wtemplate.font['plus'] : g3wtemplate.font['minus']]"></span>
+                          <span v-if="!hasOneLayerAndOneFeature(layer)" class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? g3wtemplate.font['plus'] : g3wtemplate.font['minus']]"></span>
                           <span v-else></span>
                         </td>
                       </tr>
-                      <tr v-if="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature" class="featurebox-body">
+                      <tr v-if="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" class="featurebox-body">
                         <td :colspan="attributesSubsetLength(layer.attributes)+state.layersactions[layer.id].length+(state.layersactions[layer.id].length ? 1 : 0)">
                           <tabs :fields="getQueryFields(layer, feature)" :tabs="layer.formStructure.structure"></tabs>
                         </td>
@@ -51,7 +51,7 @@
                   <tr>
                     <th v-for="n in state.layersactions[layer.id]" :style="{ width:headerExpandActionCellWidth + '%' }"></th>
                     <th v-for="(attribute, index) in attributesSubset(layer.attributes)">{{attribute.label}}</th>
-                    <th v-if="!hasOneLayerAndOneFeature"></th>
+                    <th v-if="!hasOneLayerAndOneFeature(layer)"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -66,11 +66,11 @@
                       <span>{{feature.attributes[attribute.name]}}</span>
                     </td>
                     <td class="action-cell right">
-                      <span v-if="!hasOneLayerAndOneFeature"  class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? g3wtemplate.font['plus'] : g3wtemplate.font['minus']]"></span>
+                      <span v-if="!hasOneLayerAndOneFeature(layer)"  class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? g3wtemplate.font['plus'] : g3wtemplate.font['minus']]"></span>
                       <span v-else></span>
                     </td>
                   </tr>
-                  <tr v-if="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature" class="featurebox-body">
+                  <tr v-if="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" class="featurebox-body">
                     <td :colspan="attributesSubsetLength(layer.attributes)+(state.layersactions[layer.id].length || 1)+(state.layersactions[layer.id].length ? 1 : 0)">
                       <table class="feature_attributes">
                         <tr v-for="attribute in layer.attributes">

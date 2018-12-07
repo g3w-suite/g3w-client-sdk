@@ -136,14 +136,13 @@ const vueComponentOptions = {
     },
     canShowWmsUrl(layerId) {
       const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
-      return !!originalLayer.getWmsUrl
+      return !!originalLayer.getFullWmsUrl()
     },
     canDownloadShp(layerId) {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       return layer.isShpDownlodable();
     },
     copyWmsUrl(evt, url) {
-      $(evt.target).tooltip('hide');
       let ancorEement = document.createElement('a');
       ancorEement.href = url;
       const tempInput = document.createElement('input');
@@ -151,11 +150,10 @@ const vueComponentOptions = {
       document.body.appendChild(tempInput);
       tempInput.select();
       document.execCommand("copy");
-      $(evt.target).attr('title', t('sdk.catalog.menu.wms.copied')).tooltip('fixTitle').tooltip('show');
+      $(evt.target).attr('data-original-title', t('sdk.catalog.menu.wms.copied')).tooltip('show');
       $(evt.target).attr('title', this.copywmsurltooltip).tooltip('fixTitle');
       document.body.removeChild(tempInput);
       ancorEement = null;
-      this._hideMenu();
     },
     showWMSUrl(layerId) {
       const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);

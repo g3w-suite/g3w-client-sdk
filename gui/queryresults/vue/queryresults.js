@@ -31,20 +31,19 @@ const vueComponentOptions = {
   computed: {
     hasLayers: function() {
       return !!this.state.layers.length || !!this.state.components.length;
-    },
-    hasOneLayerAndOneFeature() {
-      const one = this.state.layers.length == 1 && this.state.layers[0].features.length == 1;
+    }
+  },
+  methods: {
+    hasOneLayerAndOneFeature(layer) {
+      const one = layer.features.length == 1;
       if (one) {
-        const layer = this.state.layers[0];
-        const feature = this.state.layers[0].features[0];
+        const feature = layer.features[0];
         const boxid = this.getBoxId(layer, feature);
         this.layersFeaturesBoxes[boxid].collapsed = false;
         this.showFeatureInfo(layer, boxid);
       }
       return one;
-    }
-  },
-  methods: {
+    },
     hasFormStructure(layer) {
       return !!layer.formStructure;
     },

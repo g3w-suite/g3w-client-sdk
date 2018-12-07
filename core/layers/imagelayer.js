@@ -86,9 +86,11 @@ proto.getStringBBox = function() {
 };
 
 proto.getFullWmsUrl = function() {
-  const url = this.getWmsUrl();
+  const ProjectsRegistry = require('core/project/projectsregistry');
+  const wms_url = ProjectsRegistry.getCurrentProject().getState().metadata.wms_url;
+  const url = this.isExternalWMS() || !wms_url ? this.getWmsUrl() : wms_url ;
   const sep = (url.indexOf('?') > -1) ? '&' : '?';
-  return `${url}${sep}SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=${this.getWMSLayerName()}&FORMAT=image/png&TRANSPARENT=true&WIDTH=1024&HEIGHT=1024&BBOX=${this.getStringBBox()}&CRS=${this.config.projection.getCode()}`;
+  return `${url}${sep}SERVICE=WMS&VERSION=1.3.0`;
 };
 
 proto.getWmsUrl = function() {

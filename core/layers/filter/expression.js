@@ -1,3 +1,4 @@
+//Expression
 function Expression() {
   this._expression = '';
 }
@@ -75,54 +76,45 @@ proto._build = function(operator, field, value) {
 };
 
 proto.createExpressionFromFilter = function(filterObject, layername) {
-  /////insert (typename) ///
-  let filter = [];
   function createSingleFilter(booleanObject) {
     let filterElements = [];
-    let filterElement = '';
-    let valueExtra = "";
-    let valueQuotes = "'";
     let rootFilter;
-    _.forEach(booleanObject, function(v, k, obj) {
-      //root filter AND or OR
-      rootFilter = Expression.OPERATORS[k];
-      //boolean array
-      _.forEach(v, function(input){
-        //loop on the obejct
-        valueExtra = "";
-        _.forEach(input, function(v, k, obj) {
-          if (_.isArray(v)) {
-            filterElement = createSingleFilter(obj);
+    for (const operator in booleanObject) {
+      rootFilter = Expression.OPERATORS[operator];
+      const inputs = booleanObject[operator];
+      inputs.forEach((input) => {
+        for (const operator in input) {
+          const value = input[operator];
+          if (Array.isArray(value)) {
+            filterElement = createSingleFilter(input);
           } else {
-            if (k == 'LIKE' || k == 'ILIKE') {
-              valueExtra = "%";
-            }
-            filterOp = Expression.OPERATORS[k];
-            let value;
-            _.forEach(input, function(v, k, obj) {
-              _.forEach(v, function(v, k, obj) {
-                if (!(_.isNull(v) || (_.isNaN(v) || _.trim(v) == ''))) {
-                  filterElement = "\"" + k + "\" "+ filterOp +" " + valueQuotes + valueExtra + v + valueExtra + valueQuotes;
+            const valueExtra = (operator === 'LIKE' || operator === 'ILIKE')  ? "%": "";
+            filterOp = Expression.OPERATORS[operator];
+            for (const operator in input) {
+              const field = input[operator];
+              for (const name in field) {
+                const value = field[name];
+                if (value !== null && !(Number.isNaN(value) || !value.toString().trim())) {
+                  const filterElement = `"${name}" ${filterOp} '${valueExtra}${value}${valueExtra}'`;
                   filterElements.push(filterElement);
                 }
-              });
-            });
+              }
+            }
           }
-        });
+        }
       });
       rootFilter = (filterElements.length > 0) ? filterElements.join(" "+ rootFilter + " ") : false;
-    });
+    }
     return rootFilter;
   }
-  if (createSingleFilter(filterObject)) {
-    this._expression = layername + ":" + createSingleFilter(filterObject);
-    return this;
-  } else {
-    return this
-  }
+
+  const filter = createSingleFilter(filterObject);
+  if (filter)
+    this._expression = `${layername}:${filter}`;
+  return this
 };
 
-
+// map object between operator
 Expression.OPERATORS = {
   eq: '=',
   gt: '>',

@@ -345,8 +345,6 @@ proto.getLayerByName = function(name) {
   return layer;
 };
 
-
-
 // return layer by id
 proto.getLayerById = function(id) {
   let layer;

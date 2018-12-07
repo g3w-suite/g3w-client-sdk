@@ -16,7 +16,6 @@ function Layer(config = {}) {
     this.config.urls.data = `${vectorUrl}data/${suffixUrl}`;
     this.config.urls.shp = `${vectorUrl}shp/${suffixUrl}`;
   });
-
   this.config = _.merge({
     id: config.id || 'Layer' ,
     title: config.title  || config.name,
@@ -63,7 +62,6 @@ function Layer(config = {}) {
   const serverType = this.config.servertype;
   // source layer
   const sourceType = this.config.source ? this.config.source.type : null;
-
   if (serverType && sourceType) {
     this.providers = {
       query: ProviderFactory.build('query', serverType, sourceType, {
@@ -260,8 +258,12 @@ proto.getSource = function() {
   return this.state.source;
 };
 
+proto.getSourceType = function() {
+  return this.state.source ? this.state.source.type : null;
+};
+
 proto.isShpDownlodable = function() {
-  const type = this.getSource().type;
+  const type = this.getSourceType();
   return type === 'postgres' || type === 'sqlite' || type === 'spatialite';
 };
 

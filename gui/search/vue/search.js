@@ -2,32 +2,32 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const Component = require('gui/vue/component');
 const ProjectsRegistry = require('core/project/projectsregistry');
-const SearchesService = require('gui/search/searchesservice');
+const Service = require('gui/search/searchesservice');
 import G3wTool from 'gui/tools/vue/tool.vue'
 
 const vueComponentOptions = {
    template: require('./search.html'),
    data: function() {
-    	return {
-    	  state: null
-    	};
+     return {
+       state: null
+     };
    },
   components: {
     G3wTool
   },
    methods: {
-    showSearchPanel: function(search) {
-        this.$options.service.showSearchPanel(search);
+    showPanel: function(config) {
+      this.$options.service.showPanel(config);
     }
   }
 };
 
 const InternalComponent = Vue.extend(vueComponentOptions);
 
-function SearchComponent(options){
-  base(this,options);
+function SearchComponent(options={}){
+  base(this, options);
   this.id = "search";
-  this._service = new SearchesService();
+  this._service = options.service || new Service();
   this.title = this._service.getTitle();
   this.internalComponent = new InternalComponent({
     service: this._service
@@ -45,4 +45,5 @@ function SearchComponent(options){
 }
 
 inherit(SearchComponent, Component);
+
 module.exports = SearchComponent;

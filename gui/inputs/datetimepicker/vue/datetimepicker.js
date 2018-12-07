@@ -54,11 +54,7 @@ const DateTimePickerInput = Vue.extend({
       });
       $(`#${this.iddatetimepicker}`).on("dp.change", (e) => {
         const newDate = $('#'+this.idinputdatetimepiker).val();
-        if (_.isEmpty(_.trim(newDate)))
-          this.state.value =  null;
-        else {
-          this.state.value =  moment(newDate).format(datetimefieldformat);
-        }
+        this.state.value = _.isEmpty(_.trim(newDate)) ? null : moment(newDate, datetimedisplayformat).format(datetimefieldformat);
         this.widgetChanged();
       });
       $(`#${this.iddatetimepicker}`).on("dp.show", (e) => {
