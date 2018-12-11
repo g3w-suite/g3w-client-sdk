@@ -89,8 +89,7 @@ proto.getFullWmsUrl = function() {
   const ProjectsRegistry = require('core/project/projectsregistry');
   const wms_url = ProjectsRegistry.getCurrentProject().getState().metadata.wms_url;
   const url = this.isExternalWMS() || !wms_url ? this.getWmsUrl() : wms_url ;
-  const sep = (url.indexOf('?') > -1) ? '&' : '?';
-  return `${url}${sep}SERVICE=WMS&VERSION=1.3.0`;
+  return url;
 };
 
 proto.getWmsUrl = function() {

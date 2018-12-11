@@ -1,9 +1,8 @@
 const inherit = require('core/utils/utils').inherit;
 const t = require('core/i18n/i18n.service').t;
-const GUI = require('gui/gui');
 const Panel = require('gui/panel');
 
-const SearchPanelComponet = Vue.extend({
+const SearchPanelComponent = Vue.extend({
   template: require('./searchpanel.html'),
   data: function() {
     return {
@@ -89,7 +88,7 @@ function SearchPanel(options = {}) {
   this.config;
   this.id;
   this.querylayerid;
-  this.internalPanel = options.internalPanel || new SearchPanelComponet();
+  this.internalPanel = options.internalPanel || new SearchPanelComponent();
 
   this.init = function(config = {}) {
     this.config = config;
