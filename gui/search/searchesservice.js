@@ -106,6 +106,52 @@ proto.createQueryFilterFromConfig = function({filter}) {
   return queryFilter;
 };
 
+
+proto.fillDependencyInputs = function({field, subscribers=[], value=''}={}) {
+  if (value) {
+    this.queryService = GUI.getComponent('queryresults').getService();
+    const equality = {};
+    equality[field] = value;
+    const filter = {
+      AND: [{
+        eq: equality
+      }]
+    };
+    const expression = new Expression();
+    const layerName = this.searchLayer.getName();
+    expression.createExpressionFromFilter(filter, layerName);
+    const _filter = new Filter();
+    _filter.setExpression(expression.get());
+    this.searchLayer.search({
+      filter: _filter
+    }).then((response) => {
+        const digestResults = this.queryService._digestFeaturesForLayers(response);
+        if (digestResults.length) {
+          const features = digestResults[0].features;
+          for (let i = 0; i < subscribers.length; i++) {
+            const subscribe = subscribers[i];
+            subscribe.input.options.values.splice(0, 0);
+            features.forEach((feature) => {
+              const value = feature.attributes[subscribe.attribute];
+              if (value)
+                subscribe.input.options.values.push(value);
+            });
+            subscribe.input.options.disabled = false;
+          }
+
+        } else
+          subscribe.input.options.values.splice(0, 0);
+      }).fail((err) => {
+
+      })
+  } else {
+    for (let i = 0; i < subscribers.length; i++) {
+      const subscribe = subscribers[i];
+      subscribe.input.options.values.splice(0, 0);
+    }
+  }
+};
+
 proto.fillInputsFormFromFilter = function({filter}) {
   let id = 0;
   let formValue;
@@ -116,10 +162,23 @@ proto.fillInputsFormFromFilter = function({filter}) {
     inputs.forEach((input) => {
       formValue = {};
       input.id = id;
+
+      /////FAKE///
+      // if (input.input.type !== 'selectfield') {
+      //   input.input.type = 'selectfield';
+      //   input.input.options.dependency = 'foglio';
+      //   input.input.options.disabled = true;
+      //   input.input.options.values =  [];
+      // }
+
+      /// END FAKE ///
+
+
       input.input.type = input.input.type || 'textfield';
       formValue.type = input.input.type;
       if (input.input.type === 'selectfield') {
         if (input.input.options.values[0] !== '')
+          //add a starting all
           input.input.options.values.unshift('');
         formValue.value = '';
       } else

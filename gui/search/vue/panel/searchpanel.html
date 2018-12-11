@@ -12,9 +12,9 @@
       </div>
       <div v-if="forminput.input.type == 'selectfield'" class="form-group text">
         <label :for="forminput.id">{{ forminput.label }}</label>
-        <select v-model="formInputValues[index].value" class="form-control" :id="index">
-          <option :value="value" v-for="value in forminput.input.options.values">
-            <span v-if="value == ''" v-t="'sdk.search.all'"></span>
+        <select @change="selectChange(forminput.attribute, formInputValues[index].value)" v-model="formInputValues[index].value" class="form-control" :id="index" :disabled="forminput.input.options.disabled">
+          <option :value="value" v-for="value in forminput.input.options.values" >
+            <span v-if="value === ''" v-t="'sdk.search.all'"></span>
             <span v-else>{{ value }}</span>
           </option>
         </select>

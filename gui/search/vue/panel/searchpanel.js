@@ -1,9 +1,8 @@
 const inherit = require('core/utils/utils').inherit;
 const t = require('core/i18n/i18n.service').t;
-const GUI = require('gui/gui');
 const Panel = require('gui/panel');
 
-const SearchPanelComponet = Vue.extend({
+const SearchPanelComponent = Vue.extend({
   template: require('./searchpanel.html'),
   data: function() {
     return {
@@ -11,6 +10,7 @@ const SearchPanelComponet = Vue.extend({
       forminputs: [],
       formInputValues : [],
       filterObject: null,
+      dependencies:[],
       queryurl: null
     }
   },
@@ -24,6 +24,18 @@ const SearchPanelComponet = Vue.extend({
           }, 500)
         });
 
+      }
+    },
+    selectChange(attribute, value) {
+      const dependency = !!this.dependencies.length && this.dependencies.find((_dependency) => {
+        return attribute === _dependency.observer
+      });
+      if (dependency) {
+        this.service.fillDependencyInputs({
+          field: attribute,
+          subscribers: dependency.subscribers,
+          value
+        })
       }
     },
     doSearch: function(event) {
@@ -60,11 +72,24 @@ const SearchPanelComponet = Vue.extend({
       // Return `null` if the term should not be displayed
       return null;
     }
-
     this.$nextTick(() => {
-      this.$on('select-change', (options) => {
-        this.formInputValues[options.index].value = options.value;
-      });
+      for (let i=0; i < this.forminputs.length ; i++) {
+        const input = this.forminputs[i];
+        if (input.input.options.dependency) {
+          const key = input.input.options.dependency;
+          let dependency = this.dependencies.find((_dependency) => {
+            _dependency.observer === key;
+          });
+          if (!dependency) {
+            dependency = {
+              observer: key,
+              subscribers: []
+            };
+            this.dependencies.push(dependency)
+          }
+          dependency.subscribers.push(input)
+        }
+      }
       $('#g3w-search-form > select').select2({
         width: '100%',
         matcher: matchCustom,
@@ -73,12 +98,6 @@ const SearchPanelComponet = Vue.extend({
             return t("no_results");
           }
         },
-      }).on('change', (evt) => {
-        const select = $(evt.target);
-        this.$emit('select-change', {
-          index: select.attr('id'),
-          value: select.val()
-        })
       })
     })
 
@@ -101,6 +120,7 @@ function SearchPanel(options = {}) {
     const queryLayerId = this.config.options.querylayerid || this.querylayerid;
     const queryLayer = this.service.getLayerById(queryLayerId);
     this.service.setSearchLayer(queryLayer);
+    // here set forminputs and formInputValues
     Object.assign(this.internalPanel, this.service.fillInputsFormFromFilter({
       filter
     }));
