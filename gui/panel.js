@@ -2,9 +2,8 @@ const inherit = require('core/utils/utils').inherit;
 const resolvedValue = require('core/utils/utils').resolve;
 const G3WObject = require('core/g3wobject');
 
-const Panel = function(options) {
+const Panel = function(options={}) {
   this.internalPanel = null;
-  options = options || {};
   this.id = options.id || null;
   this.title = options.title || '';
 };

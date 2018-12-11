@@ -53,27 +53,6 @@ proto.clear = function() {
   this._filter = null;
 };
 
-proto.fill = function({values, gIndex} = {}) {
-  for (const operator in this._filter) {
-    const inputs = this._filter[operator];
-    inputs.forEach((input, idx) => {
-      for (const operator in input) {
-        const _input = input[operator];
-        if (Array.isArray(_input))
-          this.fillFilterInputsWithValues(_input, values, idx);
-        else
-          for (const fieldName in _input) {
-            const index = (gIndex) ? gIndex + idx : idx;
-            const type = values[index].type;
-            const value = values[index].value;
-            _input[fieldName] = type === 'numberfield' ? parseInt(value): value;
-          }
-      }
-    });
-  }
-};
-
-
 Filter.TYPES = {
   bbox: 'bbox',
   geometry: 'geometry',

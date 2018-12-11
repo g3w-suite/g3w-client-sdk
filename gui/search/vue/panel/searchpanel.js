@@ -6,12 +6,7 @@ const SearchPanelComponent = Vue.extend({
   template: require('./searchpanel.html'),
   data: function() {
     return {
-      title: "",
-      forminputs: [],
-      formInputValues : [],
-      filterObject: null,
-      dependencies:[],
-      queryurl: null
+     state: this.$options.service.state
     }
   },
   methods: {
@@ -31,21 +26,26 @@ const SearchPanelComponent = Vue.extend({
         return attribute === _dependency.observer
       });
       if (dependency) {
-        this.service.fillDependencyInputs({
+        this.loading[attribute] = true;
+        this.$options.service.fillDependencyInputs({
           field: attribute,
           subscribers: dependency.subscribers,
           value
-        })
+        });
+        if (!value) {
+          for (let i =0; i< dependency.subscribers.length; i++) {
+
+            const forminputvalue = this.formInputValues.find((input) => {
+              return input.attribute === dependency.subscribers[i].attribute;
+            });
+            forminputvalue.value = '';
+          }
+        }
       }
     },
     doSearch: function(event) {
       event.preventDefault();
-      const filterObject = this.service.fillFilterInputsWithValues(this.filterObject, this.formInputValues);
-      this.service.doSearch({
-        url: this.queryurl,
-        title: this.title,
-        filter: filterObject.filter
-      });
+      this.$options.service.run();
     }
   },
   mounted() {
@@ -73,23 +73,6 @@ const SearchPanelComponent = Vue.extend({
       return null;
     }
     this.$nextTick(() => {
-      for (let i=0; i < this.forminputs.length ; i++) {
-        const input = this.forminputs[i];
-        if (input.input.options.dependency) {
-          const key = input.input.options.dependency;
-          let dependency = this.dependencies.find((_dependency) => {
-            _dependency.observer === key;
-          });
-          if (!dependency) {
-            dependency = {
-              observer: key,
-              subscribers: []
-            };
-            this.dependencies.push(dependency)
-          }
-          dependency.subscribers.push(input)
-        }
-      }
       $('#g3w-search-form > select').select2({
         width: '100%',
         matcher: matchCustom,
@@ -100,41 +83,15 @@ const SearchPanelComponent = Vue.extend({
         },
       })
     })
-
   }
 });
 
-function SearchPanel(options = {}) {
-  this.config;
-  this.id;
-  this.querylayerid;
-  this.internalPanel = options.internalPanel || new SearchPanelComponet();
-
-  this.init = function(config = {}) {
-    this.config = config;
-    const Service = require('gui/search/searchesservice');
-    this.service = config.service || new Service();
-    this.name = this.config.name || this.name;
-    this.id = this.config.id || this.id;
-    const filter = this.config.options.filter || filter;
-    const queryLayerId = this.config.options.querylayerid || this.querylayerid;
-    const queryLayer = this.service.getLayerById(queryLayerId);
-    this.service.setSearchLayer(queryLayer);
-    // here set forminputs and formInputValues
-    Object.assign(this.internalPanel, this.service.fillInputsFormFromFilter({
-      filter
-    }));
-    const filterObjFromConfig = this.service.createQueryFilterFromConfig({
-      filter
-    });
-    this.internalPanel.filterObject = this.service.createQueryFilterObject({
-      queryLayer,
-      filter: filterObjFromConfig
-    });
-    this.internalPanel.queryurl = this.config.options.queryurl || null;
-    this.internalPanel.service = this.service;
-    this.internalPanel.title = this.name;
-  };
+function SearchPanel({state, service} = {}) {
+  this.internalComponent = new SearchPanelComponent({
+    state,
+    service
+  });
+  this.setInternalPanel(this.internalComponent)
 }
 
 inherit(SearchPanel, Panel);
