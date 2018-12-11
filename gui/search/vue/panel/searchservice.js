@@ -209,7 +209,7 @@ proto.fillFilterInputsWithValues = function(filter=this.filter) {
   const forminputs = this.state.forminputs;
   const filterWithValues = {};
   for (const operator in filter) {
-    filterWithValues[operator] = {};
+    filterWithValues[operator] = [];
     const inputs = filter[operator];
     inputs.forEach((input) => {
       const _input = input.input;
