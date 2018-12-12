@@ -4,7 +4,6 @@ const G3WObject = require('core/g3wobject');
 const CatalogLayersStorRegistry = require('core/catalog/cataloglayersstoresregistry');
 const Filter = require('core/layers/filter/filter');
 const Expression = require('core/layers/filter/expression');
-const SearchPanel = require('./searchpanel');
 
 function SearchService(config={}) {
   // reactivity data
@@ -22,13 +21,10 @@ function SearchService(config={}) {
     this.state.title = config.name;
     const options = config.options || {};
     this.filter = options.filter;
-    const layerid = options.querylayerid || options.layer.id || null;
+    const layerid = options.querylayerid || options.layerid || null;
     this.searchLayer = CatalogLayersStorRegistry.getLayerById(layerid);
-    const filter = options.filter || {AND:[]}
+    const filter = options.filter || {AND:[]};
     this.fillInputsFormFromFilter({filter});
-    return new SearchPanel({
-      service: this
-    })
   };
   return this.init(config);
 }
@@ -76,12 +72,17 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=''}={}) {
       for (let i = 0; i < subscribers.length; i++) {
         const subscribe = subscribers[i];
         const values = this.state.cachedependencies[field][value][subscribe.attribute];
-        for (let i = 0; i <values.length; i++) {
-          subscribe.input.options.values.push(values[i]);
+        if (values && values.length) {
+          subscribe.options.values.splice(1);
+          for (let i = 0; i <values.length; i++) {
+            subscribe.options.values.push(values[i]);
+          }
         }
-        subscribe.input.options.disabled = false;
+        subscribe.value = '';
+        subscribe.options.disabled = false;
       }
     } else {
+      this.state.loading[field] = true;
       this.state.cachedependencies[field] = this.state.cachedependencies[field] ? this.state.cachedependencies[field] : {};
       this.state.cachedependencies[field][value] = this.state.cachedependencies[field][value] ? this.state.cachedependencies[field][value] : {};
       this.queryService = GUI.getComponent('queryresults').getService();
@@ -105,26 +106,33 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=''}={}) {
           const features = digestResults[0].features;
           for (let i = 0; i < subscribers.length; i++) {
             const subscribe = subscribers[i];
-            subscribe.input.options.values.splice(1);
+            subscribe.options.values.splice(1);
+            let uniqueValue = new Set();
             features.forEach((feature) => {
               let value = feature.attributes[subscribe.attribute];
-              if (value) {
-                subscribe.input.options.values.push(value);
+              if (value && !uniqueValue.has(value)) {
+                subscribe.options.values.push(value);
+                uniqueValue.add(value);
               }
             });
-            subscribe.input.options.values.sort();
-            this.state.cachedependencies[field][value][subscribe.attribute] = subscribe.input.options.values.slice(1);
-            subscribe.input.options.disabled = false;
+            uniqueValue = null;
+            subscribe.options.values.sort();
+            this.state.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
+            subscribe.value = '';
+            subscribe.options.disabled = false;
           }
         } else
-          subscribe.input.options.values.splice(1);
+          subscribe.options.values.splice(1);
       }).fail((err) => {})
+        .always(() => {
+          this.state.loading[field] = false;
+        })
     }
   } else {
     for (let i = 0; i < subscribers.length; i++) {
       const subscribe = subscribers[i];
-      subscribe.input.options.disabled = true;
-      subscribe.input.options.values.splice(1);
+      subscribe.options.disabled = true;
+      subscribe.options.values.splice(1);
     }
   }
 };
@@ -159,17 +167,18 @@ proto.fillInputsFormFromFilter = function({filter}) {
         value: '',
         id: input.id
       };
-      /////FAKE///
-      if (forminput.type !== 'selectfield') {
-        forminput.type = 'selectfield';
-        forminput.options.dependency = 'foglio';
-        this.state.loading['foglio'] = false;
-        forminput.options.disabled = true;
-        forminput.options.values =  [];
-      } else {
-        forminput.options.disabled = false;
-      }
-      /// END FAKE ///
+
+      /FAKE///
+      // if (forminput.type !== 'selectfield') {
+      //   forminput.type = 'selectfield';
+      //   forminput.options.dependency = 'foglio';
+      //   this.state.loading['foglio'] = false;
+      //   forminput.options.disabled = true;
+      //   forminput.options.values =  [];
+      // } else {
+      //   forminput.options.disabled = false;
+      // }
+      // END FAKE ///
 
       if (forminput.type === 'selectfield') {
         if (forminput.options.values[0] !== '')
@@ -205,26 +214,27 @@ proto.getInfoFromLayer = function(ogcService) {
   };
 };
 
-proto.fillFilterInputsWithValues = function(filter=this.filter) {
+proto.fillFilterInputsWithValues = function(filter=this.filter, filterWithValues={}) {
   const forminputs = this.state.forminputs;
-  const filterWithValues = {};
   for (const operator in filter) {
     filterWithValues[operator] = [];
     const inputs = filter[operator];
     inputs.forEach((input) => {
       const _input = input.input;
-      if(Array.isArray(_input))
+      if (Array.isArray(_input)){
         this.fillFilterInputsWithValues(_input);
-      else {
+      } else {
         const _operator = input.op;
         const fieldName = input.attribute;
-          filterWithValues[operator][_operator] = {};
+        const filterInput = {};
+        filterInput[_operator] = {};
         const forminputwithvalue = forminputs.find((forminput) => {
             return forminput.attribute === fieldName;
         });
         const type = forminputwithvalue.type;
         const value = forminputwithvalue.value;
-        filterWithValues[operator][_operator][fieldName] = type === 'numberfield' ? parseInt(value) : value;
+        filterInput[_operator][fieldName] = type === 'numberfield' ? parseInt(value) : value;
+        filterWithValues[operator].push(filterInput);
       }
     })
   }
@@ -253,7 +263,7 @@ proto.run = function() {
   _filter.setExpression(expression.get());
   this.searchLayer.search({
     filter: _filter,
-    queryUrl: url
+    queryUrl: null
   })
     .then((results) => {
       results = {

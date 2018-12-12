@@ -1,6 +1,7 @@
 const inherit = require('core/utils/utils').inherit;
 const t = require('core/i18n/i18n.service').t;
 const Panel = require('gui/panel');
+const Service = require('./searchservice');
 
 const SearchPanelComponent = Vue.extend({
   template: require('./searchpanel.html'),
@@ -22,11 +23,10 @@ const SearchPanelComponent = Vue.extend({
       }
     },
     selectChange(attribute, value) {
-      const dependency = !!this.dependencies.length && this.dependencies.find((_dependency) => {
+      const dependency = !!this.state.dependencies.length && this.state.dependencies.find((_dependency) => {
         return attribute === _dependency.observer
       });
       if (dependency) {
-        this.loading[attribute] = true;
         this.$options.service.fillDependencyInputs({
           field: attribute,
           subscribers: dependency.subscribers,
@@ -34,7 +34,6 @@ const SearchPanelComponent = Vue.extend({
         });
         if (!value) {
           for (let i =0; i< dependency.subscribers.length; i++) {
-
             const forminputvalue = this.formInputValues.find((input) => {
               return input.attribute === dependency.subscribers[i].attribute;
             });
@@ -86,9 +85,10 @@ const SearchPanelComponent = Vue.extend({
   }
 });
 
-function SearchPanel({state, service} = {}) {
-  this.internalComponent = new SearchPanelComponent({
-    state,
+function SearchPanel(options = {}) {
+  const service = options.service || new Service(options);
+  const SearchPanel = options.component || SearchPanelComponent;
+  this.internalComponent = new SearchPanel({
     service
   });
   this.setInternalPanel(this.internalComponent)
