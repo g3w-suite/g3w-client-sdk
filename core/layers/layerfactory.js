@@ -48,6 +48,8 @@ function LayerFactory() {
         break;
       case Layer.ServerTypes.OSM:
       case Layer.ServerTypes.BING:
+      case Layer.ServerTypes.TMS:
+      case Layer.ServerTypes.WMTS:
         LayerClass = BaseLayers[serverType];
         break;
       case Layer.ServerTypes.G3WSUITE:

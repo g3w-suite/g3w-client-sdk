@@ -1,27 +1,32 @@
 <div class="g3w-search-panel form-group">
-  <h4><b>{{ title }}</b></h4>
-  <form id="g3w-search-form">
-    <template v-for="(forminput, index) in forminputs">
-      <div v-if="forminput.input.type == 'numberfield'" class="form-group numeric">
-        <label :for="forminput.id + ' '">{{ forminput.label }}</label>
-        <input type="number" v-model="formInputValues[index].value" class="form-control" :id="index">
+  <h4><b>{{ state.title }}</b></h4>
+  <slot name="tools"></slot>
+  <slot name="form">
+    <form id="g3w-search-form">
+      <template v-for="forminput in state.forminputs" :key="forminput.id">
+        <div v-if="forminput.type == 'numberfield'" class="form-group numeric">
+          <label :for="forminput.id + ' '">{{ forminput.label }}</label>
+          <input type="number" v-model="forminput.value" class="form-control" :id="forminput.id">
+        </div>
+        <div v-if="forminput.type === 'textfield' || forminput.type === 'textField'" class="form-group form-item-search  text">
+          <label :for="forminput.id">{{ forminput.label }}</label>
+          <input @focus="onFocus" type="text" v-model="forminput.value" class="form-control" :id="forminput.id">
+        </div>
+        <div v-if="forminput.type == 'selectfield'" class="form-group text">
+          <label :for="forminput.id">{{ forminput.label }}</label>
+          <bar-loader v-if ="forminput.options.dependance" :loading="state.loading[forminput.options.dependance]"></bar-loader>
+          <select @change="selectChange(forminput.attribute, forminput.value)" v-model="forminput.value" class="form-control" :id="forminput.id" :disabled="forminput.options.disabled">
+            <option :value="value" v-for="value in forminput.options.values" >
+              <span v-if="value === ''" v-t="'sdk.search.all'"></span>
+              <span v-else>{{ value }}</span>
+            </option>
+          </select>
+        </div>
+      </template>
+      <div class="form-group">
+        <button id="dosearch" class="btn btn-block pull-right" @click="doSearch($event)" data-i18n="dosearch">Search</button>
       </div>
-      <div v-if="forminput.input.type == 'textfield' || forminput.input.type == 'textField'" class="form-group form-item-search  text">
-        <label :for="forminput.id">{{ forminput.label }}</label>
-        <input @focus="onFocus" type="text" v-model="formInputValues[index].value" class="form-control" :id="index">
-      </div>
-      <div v-if="forminput.input.type == 'selectfield'" class="form-group text">
-        <label :for="forminput.id">{{ forminput.label }}</label>
-        <select v-model="formInputValues[index].value" class="form-control" :id="index">
-          <option :value="value" v-for="value in forminput.input.options.values">
-            <span v-if="value == ''" v-t="'sdk.search.all'"></span>
-            <span v-else>{{ value }}</span>
-          </option>
-        </select>
-      </div>
-    </template>
-    <div class="form-group">
-      <button id="dosearch" class="btn btn-block pull-right" @click="doSearch($event)" data-i18n="dosearch">Search</button>
-    </div>
-  </form>
+    </form>
+  </slot>
+  <slot name="footer"></slot>
 </div>

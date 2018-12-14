@@ -1,16 +1,14 @@
 const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
 const t = require('core/i18n/i18n.service').t;
 const Panel = require('gui/panel');
+const Service = require('./searchservice');
 
 const SearchPanelComponent = Vue.extend({
   template: require('./searchpanel.html'),
   data: function() {
     return {
-      title: "",
-      forminputs: [],
-      formInputValues : [],
-      filterObject: null,
-      queryurl: null
+     state: this.$options.service.state
     }
   },
   methods: {
@@ -25,14 +23,29 @@ const SearchPanelComponent = Vue.extend({
 
       }
     },
+    selectChange(attribute, value) {
+      const dependency = !!this.state.dependencies.length && this.state.dependencies.find((_dependency) => {
+        return attribute === _dependency.observer
+      });
+      if (dependency) {
+        this.$options.service.fillDependencyInputs({
+          field: attribute,
+          subscribers: dependency.subscribers,
+          value
+        });
+        if (!value) {
+          for (let i =0; i< dependency.subscribers.length; i++) {
+            const forminputvalue = this.state.forminputs.find((input) => {
+              return input.attribute === dependency.subscribers[i].attribute;
+            });
+            forminputvalue.value = '';
+          }
+        }
+      }
+    },
     doSearch: function(event) {
       event.preventDefault();
-      const filterObject = this.service.fillFilterInputsWithValues(this.filterObject, this.formInputValues);
-      this.service.doSearch({
-        url: this.queryurl,
-        title: this.title,
-        filter: filterObject.filter
-      });
+      this.$options.service.run();
     }
   },
   mounted() {
@@ -59,11 +72,7 @@ const SearchPanelComponent = Vue.extend({
       // Return `null` if the term should not be displayed
       return null;
     }
-
     this.$nextTick(() => {
-      this.$on('select-change', (options) => {
-        this.formInputValues[options.index].value = options.value;
-      });
       $('#g3w-search-form > select').select2({
         width: '100%',
         matcher: matchCustom,
@@ -72,48 +81,23 @@ const SearchPanelComponent = Vue.extend({
             return t("no_results");
           }
         },
-      }).on('change', (evt) => {
-        const select = $(evt.target);
-        this.$emit('select-change', {
-          index: select.attr('id'),
-          value: select.val()
-        })
       })
     })
-
   }
 });
 
 function SearchPanel(options = {}) {
-  this.config;
-  this.id;
-  this.querylayerid;
-  this.internalPanel = options.internalPanel || new SearchPanelComponent();
-
-  this.init = function(config = {}) {
-    this.config = config;
-    const Service = require('gui/search/searchesservice');
-    this.service = config.service || new Service();
-    this.name = this.config.name || this.name;
-    this.id = this.config.id || this.id;
-    const filter = this.config.options.filter || filter;
-    const queryLayerId = this.config.options.querylayerid || this.querylayerid;
-    const queryLayer = this.service.getLayerById(queryLayerId);
-    this.service.setSearchLayer(queryLayer);
-    Object.assign(this.internalPanel, this.service.fillInputsFormFromFilter({
-      filter
-    }));
-    const filterObjFromConfig = this.service.createQueryFilterFromConfig({
-      filter
-    });
-    this.internalPanel.filterObject = this.service.createQueryFilterObject({
-      queryLayer,
-      filter: filterObjFromConfig
-    });
-    this.internalPanel.queryurl = this.config.options.queryurl || null;
-    this.internalPanel.service = this.service;
-    this.internalPanel.title = this.name;
-  };
+  const service = options.service || new Service(options);
+  const SearchPanel = options.component || SearchPanelComponent;
+  const internalComponent = new SearchPanel({
+    service
+  });
+  this.setInternalPanel(internalComponent);
+  this.unmount = function() {
+    return base(this, 'unmount').then(() => {
+      service.clear()
+    })
+  }
 }
 
 inherit(SearchPanel, Panel);

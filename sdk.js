@@ -100,7 +100,10 @@ g3w.gui = {
       InputsComponents: require('gui/inputs/inputs')
     },
     Fields : require('gui/fields/fields'),
-    Mixins: require('gui/vue/vue.mixins')
+    Mixins: require('gui/vue/vue.mixins'),
+    services: {
+      SearchPanel: require('gui/search/vue/panel/searchservice')
+    }
   }
 };
 

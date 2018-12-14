@@ -53,7 +53,6 @@ proto.clear = function() {
   this._filter = null;
 };
 
-
 Filter.TYPES = {
   bbox: 'bbox',
   geometry: 'geometry',

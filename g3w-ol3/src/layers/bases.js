@@ -1,3 +1,4 @@
+const Projections = require('../projection/projections');
 const BaseLayers = {};
 
 BaseLayers.OSM = new ol.layer.Tile({
@@ -24,11 +25,13 @@ BaseLayers.BING.Road = new ol.layer.Tile({
 });
 
 BaseLayers.TMS =  {
-  get: function({visible=false, url=null, attributions}={}) {
+  get: function({visible=false, url=null, minZoom, maxZoom, attributions}={}) {
     return new ol.layer.Tile({
       visible,
       source: new ol.source.XYZ({
         url,
+        minZoom,
+        maxZoom,
         attributions
       }),
       basemap: true
@@ -38,7 +41,16 @@ BaseLayers.TMS =  {
 
 
 BaseLayers.WMTS = {
-  get: function({url, layer, visible, attributions, projection, format='image/png', opacity=0.7} = {}) {
+  get: function({url, layer, visible, attributions, crs, format='image/png', opacity=0.7} = {}) {
+    const projection = Projections.get(`EPSG:${crs}`);
+    const projectionExtent = projection.getExtent();
+    const size = ol.extent.getWidth(projectionExtent) / 256;
+    const matrixIds = [];
+    const resolutions = [];
+    for (var i = 0; i < 18; i++) {
+      matrixIds[i] = i.toString();
+      resolutions[i] = size / Math.pow(2, i);
+    }
     return new ol.layer.Tile({
       opacity,
       source: new ol.source.WMTS({
@@ -46,7 +58,11 @@ BaseLayers.WMTS = {
         url,
         layer,
         format,
-        projection
+        tileGrid: new ol.tilegrid.WMTS({
+          origin: ol.extent.getTopLeft(projectionExtent),
+          resolutions: resolutions,
+          matrixIds: matrixIds
+        })
       })
     })
   }

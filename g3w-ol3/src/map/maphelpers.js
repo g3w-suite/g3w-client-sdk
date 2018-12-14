@@ -25,7 +25,6 @@ const _Viewer = function(opts) {
   } else {
     view = new ol.View(opts.view);
   }
-  
   const options = {
     controls,
     interactions,

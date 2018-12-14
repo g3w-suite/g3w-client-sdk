@@ -23,6 +23,7 @@ const vueComponentOptions = {
         show: false,
         top:0,
         left:0,
+        tooltip: false,
         name: '',
         layer: null,
         loading: {
@@ -102,25 +103,29 @@ const vueComponentOptions = {
     setBaseLayer: function(id) {
       this.project.setBaseLayer(id);
     },
-    getSrcBaseLayerImage(baseLayerName) {
+    getSrcBaseLayerImage(baseLayer) {
+      const type = baseLayer && baseLayer.servertype || baseLayer;
       let image;
-      switch (baseLayerName) {
-        case 'OpenStreetMap':
+      let customimage = false;
+      switch (type) {
+        case 'OSM':
           image = 'osm.png';
           break;
-        case 'Bing Streets':
-          image = 'bingstreet.png';
+        case 'Bing':
+          const subtype = baseLayer.source.subtype;
+          image = `bing${subtype}.png`;
           break;
-        case 'Bing Aerial':
-          image = 'bingaerial.png';
-          break;
-        case 'Bing Aerial With Labels':
-          image = 'bingaeriallabel.png';
-          break;
+        case 'TMS':
+        case 'WMTS':
+          if (baseLayer.icon) {
+            customimage = true;
+            image = baseLayer.icon;
+            break;
+          }
         default:
           image = 'nobaselayer.png';
       }
-      return `${GUI.getResourcesUrl()}images/${image}`;
+      return !customimage ? `${GUI.getResourcesUrl()}images/${image}`: image;
     },
     _hideMenu: function() {
       this.layerMenu.show = false;
@@ -142,7 +147,9 @@ const vueComponentOptions = {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       return layer.isShpDownlodable();
     },
-    copyWmsUrl(evt, url) {
+    copyWmsUrl(evt, layerId) {
+      const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      const url =  originalLayer.getFullWmsUrl();
       let ancorEement = document.createElement('a');
       ancorEement.href = url;
       const tempInput = document.createElement('input');
@@ -154,10 +161,6 @@ const vueComponentOptions = {
       $(evt.target).attr('title', this.copywmsurltooltip).tooltip('fixTitle');
       document.body.removeChild(tempInput);
       ancorEement = null;
-    },
-    showWMSUrl(layerId) {
-      const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
-      return originalLayer.getFullWmsUrl();
     },
     downloadShp(layerId) {
       this.layerMenu.loading.shp = true;
@@ -216,9 +219,6 @@ const vueComponentOptions = {
         this.layerMenu.colorMenu.left = elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) /2);
       }
       this.layerMenu.colorMenu.show = bool;
-    },
-    layout(size) {
-      console.log(size)
     }
   },
   created() {
@@ -312,6 +312,9 @@ const vueComponentOptions = {
       this.layerMenu.layer = layerstree;
       this.layerMenu.show = true;
       this.layerMenu.colorMenu.color = layerstree.color;
+      this.$nextTick(() => {
+        $('.catalog-menu-wms[data-toggle="tooltip"]').tooltip();
+      });
     });
 
     ControlsRegistry.onafter('registerControl', (id, control) => {
@@ -323,11 +326,6 @@ const vueComponentOptions = {
         })
       }
     });
-  },
-  mounted() {
-    this.$nextTick(() => {
-      $('.catalog-menu-wms').tooltip();
-    })
   }
 };
 
