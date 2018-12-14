@@ -53,7 +53,7 @@ proto.getOLLayer = function() {
     olLayer = this._olLayer = this._makeOlLayer();
     this._registerLoadingEvent();
     if (this._mapLayer.config.attributions) {
-      this._olLayer.setAttributions(this.layer.config.attributions)
+      this._olLayer.getSource().setAttributions(this._mapLayer.config.attributions)
     }
     olLayer.setVisible(this._mapLayer.state.visible)
   }

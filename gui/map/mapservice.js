@@ -128,6 +128,7 @@ function MapService(options={}) {
         this.viewer = null;
       }
       this._setupViewer(width, height);
+      pippo = this.getMap();
       this.state.bbox = this.viewer.getBBOX();
       this.state.resolution = this.viewer.getResolution();
       this.state.center = this.viewer.getCenter();
@@ -136,7 +137,7 @@ function MapService(options={}) {
       this.emit('viewerset');
     },
     controlClick: function(active) {
-      //HOOK to register map control activated
+      //SETTER to register map control activated
     }
   };
 

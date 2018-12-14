@@ -138,8 +138,8 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=''}={}) {
 };
 
 proto._checkInputDependencies = function(forminput) {
-  if (forminput.options.dependency) {
-    const key = forminput.options.dependency;
+  if (forminput.options.dependance) {
+    const key = forminput.options.dependance;
     let dependency = this.state.dependencies.find((_dependency) => {
       _dependency.observer === key;
     });
@@ -168,19 +168,12 @@ proto.fillInputsFormFromFilter = function({filter}) {
         id: input.id
       };
 
-      /FAKE///
-      // if (forminput.type !== 'selectfield') {
-      //   forminput.type = 'selectfield';
-      //   forminput.options.dependency = 'foglio';
-      //   this.state.loading['foglio'] = false;
-      //   forminput.options.disabled = true;
-      //   forminput.options.values =  [];
-      // } else {
-      //   forminput.options.disabled = false;
-      // }
-      // END FAKE ///
-
       if (forminput.type === 'selectfield') {
+        const field = forminput.options.dependance;
+        if (field) {
+          this.state.loading[field] = false;
+          forminput.options.disabled = true;
+        }
         if (forminput.options.values[0] !== '')
           //add a starting all
           forminput.options.values.unshift('');
@@ -274,6 +267,10 @@ proto.run = function() {
     .fail(() => {
       GUI.notify.error(t('server_error'));
     })
+};
+
+proto.clear = function() {
+  this.state = null;
 };
 
 module.exports = SearchService;

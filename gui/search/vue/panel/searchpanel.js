@@ -1,4 +1,5 @@
 const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
 const t = require('core/i18n/i18n.service').t;
 const Panel = require('gui/panel');
 const Service = require('./searchservice');
@@ -34,7 +35,7 @@ const SearchPanelComponent = Vue.extend({
         });
         if (!value) {
           for (let i =0; i< dependency.subscribers.length; i++) {
-            const forminputvalue = this.formInputValues.find((input) => {
+            const forminputvalue = this.state.forminputs.find((input) => {
               return input.attribute === dependency.subscribers[i].attribute;
             });
             forminputvalue.value = '';
@@ -88,10 +89,15 @@ const SearchPanelComponent = Vue.extend({
 function SearchPanel(options = {}) {
   const service = options.service || new Service(options);
   const SearchPanel = options.component || SearchPanelComponent;
-  this.internalComponent = new SearchPanel({
+  const internalComponent = new SearchPanel({
     service
   });
-  this.setInternalPanel(this.internalComponent)
+  this.setInternalPanel(internalComponent);
+  this.unmount = function() {
+    return base(this, 'unmount').then(() => {
+      service.clear()
+    })
+  }
 }
 
 inherit(SearchPanel, Panel);

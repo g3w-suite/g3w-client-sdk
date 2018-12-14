@@ -3,6 +3,7 @@ const resolvedValue = require('core/utils/utils').resolve;
 const G3WObject = require('core/g3wobject');
 
 const Panel = function(options={}) {
+  console.log(options)
   this.internalPanel = null;
   this.id = options.id || null;
   this.title = options.title || '';
