@@ -144,7 +144,7 @@ proto.getFeatures = function(options = {}, params = {}) {
     let filter = options.filter || null;
     if (filter && filter.bbox) {
       const bbox = filter.bbox;
-      filter = {in_bbox: `${bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]}`};
+      filter = {in_bbox: `${bbox[0]},${bbox[1]},${bbox[2]},${bbox[3]}`};
     }
     const pk = this._layer.getPk();
     if (!url) {
