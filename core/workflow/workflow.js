@@ -122,13 +122,9 @@ proto.getLastStep = function() {
 };
 
 proto.getRunningStep = function() {
-  let runningStep = null;
-  this._steps.forEach((step) => {
-    if (step.isRunning()) {
-      runningStep = step;
-    }
+  return this._steps.find((step) => {
+    return step.isRunning()
   });
-  return runningStep;
 };
 
 //stop all workflow children

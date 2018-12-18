@@ -31,6 +31,4 @@ proto.setRoot = function(task) {
   this.state.root = task;
 };
 
-
-
 module.exports = Task;

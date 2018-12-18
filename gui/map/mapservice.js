@@ -1539,8 +1539,10 @@ proto.setTarget = function(elId) {
   this.target = elId;
 };
 
-proto.addInteraction = function(interaction) {
-  this._unToggleControls();
+proto.addInteraction = function(interaction, close) {
+  this._unToggleControls({
+    close
+  });
   this.viewer.map.addInteraction(interaction);
   interaction.setActive(true);
 };

@@ -199,7 +199,7 @@ proto.digestFeaturesForLayers = function(featuresForLayers) {
 proto._parseAttributes = function(layerAttributes, featureAttributes) {
   let featureAttributesNames = _.keys(featureAttributes);
   featureAttributesNames = _.filter(featureAttributesNames,function(featureAttributesName) {
-    return ['boundedBy', 'geom','the_geom','geometry','bbox', 'GEOMETRY'].indexOf(featureAttributesName) == -1;
+    return ['boundedBy', 'geom','the_geom','geometry','bbox', 'GEOMETRY'].indexOf(featureAttributesName) === -1;
   });
   if (layerAttributes && layerAttributes.length) {
     let featureAttributesNames = _.keys(featureAttributes);

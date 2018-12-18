@@ -100,7 +100,6 @@
       },
       rows() {
         let rowCount = 1;
-        // caso in cui ho un gruppo ma nessun campo associato
         if (this.nodesLength === 0)
           rowCount = 0;
         else if (this.columnNumber  <= this.nodesLength) {
@@ -113,7 +112,7 @@
         return COLUMNCLASSES[this.columnNumber];
       },
       columnNumber() {
-        const columnCount = parseInt(this.node.columncount);
+        const columnCount = parseInt(this.node.columncount) ?  parseInt(this.node.columncount): 1;
         return columnCount > this.nodesLength ? this.nodesLength:  columnCount;
       },
       showGroupTile() {
@@ -141,7 +140,7 @@
             relations: [relation],
             relation,
             table: response
-          })
+          });
           GUI.pushContent({
             content,
             perc: 100

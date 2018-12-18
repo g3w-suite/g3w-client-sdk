@@ -111,6 +111,17 @@ proto.setState = function(state) {
   this.state.state = state;
 };
 
+proto.getAlphanumericProperties = function() {
+  const properties = this.getProperties();
+  const alphanumericproperties = {};
+  for (let name in properties) {
+    if (['boundedBy', 'geom','the_geom','geometry','bbox', 'GEOMETRY'].indexOf(name) === -1)
+      alphanumericproperties[name] = properties[name];
+  }
+  alphanumericproperties[this._pk] = this.getId();
+  return alphanumericproperties;
+};
+
 // vado a fare il clena dello state della feature
 proto.clearState = function() {
   this.state.state = null;
