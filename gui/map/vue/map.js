@@ -75,8 +75,8 @@ inherit(MapComponent, Component);
 const proto = MapComponent.prototype;
 
 proto.layout = function(width, height) {
-  $('#'+this.target).height(height);
-  $('#'+this.target).width(width);
+  $(`#${this.target}`).height(height);
+  $(`#${this.target}`).width(width);
   this._service.layout({width, height});
 };
 

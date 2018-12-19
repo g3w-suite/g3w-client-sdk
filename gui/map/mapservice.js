@@ -128,7 +128,6 @@ function MapService(options={}) {
         this.viewer = null;
       }
       this._setupViewer(width, height);
-      pippo = this.getMap();
       this.state.bbox = this.viewer.getBBOX();
       this.state.resolution = this.viewer.getResolution();
       this.state.center = this.viewer.getCenter();
@@ -1707,6 +1706,9 @@ proto.layout = function({width, height}) {
   } else {
     this.setHidden((width == 0 || height == 0));
     this.getMap().updateSize();
+    this.state.hidemaps.forEach((hidemap) => {
+      hidemap.map.updateSize()
+    });
     this._updateMapView();
     this._updateMapControlsLayout({width, height})
   }

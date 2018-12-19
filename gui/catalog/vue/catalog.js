@@ -141,7 +141,7 @@ const vueComponentOptions = {
     },
     canShowWmsUrl(layerId) {
       const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
-      return !!originalLayer.getFullWmsUrl()
+      return !!originalLayer.getFullWmsUrl
     },
     canDownloadShp(layerId) {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
