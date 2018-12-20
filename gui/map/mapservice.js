@@ -1631,7 +1631,6 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
     const feature = new ol.Feature({
       geometry: geometry
     });
-
     if (!highlightLayer) {
       highlightLayer = new ol.layer.Vector({
         source: new ol.source.Vector(),
@@ -1675,16 +1674,15 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
       });
       highlightLayer.setMap(this.viewer.map);
     }
-
     highlightLayer.getSource().clear();
     highlightLayer.getSource().addFeature(feature);
 
     if (duration) {
       animatingHighlight = true;
-      setTimeout(function(){
+      setTimeout(() => {
         highlightLayer.getSource().clear();
         animatingHighlight = false;
-      },duration);
+      }, duration)
     }
   }
 };
