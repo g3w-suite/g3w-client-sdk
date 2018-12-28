@@ -1,5 +1,7 @@
 const inherit = require('core/utils/utils').inherit;
 const noop = require('core/utils/utils').noop;
+const debounce = require('core/utils/utils').debounce;
+const throttle = require('core/utils/utils').throttle;
 
 /**
  * Base object to handle a setter and its listeners.
@@ -9,6 +11,14 @@ const G3WObject = function() {
   //check if setters property is set. Register the chain of events
   if (this.setters) {
     this._setupListenersChain(this.setters)
+  }
+  // check debounces
+  if (this.debounces) {
+    this._setupDebounces(this.debounces)
+  }
+  //check throttles
+  if (this.throttles) {
+    this._setupThrottles(this.throttles)
   }
 };
 
@@ -212,12 +222,28 @@ proto._setupListenersChain = function(setters) {
   return this.settersListeners
 };
 
-//metodo get
+proto._setupDebounces = function(debounces) {
+  for (const name in debounces) {
+    const delay = debounces[name].delay;
+    const fnc = debounces[name].fnc;
+    this[name] = debounce(fnc, delay);
+  }
+};
+
+proto._setupThrottles = function(throttles) {
+  for (const name in throttles) {
+    const delay = throttles[name].delay;
+    const fnc = throttles[name].fnc;
+    this[name] = throttle(fnc, delay);
+  }
+};
+
+//method get
 proto.get = function(key) {
   return this[key] && !(this[key] instanceof Function) ? this[key] : null;
 };
 
-//metodo set
+//method set
 proto.set = function(key, value) {
   this[key] = value;
 };

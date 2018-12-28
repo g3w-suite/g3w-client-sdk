@@ -46,49 +46,48 @@ proto.setDataForDataTable = function() {
 
 proto.getData = function({start = 0, order = [], length = this.state.pageLengths[0], search={value:null}} = {}) {
   // reset features before load
-  const d = $.Deferred();
-
-  if (!this.state.headers.length)
-    d.resolve({
-      data: [],
-      recordsTotal: 0,
-      recordsFiltered: 0
-    });
-  else {
-    let searchText = search.value && search.value.length > 0 ? search.value : null;
-    this.state.features.splice(0, this.state.features.length);
-    if (!order.length) {
-      order.push({
-        column: 0,
-        dir: 'asc'
+  return new Promise((resolve, reject) => {
+    if (!this.state.headers.length)
+      resolve({
+        data: [],
+        recordsTotal: 0,
+        recordsFiltered: 0
+      });
+    else {
+      let searchText = search.value && search.value.length > 0 ? search.value : null;
+      this.state.features.splice(0, this.state.features.length);
+      if (!order.length) {
+        order.push({
+          column: 0,
+          dir: 'asc'
+        })
+      }
+      const ordering = order[0].dir == 'asc' ? this.state.headers[order[0].column].name : '-'+this.state.headers[order[0].column].name;
+      this.currentPage = start == 0  ? 1 : (start/length) + 1;
+      this.layer.getDataTable({
+        page: this.currentPage,
+        page_size: length,
+        search: searchText,
+        ordering
+      }).then((data) => {
+        let features = data.features;
+        this.addFeatures(features);
+        this.state.pagination = !!data.count;
+        this.state.allfeatures = data.count || this.state.features.length;
+        this.state.featurescount += features.length;
+        resolve({
+          data: this.setDataForDataTable(),
+          recordsFiltered: this.state.allfeatures,
+          recordsTotal: this.state.allfeatures
+        });
       })
+        .fail((err) => {
+          GUI.notify.error(t("info.server_error"));
+          reject(err);
+        });
     }
-    const ordering = order[0].dir == 'asc' ? this.state.headers[order[0].column].name : '-'+this.state.headers[order[0].column].name;
-    this.currentPage = start == 0  ? 1 : (start/length) + 1;
-    this.layer.getDataTable({
-      page: this.currentPage,
-      page_size: length,
-      search: searchText,
-      ordering
-    }).then((data) => {
-      let features = data.features;
-      this.addFeatures(features);
-      this.state.pagination = !!data.count;
-      this.state.allfeatures = data.count || this.state.features.length;
-      this.state.featurescount += features.length;
-      d.resolve({
-        data: this.setDataForDataTable(),
-        recordsFiltered: this.state.allfeatures,
-        recordsTotal: this.state.allfeatures
-      });
-    })
-      .fail((err) => {
-        GUI.notify.error(t("info.server_error"));
-        d.reject(err);
-      });
-  }
 
-  return d.promise();
+  });
 };
 
 proto.addFeature = function(feature) {

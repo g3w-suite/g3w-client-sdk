@@ -1,4 +1,6 @@
 const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
+const t = require('core/i18n/i18n.service').t;
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 const CatalogLayersStorRegistry = require('core/catalog/cataloglayersstoresregistry');
@@ -6,13 +8,22 @@ const Filter = require('core/layers/filter/filter');
 const Expression = require('core/layers/filter/expression');
 
 function SearchService(config={}) {
+  this.debounces =  {
+    run: {
+      fnc: (...args) => {
+        this._run(...args)
+      }
+    }
+  };
+  base(this);
   // reactivity data
   this.state = {
     title: null,
     dependencies: [],
     cachedependencies:{},
     forminputs: [],
-    loading: {}
+    loading: {},
+    searching: false
   };
 
   this.searchLayer = null;
@@ -26,12 +37,43 @@ function SearchService(config={}) {
     const filter = options.filter || {AND:[]};
     this.fillInputsFormFromFilter({filter});
   };
+  // set run function
   return this.init(config);
 }
 
 inherit(SearchService, G3WObject);
 
 const proto = SearchService.prototype;
+
+proto._run = function() {
+  this.state.searching = true;
+  const filter = this.fillFilterInputsWithValues();
+  GUI.closeContent();
+  const showQueryResults = GUI.showContentFactory('query');
+  const queryResultsPanel = showQueryResults(this.state.title);
+  const expression = new Expression();
+  const layerName = this.searchLayer.getName();
+  expression.createExpressionFromFilter(filter, layerName);
+  const _filter = new Filter();
+  _filter.setExpression(expression.get());
+  this.searchLayer.search({
+    filter: _filter,
+    queryUrl: null
+  })
+    .then((results) => {
+      results = {
+        data: results
+      };
+      queryResultsPanel.setQueryResponse(results);
+    })
+    .fail(() => {
+      GUI.notify.error(t('server_error'));
+      GUI.closeContent();
+    })
+    .always(() => {
+      this.state.searching = false;
+    })
+};
 
 proto.createQueryFilterFromConfig = function({filter}) {
   let queryFilter;
@@ -242,31 +284,6 @@ proto.setSearchLayer = function(layer) {
 
 proto.getSearchLayer = function() {
   return this.searchLayer
-};
-
-proto.run = function() {
-  const filter = this.fillFilterInputsWithValues();
-  GUI.closeContent();
-  const showQueryResults = GUI.showContentFactory('query');
-  const queryResultsPanel = showQueryResults(this.state.title);
-  const expression = new Expression();
-  const layerName = this.searchLayer.getName();
-  expression.createExpressionFromFilter(filter, layerName);
-  const _filter = new Filter();
-  _filter.setExpression(expression.get());
-  this.searchLayer.search({
-    filter: _filter,
-    queryUrl: null
-  })
-    .then((results) => {
-      results = {
-        data: results
-      };
-      queryResultsPanel.setQueryResponse(results);
-    })
-    .fail(() => {
-      GUI.notify.error(t('server_error'));
-    })
 };
 
 proto.clear = function() {

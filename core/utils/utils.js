@@ -66,6 +66,10 @@ const utils = {
     return `${_uid}_${Date.now()}`;
   },
 
+  uniqueId: function() {
+    return `${parseInt(Math.random() * 100) + Date.now() }`
+  },
+
   basemixin: function mixin(destination, source) {
       return utils.merge(destination.prototype, source);
   },
@@ -197,6 +201,34 @@ const utils = {
     image.src = src;
   },
   Base64: Base64,
+  // build throttle function
+  throttle: function(fnc, delay=500) {
+    let lastCall;
+    return function (...args) {
+      let previousCall = lastCall;
+      lastCall = Date.now();
+      if (previousCall === undefined // function is being called for the first time
+        || (lastCall - previousCall) > delay) { // throttle time has elapsed
+        fnc(...args);
+      }
+    }
+  },
+  //build debounce function
+  debounce: function(fnc, delay=500) {
+    let lastCall;
+    let lastCallTimer;
+    return function (...args) {
+      let previousCall = lastCall;
+      lastCall = Date.now();
+      if (previousCall && ((lastCall - previousCall) <= delay)) {
+        //clear previous function
+        clearTimeout(lastCallTimer);
+      }
+      lastCallTimer = setTimeout(() => {
+        fnc(...args);
+      }, delay);
+    }
+  },
   XHR: {
     get({url, params={}}={}) {
       return new Promise((resolve, reject) => {

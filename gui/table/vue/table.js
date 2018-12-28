@@ -49,10 +49,10 @@ proto.show = function(options = {}) {
         title: options.title
       });
     })
-    .fail((err) => {
+    .catch((err) => {
       GUI.notify.error(t("info.server_error"));
     })
-    .always(() => {
+    .finally(() => {
       this.emit('show')
     })
 

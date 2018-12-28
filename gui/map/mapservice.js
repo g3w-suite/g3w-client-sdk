@@ -14,6 +14,7 @@ const ControlsFactory = require('gui/map/control/factory');
 const StreetViewService = require('gui/streetview/streetviewservice');
 const ControlsRegistry = require('gui/map/control/registry');
 const VectorLayer = require('core/layers/vectorlayer');
+const debounce = require('core/utils/utils').debounce;
 
 function MapService(options={}) {
   this.id = 'MapService';
@@ -575,7 +576,7 @@ proto.setupControls = function() {
           control = ControlsFactory.create({
             type: controlType
           });
-          control.on('picked', (e) => {
+          control.on('picked', debounce((e) => {
             const coordinates = e.coordinates;
             this.getMap().getView().setCenter(coordinates);
             // show marker
@@ -605,7 +606,7 @@ proto.setupControls = function() {
                 GUI.notify.error(t("info.server_error"));
                 GUI.closeContent();
               });
-          });
+          }));
           this.addControl(controlType,control);
           //set active control by default
           control.toggle();
@@ -622,7 +623,7 @@ proto.setupControls = function() {
           });
           if (control) {
             const showQueryResults = GUI.showContentFactory('query');
-            control.on('picked', (e) => {
+            control.on('picked', debounce((e) => {
               let results = {};
               let geometry;
               const coordinates = e.coordinates;
@@ -688,7 +689,7 @@ proto.setupControls = function() {
                 GUI.notify.error(t("info.server_error"));
                 GUI.closeContent();
               })
-            });
+            }));
             this.addControl(controlType, control);
           }
           break;
@@ -851,10 +852,12 @@ proto.setupControls = function() {
             const geometry =  new ol.geom.Point(coordinate);
             this.highlightGeometry(geometry);
           });
+
           this.addControl(controlType, control, false);
-          $('#search_nominatim').click(() => {
+
+          $('#search_nominatim').click(debounce(() => {
             control.nominatim.query($('input.gcd-txt-input').val());
-          });
+          }));
           $('.gcd-txt-result').perfectScrollbar();
           break;
         case 'geolocation':

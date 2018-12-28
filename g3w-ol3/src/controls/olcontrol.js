@@ -59,7 +59,7 @@ proto.showHide = function() {
   $(this.element).toggle();
 };
 
-proto.setMap = function(map){
+proto.setMap = function(map) {
   this.layout(map);
   this._control.setMap(map);
 };

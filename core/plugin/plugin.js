@@ -156,7 +156,8 @@ proto.removeTools = function() {
 
 // unload (case change map)
 proto.unload  = function() {
-  //console.log('UNLOAD need to be overwrite by plugin');
+  this.service && this.service.clearAllEvents();
+  //console.log('UNLOAD can be overwrite by plugin');
 };
 
 // load plugin

@@ -263,6 +263,7 @@ function PrintComponentService() {
             this._clearPrint();
           }
         });
+        this._mapService.getMap().renderSync();
       })
   };
 

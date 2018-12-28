@@ -21,6 +21,7 @@
 
 <script>
   const Field = require('gui/fields/g3w-field.vue');
+  const debounce = require('core/utils/utils').debounce;
   let dataTable;
   export default {
     name: "G3WTable",
@@ -71,17 +72,21 @@
             "scrollCollapse": true,
             "order": [ 0, 'asc' ],
             "columns": this.state.headers,
-            "ajax": (data, callback) => {
+            "ajax": debounce((data, callback) => {
               this.$options.service.getData(data)
                 .then((dataTable) => {
                   callback(dataTable);
                   this.$nextTick(() => {
-                    $('#open_attribute_table table tr.odd').remove();
-                    $('#open_attribute_table table tr.even').remove();
-                    hideElements();
+                    $('#open_attribute_table table tbody tr').not('.odd, .even').remove();
+                    if (this.isMobile()) {
+                      hideElements();
+                    }
                   })
                 })
-            },
+                .catch((error) => {
+                  console.log(error)
+                })
+            }),
             "serverSide": true,
             "processing": true,
             "responsive": true,

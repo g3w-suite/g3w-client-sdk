@@ -2,13 +2,14 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const G3WObject = require('core/g3wobject');
 
-function PluginService(options) {
-  options = options || {};
+function PluginService(options={}) {
   base(this, options);
   this._api = {
     own: null,
     dependencies: {}
   };
+  this._pluginEvents = {};
+  this._appEvents = [];
   this.init = function(config) {
     this.config = config;
   }
@@ -35,6 +36,41 @@ proto.setApi = function({dependency, api} = {}) {
 
 proto.getApi = function({dependency} = {}) {
   return dependency && this._api.dependencies[dependency] || this._api.own;
+};
+
+proto.initEvents = function(events=[]) {
+  for (let i in events) {
+    const name = events[i];
+    this._pluginEvents[name] = {};
+  }
+};
+
+proto.subscribeEvent = function({name, once=false, owner, listener}) {
+  this._pluginEvents[name] = this._pluginEvents[name] ? this._pluginEvents[name] : {};
+  this._pluginEvents[name][owner] = listener;
+  once ? this.once(name, listener): this.on(name, listener);
+};
+
+proto.triggerEvent = function({name, params={}}) {
+  this.emit(name, params);
+};
+
+proto.unsubscribeEvent = function({name, owner}) {
+  const listener = this._pluginEvents[name][owner];
+  this.removeEvent(name, listener);
+  delete this._pluginEvents[name][owner];
+};
+
+proto.unsubscribeAllEvents = function() {
+  for (const name in this._pluginEvents) {
+    this.removeEvent(name);
+    delete this._pluginEvents[name];
+  }
+};
+
+proto.clearAllEvents = function() {
+  this.unsubscribeAllEvents();
+  this._pluginEvents = null
 };
 
 
