@@ -15,6 +15,7 @@ const StreetViewService = require('gui/streetview/streetviewservice');
 const ControlsRegistry = require('gui/map/control/registry');
 const VectorLayer = require('core/layers/vectorlayer');
 const debounce = require('core/utils/utils').debounce;
+const throttle = require('core/utils/utils').throttle;
 
 function MapService(options={}) {
   this.id = 'MapService';
@@ -576,7 +577,7 @@ proto.setupControls = function() {
           control = ControlsFactory.create({
             type: controlType
           });
-          control.on('picked', debounce((e) => {
+          control.on('picked', throttle((e) => {
             const coordinates = e.coordinates;
             this.getMap().getView().setCenter(coordinates);
             // show marker
@@ -623,7 +624,7 @@ proto.setupControls = function() {
           });
           if (control) {
             const showQueryResults = GUI.showContentFactory('query');
-            control.on('picked', debounce((e) => {
+            control.on('picked', throttle((e) => {
               let results = {};
               let geometry;
               const coordinates = e.coordinates;
@@ -785,7 +786,7 @@ proto.setupControls = function() {
                   control,
                   visible: true
                 });
-                control.on('picked', (e) => {
+                control.on('picked', throttle((e) => {
                   GUI.off('closecontent', closeContentFnc);
                   const coordinates = e.coordinates;
                   const lonlat = ol.proj.transform(coordinates, this.getProjection().getCode(), 'EPSG:4326');
@@ -793,7 +794,7 @@ proto.setupControls = function() {
                   position.lng = lonlat[0];
                   streetViewService.showStreetView(position);
                   GUI.on('closecontent', closeContentFnc);
-                });
+                }));
                 control.on('disabled', () => {
                   GUI.closeContent();
                   GUI.off('closecontent', closeContentFnc);
@@ -864,9 +865,9 @@ proto.setupControls = function() {
           control = ControlsFactory.create({
             type: controlType
           });
-          control.on('click',(evt) => {
+          control.on('click', throttle((evt) => {
             this.showMarker(evt.coordinates);
-          });
+          }));
           control.on('error', (e) => {
             GUI.notify.error(t("mapcontrols.geolocations.error"))
           });
