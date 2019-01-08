@@ -46,7 +46,6 @@ proto.clone = function() {
     feature: feature,
     pk: this._pk
   });
-  // aggiungo lo state
   clone.setState(this.getState());
   return clone;
 };

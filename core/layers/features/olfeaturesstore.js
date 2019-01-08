@@ -29,20 +29,15 @@ proto.getFeaturesCollection = function() {
 };
 
 proto.getFeatureById = function(featureId) {
-  let feat;
-  this._features.getArray().forEach(function(feature) {
-    if (feature.getId() == featureId) {
-      feat = feature;
-      return false;
-    }
+  return this._features.getArray().find((feature) => {
+    return feature.getId() === featureId;
   });
-  return feat;
 };
 
 //sobtitute the feature afet modify
 proto._updateFeature = function(feature) {
   this._features.forEach(function(feat, idx, array) {
-    if (feat.getId() == feature.getId()) {
+    if (feat.getId() === feature.getId()) {
       this.setAt(idx, feature);
       return false;
     }
@@ -52,7 +47,7 @@ proto._updateFeature = function(feature) {
 // remove feature from store
 proto._removeFeature = function(feature) {
   this._features.forEach(function(feat, idx, array) {
-    if (feature.getId() == feat.getId()) {
+    if (feature.getId() === feat.getId()) {
       this.removeAt(idx);
       return false
     }

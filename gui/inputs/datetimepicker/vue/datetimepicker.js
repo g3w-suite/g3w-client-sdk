@@ -1,6 +1,7 @@
 // oggetto base utilizzato per i mixins
 const Input = require('gui/inputs/input');
 const Service = require('../service');
+const getUniqueDomId = require('core/utils/utils').getUniqueDomId;
 const WidgetMixins = require('gui/inputs/widgetmixins');
 
 const DateTimePickerInput = Vue.extend({
@@ -8,7 +9,7 @@ const DateTimePickerInput = Vue.extend({
   template: require('./datetimepicker.html'),
   data: function() {
     // creo un unico valore per identificare id
-    const uniqueValue = Date.now();
+    const uniqueValue = getUniqueDomId();
     // in base al fielddatetimeformat creo la data tramite moment
     return {
       service: new Service({

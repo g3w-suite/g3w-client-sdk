@@ -2,8 +2,7 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils//utils').base;
 const G3WObject = require('core/g3wobject');
 
-function History(options) {
-  options = options || {};
+function History(options = {}) {
   this.id = options.id;
   base(this);
   // registered all changes
@@ -45,25 +44,24 @@ const proto = History.prototype;
 proto.add = function(uniqueId, items) {
   //state object is an array of feature/features changed in a transaction
   const d = $.Deferred();
-  let currentStateIndex;
   // before insert an item into the history
   // check if are at last state step (no redo was done)
   // in this way avoid starge barch in the history
   //If we are in the middle of undo, delete all changes in the histroy from the current "state"
   // so i can create a new history
-  if (this._states.length && this._current != this.getLastState().id) {
+  if (this._states.length && this._current !== this.getLastState().id) {
     this._states.find((state, idx) => {
-      if (this._current == state.id) {
-        currentStateIndex = idx;
+      if (this._current === state.id) {
+        //substitute new state
+        this._states = this._states.slice(0, idx + 1);
         return true;
       }
     });
-    //substitute new state
-    this._states = this._states.slice(0, currentStateIndex + 1);
   }
-    this._states.push({
+  
+  this._states.push({
     id: uniqueId,
-    items: items
+    items
   });
   this._current = uniqueId;
   this._setState();
@@ -84,17 +82,19 @@ proto._setState = function() {
 //check if was did an update (update are array contains two items , old e new value)
 proto._checkItems = function(items, action) {
   /**
-   * action: 0 per uno; 1: redo reffererd to array index
-   */
+   * action: <reffererd to array index>
+   *  0: undo;
+   *  1: redo;
+   **/
   const newItems = {
     own: [], //array of changes of layer of the current session
     dependencies: {} // dependencies
   };
   items.forEach((item) => {
-    if (_.isArray(item))
+    if (Array.isArray(item))
       item = item[action];
     // check if belong to session
-    if (this.id == item.layerId) {
+    if (this.id === item.layerId) {
       newItems.own.push(item)
     } else {
       if (!newItems.dependencies[item.layerId])
@@ -108,15 +108,15 @@ proto._checkItems = function(items, action) {
   return newItems;
 };
 
-// mehtod undo
+// method undo
 proto.undo = function() {
   let items;
-  if (this._current == this.getFirstState().id) {
+  if (this._current === this.getFirstState().id) {
     this._current = null;
     items = this._states[0].items;
   } else {
     this._states.find((state, idx) => {
-      if (state.id == this._current) {
+      if (state.id === this._current) {
         items = this._states[idx].items;
         this._current = this._states[idx-1].id;
         return true;
@@ -126,19 +126,19 @@ proto.undo = function() {
   items = this._checkItems(items, 0);
   this._setState();
   return items;
-
 };
 
-//funzione redo
+//method redo
 proto.redo = function() {
   let items;
+  // if not set get first state
   if (!this._current) {
     items = this._states[0].items;
+    // set current to first
     this._current = this._states[0].id;
-    stateIdx = 1;
   } else {
     this._states.find((state, idx) => {
-      if (this._current == state.id) {
+      if (this._current === state.id) {
         this._current = this._states[idx+1].id;
         items = this._states[idx+1].items;
         return true;

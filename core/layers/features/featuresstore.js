@@ -162,7 +162,7 @@ proto.setFeatures = function(features) {
 
 proto._removeFeature = function(feature) {
   this._features = this._features.filter((feat) => {
-    return feature.getId() != feat.getId();
+    return feature.getId() !== feat.getId();
   })
 };
 

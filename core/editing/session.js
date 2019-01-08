@@ -131,9 +131,10 @@ proto.save = function(options={}) {
 
 // method to add temporary feature
 proto.pushAdd = function(layerId, feature) {
+  const newFeature = feature.clone();
   this.push({
     layerId: layerId,
-    feature: feature.add()
+    feature: newFeature.add()
   })
 };
 
@@ -159,7 +160,7 @@ proto.pushUpdate = function(layerId, newFeature, oldFeature) {
 };
 
 // it used to add temporary features
-// tahnt will be added with save method
+// that will be added with save method
 proto.push = function(New, Old) {
   /*
   New e Old saranno oggetti contenti {
@@ -168,12 +169,11 @@ proto.push = function(New, Old) {
     }
    */
   // check is set old (edit)
-  var feature = Old? [Old, New]: New;
+  const feature = Old? [Old, New]: New;
   this._temporarychanges.push(feature);
 };
 
-proto._applyChanges = function(items, reverse) {
-  reverse = reverse || true;
+proto._applyChanges = function(items, reverse=true) {
   ChangesManager.execute(this._featuresstore, items, reverse);
 };
 
@@ -240,17 +240,19 @@ proto.rollback = function(changes) {
   return d.promise()// qui vado a restituire le dipendenze
 };
 
-// funzione di undo che chiede alla history di farlo
+// method undo
 proto.undo = function(items) {
-  var items = items || this._history.undo();
+  items = items || this._history.undo();
   this._applyChanges(items.own, true);
+  this._history.canCommit();
   return items.dependencies;
 };
 
-// funzione di undo che chiede alla history di farlo
+// mthod redo
 proto.redo = function(items) {
-  var items = items || this._history.redo();
+  items = items || this._history.redo();
   this._applyChanges(items.own, true);
+  this._history.canCommit();
   return items.dependencies;
 };
 
