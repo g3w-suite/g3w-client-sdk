@@ -132,6 +132,7 @@ proto.save = function(options={}) {
 // method to add temporary feature
 proto.pushAdd = function(layerId, feature) {
   const newFeature = feature.clone();
+  newFeature.setNew();
   this.push({
     layerId: layerId,
     feature: newFeature.add()
@@ -290,7 +291,7 @@ proto._serializeCommit = function(itemsToCommit) {
     }
     items.forEach((item) => {
       state = item.getState();
-      var GeoJSONFormat = new ol.format.GeoJSON();
+      const GeoJSONFormat = new ol.format.GeoJSON();
       switch (state) {
         case 'delete':
           if (!item.isNew())

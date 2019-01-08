@@ -58,7 +58,7 @@ proto.add = function(uniqueId, items) {
       }
     });
   }
-  
+
   this._states.push({
     id: uniqueId,
     items
@@ -276,41 +276,29 @@ proto._getStatesToCommit = function() {
 };
 
 
-//funzione che restituisce tutte le modifche uniche da applicare (mandare al server)
+//get all changes to send to server (mandare al server)
 proto.commit = function() {
-  // contegono oggetti aventi lo stato di una feature unica e il relativo id
   let commitItems = {};
   let feature;
   let layerId;
   const statesToCommit = this._getStatesToCommit();
-  // inzioa ascorrere sugli stati della history
   statesToCommit.forEach((state) => {
-    //ciclo sugli items dello stato
     state.items.forEach((item) => {
       let add = true;
-      // nel caso di un array, quindi di fronte ad un update
       if (Array.isArray(item))
-        // vado a prendere il secondo valore che è quello modificato
         item = item[1];
-      //vado a ciclare sugli evtnuali stati committati cioè aggiunti
       commitItems[item.layerId] && commitItems[item.layerId].forEach((commitItem) => {
-        //verifico se presente uno stesso ite
         if (commitItem.getId() === item.feature.getId()) {
-          // verifcio inoltre se è una feature nuova, se non è stata cancellata (già presente nei commitItems) e se aggiunta
-          // perchè allora setto come add
           if (item.feature.isNew() && !commitItem.isDeleted()  && item.feature.isAdded()) {
-            // allora setto l'ultima versione allo stato add
             commitItem.add();
           }
           add = false;
           return false;
         }
       });
-      // se true significa che lo devo aggiungere
       if (add) {
         feature = item.feature;
         layerId = item.layerId;
-        // vado a verificar condizioni
         if (!(!feature.isNew() && feature.isAdded())) {
           if (!commitItems[layerId])
             commitItems[layerId] = [];

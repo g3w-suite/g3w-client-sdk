@@ -91,15 +91,15 @@ proto.isNew = function() {
 };
 
 proto.isAdded = function() {
-  return this.state.state == 'add';
+  return this.state.state === 'add';
 };
 
 proto.isUpdated = function() {
-  return this.state.state == 'update';
+  return this.state.state === 'update';
 };
 
 proto.isDeleted = function() {
-  return this.state.state == 'delete';
+  return this.state.state === 'delete';
 };
 
 proto.getState = function() {
