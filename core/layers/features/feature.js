@@ -47,6 +47,7 @@ proto.clone = function() {
     pk: this._pk
   });
   clone.setState(this.getState());
+  this.isNew() && clone.setNew();
   return clone;
 };
 
@@ -102,12 +103,20 @@ proto.isDeleted = function() {
   return this.state.state === 'delete';
 };
 
-proto.getState = function() {
-  return this.state.state;
+proto.setFullState = function(state) {
+  this.state = state;
+};
+
+proto.getFullState = function() {
+  return this.state;
 };
 
 proto.setState = function(state) {
   this.state.state = state;
+};
+
+proto.getState = function() {
+  return this.state.state;
 };
 
 proto.getAlphanumericProperties = function() {

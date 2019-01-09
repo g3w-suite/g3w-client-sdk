@@ -1,6 +1,6 @@
 const SessionsRegistry = function() {
   this._sessions = {};
-  
+
   this.register = function(session) {
     const id = session.getId();
     this._sessions[id] = session;
@@ -16,6 +16,10 @@ const SessionsRegistry = function() {
 
   this.setSession = function(id, session) {
     this._sessions[id] = session;
+  };
+
+  this.getSessions = function() {
+    return this._sessions;
   }
 };
 

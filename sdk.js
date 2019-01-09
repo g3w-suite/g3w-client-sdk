@@ -15,6 +15,7 @@ g3w.core = {
   },
   editing: {
     Session: require('core/editing/session'),
+    SessionsRegistry: require('core/editing/sessionsregistry'),
     Editor: require('core/editing/editor'),
     ChangesManager: require('core/editing/changesmanager')
   },

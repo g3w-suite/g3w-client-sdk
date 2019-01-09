@@ -129,10 +129,15 @@ proto.save = function(options={}) {
   return d.promise();
 };
 
+proto.updateTemporaryChanges = function(feature) {
+  this._temporarychanges.forEach((change) => {
+    change.feature.setProperties(feature.getProperties());
+  })
+};
+
 // method to add temporary feature
 proto.pushAdd = function(layerId, feature) {
   const newFeature = feature.clone();
-  newFeature.setNew();
   this.push({
     layerId: layerId,
     feature: newFeature.add()

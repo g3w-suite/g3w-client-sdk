@@ -235,7 +235,7 @@ proto.canCommit = function() {
   const statesToCommit = this._getStatesToCommit();
   statesToCommit.forEach((state) => {
     state.items.forEach((item) => {
-      if (_.isArray(item))
+      if (Array.isArray(item))
       // vado a prendere il secondo valore che è quello modificato
         item = item[1];
      // se esiste un non nuovo vuol dire che
@@ -271,10 +271,10 @@ proto.canRedo = function() {
 };
 
 proto._getStatesToCommit = function() {
-  const cutIndex = this._current? this._current+1 : 0;
-  return this._states.slice(0, cutIndex);
+  return this._states.filter((state) => {
+    return state.id <= this._current;
+  })
 };
-
 
 //get all changes to send to server (mandare al server)
 proto.commit = function() {
@@ -285,12 +285,16 @@ proto.commit = function() {
   statesToCommit.forEach((state) => {
     state.items.forEach((item) => {
       let add = true;
-      if (Array.isArray(item))
-        item = item[1];
-      commitItems[item.layerId] && commitItems[item.layerId].forEach((commitItem) => {
+      if (Array.isArray(item)) item = item[1];
+      commitItems[item.layerId] && commitItems[item.layerId].forEach((commitItem, index) => {
+        // check if already inserted feature
         if (commitItem.getId() === item.feature.getId()) {
-          if (item.feature.isNew() && !commitItem.isDeleted()  && item.feature.isAdded()) {
-            commitItem.add();
+          if (item.feature.isNew() && !commitItem.isDeleted() && item.feature.isUpdated() ) {
+            const _item = item.feature.clone();
+            _item.add();
+            commitItems[item.layerId][index] = _item;
+          } else if (item.feature.isUpdated()) {
+            commitItems[item.layerId][index] = item.feature
           }
           add = false;
           return false;
