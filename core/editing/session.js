@@ -165,6 +165,15 @@ proto.pushUpdate = function(layerId, newFeature, oldFeature) {
     })
 };
 
+proto.moveRelationStatesOwnSession = function() {
+  const {relations:relationItems } = this.getCommitItems();
+  for (let relationLayerId in relationItems) {
+    const relationStates = this._history.getRelationStates(relationLayerId);
+    const relationSession = SessionsRegistry.getSession(relationLayerId);
+    relationSession._history.insertStates(relationStates)
+  }
+};
+
 // it used to add temporary features
 // that will be added with save method
 proto.push = function(New, Old) {
@@ -314,7 +323,7 @@ proto._serializeCommit = function(itemsToCommit) {
     });
     // check in case of no edit remove relation key
     if (isRelation && !layer.add.length && !layer.update.length && !layer.delete.length) {
-      delete commitObj.relations[layerId];
+      delete commitObj.relations[key];
     }
   }
   return commitObj;

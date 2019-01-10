@@ -71,6 +71,43 @@ proto.add = function(uniqueId, items) {
   return d.promise();
 };
 
+proto.getRelationStates = function(layerId, {clear=false}={}) {
+  const relationStates = [];
+  for (let i=0; i < this._states.length; i++) {
+    const state = this._states[i];
+    const relationItems = state.items.filter((item) => {
+      return item[0].layerId === layerId
+    });
+    relationItems.length && relationStates.push({
+      id: state.id,
+      items:relationItems
+    })
+  }
+  return relationStates;
+};
+
+proto.insertState = function(state) {
+  const stateId = state.id;
+  let index = this._states.length;
+  for (let i=0; i < this._states.length; i++) {
+    const _state = this._states[i];
+    if (_state.id > stateId) {
+      index = i;
+      break;
+    }
+  }
+  if (index === 0 || index === this._states.length)
+    this._current = stateId;
+  this._states.splice(index, 0, state)
+};
+
+proto.insertStates = function(states=[]) {
+  for (let i=0; i< states.length; i++) {
+    this.insertState(states[i]);
+  }
+  this.canCommit();
+};
+
 // internal method to change the state of the  history when we check
 // a call to a function that modify the hsitory state
 proto._setState = function() {
@@ -230,29 +267,12 @@ proto.getCurrentStateIndex = function() {
 
 // funzione che mi dice se ci sono cose da committare
 proto.canCommit = function() {
+  const checkComitItems = this.commit();
   let canCommit = false;
-  let idToIgnore = [];
-  const statesToCommit = this._getStatesToCommit();
-  statesToCommit.forEach((state) => {
-    state.items.forEach((item) => {
-      if (Array.isArray(item))
-      // vado a prendere il secondo valore che è quello modificato
-        item = item[1];
-     // se esiste un non nuovo vuol dire che
-     // c'è stata fatta una modifica
-     if (item.feature.isNew() && item.feature.isDeleted()) {
-       idToIgnore.push(item.feature.getPk());
-     } else {
-       if (!(item.feature.isNew() && idToIgnore.indexOf(item.feature.getPk())!= -1) || !idToIgnore.length) {
-         canCommit = true;
-         return false;
-       }
-     }
-    });
-    if (canCommit) {
-      return false;
-    }
-  });
+  for (let layerId in checkComitItems) {
+    const commitItem = checkComitItems[layerId];
+    canCommit = canCommit || !!commitItem.length
+  }
   this.state.commit = canCommit;
   return this.state.commit;
 };
@@ -295,7 +315,8 @@ proto.commit = function() {
             commitItems[item.layerId][index] = _item;
           } else if (item.feature.isUpdated()) {
             commitItems[item.layerId][index] = item.feature
-          }
+          } else if (item.feature.isNew() && item.feature.isDeleted())
+            commitItems[item.layerId].splice(index, 1);
           add = false;
           return false;
         }
