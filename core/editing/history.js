@@ -76,7 +76,8 @@ proto.getRelationStates = function(layerId, {clear=false}={}) {
   for (let i=0; i < this._states.length; i++) {
     const state = this._states[i];
     const relationItems = state.items.filter((item) => {
-      return item[0].layerId === layerId
+      const _layerId = Array.isArray(item) ? item[0].layerId: item.layeId;
+      return _layerId === layerId
     });
     relationItems.length && relationStates.push({
       id: state.id,
