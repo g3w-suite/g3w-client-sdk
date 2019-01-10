@@ -1581,6 +1581,21 @@ proto.goToRes = function(coordinates, resolution){
   this.viewer.goToRes(coordinates,options);
 };
 
+proto.zoomToFeatures = function(features) {
+  let extent;
+  for (let i=0; i < features.length; i++) {
+    const feature = features[i];
+    const geometry = feature.getGeometry ? feature.getGeometry() : feature.geometry;
+    extent = !extent ? geometry.getExtent() : ol.extent.extend(extent, geometry.getExtent())
+  }
+  this.zoomToExtent(extent);
+};
+
+proto.zoomToExtent = function(extent) {
+  const map = this.getMap();
+  map.getView().fit(extent, map.getSize());
+};
+
 proto.goToBBox = function(bbox) {
   bbox = this.isAxisOrientationInverted() ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox;
   this.viewer.fit(bbox);
