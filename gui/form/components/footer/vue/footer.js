@@ -11,12 +11,26 @@ const FooterFormComponent = Vue.extend({
     },
     isValid: function() {
       return this.state.valid
+    },
+    _enterEventHandler(evt) {
+      evt.preventDefault();
+      if (evt.which === 13 && this.isValid()) {
+        $(this.$el).find('button').click();
+      }
     }
   },
   data() {
     return {
       id:"footer"
     }
+  },
+  mounted() {
+    this.$nextTick(() => {
+      document.addEventListener('keyup', this._enterEventHandler)
+    })
+  },
+  beforeDestroy() {
+    document.removeEventListener('keyup', this._enterEventHandler)
   }
 });
 
