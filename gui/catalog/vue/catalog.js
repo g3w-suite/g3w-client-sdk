@@ -16,6 +16,7 @@ const vueComponentOptions = {
   data: function() {
     return {
       state: null,
+      legend: this.$options.legend,
       showlegend: false,
       copywmsurltooltip: t('sdk.catalog.menu.wms.copy'),
       // to show context menu right click
@@ -529,7 +530,7 @@ Vue.component('tristate-tree', {
 
 Vue.component('layerslegend',{
     template: require('./legend.html'),
-    props: ['layerstree'],
+    props: ['layerstree', 'legend'],
     data: function() {
       return {}
     },
@@ -573,15 +574,21 @@ Vue.component('layerslegend',{
 
 Vue.component('layerslegend-items',{
   template: require('./legend_items.html'),
-  props: ['layers'],
+  props: ['layers', 'legend'],
   computed: {
     legendurls() {
+      const {background, fontsize, color, transparent} = this.legend || {};
       const urlLayersName = {};
       const legendUrls = [];
       const layers = this.layers.reverse();
       for (let i=0; i< layers.length; i++) {
         const layer = layers[i];
-        const url = this.getLegendUrl(layer);
+        const url = this.getLegendUrl(layer, {
+          background,
+          fontsize,
+          color,
+          transparent
+        });
         const [prefix, layerName] = url.split('LAYER=');
         if (!urlLayersName[prefix])
           urlLayersName[prefix] = [];
@@ -595,12 +602,12 @@ Vue.component('layerslegend-items',{
     }
   },
   methods: {
-    getLegendUrl: function(layer) {
+    getLegendUrl: function(layer, params={}) {
       let _legendurl;
       const catalogLayers = CatalogLayersStoresRegistry.getLayersStores();
       catalogLayers.forEach((layerStore) => {
         if (layerStore.getLayerById(layer.id)){
-          _legendurl = layerStore.getLayerById(layer.id).getLegendUrl();
+          _legendurl = layerStore.getLayerById(layer.id).getLegendUrl(params);
           return false
         }
       });
@@ -616,12 +623,14 @@ Vue.component('layerslegend-items',{
 function CatalogComponent(options={}) {
   options.resizable = true;
   base(this, options);
+  const {legend}  = options.config;
   this.title = "catalog";
   this.mapComponentId = options.mapcomponentid;
   const service = options.service || new Service;
   this.setService(service);
   this.setInternalComponent(new InternalComponent({
-    service: service
+    service,
+    legend
   }));
   this.internalComponent.state = this.getService().state;
   let listenToMapVisibility = (map) => {

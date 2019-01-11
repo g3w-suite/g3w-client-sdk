@@ -110,10 +110,14 @@ proto.getQueryUrl = function() {
   return url;
 };
 
-proto.getLegendUrl = function() {
+proto.getLegendUrl = function({background, fontsize, transparent, color}) {
+  fontsize = fontsize || 10;
+  color = color || 'white';
+  transparent = !!transparent;
+  const layer = this.getWMSLayerName();
   let url = this.getWmsUrl();
   const sep = (url.indexOf('?') > -1) ? '&' : '?';
-  return url+sep+'SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.1.0&FORMAT=image/png&TRANSPARENT=true&ITEMFONTCOLOR=white&LAYERTITLE=True&ITEMFONTSIZE=10&WIDTH=300&LAYER='+this.getWMSLayerName();
+  return `${url}${sep}SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.3.0&FORMAT=image/png&TRANSPARENT=${transparent}&ITEMFONTCOLOR=${color}&LAYERTITLE=True&ITEMFONTSIZE=${fontsize}&WIDTH=300&LAYER=${layer}`;
 };
 
 proto.getWFSLayerName = function() {
