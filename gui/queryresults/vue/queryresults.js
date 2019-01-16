@@ -34,8 +34,12 @@ const vueComponentOptions = {
     }
   },
   methods: {
+    hasLayerOneFeature(layer) {
+      return layer.features.length == 1;
+    },
+
     hasOneLayerAndOneFeature(layer) {
-      const one = layer.features.length == 1;
+      const one = this.hasLayerOneFeature(layer);
       if (one) {
         const feature = layer.features[0];
         const boxid = this.getBoxId(layer, feature);

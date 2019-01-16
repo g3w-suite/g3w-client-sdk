@@ -577,18 +577,12 @@ Vue.component('layerslegend-items',{
   props: ['layers', 'legend'],
   computed: {
     legendurls() {
-      const {background, fontsize, color, transparent} = this.legend || {};
       const urlLayersName = {};
       const legendUrls = [];
       const layers = this.layers.reverse();
       for (let i=0; i< layers.length; i++) {
         const layer = layers[i];
-        const url = this.getLegendUrl(layer, {
-          background,
-          fontsize,
-          color,
-          transparent
-        });
+        const url = this.getLegendUrl(layer, this.legend);
         const [prefix, layerName] = url.split('LAYER=');
         if (!urlLayersName[prefix])
           urlLayersName[prefix] = [];
@@ -606,7 +600,7 @@ Vue.component('layerslegend-items',{
       let _legendurl;
       const catalogLayers = CatalogLayersStoresRegistry.getLayersStores();
       catalogLayers.forEach((layerStore) => {
-        if (layerStore.getLayerById(layer.id)){
+        if (layerStore.getLayerById(layer.id)) {
           _legendurl = layerStore.getLayerById(layer.id).getLegendUrl(params);
           return false
         }

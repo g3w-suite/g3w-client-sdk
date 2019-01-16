@@ -110,14 +110,38 @@ proto.getQueryUrl = function() {
   return url;
 };
 
-proto.getLegendUrl = function({background, fontsize, transparent, color}) {
-  fontsize = fontsize || 10;
-  color = color || 'white';
-  transparent = !!transparent;
+proto.getLegendUrl = function(params={}) {
+  const {
+    color,
+    fontsize=10,
+    transparent=true,
+    boxspace,
+    layerspace,
+    layertitle=true,
+    layertitlespace,
+    symbolspace,
+    iconlabelspace,
+    symbolwidth,
+    symbolheight
+  } = params;
   const layer = this.getWMSLayerName();
   let url = this.getWmsUrl();
   const sep = (url.indexOf('?') > -1) ? '&' : '?';
-  return `${url}${sep}SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.3.0&FORMAT=image/png&TRANSPARENT=${transparent}&ITEMFONTCOLOR=${color}&LAYERTITLE=True&ITEMFONTSIZE=${fontsize}&WIDTH=300&LAYER=${layer}`;
+  return [`${url}${sep}SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.3.0&WIDTH=300`,
+    `&FORMAT=image/png`,
+    `&TRANSPARENT=${transparent}`,
+    `${color ? '&ITEMFONTCOLOR=' + color: ''}`,
+    `&LAYERTITLE=${layertitle}`,
+    `&ITEMFONTSIZE=${fontsize}`,
+    `${boxspace ? '&BOXSPACE=' + boxspace: ''}`,
+    `${layerspace ? '&LAYERSPACE=' + layerspace: ''}`,
+    `${layertitlespace ? '&LAYERTITLESPACE=' + layertitlespace: ''}`,
+    `${symbolspace ? '&SYMBOLSPACE=' + symbolspace: ''}`,
+    `${iconlabelspace ? '&ICONLABELSPACE=' + iconlabelspace: ''}`,
+    `${symbolwidth ? '&SYMBOLWIDTH=' + symbolwidth : ''}`,
+    `${symbolheight ? '&SYMBOLHEIGHT=' + symbolheight : ''}`,
+    `&LAYER=${layer}`
+  ].join('');
 };
 
 proto.getWFSLayerName = function() {

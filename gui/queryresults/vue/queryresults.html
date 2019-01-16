@@ -24,7 +24,7 @@
                     <tr>
                       <th v-for="n in state.layersactions[layer.id]" :style="{ width:headerExpandActionCellWidth + '%' }"></th>
                       <th v-for="(attribute, index) in attributesSubset(layer.attributes)">{{attribute.label}}</th>
-                      <th v-show="!hasOneLayerAndOneFeature(layer)"></th>
+                      <th v-show="!!hasLayerOneFeature(layer)"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -39,7 +39,7 @@
                           <span>{{feature.attributes[attribute.name]}}</span>
                         </td>
                         <td class="action-cell right">
-                          <span v-if="!hasOneLayerAndOneFeature(layer)" class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? g3wtemplate.font['plus'] : g3wtemplate.font['minus']]"></span>
+                          <span v-if="!hasLayerOneFeature(layer)" class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? g3wtemplate.font['plus'] : g3wtemplate.font['minus']]"></span>
                           <span v-else></span>
                         </td>
                       </tr>
@@ -57,7 +57,7 @@
                   <tr>
                     <th v-for="n in state.layersactions[layer.id]" :style="{ width:headerExpandActionCellWidth + '%' }"></th>
                     <th v-for="(attribute, index) in attributesSubset(layer.attributes)">{{attribute.label}}</th>
-                    <th v-if="!hasOneLayerAndOneFeature(layer)"></th>
+                    <th v-if="!hasLayerOneFeature(layer)"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -72,7 +72,7 @@
                       <span>{{feature.attributes[attribute.name]}}</span>
                     </td>
                     <td class="action-cell right">
-                      <span v-if="!hasOneLayerAndOneFeature(layer)"  class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? g3wtemplate.font['plus'] : g3wtemplate.font['minus']]"></span>
+                      <span v-if="!hasLayerOneFeature(layer)"  class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? g3wtemplate.font['plus'] : g3wtemplate.font['minus']]"></span>
                       <span v-else></span>
                     </td>
                   </tr>
