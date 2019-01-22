@@ -75,6 +75,13 @@ proto._run = function() {
     })
 };
 
+proto.changeInput = function({attribute, value} = {}) {
+  const input = this.state.forminputs.find((input) => {
+    return attribute === input.attribute
+  });
+  input.value = value;
+};
+
 proto.createQueryFilterFromConfig = function({filter}) {
   let queryFilter;
   function createOperatorObject(inputObj) {
@@ -109,74 +116,82 @@ proto.createQueryFilterFromConfig = function({filter}) {
 };
 
 proto.fillDependencyInputs = function({field, subscribers=[], value=''}={}) {
-  if (value) {
-    if (this.state.cachedependencies[field] && this.state.cachedependencies[field][value]) {
-      for (let i = 0; i < subscribers.length; i++) {
-        const subscribe = subscribers[i];
-        const values = this.state.cachedependencies[field][value][subscribe.attribute];
-        if (values && values.length) {
-          subscribe.options.values.splice(1);
-          for (let i = 0; i <values.length; i++) {
-            subscribe.options.values.push(values[i]);
+  return new Promise((resolve, reject) => {
+    subscribers.forEach((subscribe) => {
+      subscribe.options.disabled = true;
+    });
+    if (value) {
+
+      if (this.state.cachedependencies[field] && this.state.cachedependencies[field][value]) {
+        for (let i = 0; i < subscribers.length; i++) {
+          const subscribe = subscribers[i];
+          const values = this.state.cachedependencies[field][value][subscribe.attribute];
+          if (values && values.length) {
+            subscribe.options.values.splice(1);
+            for (let i = 0; i <values.length; i++) {
+              subscribe.options.values.push(values[i]);
+            }
           }
+          subscribe.value = '';
+          subscribe.options.disabled = false;
+          resolve()
         }
-        subscribe.value = '';
-        subscribe.options.disabled = false;
+      } else {
+        this.state.loading[field] = true;
+        this.state.cachedependencies[field] = this.state.cachedependencies[field] ? this.state.cachedependencies[field] : {};
+        this.state.cachedependencies[field][value] = this.state.cachedependencies[field][value] ? this.state.cachedependencies[field][value] : {};
+        this.queryService = GUI.getComponent('queryresults').getService();
+        const equality = {};
+        equality[field] = value;
+        const filter = {
+          AND: [{
+            eq: equality
+          }]
+        };
+        const expression = new Expression();
+        const layerName = this.searchLayer.getName();
+        expression.createExpressionFromFilter(filter, layerName);
+        const _filter = new Filter();
+        _filter.setExpression(expression.get());
+        this.searchLayer.search({
+          filter: _filter
+        }).then((response) => {
+          const digestResults = this.queryService._digestFeaturesForLayers(response);
+          if (digestResults.length) {
+            const features = digestResults[0].features;
+            for (let i = 0; i < subscribers.length; i++) {
+              const subscribe = subscribers[i];
+              subscribe.value = '';
+              subscribe.options.values.splice(1);
+              let uniqueValue = new Set();
+              features.forEach((feature) => {
+                let value = feature.attributes[subscribe.attribute];
+                if (value && !uniqueValue.has(value)) {
+                  subscribe.options.values.push(value);
+                  uniqueValue.add(value);
+                }
+              });
+              subscribe.options.values.sort();
+              this.state.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
+              subscribe.options.disabled = false;
+            }
+          } else
+            subscribe.options.values.splice(1);
+        }).fail((err) => {})
+          .always(() => {
+            this.state.loading[field] = false;
+            resolve();
+          })
       }
     } else {
-      this.state.loading[field] = true;
-      this.state.cachedependencies[field] = this.state.cachedependencies[field] ? this.state.cachedependencies[field] : {};
-      this.state.cachedependencies[field][value] = this.state.cachedependencies[field][value] ? this.state.cachedependencies[field][value] : {};
-      this.queryService = GUI.getComponent('queryresults').getService();
-      const equality = {};
-      equality[field] = value;
-      const filter = {
-        AND: [{
-          eq: equality
-        }]
-      };
-      const expression = new Expression();
-      const layerName = this.searchLayer.getName();
-      expression.createExpressionFromFilter(filter, layerName);
-      const _filter = new Filter();
-      _filter.setExpression(expression.get());
-      this.searchLayer.search({
-        filter: _filter
-      }).then((response) => {
-        const digestResults = this.queryService._digestFeaturesForLayers(response);
-        if (digestResults.length) {
-          const features = digestResults[0].features;
-          for (let i = 0; i < subscribers.length; i++) {
-            const subscribe = subscribers[i];
-            subscribe.options.values.splice(1);
-            let uniqueValue = new Set();
-            features.forEach((feature) => {
-              let value = feature.attributes[subscribe.attribute];
-              if (value && !uniqueValue.has(value)) {
-                subscribe.options.values.push(value);
-                uniqueValue.add(value);
-              }
-            });
-            uniqueValue = null;
-            subscribe.options.values.sort();
-            this.state.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
-            subscribe.value = '';
-            subscribe.options.disabled = false;
-          }
-        } else
-          subscribe.options.values.splice(1);
-      }).fail((err) => {})
-        .always(() => {
-          this.state.loading[field] = false;
-        })
+      for (let i = 0; i < subscribers.length; i++) {
+        const subscribe = subscribers[i];
+        subscribe.options.disabled = true;
+        subscribe.options.values.splice(1);
+      }
+      resolve()
     }
-  } else {
-    for (let i = 0; i < subscribers.length; i++) {
-      const subscribe = subscribers[i];
-      subscribe.options.disabled = true;
-      subscribe.options.values.splice(1);
-    }
-  }
+  })
 };
 
 proto._checkInputDependencies = function(forminput) {

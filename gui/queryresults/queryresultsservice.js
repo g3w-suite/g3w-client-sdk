@@ -57,10 +57,10 @@ inherit(QueryResultsService, G3WObject);
 
 const proto = QueryResultsService.prototype;
 
-proto.zoomToLayerFeaturesExtent = function(layer) {
+proto.zoomToLayerFeaturesExtent = function(layer, options) {
   const mapService = ComponentsRegistry.getComponent('map').getService();
  const features = layer.features;
- mapService.zoomToFeatures(features);
+ mapService.zoomToFeatures(features, options);
 };
 
 proto.clearState = function() {

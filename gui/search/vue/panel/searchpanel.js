@@ -3,10 +3,15 @@ const base = require('core/utils/utils').base;
 const t = require('core/i18n/i18n.service').t;
 const Panel = require('gui/panel');
 const Service = require('./searchservice');
+import Select2 from './select2.vue'
 
 const SearchPanelComponent = Vue.extend({
   template: require('./searchpanel.html'),
+  components:{
+    Select2
+  },
   data: function() {
+    this.select2 = null;
     return {
      state: this.$options.service.state
     }
@@ -20,18 +25,21 @@ const SearchPanelComponent = Vue.extend({
             $('.sidebar').scrollTop(top);
           }, 500)
         });
-
       }
     },
-    selectChange(attribute, value) {
+    changeInput({attribute, value}={}) {
+      this.$options.service.changeInput({attribute, value});
       const dependency = !!this.state.dependencies.length && this.state.dependencies.find((_dependency) => {
         return attribute === _dependency.observer
       });
       if (dependency) {
+        this.state.searching = true;
         this.$options.service.fillDependencyInputs({
           field: attribute,
           subscribers: dependency.subscribers,
           value
+        }).then(()=> {
+          this.state.searching = false;
         });
         if (!value) {
           for (let i =0; i< dependency.subscribers.length; i++) {
@@ -68,12 +76,11 @@ const SearchPanelComponent = Vue.extend({
         // This includes matching the `children` how you want in nested data sets
         return modifiedData;
       }
-
       // Return `null` if the term should not be displayed
       return null;
     }
     this.$nextTick(() => {
-      $('#g3w-search-form > select').select2({
+      this.select2 = $('#g3w-search-form > select').select2({
         width: '100%',
         matcher: matchCustom,
         "language": {
@@ -81,8 +88,22 @@ const SearchPanelComponent = Vue.extend({
             return t("no_results");
           }
         },
+      });
+      this.select2.on('select2:select', (evt) => {
+        const attribute = $(evt.target).attr('name');
+        const value = evt.params.data.id;
+        this.selectChange(attribute, value);
+        this.$options.service.changeInput({
+          attribute,
+          value
+        })
+
       })
     })
+  },
+  beforeDestroy() {
+    this.select2.off('select2:select');
+    this.select2 = null;
   }
 });
 

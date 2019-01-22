@@ -15,12 +15,7 @@
         <div v-if="forminput.type == 'selectfield'" class="form-group text">
           <label :for="forminput.id">{{ forminput.label }}</label>
           <bar-loader v-if ="forminput.options.dependance" :loading="state.loading[forminput.options.dependance]"></bar-loader>
-          <select @change="selectChange(forminput.attribute, forminput.value)" v-model="forminput.value" class="form-control" :id="forminput.id" :disabled="forminput.options.disabled">
-            <option :value="value" v-for="value in forminput.options.values" >
-              <span v-if="value === ''" v-t="'sdk.search.all'"></span>
-              <span v-else>{{ value }}</span>
-            </option>
-          </select>
+          <select2 :forminput="forminput" @select-change="changeInput"></select2>
         </div>
       </template>
       <div class="form-group">

@@ -1235,7 +1235,7 @@ proto._resetView = function() {
     projection: this.viewer.map.getView().getProjection(),
     center: this.viewer.map.getView().getCenter(),
     resolution: this.viewer.map.getView().getResolution(),
-    maxResolution: maxResolution
+    //maxResolution: maxResolution
   });
   this.viewer.map.setView(view);
 };
@@ -1581,19 +1581,23 @@ proto.goToRes = function(coordinates, resolution){
   this.viewer.goToRes(coordinates,options);
 };
 
-proto.zoomToFeatures = function(features) {
+proto.zoomToFeatures = function(features, options) {
   let extent;
   for (let i=0; i < features.length; i++) {
     const feature = features[i];
     const geometry = feature.getGeometry ? feature.getGeometry() : feature.geometry;
     extent = !extent ? geometry.getExtent() : ol.extent.extend(extent, geometry.getExtent())
   }
-  this.zoomToExtent(extent);
+  this.zoomToExtent(extent, options);
 };
 
-proto.zoomToExtent = function(extent) {
+proto.zoomToExtent = function(extent, options={}) {
   const map = this.getMap();
-  map.getView().fit(extent, map.getSize());
+  const {maxZoom=8} = options;
+  map.getView().fit(extent, {
+    size: map.getSize(),
+    maxZoom
+  });
 };
 
 proto.goToBBox = function(bbox) {

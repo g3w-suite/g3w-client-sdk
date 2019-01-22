@@ -243,7 +243,6 @@ proto._setPkEditable = function(fields) {
   })
 };
 
-
 // raw data
 proto.getEditingFormat = function() {
   return this.config.editing.format;

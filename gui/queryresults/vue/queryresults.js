@@ -221,8 +221,10 @@ const vueComponentOptions = {
   watch: {
     'state.layers': function(layers) {
       if (layers.length) {
-        if (layers.length === 1 && layers[0].features.length > 1)
-          this.zoomToLayerFeaturesExtent(layers[0]);
+        if (layers.length === 1 && layers[0].features.length)
+          this.zoomToLayerFeaturesExtent(layers[0], {
+            maxZoom: 8
+          });
         this.hasResults = true;
         this.$nextTick(() => {
           this.$options.queryResultsService.postRender(this.$el);
