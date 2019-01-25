@@ -95,11 +95,35 @@ proto.insertState = function(state) {
     if (_state.id > stateId) {
       index = i;
       break;
+    } else if (_state.id === stateId)
+      index = -1;
+      break;
+  }
+  if (index > -1) {
+    if (this._current < stateId)
+      this._current = stateId;
+    this._states.splice(index, 0, state)
+  }
+};
+
+proto.removeState = function(stateId) {
+  for (i = 0; i < this._states.length; i++) {
+    const state = this._states[i];
+    if (state.id === stateId) {
+      index = i;
+      break;
     }
   }
-  if (index === 0 || index === this._states.length)
-    this._current = stateId;
-  this._states.splice(index, 0, state)
+  if (this._current === stateId)
+    this._current = this._states.length > 1 ? this._states[index-1].id : null;
+  this._states.splice(index,1);
+};
+
+proto.removeStates = function(stateIds = []) {
+  for (let i = 0; i < stateIds.length; i++) {
+    const stateId = stateIds[i];
+    this.removeState(stateId)
+  }
 };
 
 proto.insertStates = function(states=[]) {
@@ -314,7 +338,7 @@ proto.commit = function() {
             const _item = item.feature.clone();
             _item.add();
             commitItems[item.layerId][index] = _item;
-          } else if (item.feature.isUpdated()) {
+          } else if (item.feature.isUpdated() || item.feature.isDeleted()) {
             commitItems[item.layerId][index] = item.feature
           } else if (item.feature.isNew() && item.feature.isDeleted())
             commitItems[item.layerId].splice(index, 1);

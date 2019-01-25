@@ -2,9 +2,8 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils//utils').base;
 const G3WObject = require('core/g3wobject');
 
-// Interfaccia per registare i layers
-function FeaturesStore(options) {
-  options = options || {};
+// Object to store and handle features of layer
+function FeaturesStore(options={}) {
   this._features = [];
   this._provider = options.provider || null;
   this._loadedPks = []; // contiene gli id loccati (che alla fine sono gli stessi delle feature caricate)

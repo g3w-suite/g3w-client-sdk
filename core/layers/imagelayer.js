@@ -53,6 +53,7 @@ proto.getLayerForEditing = function({force=false}={}) {
     const config = _.cloneDeep(this.config);
     //return istance of vectorlayer
     const editingLayer = new VectorLayer(config);
+    // set editing layer
     this.setEditingLayer(editingLayer);
     return editingLayer;
   } else {

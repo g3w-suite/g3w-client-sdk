@@ -34,24 +34,31 @@ proto.getFeatureById = function(featureId) {
   });
 };
 
-//sobtitute the feature afet modify
+proto._addFeature = function(feature) {
+  this._features.push(feature);
+  this._features.dispatchEvent('change')
+};
+
+//sobtitute the feature after modify
 proto._updateFeature = function(feature) {
-  this._features.forEach(function(feat, idx, array) {
+  this._features.forEach(function(feat, idx) {
     if (feat.getId() === feature.getId()) {
       this.setAt(idx, feature);
       return false;
     }
   }, this._features);
+  this._features.dispatchEvent('change')
 };
 
 // remove feature from store
 proto._removeFeature = function(feature) {
-  this._features.forEach(function(feat, idx, array) {
+  this._features.forEach(function(feat, idx) {
     if (feature.getId() === feat.getId()) {
       this.removeAt(idx);
       return false
     }
-  }, this._features)
+  }, this._features);
+  this._features.dispatchEvent('change')
 };
 
 proto._clearFeatures = function() {

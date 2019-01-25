@@ -143,6 +143,7 @@ function TableLayer(config, options={}) {
         this.emit('layer-config-ready', this.config);
       })
   }
+  
   this._featuresStore = new FeaturesStore({
     provider: this.providers.data
   });

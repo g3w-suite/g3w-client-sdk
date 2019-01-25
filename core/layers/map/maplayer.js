@@ -2,8 +2,8 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const G3WObject = require('core/g3wobject');
 
-function MapLayer(config) {
-  this.config = config || {};
+function MapLayer(config={}) {
+  this.config = config;
   this.id = config.id;
   this.projection = config.projection;
   base(this);

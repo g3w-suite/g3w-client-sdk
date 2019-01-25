@@ -1335,7 +1335,7 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
 
     //ADD LAYER
     const addLayerKey = layerStore.onafter('addLayer', (layer) => {
-      if (layer.getType() == 'vector') {
+      if (layer.getType() === 'vector') {
         const mapLayer = layer.getMapLayer();
         this.addLayerToMap(mapLayer);
       }

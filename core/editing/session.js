@@ -52,7 +52,9 @@ proto._start = function(options) {
   SessionsRegistry.register(this);
   this._editor.start(options)
     .then((features) => {
+      // return feature from server - clone it
       features = this._cloneFeatures(features);
+      // add clone feature to internal features store
       this._featuresstore.setFeatures(features);
       this.state.started = true;
       d.resolve(features);
@@ -64,8 +66,7 @@ proto._start = function(options) {
   return d.promise();
 };
 
-//funzione che server per recuperare le features
-//dal server o dalla fonte delle features
+//method to getFeature from server through editor
 proto._getFeatures = function(options) {
   const d = $.Deferred();
   this._editor.getFeatures(options)
@@ -84,9 +85,7 @@ proto._getFeatures = function(options) {
 
 // funzione che permette di clonerae le feature che vengono reperite tramite editor
 proto._cloneFeatures = function(features) {
-  var cloneFeatures = [];_.forEach(features, function(feature) {
-    cloneFeatures.push(feature.clone())
-  });
+  const cloneFeatures = features.map((feature) => feature.clone());
   return cloneFeatures;
 };
 
@@ -161,17 +160,23 @@ proto.pushUpdate = function(layerId, newFeature, oldFeature) {
     {
       layerId: layerId,
       feature: oldFeature.update()
-
     })
 };
 
+proto.removeChangesFromHistory = function(changeIds = []) {
+  this._history.removeStates(changeIds);
+};
+
 proto.moveRelationStatesOwnSession = function() {
+  const statesIds = {};
   const {relations:relationItems } = this.getCommitItems();
   for (let relationLayerId in relationItems) {
     const relationStates = this._history.getRelationStates(relationLayerId);
     const relationSession = SessionsRegistry.getSession(relationLayerId);
-    relationSession._history.insertStates(relationStates)
+    relationSession._history.insertStates(relationStates);
+    statesIds[relationLayerId] = relationStates.map(state => state.id);
   }
+  return statesIds;
 };
 
 // it used to add temporary features
@@ -192,21 +197,18 @@ proto._applyChanges = function(items, reverse=true) {
   ChangesManager.execute(this._featuresstore, items, reverse);
 };
 
-
-// funzione che permetterà di cancellare tutte le modifiche salvate nella history
-// e quindi ripulire la sessione
+// method to revert (cancel) all changes in history and clen session
 proto.revert = function() {
   var d = $.Deferred();
-  var self = this;
-  this._editor.getFeatures().then(function(promise) {
+  this._editor.getFeatures().then((promise) => {
     promise
-      .then(function(features) {
-        features =  self._cloneFeatures(features);
-        self.getFeaturesStore().setFeatures(features);
-        self._history.clear();
+      .then((features)  =>{
+        features =  this._cloneFeatures(features);
+        this.getFeaturesStore().setFeatures(features);
+        this._history.clear();
         d.resolve();
       })
-      .fail(function(err) {
+      .fail((err) => {
         d.reject(err);
       })
   });
@@ -359,9 +361,9 @@ proto.commit = function(options= {}) {
     // passo all'editor un secondo parametro.
     this._editor.commit(commitItems, this._featuresstore)
       .then((response) => {
-        // poi vado a fare tutto quello che devo fare (server etc..)
-        //vado a vare il clean della history
-        this._history.clear();
+        if (response && response.result)
+          // if the response of server is correct clear history
+          this._history.clear();
         d.resolve(commitItems, response)
       })
       .fail((err) => {
