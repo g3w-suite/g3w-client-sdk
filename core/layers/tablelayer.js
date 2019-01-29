@@ -143,7 +143,7 @@ function TableLayer(config, options={}) {
         this.emit('layer-config-ready', this.config);
       })
   }
-  
+
   this._featuresStore = new FeaturesStore({
     provider: this.providers.data
   });
@@ -396,21 +396,29 @@ proto.addLockIds = function(lockIds) {
 };
 
 proto.setFieldsWithValues = function(feature, fields) {
-  const attributes = {};
   let pkValue;
-  fields.forEach((field)=> {
-    // check if primary key is editbale
-    if (feature.getPk() == field.name && field.editable) {
-      pkValue = field.type == "integer" ? 1* field.value : field.value;
-      feature.setId(pkValue);
-    } else {
-      // case selct force to null
-      if (field.value == 'null') {
-        field.value = null;
+  const createAttributesFromFields = (fields) => {
+    const attributes = {};
+    fields.forEach((field) => {
+      if (field.type === 'child') {
+        attributes[field.name] = createAttributesFromFields(field.fields);
+      } else {
+        // check if primary key is editbale
+        if (feature.getPk() == field.name && field.editable) {
+          pkValue = field.type == "integer" ? 1* field.value : field.value;
+          feature.setId(pkValue);
+        } else {
+          // case selct force to null
+          if (field.value == 'null') {
+            field.value = null;
+          }
+          attributes[field.name] = field.value;
+        }
       }
-      attributes[field.name] = field.value;
-    }
-  });
+    });
+    return attributes;
+  };
+  const attributes = createAttributesFromFields(fields);
   feature.setProperties(attributes);
   return attributes;
 };
@@ -452,7 +460,7 @@ proto.getFieldsWithValues = function(obj, options={}) {
         field.value = attributes[field.name];
       }
 
-      if (field.input.type === 'select_autocomplete' && !field.input.options.usecompleter) {
+      if (field.type !== 'child' && field.input.type === 'select_autocomplete' && !field.input.options.usecompleter) {
         const _configField = this.getEditingFields().find((_field) => {
           return _field.name === field.name
         });

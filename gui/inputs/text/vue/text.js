@@ -2,7 +2,7 @@
 var Input = require('gui/inputs/input');
 
 var TextInput = Vue.extend({
-  mixins: [Input],
+  mixins: [Input]
 });
 
 module.exports = TextInput;

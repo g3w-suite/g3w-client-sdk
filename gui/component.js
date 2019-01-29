@@ -1,6 +1,7 @@
 const inherit = require('core/utils/utils').inherit;
 const merge = require('core/utils/utils').merge;
 const base = require('core/utils/utils').base;
+const noop = require('core/utils/utils').noop;
 const G3WObject = require('core/g3wobject');
 const VUECOMPONENTSATTRIBUTES = ['methods', 'computed', 'data', 'components'];
 
@@ -38,9 +39,10 @@ const Component = function(options = {}) {
   this.init = function(options = {}) {
     this.vueComponent = this.createVueComponent(options.vueComponentObject);
     this._components = options.components || [];
-    this.setService(options.service);
+    const service = options.service || noop ;
+    this.setService(service);
     this._service.init ? this._service.init(options): null;
-    this.setInternalComponentTemplate(options.template);
+    options.template && this.setInternalComponentTemplate(options.template);
     this.setInternalComponent = function() {
       const InternalComponent = Vue.extend(this.vueComponent);
       this.internalComponent = new InternalComponent({

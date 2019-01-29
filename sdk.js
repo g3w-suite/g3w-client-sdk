@@ -100,6 +100,10 @@ g3w.gui = {
     Inputs: {
       InputsComponents: require('gui/inputs/inputs')
     },
+    Graphs: {
+      GraphsFactory: require('gui/graphs/graphfactory'),
+      line: require('gui/graphs/vue/line/line')
+    },
     Fields : require('gui/fields/fields'),
     Mixins: require('gui/vue/vue.mixins'),
     services: {

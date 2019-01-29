@@ -265,7 +265,13 @@ const utils = {
               reject(error);
             })
         } else {
-          $.post(url, data);
+          $.post(url, data)
+            .then((response) => {
+              resolve(response)
+            })
+            .fail((error) => {
+              reject(error)
+            })
         }
       })
     },

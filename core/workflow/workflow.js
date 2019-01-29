@@ -151,6 +151,7 @@ proto.start = function(options) {
       d.resolve(outputs);
     })
     .fail((error) => {
+      console.log(error)
       d.reject(error);
     });
 

@@ -53,7 +53,7 @@ const vueComponentObject = {
 
 function FormComponent(options = {}) {
   options.id = options.id || 'form';
-  // qui vado a tenere traccia delle tre cose che mi permettono di customizzare
+  const addons = options.addons || [];
   base(this, options);
   options.service = options.service ?  new options.service : new Service;
   options.vueComponentObject = options.vueComponentObject  || vueComponentObject;
@@ -64,7 +64,6 @@ function FormComponent(options = {}) {
   ];
   // initialize component
   this.init(options);
-
   this.getService().addComponents(components);
   this.getService().setComponent(components[0].component);
 

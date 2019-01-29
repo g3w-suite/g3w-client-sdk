@@ -1,5 +1,8 @@
 <div class="g3wform_content" style="position: relative">
-  <g3wformheader :currentindex="state.currentheaderindex" :titles="state.headers" @clickheader="switchComponent">
+  <g3wformheader
+    :currentindex="state.currentheaderindex"
+    :titles="state.headers"
+    @clickheader="switchComponent">
   </g3wformheader>
   <div class="g3wform_body">
     <keep-alive>
@@ -13,3 +16,9 @@
     </keep-alive>
   </div>
 </div>
+<script>
+  import Addons from "../components/addons/vue/addons";
+  export default {
+    components: {Addons}
+  }
+</script>

@@ -191,8 +191,6 @@ const RelationsPage = function(options={}) {
 
 inherit(RelationsPage, Component);
 
-const proto = RelationsPage.prototype;
-
 module.exports = RelationsPage;
 
 

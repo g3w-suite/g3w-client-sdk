@@ -315,9 +315,12 @@ proto._serializeCommit = function(itemsToCommit) {
           break;
         default:
           const value = GeoJSONFormat.writeFeatureObject(item);
+          const childs_properties = item.getProperties();
           for (const key in value.properties) {
            if (value.properties[key] && typeof value.properties[key] === 'object' && value.properties[key].constructor === Object)
              value.properties[key] = value.properties[key].value;
+           if (value.properties[key] === undefined && childs_properties[key])
+             value.properties[key] = childs_properties[key]
           }
           layer[item.getState()].push(value);
           break;

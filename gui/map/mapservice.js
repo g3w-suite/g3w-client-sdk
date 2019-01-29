@@ -1586,9 +1586,10 @@ proto.zoomToFeatures = function(features, options) {
   for (let i=0; i < features.length; i++) {
     const feature = features[i];
     const geometry = feature.getGeometry ? feature.getGeometry() : feature.geometry;
-    extent = !extent ? geometry.getExtent() : ol.extent.extend(extent, geometry.getExtent())
+    if (geometry)
+      extent = !extent ? geometry.getExtent() : ol.extent.extend(extent, geometry.getExtent())
   }
-  this.zoomToExtent(extent, options);
+  extent && this.zoomToExtent(extent, options);
 };
 
 proto.zoomToExtent = function(extent, options={}) {
@@ -1625,6 +1626,44 @@ let animatingHighlight = false;
 proto.highlightGeometry = function(geometryObj, options = {}) {
   this.clearHighlightGeometry();
   let zoom = (typeof options.zoom == 'boolean') ? options.zoom : true;
+  const customStyle = options.style;
+  const defaultStyle = function(feature){
+    let styles = [];
+    const geometryType = feature.getGeometry().getType();
+    if (geometryType == 'LineString' || geometryType == 'MultiLineString') {
+      const style = new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color: 'rgb(255,255,0)',
+          width: 4
+        })
+      });
+      styles.push(style);
+    }
+    else if (geometryType == 'Point' || geometryType == 'MultiPoint') {
+      const style = new ol.style.Style({
+        image: new ol.style.Circle({
+          radius: 6,
+          fill: new ol.style.Fill({
+            color: 'rgb(255,255,0)'
+          })
+        }),
+        zIndex: Infinity
+      });
+      styles.push(style);
+    } else if (geometryType == 'MultiPolygon' || geometryType == 'Polygon') {
+      const style = new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color: 'rgb(255,255,0)',
+          width: 4
+        }),
+        fill: new ol.style.Fill({
+          color: 'rgba(255, 255, 0, 0.5)'
+        })
+      });
+      styles.push(style);
+    }
+    return styles;
+  };
   const highlight = (typeof options.highlight == 'boolean') ? options.highlight : true;
   const duration = options.duration || 2000;
   let geometry;
@@ -1657,46 +1696,14 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
     if (!highlightLayer) {
       highlightLayer = new ol.layer.Vector({
         source: new ol.source.Vector(),
-        style: function(feature){
-          let styles = [];
-          const geometryType = feature.getGeometry().getType();
-          if (geometryType == 'LineString' || geometryType == 'MultiLineString') {
-            const style = new ol.style.Style({
-              stroke: new ol.style.Stroke({
-                color: 'rgb(255,255,0)',
-                width: 4
-              })
-            });
-            styles.push(style);
-          }
-          else if (geometryType == 'Point' || geometryType == 'MultiPoint') {
-            const style = new ol.style.Style({
-              image: new ol.style.Circle({
-                radius: 6,
-                fill: new ol.style.Fill({
-                  color: 'rgb(255,255,0)'
-                })
-              }),
-              zIndex: Infinity
-            });
-            styles.push(style);
-          } else if (geometryType == 'MultiPolygon' || geometryType == 'Polygon') {
-            const style = new ol.style.Style({
-              stroke: new ol.style.Stroke({
-                color: 'rgb(255,255,0)',
-                width: 4
-              }),
-              fill: new ol.style.Fill({
-                color: 'rgba(255, 255, 0, 0.5)'
-              })
-            });
-            styles.push(style);
-          }
-          return styles;
-        }
+        style: defaultStyle
       });
       highlightLayer.setMap(this.viewer.map);
     }
+    if (customStyle) {
+      highlightLayer.setStyle(customStyle);
+    }
+
     highlightLayer.getSource().clear();
     highlightLayer.getSource().addFeature(feature);
 
@@ -1704,6 +1711,8 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
       animatingHighlight = true;
       setTimeout(() => {
         highlightLayer.getSource().clear();
+        if (customStyle)
+          highlightLayer.setStyle(defaultStyle);
         animatingHighlight = false;
       }, duration)
     }
