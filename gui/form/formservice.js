@@ -51,6 +51,7 @@ function FormService() {
     this.buttons = options.buttons || [];
     this.context_inputs = options.context_inputs;
     this.state = {
+      loading:false,
       components: [],
       component: null,
       headers: [],
@@ -70,6 +71,10 @@ function FormService() {
 inherit(FormService, G3WObject);
 
 const proto = FormService.prototype;
+
+proto.setLoading = function(bool=false) {
+  this.state.loading = bool;
+};
 
 // Every input send to form it valid value that will change the genaral state of form
 proto.isValid = function() {

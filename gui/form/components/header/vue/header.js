@@ -1,6 +1,15 @@
 const HeaderFormComponent = Vue.extend({
   template: require('./header.html'),
-  props: ['titles', 'currentindex'],
+  props: {
+    titles: {
+      type: Array,
+      default:[]
+    },
+    currentindex: {
+      type: Number,
+      default:0
+    }
+  },
   methods: {
     click(index) {
       if (this.currentindex !== index){
