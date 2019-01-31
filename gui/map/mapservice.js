@@ -1626,6 +1626,10 @@ let animatingHighlight = false;
 proto.highlightGeometry = function(geometryObj, options = {}) {
   this.clearHighlightGeometry();
   let zoom = (typeof options.zoom == 'boolean') ? options.zoom : true;
+  let hide = options.hide;
+  if (hide) {
+    hide = typeof hide === 'function' ? hide: null;
+  }
   const customStyle = options.style;
   const defaultStyle = function(feature){
     let styles = [];
@@ -1706,8 +1710,14 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
 
     highlightLayer.getSource().clear();
     highlightLayer.getSource().addFeature(feature);
-
-    if (duration) {
+    if (hide) {
+      const callback = ()=> {
+        highlightLayer.getSource().clear();
+        if (customStyle)
+          highlightLayer.setStyle(defaultStyle);
+      };
+      hide(callback);
+    } else if (duration) {
       animatingHighlight = true;
       setTimeout(() => {
         highlightLayer.getSource().clear();

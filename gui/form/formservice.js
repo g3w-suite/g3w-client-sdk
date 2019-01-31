@@ -95,7 +95,8 @@ proto.addComponents = function(components = []) {
 };
 
 proto.addComponent = function(component) {
-  this.state.headers.push(component.id);
+  const {id:title, icon} = component;
+  this.state.headers.push({title, icon});
   this.state.components.push(component.component);
 };
 

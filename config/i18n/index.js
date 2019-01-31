@@ -65,6 +65,13 @@ export default {
           }
         },
         mapcontrols: {
+          query: {
+            actions: {
+              show_map: {
+                hint: "Visualizza sulla mappa"
+              }
+            }
+          },
           querybypolygon: {
             help: `<h4>Guida - Query By Polygon</h4>'
                   <ul>
@@ -163,6 +170,13 @@ export default {
           }
         },
         mapcontrols: {
+          query: {
+            actions: {
+              show_map: {
+                hint: "Show on map"
+              }
+            }
+          },
           querybypolygon: {
             help: `<h4>Guide - Query By Polygon</h4>'
                   <ul>

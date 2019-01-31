@@ -1,7 +1,7 @@
 const HeaderFormComponent = Vue.extend({
   template: require('./header.html'),
   props: {
-    titles: {
+    headers: {
       type: Array,
       default:[]
     },

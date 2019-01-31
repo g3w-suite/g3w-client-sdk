@@ -65,10 +65,17 @@
 <style scoped>
   .formquerytabs {
     overflow: hidden !important;
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .formquerytabs > li {
+    flex: 1;
+    display: flex;
   }
   .formquerytabs > li > a {
     font-size: 1.2em;
     font-weight: bold;
+    flex: 1;
   }
   .tab-content {
     margin-top: 10px;

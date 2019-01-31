@@ -1,5 +1,6 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
+const t = require('core/i18n/i18n.service').t;
 const ProjectsRegistry = require('core/project/projectsregistry');
 const Layer = require('core/layers/layer');
 const GUI = require('gui/gui');
@@ -210,7 +211,7 @@ proto.setActionsForLayers = function(layers) {
       this.state.layersactions[layer.id].push({
         id: 'gotogeometry',
         class: GUI.getFontClass('marker'),
-        hint: 'Visualizza sulla mappa',
+        hint: t('sdk.mapcontrols.query.actions.show_map.hint'),
         cbk: QueryResultsService.goToGeometry
       })
     }

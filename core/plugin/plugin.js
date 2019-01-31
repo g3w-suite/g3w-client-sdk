@@ -13,7 +13,7 @@ const Plugin = function() {
   this.dependencies = [];
   this._api = null;
   this._hook = null;
-  this._ready;
+  this._ready; // property that edescribe that plugin i ready
   this._services = {
     'search': GUI.getComponent('search').getService(),
     'tools': GUI.getComponent('tools').getService()
@@ -35,7 +35,7 @@ proto.setApi = function(api) {
 
 proto.setReady = function(bool) {
   this._ready = bool;
-  this.emit('set-state', bool)
+  this.emit('set-ready', bool)
 };
 
 proto.isReady = function() {
@@ -43,7 +43,7 @@ proto.isReady = function() {
     if (this._ready !== undefined) {
       this._ready && resolve() || reject()
     } else {
-      this.once('set-state', (bool) => {
+      this.once('set-ready', (bool) => {
         bool && resolve() || reject()
       })
     }
