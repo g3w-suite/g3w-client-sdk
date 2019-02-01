@@ -47,9 +47,9 @@
     </div>
   </div>
   <ul id="layer-menu" v-click-outside-layer-menu="closeLayerMenu"  tabindex="-1" v-if="layerMenu.show"  :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }">
-    <li v-if="layerMenu.layer.bbox" @click.prevent.stop="zoomToLayer">
+    <li v-if="canZoom(layerMenu.layer)" @click.prevent.stop="zoomToLayer">
       <span :class="g3wtemplate.getFontClass('search')"></span>
-      {{ layerMenu.items.zoomtolayer }}
+      <span>{{ layerMenu.items.zoomtolayer }}</span>
     </li>
     <li v-if="layerMenu.layer.openattributetable" @click.prevent.stop="showAttributeTable(layerMenu.layer.id)">
       <bar-loader :loading="layerMenu.loading.data_table"></bar-loader>
@@ -71,13 +71,15 @@
     <li v-if="canDownloadShp(layerMenu.layer.id)">
       <div @click.prevent.stop="downloadShp(layerMenu.layer.id)" >
         <bar-loader :loading="layerMenu.loading.shp"></bar-loader>
-        <span :class="g3wtemplate.getFontClass('download')"></span> Download shapefile
+        <span  :class="g3wtemplate.getFontClass('download')"></span>
+        <span>Download shapefile</span>
       </div>
       </i>
     </li>
     <li v-if="canShowWmsUrl(layerMenu.layer.id)">
       <div @click.prevent.stop="copyWmsUrl($event, layerMenu.layer.id)" data-toggle="tooltip" class="catalog-menu-wms skin-tooltip-top" :title="copywmsurltooltip" style="max-width:300px">
-        <span :class="g3wtemplate.getFontClass('copy')"></span> WMS URL
+        <span :class="g3wtemplate.getFontClass('copy')"></span>
+        <span>WMS URL</span>
       </div>
       </i>
     </li>

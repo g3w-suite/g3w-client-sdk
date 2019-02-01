@@ -132,13 +132,19 @@ const vueComponentOptions = {
       this.layerMenu.show = false;
     },
     zoomToLayer: function() {
-      let bbox;
-      if (this.layerMenu.layer.bbox) {
-        bbox = [this.layerMenu.layer.bbox.minx, this.layerMenu.layer.bbox.miny, this.layerMenu.layer.bbox.maxx, this.layerMenu.layer.bbox.maxy] ;
-      }
+      const  bbox = [this.layerMenu.layer.bbox.minx, this.layerMenu.layer.bbox.miny, this.layerMenu.layer.bbox.maxx, this.layerMenu.layer.bbox.maxy] ;
       const mapService = GUI.getComponent('map').getService();
       mapService.goToBBox(bbox);
       this._hideMenu();
+    },
+    canZoom(layer){
+      if (layer.bbox) {
+        bbox = [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy] ;
+      }
+      const canZoom = bbox.find((coordinate) => {
+        return coordinate > 0;
+      });
+      return canZoom;
     },
     canShowWmsUrl(layerId) {
       const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);

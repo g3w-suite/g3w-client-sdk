@@ -98,6 +98,7 @@ const utils = {
     childCtor.prototype.constructor = childCtor;
   },
   base: function(me, opt_methodName, var_args) {
+    // who call base
     const caller = arguments.callee.caller;
     if (caller.superClass_) {
       // This is a constructor. Call the superclass constructor.
@@ -106,6 +107,7 @@ const utils = {
     }
     const args = Array.prototype.slice.call(arguments, 2);
     let foundCaller = false;
+    //constructor is the costructor function of the object
     for (let ctor = me.constructor;
          ctor; ctor = ctor.superClass_ && ctor.superClass_.constructor) {
       if (ctor.prototype[opt_methodName] === caller) {
@@ -114,12 +116,10 @@ const utils = {
         return ctor.prototype[opt_methodName].apply(me, args);
       }
     }
-
     // If we did not find the caller in the prototype chain,
     // then one of two things happened:
     // 1) The caller is an instance method.
     // 2) This method was not called by the right caller.
-
     if (me[opt_methodName] === caller) {
       return me.constructor.prototype[opt_methodName].apply(me, args);
     } else {
@@ -146,6 +146,7 @@ const utils = {
     d.reject(value);
     return d.promise();
   },
+
   getValueFromG3WObjectEvent() {
     //TODO
   },

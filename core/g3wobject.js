@@ -29,7 +29,7 @@ const proto = G3WObject.prototype;
 /**
  * Insert a listener on afeter setter was executed
  * @param {string} setter - IMethod name to register a listener function
- * @param {function} listener - Una funzione listener (solo sincrona)
+ * @param {function} listener - listener function (only syncron)
  * @param {number} priority - Priorità di esecuzione: valore minore viene eseuito prima
  */
 proto.onafter = function(setter, listener, priority){
@@ -61,7 +61,7 @@ proto.onbeforeasync = function(setter, listener, priority) {
 proto.un = function(setter, key) {
   Object.entries(this.settersListeners).forEach(([_key, settersListeners]) => {
     settersListeners[setter].forEach((setterListener, idx) => {
-      if (setterListener.key == key) {
+      if (setterListener.key === key) {
         settersListeners[setter].splice(idx, 1);
       }
     })
@@ -74,151 +74,113 @@ proto.un = function(setter, key) {
   when=before|after,
   type=sync|async
 */
-proto._onsetter = function(when, setter, listener, async, priority) {
-  // vado a recuperarer l'oggetto che ceh si riferifsce al when
+proto._onsetter = function(when, setter, listener, async, priority=0) {
   const settersListeners = this.settersListeners[when];
-  // creo una listenerKey unica
-  const listenerKey = ""+Math.floor(Math.random()*1000000)+""+Date.now();
-  // verifico la priorità
-  priority = priority || 0;
-  // prendo tutto ciò che riguarda il setter (la funzione che dovrà essere chiamata)
+  const listenerKey = `${Math.floor(Math.random()*1000000) + Date.now()}`;
   const settersListeneres = settersListeners[setter];
-  // vado ad inserire l'oggetto che mi servirà a chiamare la funzione legata
-  // al tipo di evento del setter
   settersListeneres.push({
     key: listenerKey,
     fnc: listener,
-    async: async,
-    priority: priority
+    async,
+    priority
   });
-  // vado a riordinare l'array dei listeners del setter per quell'evento in base alla priorità
+  // reader array based on priority
   settersListeners[setter] = _.sortBy(settersListeneres, function(setterListener) {
     return setterListener.priority;
   });
-  // ritorno la chiave
+  // return key
   return listenerKey;
 };
 
-// funzione che viene lanciata se la sottoclasse ha come parametro setters
 proto._setupListenersChain = function(setters) {
-  // inizializza tutti i metodi definiti nell'oggetto "setters" della classe figlia.
-  const self = this;
+  // initialize all methods inside object "setters" of child class.
   this.settersListeners = {
     after: {},
     before: {}
   };
-  // per ogni setter viene definito l'array dei listeners e fiene sostituito
-  // il metodo originale con la funzioni che gestisce la coda di listeners
-  // setterOption è la funzione
-  // stters è la chiave/nome del metodo che viene assegnato all'istanza
-  _.forEach(setters, function(setterOption, setter) {
+  for (const setter in setters) {
+    const setterOption = setters[setter];
     let setterFnc = noop;
     let setterFallback = noop;
     // verifico che il valore della chiave setter sia una funzione
     if (_.isFunction(setterOption)){
       setterFnc = setterOption
-    } // altrimenti vado a vedere il valore dell'attributo fnc
-    else {
+    } else {
       setterFnc = setterOption.fnc;
-      setterFallback = setterOption.fallback || noop; // funzione in caso di errore nell'esecuzione della fnc
+      setterFallback = setterOption.fallback || noop; // method called in case of error
     }
-    //vado a creare l'arry dei metodi/azioni/funzioni che devo essere eseguiti prima/dopo
-    //la chiamata del metodo sette dell'oggetto
-    self.settersListeners.after[setter] = [];
-    self.settersListeners.before[setter] = [];
-    // setter aggiunto come proprietà dell'istanza
-    self[setter] = function() {
-      // prendo gli argomenti passati alla funzione
-      const args = arguments;
+    // create array to push before and after subscribers
+    this.settersListeners.after[setter] = [];
+    this.settersListeners.before[setter] = [];
+    // assign the property settern name to the object as own method
+    this[setter] = function(...args) {
       const deferred = $.Deferred();
       let returnVal = null;
       let counter = 0;
-      // funzione complete che serve per lanciare la funzione setter dell'istanza
-      function complete() {
+      // function to call original function(setter function)
+      const callSetter = () => {
         // eseguo la funzione setter
-        returnVal = setterFnc.apply(self,args);
+        returnVal = setterFnc.apply(this, args);
         // e risolvo la promessa (eventualmente utilizzata da chi ha invocato il setter)
         deferred.resolve(returnVal);
-        //vado a eseguire tutti i listener che sono stati settati dopo l'esecuzione del setter
-        const afterListeners = self.settersListeners.after[setter];
-        _.forEach(afterListeners, function(listener) {
-          listener.fnc.apply(self, args);
+        //call all subscribed methods afet setter
+        const afterListeners = this.settersListeners.after[setter];
+        afterListeners.forEach((listener) => {
+          listener.fnc.apply(this, args);
         })
-      }
-      // funzione abort che mi server ad uscire dal ciclo dei listener
-      // nel caso si verificasse un problema
-      function abort() {
-        // se non posso proseguire ...
-        // chiamo l'eventuale funzione di fallback
-        setterFallback.apply(self,args);
-        // e rigetto la promessa
+      };
+      //  abort function
+      const abort = () => {
+        setterFallback.apply(this, args);
         deferred.reject();
-      }
-
-      // vado a prendere l'array delle funzioni che devo lanciare prima di lanciare il setter
-      const beforeListeners = self.settersListeners['before'][setter];
-      // contatore dei listener che verrà decrementato ad ogni chiamata a next()
+      };
+      // get all before listeners functions of setter
+      const beforeListeners = this.settersListeners['before'][setter];
+      // listener counter
       counter = 0;
-      // funzione passata come ultimo parametro ai listeners,
-      // che ***SE SONO STATI AGGIUNTI COME ASINCRONI la DEVONO*** richiamare per poter proseguire la catena
-      function next(bool) {
-        // inizializzo la variabile cont a true (continue) non possibile usare
-        // continue perchè parola riservata di javascript
+      const next = (bool) => {
+        // initilize cont to true (continue)
         let cont = true;
-        // verifica se è stato passato un parametro boolenao alla funzione
-        // e la setto alla variabile cont (continue)
+        // check if bool is Boolean
         if (_.isBoolean(bool)) {
           cont = bool;
         }
-        // ricavo l'array di argomenti passati alla funzione setter
-        const _args = Array.prototype.slice.call(args);
-        // se la catena è stata bloccata (cont==false)
-        // o se siamo arrivati alla fine dei beforelisteners
-        // o non non sono stati settati nessun beforelisteners
-        if (cont === false || (counter == beforeListeners.length)) {
-          if (cont === false) {
-            // significa che si è verificato un errore oppure si è forzato a concludere
-            abort.apply(self, args);
-          } else {
-            //vado a chiamare la funzione setter
-            completed = complete.apply(self, args);
-            //verifico che cosa ritorna
-            if (_.isUndefined(completed) || completed === true) {
-              self.emitEvent('set:'+setter,args);
-            }
+        // check if count is false or we are arrived to the end of onbefore subscriber
+        if (cont === false) {
+            // found an error so we can abort
+            abort.apply(this, args);
+        } else if (counter === beforeListeners.length) {
+          // call complete method methods
+          const completed = callSetter();
+          //verifico che cosa ritorna
+          if (completed === undefined || completed === true) {
+            this.emitEvent(`set:${setter}`,args);
           }
-        } else {
-          // se cont è true (continua)
-          if (cont) {
-            // vado a prendere la funzione dall'array dei before listener
-            const listenerFnc = beforeListeners[counter].fnc;
-            // verifico se questa è asyncrona
-            if (beforeListeners[counter].async) {
-              // aggiungo next come ulyimo nel caso di onbeforeasync
-              _args.push(next);
-              // vado ad aggiornare il counter dei listener onbefore
-              counter += 1;
-              // chiamo la funzione passandogli l'argomento (modificato con next)
-              // su se stesso
-              listenerFnc.apply(self, _args)
-            } else { // nel caso di onbefore(quindi non asincrona)
-              // chiamo la funzione listener che mi deve ritornare un boolenano o undefined
-              const _cont = listenerFnc.apply(self,_args);
-              //vado ad aggiornare il counter
-              counter += 1;
-              next(_cont);
-            }
+        } else if (cont) {
+          const listenerFnc = beforeListeners[counter].fnc;
+          // if is async functtion
+          if (beforeListeners[counter].async) {
+            //add function next to argument of listnerFunction
+            args.push(next);
+            // update counter
+            counter += 1;
+            listenerFnc.apply(this, args)
+          } else {
+            // return or undefine or a boolen to tell if ok(true) can conitnue or not (false)
+            const bool = listenerFnc.apply(this, args);
+            //update counter
+            counter += 1;
+            next(bool);
           }
         }
-      }
+      };
       // quando viene chiamato la funzione
       // viene lanciato la funzione next
       next();
-      // la nuova funzione (il setter) associato all'ggetto che ne ha dichiarato
-      // la presenza ritorneà una promise
+      // retun a promise
       return deferred.promise();
     }
-  });
+  }
   return this.settersListeners
 };
 

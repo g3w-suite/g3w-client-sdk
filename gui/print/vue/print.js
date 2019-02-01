@@ -63,7 +63,6 @@ function PrintComponent(options) {
     this.internalComponent = new InternalComponent({
       service: service
     });
-    pippo = this.state;
     this.state.visible = service.state.visible;
     this.internalComponent.state = service.state;
     return this.internalComponent;
