@@ -36,11 +36,12 @@ proto.query = function(options = {}) {
   const d = $.Deferred();
   const filter = options.filter || null;
   const layerProjection = this._layer.getProjection();
+  const crs = layerProjection.getCode();
   this._projections.map = this._layer.getMapProjection() || layerProjection;
   const queryUrl = options.queryUrl || this._queryUrl;
   if (filter) {
     // check if geomemtry filter. If not i have to remove projection layer
-    if (filter.getType() == 'geometry')
+    if (filter.getType() === 'geometry')
       this._projections.layer = layerProjection;
     else
       this._projections.layer = null;
@@ -53,6 +54,7 @@ proto.query = function(options = {}) {
           QUERY_LAYERS: this._layerName,
           INFO_FORMAT: this._infoFormat,
           FEATURE_COUNT: 200,
+          CRS: crs,
           FILTER: filter.get()
         }
       ).then((response) => {

@@ -25,6 +25,8 @@ const BaseInput = {
     isVisible: function() {}
   },
   created() {
+    if (this.state.validate === undefined)
+      this.$set(this.state, 'validate', {});
     this.$set(this.state.validate, 'valid', true);
     this.$set(this.state.validate, 'message', null);
     this.change();

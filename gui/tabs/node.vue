@@ -4,14 +4,16 @@
     <div v-for="row in rows" class="row">
       <div v-for="column in columnNumber" :class="columnClass">
         <template v-if="getNode(row, column)">
-          <component v-if="getNodeType(getNode(row, column)) == 'field'"
+          <component v-if="getNodeType(getNode(row, column)) === 'field'"
             :state="getField(getNode(row, column))"
             @changeinput="changeInput"
             @addinput="addToValidate"
+            :changeInput="changeInput"
+            :addToValidate="addToValidate"
             :is="getComponent(getField(getNode(row, column)))">
           </component>
           <template v-else>
-            <div v-if="getNodeType(getNode(row, column)) == 'group'" class="sub-group">
+            <div v-if="getNodeType(getNode(row, column)) === 'group'" class="sub-group">
               <node
                 :contenttype="contenttype"
                 @changeinput="changeInput"
@@ -24,7 +26,7 @@
               </node>
             </div>
             <template v-else>
-              <div style="cursor: pointer" v-if="context == 'query'" @click="showRelation(getNode(row, column).name)">
+              <div style="cursor: pointer" v-if="context === 'query'" @click="showRelation(getNode(row, column).name)">
                 <div class="query_relation_field" >
                   <i :class="g3wtemplate.font['relation']"></i>
                 </div>
@@ -47,7 +49,7 @@
 </template>
 
 <script>
-  const Inputs = require('gui/inputs/inputs');
+  import G3wInput from '../inputs/g3w-input.vue';
   const Fields = require('gui/fields/fields');
   const ProjectRegistry = require('core/project/projectsregistry');
   const RelationsService = require('core/relations/relationsservice');
@@ -71,7 +73,7 @@
     name: "node",
     props: ['contenttype', 'node', 'fields', 'showTitle', 'addToValidate', 'changeInput'],
     components: {
-      ...Inputs,
+      G3wInput,
       ...Fields
     },
     data() {
@@ -171,15 +173,15 @@
       getComponent(field) {
         if (field.relation) {
           return
-        }
-        else if (field.query) {
+        } else if (field.query) {
           return field.input.type;
         } else {
-          return `${field.input.type}_input`;
+          return 'g3w-input';
         }
       }
     },
-    created() {}
+    created() {
+    }
   }
 </script>
 

@@ -11,6 +11,7 @@ const ComponentsRegistry = require('gui/componentsregistry');
 function GUI() {
   this.setters = {
     setContent: function(options) {
+      this.emit('opencontent', true);
       this._setContent(options)
     }
   };

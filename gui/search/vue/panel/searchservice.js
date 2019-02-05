@@ -31,6 +31,7 @@ function SearchService(config={}) {
   this.init = function(config) {
     this.state.title = config.name;
     const options = config.options || {};
+    this.url = options.queryurl;
     this.filter = options.filter;
     const layerid = options.querylayerid || options.layerid || null;
     this.searchLayer = CatalogLayersStorRegistry.getLayerById(layerid);
@@ -58,7 +59,7 @@ proto._run = function() {
   _filter.setExpression(expression.get());
   this.searchLayer.search({
     filter: _filter,
-    queryUrl: null
+    queryUrl: this.url
   })
     .then((results) => {
       results = {

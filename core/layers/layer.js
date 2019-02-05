@@ -174,8 +174,7 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
 };
 
 // search method
-proto.search = function(options) {
-  options = options || {};
+proto.search = function(options={}) {
   const d = $.Deferred();
   const provider = this.getProvider('search');
   if (provider) {

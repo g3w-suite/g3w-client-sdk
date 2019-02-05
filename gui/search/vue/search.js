@@ -16,7 +16,7 @@ const vueComponentOptions = {
     G3wTool
   },
    methods: {
-    showPanel: function(config) {
+    showPanel: function(config={}) {
       this.$options.service.showPanel(config);
     }
   }

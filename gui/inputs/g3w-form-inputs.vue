@@ -3,26 +3,13 @@
     <div class="box-primary">
       <div class="box-body">
           <template v-for="field in state.fields">
-            <component v-if="field.type !== 'child'"
-              @changeinput="changeInput"
-              @addinput="addToValidate"
+            <g3w-input
+              :state="field"
               :addToValidate="addToValidate"
               :changeInput="changeInput"
-              :state="field"
-              :is="field.type === 'child' ? `${field.type}` : `${field.input.type}_input`">
-            </component>
-            <span v-if="field.type !== 'child'" class="divider"></span>
-            <div v-else style="border-top: 2px solid" class="skin-border-color">
-              <h4 style="font-weight: bold">{{ field.label}}</h4>
-              <div> {{ field.description }} </div>
-              <g3w-form-inputs
-                :state="field"
-                @changeinput="changeInput"
-                @addinput="addToValidate"
-                :addToValidate="addToValidate"
-                :changeInput="changeInput">
-              </g3w-form-inputs>
-            </div>
+              @addToValidate="addToValidate"
+              @changeInput="changeInput">
+            </g3w-input>
           </template>
       </div>
     </div>
@@ -30,12 +17,16 @@
 </template>
 
 <script>
-  const Inputs = require('gui/inputs/inputs');
+  import G3wInput from './g3w-input.vue'
   export default {
     name: "g3w-form-inputs",
-    props:['state', 'addToValidate', 'changeInput'],
+    props: [
+      'state',
+      'addToValidate',
+      'changeInput'
+    ],
     components: {
-      ...Inputs
+      G3wInput
     }
   }
 </script>
