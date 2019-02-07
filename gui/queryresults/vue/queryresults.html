@@ -44,7 +44,7 @@
                         </td>
                       </tr>
                       <tr v-if="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" class="featurebox-body">
-                        <td :colspan="attributesSubsetLength(layer.attributes)+state.layersactions[layer.id].length+(state.layersactions[layer.id].length ? 1 : 0)">
+                        <td :colspan="attributesSubsetLength(layer.attributes)+(state.layersactions[layer.id].length + 1)">
                           <tabs :fields="getQueryFields(layer, feature)" :tabs="layer.formStructure.structure"></tabs>
                         </td>
                       </tr>
@@ -77,7 +77,7 @@
                     </td>
                   </tr>
                   <tr v-if="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" class="featurebox-body">
-                    <td :colspan="attributesSubsetLength(layer.attributes)+(state.layersactions[layer.id].length || 1)+(state.layersactions[layer.id].length ? 1 : 0)">
+                    <td :colspan="attributesSubsetLength(layer.attributes)+(state.layersactions[layer.id].length + 1)">
                       <table class="feature_attributes">
                         <tr v-for="attribute in layer.attributes">
                           <td class="attr-label">{{ attribute.label }}</td>

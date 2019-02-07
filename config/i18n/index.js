@@ -89,7 +89,8 @@ export default {
         },
         relations: {
           no_relations_found: 'Nessuna relazione trovata',
-          back_to_relations: 'Ritorna alle relazioni'
+          back_to_relations: 'Ritorna alle relazioni',
+          list_of_relations_feature: 'Lista delle relazioni della feature'
         },
         form: {
           messages: {
@@ -198,7 +199,8 @@ export default {
         },
         relations: {
           no_relations_found: 'No relations found',
-          back_to_relations: 'Back to relations'
+          back_to_relations: 'Back to relations',
+          list_of_relations_feature: 'List of relations of feature'
         },
         form: {
           messages: {

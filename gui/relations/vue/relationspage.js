@@ -147,7 +147,6 @@ const InternalComponent = Vue.extend({
           $(".query-relations .nano").nanoScroller();
         })
       }).catch((err) => {
-        console.log(err)
       }).finally(() => {
         GUI.setLoadingContent(false);
       })

@@ -90,6 +90,7 @@ const utils = {
   hasOwn: function hasOwn(object, key) {
       return Object.prototype.hasOwnProperty.call(object, key);
   },
+  // google closure library impememtation
   inherit:function(childCtor, parentCtor) {
     function tempCtor() {}
     tempCtor.prototype = parentCtor.prototype;
@@ -97,11 +98,13 @@ const utils = {
     childCtor.prototype = new tempCtor();
     childCtor.prototype.constructor = childCtor;
   },
+  // goole closure library implementation
   base: function(me, opt_methodName, var_args) {
     // who call base
     const caller = arguments.callee.caller;
     if (caller.superClass_) {
-      // This is a constructor. Call the superclass constructor.
+      // This function constructor (that inherith from superClass_). Call the superclass constructor.
+      //It is a easy way to cal super class in binding to this
       return caller.superClass_.constructor.apply(
           me, Array.prototype.slice.call(arguments, 1));
     }
@@ -121,6 +124,7 @@ const utils = {
     // 1) The caller is an instance method.
     // 2) This method was not called by the right caller.
     if (me[opt_methodName] === caller) {
+      // call the function from prototype object
       return me.constructor.prototype[opt_methodName].apply(me, args);
     } else {
       throw Error(

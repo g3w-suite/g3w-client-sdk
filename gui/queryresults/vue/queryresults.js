@@ -35,9 +35,8 @@ const vueComponentOptions = {
   },
   methods: {
     hasLayerOneFeature(layer) {
-      return layer.features.length == 1;
+      return layer.features.length === 1;
     },
-
     hasOneLayerAndOneFeature(layer) {
       const one = this.hasLayerOneFeature(layer);
       if (one) {
