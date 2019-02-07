@@ -20,6 +20,7 @@ function Layer(config = {}) {
     id: config.id || 'Layer' ,
     title: config.title  || config.name,
     name: config.name || null,
+    download: !!config.download,
     origname: config.origname || null,
     capabilities: config.capabilities || null,
     editops: config.editops || null,
@@ -262,8 +263,7 @@ proto.getSourceType = function() {
 };
 
 proto.isShpDownlodable = function() {
-  const type = this.getSourceType();
-  return type === 'postgres' || type === 'sqlite' || type === 'spatialite';
+  return this.config.download;
 };
 
 

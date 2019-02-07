@@ -69,16 +69,16 @@ proto._getFeatures = function(options) {
   return d.promise();
 };
 
-//funzione che in base alle features caricate filtra
-// escludendo quelle già inserite
-proto._filterFeaturesResponse = function(options) {
+//filter features to add
+proto._filterFeaturesResponse = function(options={}) {
   let added = false;
-  options = options || {};
   const features = options.features || [];
   const featurelocks = options.featurelocks || [];
-  const featuresToAdd = _.filter(features, (feature) => {
+  const featuresToAdd = features.filter((feature) => {
     const featureId = feature.getId();
-    added = _.includes(this._loadedPks, featureId);
+    added = this._loadedPks.find((pkId) =>{
+      return pkId === featureId
+    });
     if (!added)
       this._loadedPks.push(featureId);
     return !added

@@ -299,7 +299,7 @@ proto.getProjection = function() {
 };
 
 proto.isAxisOrientationInverted = function() {
-  return this.getProjection().getAxisOrientation() == 'neu' ? true : false;
+  return this.getProjection().getAxisOrientation() === 'neu' ? true : false;
 };
 
 proto.getCrs = function() {

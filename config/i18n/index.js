@@ -87,6 +87,10 @@ export default {
                    </ul>`
           }
         },
+        relations: {
+          no_relations_found: 'Nessuna relazione trovata',
+          back_to_relations: 'Ritorna alle relazioni'
+        },
         form: {
           messages: {
             qgis_input_widget_relation: "Gestisci le relazioni tramite form dedicato"
@@ -191,6 +195,10 @@ export default {
                     <li>Draw a square on map to query underlined layers on TOC</li>
                    </ul>`
           }
+        },
+        relations: {
+          no_relations_found: 'No relations found',
+          back_to_relations: 'Back to relations'
         },
         form: {
           messages: {

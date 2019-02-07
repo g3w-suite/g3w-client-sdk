@@ -1,7 +1,7 @@
 <div class="query-relation">
   <div v-if="showrelationslist" class="back-btn" @click="back">
     <span class="back-link">
-      <span  v-t="'back_to_relations'"><i :class="g3wtemplate.getFontClass('arrow-left')" style="margin-right: 5px;"></i></span>
+      <span  v-t="'sdk.relations.back_to_relations'"><i :class="g3wtemplate.getFontClass('arrow-left')" style="margin-right: 5px;"></i></span>
     </span>
   </div>
   <div class="header">
@@ -27,5 +27,5 @@
         </table>
     </div>
   </div>
-  <div v-else v-t="'no_relations_found'"></div>
+  <div v-else v-t="'sdk.relations.no_relations_found'"></div>
 </div>

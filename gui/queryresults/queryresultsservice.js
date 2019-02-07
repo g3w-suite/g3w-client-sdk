@@ -60,8 +60,8 @@ const proto = QueryResultsService.prototype;
 
 proto.zoomToLayerFeaturesExtent = function(layer, options) {
   const mapService = ComponentsRegistry.getComponent('map').getService();
- const features = layer.features;
- mapService.zoomToFeatures(features, options);
+  const features = layer.features;
+  mapService.zoomToFeatures(features, options);
 };
 
 proto.clearState = function() {
@@ -155,7 +155,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     if (featuresForLayer.features && featuresForLayer.features.length) {
       layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0].getProperties());
       layerObj.attributes.forEach((attribute) => {
-        if (attribute.type == 'image') {
+        if (attribute.type === 'image') {
           layerObj.hasImageField = true;
         }
       });
@@ -217,7 +217,7 @@ proto.setActionsForLayers = function(layers) {
     }
     if (this._relations) {
       Object.entries(this._relations).forEach(([id, relations]) => {
-        if (layer.id == id) {
+        if (layer.id === id) {
           this.state.layersactions[layer.id].push({
             id: 'show-query-relations',
             class: GUI.getFontClass('relation'),

@@ -11,10 +11,10 @@ const Projection = function(options) {
   this._axisOrientation = options.axisOrientation ? options.axisOrientation : 'enu';
   if (options.proj4def) {
     const proj4def = proj4.defs(options.crs);
-    if ( proj4def.axis != undefined) {
+    if ( proj4def.axis !== undefined) {
       this._axisOrientation = proj4def.axis;
     }
-    if (options.crs == 'EPSG:3045' || options.crs == 'EPSG:6708') {
+    if (options.crs === 'EPSG:3045' || options.crs === 'EPSG:6708') {
       this._axisOrientation = 'neu';
     }
   }

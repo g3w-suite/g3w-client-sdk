@@ -234,7 +234,7 @@ proto._parseLayerFeatureCollection = function(data, layerName, projections) {
   let layerFeatureCollectionXML = x2js.json2xml_str(layerData);
   const parser = new ol.format.WMSGetFeatureInfo();
   const mainProjection = projections.layer ? projections.layer : projections.map;
-  let invertedAxis = mainProjection.getAxisOrientation().substr(0,2) == 'ne';
+  let invertedAxis = mainProjection.getAxisOrientation().substr(0,2) === 'ne';
   let features = parser.readFeatures(layerFeatureCollectionXML);
   if (features.length && !!features[0].getGeometry()) {
     if (projections.layer && (projections.layer.getCode() !== projections.map.getCode())) {

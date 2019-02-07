@@ -1,5 +1,6 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
+const XHR = require('core/utils/utils').XHR;
 const DataProvider = require('core/layers/providers/provider');
 const Feature = require('core/layers/features/feature');
 const Parsers = require('core/parsers/parsers');
@@ -36,8 +37,8 @@ proto.query = function(options = {}) {
   const d = $.Deferred();
   const filter = options.filter || null;
   const layerProjection = this._layer.getProjection();
-  const crs = layerProjection.getCode();
   this._projections.map = this._layer.getMapProjection() || layerProjection;
+  const crs = this._projections.map.getCode();
   const queryUrl = options.queryUrl || this._queryUrl;
   if (filter) {
     // check if geomemtry filter. If not i have to remove projection layer
@@ -46,25 +47,27 @@ proto.query = function(options = {}) {
     else
       this._projections.layer = null;
     const url = queryUrl ;
-      $.get( url, {
-          SERVICE: 'WMS',
-          VERSION: '1.3.0',
-          REQUEST: 'GetFeatureInfo',
-          LAYERS: this._layerName,
-          QUERY_LAYERS: this._layerName,
-          INFO_FORMAT: this._infoFormat,
-          FEATURE_COUNT: 200,
-          CRS: crs,
-          FILTER: filter.get()
-        }
-      ).then((response) => {
-          const featuresForLayers = this.handleQueryResponseFromServer(this._layerName, response, this._projections);
-          d.resolve(featuresForLayers);
-        })
-        .fail(() => {
-          d.reject();
-        });
-    }
+    const params = {
+      SERVICE: 'WMS',
+      VERSION: '1.3.0',
+      REQUEST: 'GetFeatureInfo',
+      LAYERS: this._layerName,
+      QUERY_LAYERS: this._layerName,
+      INFO_FORMAT: this._infoFormat,
+      FEATURE_COUNT: 200,
+      CRS: crs,
+      FILTER: filter.get()
+    };
+    XHR.get({
+      url,
+      params
+    }).then((response) => {
+      const featuresForLayers = this.handleQueryResponseFromServer(this._layerName, response, this._projections);
+      d.resolve(featuresForLayers);
+    }).catch(() => {
+      d.reject();
+    });
+  }
   return d.promise();
 };
 
@@ -169,19 +172,19 @@ proto.getFeatures = function(options = {}, params = {}) {
         const geometrytype = vector.geometrytype;
         const parser = Parsers[layerType].get({
           type: 'json',
-          pk: pk
+          pk
         });
         let parser_options = {};
         if (geometrytype != 'No geometry') parser_options = { crs: this._layer.getCrs() };
         const lockIds = featurelocks.map((featureLock) => {
-          return 1*featureLock.featureid;
+          return featureLock.featureid
         });
         parser(data, parser_options).forEach((feature) => {
-          const featureId = feature.getId();
-          if (lockIds.includes(featureId)) {
+          const featureId = `${feature.getId()}`;
+          if (lockIds.indexOf(featureId) > -1) {
             features.push(new Feature({
-              feature: feature,
-              pk: pk
+              feature,
+              pk
             }));
           }
         });

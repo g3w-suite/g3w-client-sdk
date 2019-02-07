@@ -113,7 +113,7 @@ proto.getQueryUrl = function() {
 
 proto.getLegendUrl = function(params={}) {
   const {
-    color,
+    color="white",
     fontsize=10,
     transparent=true,
     boxspace,
