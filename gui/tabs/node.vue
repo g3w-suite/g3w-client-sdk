@@ -1,5 +1,5 @@
 <template>
-  <div class="group">
+  <div class="tab-node group">
     <h5 class="title group-title" v-if="showGroupTile">{{ node.name }}</h5>
     <div v-for="row in rows" class="row">
       <div v-for="column in columnNumber" :class="columnClass">
@@ -191,7 +191,6 @@
     margin-bottom: 10px;
   }
   .sub-group {
-    background-color: rgba(180, 180, 180, 0.1);
     border-radius: 5px;
   }
   .title {
@@ -205,4 +204,5 @@
   .row {
     margin-bottom: 5px;
   }
+
 </style>

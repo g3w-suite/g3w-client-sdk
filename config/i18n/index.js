@@ -88,6 +88,7 @@ export default {
           }
         },
         relations: {
+          relation_data: 'Dati Relazione',
           no_relations_found: 'Nessuna relazione trovata',
           back_to_relations: 'Ritorna alle relazioni',
           list_of_relations_feature: 'Lista delle relazioni della feature'
@@ -198,6 +199,7 @@ export default {
           }
         },
         relations: {
+          relation_data: 'Relation data',
           no_relations_found: 'No relations found',
           back_to_relations: 'Back to relations',
           list_of_relations_feature: 'List of relations of feature'

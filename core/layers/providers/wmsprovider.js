@@ -91,7 +91,8 @@ proto.query = function(options = {}) {
     FI_POINT_TOLERANCE: PIXEL_TOLERANCE,
     FI_LINE_TOLERANCE: PIXEL_TOLERANCE,
     FI_POLYGON_TOLERANCE: PIXEL_TOLERANCE,
-    G3W_TOLERANCE: PIXEL_TOLERANCE * resolution
+    G3W_TOLERANCE: PIXEL_TOLERANCE * resolution,
+    WITH_GEOMETRY:1
   };
   const getFeatureInfoUrl = this._getGetFeatureInfoUrlForLayer(url, coordinates, resolution, params);
   const queryString = getFeatureInfoUrl.split('?')[1];

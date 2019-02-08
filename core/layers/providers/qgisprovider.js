@@ -56,7 +56,8 @@ proto.query = function(options = {}) {
       INFO_FORMAT: this._infoFormat,
       FEATURE_COUNT: 200,
       CRS: crs,
-      FILTER: filter.get()
+      FILTER: filter.get(),
+      WITH_GEOMETRY:1
     };
     XHR.get({
       url,
