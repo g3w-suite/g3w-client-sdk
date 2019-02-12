@@ -128,11 +128,10 @@ function TableLayer(config, options={}) {
   // get configuration from server if is editable
   if (this.isEditable()) {
     this.getEditingConfig()
-      .then((config) => {
-        this.config.editing.pk = config.vector.pk;
-        this.config.editing.fields = config.vector.fields;
-        this.config.editing.format = config.vector.format;
-        this._setOtherConfigParameters(config);
+      .then(({vector}={}) => {
+        this.config.editing.pk = vector.pk;
+        this.config.editing.fields = vector.fields;
+        this.config.editing.format = vector.format;
         this._setPkEditable(this.config.editing.fields);
         this.setReady(true);
       })
@@ -237,7 +236,7 @@ proto.getPk = function() {
 
 proto._setPkEditable = function(fields) {
   fields.forEach((field) => {
-    if (field.name == this.getPk()) {
+    if (field.name === this.getPk()) {
       this.state.editing.ispkeditable = field.editable;
       return false;
     }

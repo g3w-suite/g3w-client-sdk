@@ -8,8 +8,7 @@ function Service() {
   const currentProjectState = ProjectsRegistry.getCurrentProject().state;
   this.title = currentProjectState.search_title || "search";
   this.init = function (searchesObject) {
-    const searches = searchesObject || currentProjectState.search;
-    this.state.searches = searches;
+    this.state.searches = searchesObject || currentProjectState.search;
   };
   this.state = {
     searches: [],

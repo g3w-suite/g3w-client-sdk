@@ -119,7 +119,7 @@ proto._setupListenersChain = function(setters) {
       let counter = 0;
       // function to call original function(setter function)
       const callSetter = () => {
-        // eseguo la funzione setter
+        // run setter function
         returnVal = setterFnc.apply(this, args);
         // e risolvo la promessa (eventualmente utilizzata da chi ha invocato il setter)
         deferred.resolve(returnVal);
@@ -174,8 +174,7 @@ proto._setupListenersChain = function(setters) {
           }
         }
       };
-      // quando viene chiamato la funzione
-      // viene lanciato la funzione next
+      // run next to start to run all the subscribers and setrer its self
       next();
       // retun a promise
       return deferred.promise();

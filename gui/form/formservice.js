@@ -7,7 +7,6 @@ function FormService() {
   this.eventBus = new Vue();
   this.setters = {
     setInitForm: function (options) {
-      console.log(options)
       this._setInitForm(options);
     },
     setFormStructure: function (formStructure) {
