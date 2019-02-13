@@ -38,11 +38,13 @@ function FormService() {
     }
   };
   base(this);
-  this.init = function(options) {
+  this.init = function(options={}) {
     this._setInitForm(options);
   };
   // init form options paased for example by editor
   this._setInitForm = function (options = {}) {
+    const layer = options.layer;
+    const fields = options.fields;
     this.title = options.title || 'Form';
     this.formId = options.formId;
     this.name = options.name;
@@ -62,9 +64,19 @@ function FormService() {
       // when input change will be update
       tovalidate: [], // object array to be validate. They have at list valid key (boolean)
     };
-    this.setFormFields(options.fields);
+    this.setFormFields(fields);
     this.setFormStructure(options.formStructure);
-  };
+    if (layer && options.formStructure) {
+      const fieldsoutofformstructure = layer.getFieldsOutOfFormStructure().map((field) => {
+        return field.field_name;
+      });
+      this.state.fieldsoutofformstructure = {
+        fields: fields.filter((field) => {
+          return fieldsoutofformstructure.indexOf(field.name) > -1;
+        })
+      }
+    } 
+  }
 }
 
 inherit(FormService, G3WObject);

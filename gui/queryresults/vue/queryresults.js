@@ -50,6 +50,9 @@ const vueComponentOptions = {
     hasFormStructure(layer) {
       return !!layer.formStructure;
     },
+    hasFieldOutOfFormStructure(layer) {
+      return this.hasFormStructure(layer) ? layer.getFieldsOutOfFormStructure() : [];
+    },
     showResults() {
       this.hasResults = true;
     },
@@ -151,6 +154,14 @@ const vueComponentOptions = {
     relationsAttributesSubsetLength: function(elements) {
       return this.relationsAttributesSubset(elements).length;
     },
+    attributesOutFormStructure(layer) {
+      const fieldNames = layer.formStructure.fieldsoutofstructure.map((field) => {
+        return field.field_name;
+      });
+      return layer.attributes.filter((attribute) => {
+        return fieldNames.indexOf(attribute.name) > -1;
+      })
+    },
     collapsedFeatureBox: function(layer, feature, relation_index) {
       let collapsed = true;
       let boxid;
@@ -167,6 +178,7 @@ const vueComponentOptions = {
     showFeatureInfo(layer, boxid) {
       this.$nextTick(() => {
         this.$options.queryResultsService.emit('show-query-feature-info', {
+          layer,
           tabs: this.hasFormStructure(layer),
           show: !this.layersFeaturesBoxes[boxid].collapsed
         });

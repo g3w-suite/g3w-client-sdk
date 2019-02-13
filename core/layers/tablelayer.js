@@ -132,6 +132,7 @@ function TableLayer(config, options={}) {
         this.config.editing.pk = vector.pk;
         this.config.editing.fields = vector.fields;
         this.config.editing.format = vector.format;
+        this._setOtherConfigParameters(vector);
         this._setPkEditable(this.config.editing.fields);
         this.setReady(true);
       })

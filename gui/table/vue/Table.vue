@@ -125,6 +125,4 @@
     font-weight: bold;
     margin-top: 10px;
   }
-  #open_attribute_table {
-  }
   </style>

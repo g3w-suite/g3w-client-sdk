@@ -110,10 +110,10 @@ const SearchPanelComponent = Vue.extend({
 function SearchPanel(options = {}) {
   const service = options.service || new Service(options);
   const SearchPanel = options.component || SearchPanelComponent;
-  const internalComponent = new SearchPanel({
+  const internalPanel = new SearchPanel({
     service
   });
-  this.setInternalPanel(internalComponent);
+  this.setInternalPanel(internalPanel);
   this.unmount = function() {
     return base(this, 'unmount').then(() => {
       service.clear()

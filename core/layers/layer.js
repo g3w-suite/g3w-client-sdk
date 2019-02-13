@@ -243,7 +243,15 @@ proto.getConfig = function() {
 };
 
 proto.getEditorFormStructure = function() {
-  return this.config.editor_form_structure;
+  return this.config.editor_form_structure ? this.config.editor_form_structure.filter((structure) => {
+    return !structure.field_name;
+  }) : this.config.editor_form_structure;
+};
+
+proto.getFieldsOutOfFormStructure = function() {
+  return this.config.editor_form_structure ? this.config.editor_form_structure.filter((structure) => {
+    return structure.field_name;
+  }) : []
 };
 
 proto.hasFormStructure = function() {

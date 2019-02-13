@@ -46,6 +46,19 @@
                       <tr v-if="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" class="featurebox-body">
                         <td :colspan="attributesSubsetLength(layer.attributes)+(state.layersactions[layer.id].length + 1)">
                           <tabs :fields="getQueryFields(layer, feature)" :tabs="layer.formStructure.structure"></tabs>
+                          <table v-if="layer.formStructure.fieldsoutofstructure.length" class="fieldsoutofstructure">
+                            <tbody>
+                            <tr v-for="attribute in attributesOutFormStructure(layer)">
+                              <td class="attr-label">{{ attribute.label }}</td>
+                              <td class="attr-value" :attribute="attribute.name">
+                                <span v-if="is('simple',layer,attribute.name,feature.attributes[attribute.name])">{{feature.attributes[attribute.name]}}</span>
+                                <g3w-image v-else-if="is('photo',layer,attribute.name,feature.attributes[attribute.name])"  :value="feature.attributes[attribute.name]"></g3w-image>
+                                <g3w-image v-else-if="checkField('image', attribute.label, layer.attributes)"  :value="attribute.value"></g3w-image>
+                                <button v-else-if="is('link',layer,attribute.name,feature.attributes[attribute.name])"  class="btn btn-info" style="margin:5px"  @click="openLink(feature.attributes[attribute.name])">{{ openlink }}</button>
+                              </td>
+                            </tr>
+                            </tbody>
+                          </table>
                         </td>
                       </tr>
                     </template>

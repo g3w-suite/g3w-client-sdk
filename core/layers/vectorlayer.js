@@ -22,7 +22,7 @@ mixin(VectorLayer, GeoLayerMixin);
 const proto = VectorLayer.prototype;
 
 proto._setOtherConfigParameters = function(config) {
-  this.config.editing.geometrytype = config.vector.geometrytype;
+  this.config.editing.geometrytype = config.geometrytype;
 };
 
 proto.getEditingGeometryType = function() {

@@ -111,6 +111,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       layerId = layer.getId();
       if (layer.hasFormStructure()) {
         const structure = layer.getEditorFormStructure();
+        const fieldsoutofstructure = layer.getFieldsOutOfFormStructure();
         if (this._relations) {
           const getRelationFieldsFromFormStructure = (node) => {
             if (!node.nodes) {
@@ -128,6 +129,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
         let fields = layer.getFields();
         formStructure = {
           structure,
+          fieldsoutofstructure,
           fields
         }
       }

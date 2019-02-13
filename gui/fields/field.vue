@@ -23,9 +23,6 @@
     background-color: transparent !important;
     min-height: 30px;
   }
-  .field .field_label {
-    font-weight: bold;
-  }
   .value {
     position: relative;
   }

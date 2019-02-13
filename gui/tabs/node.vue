@@ -83,7 +83,7 @@
     },
     computed: {
       filterNodes() {
-        const filterNodes = this.node.nodes.filter((node) => {
+        const filterNodes = this.node.nodes && this.node.nodes.filter((node) => {
           if (this.getNodeType(node) === 'group') {
             return true
           } else if (!node.nodes && node.name && this.getNodeType(node) != 'group') {
@@ -95,7 +95,7 @@
             })
           }
         });
-        return filterNodes;
+        return filterNodes || [];
       },
       nodesLength() {
         return this.filterNodes.length;
@@ -180,8 +180,7 @@
         }
       }
     },
-    created() {
-    }
+    created() {}
   }
 </script>
 

@@ -20,7 +20,7 @@ const InternalComponent = Vue.extend({
           if (status === 'error') {
             this.$options.service.showError();
           } else {
-            if (this.state.format == 'jpg') {
+            if (this.state.format === 'jpg') {
               imageToDataURL({
                 src: this.state.url,
                 callback: (url) => {
