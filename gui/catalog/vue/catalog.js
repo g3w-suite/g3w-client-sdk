@@ -137,13 +137,14 @@ const vueComponentOptions = {
       mapService.goToBBox(bbox);
       this._hideMenu();
     },
-    canZoom(layer){
+    canZoom(layer) {
+      let canZoom = false;
       if (layer.bbox) {
         bbox = [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy] ;
+        canZoom = bbox.find((coordinate) => {
+          return coordinate > 0;
+        });
       }
-      const canZoom = bbox.find((coordinate) => {
-        return coordinate > 0;
-      });
       return canZoom;
     },
     canShowWmsUrl(layerId) {
@@ -645,7 +646,7 @@ function CatalogComponent(options={}) {
     const map = GUI.getComponent(this.mapComponentId);
     if (!map) {
       ComponentsRegistry.on('componentregistered', (component) => {
-        if (component.getId() == this.mapComponentId) {
+        if (component.getId() === this.mapComponentId) {
           listenToMapVisibility(component);
         }
       })

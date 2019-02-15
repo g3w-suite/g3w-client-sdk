@@ -227,6 +227,9 @@ const vueComponentOptions = {
         fields.push(_field);
       }
       return fields;
+    },
+    showAction({action, layer, feature} = {}){
+      return typeof action.condition === 'function' ? action.condition({layer, feature}) : true;
     }
   },
   watch: {
