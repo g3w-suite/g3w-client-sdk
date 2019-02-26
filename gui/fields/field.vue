@@ -21,7 +21,10 @@
 <style scoped>
   .field {
     background-color: transparent !important;
-    min-height: 30px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    display: flex;
+    align-items: center;
   }
   .value {
     position: relative;
@@ -29,5 +32,9 @@
   .field div {
     padding-left: 5px;
     padding-right: 5px;
+  }
+
+  .field_value {
+    padding-left: 0 !important;
   }
 </style>

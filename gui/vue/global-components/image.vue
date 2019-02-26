@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
     <div  class="row">
-      <div v-for="(value, index) in values" class="col-md-6 col-sm-12" style="min-width: 100px">
+      <div  v-for="(value, index) in values" class="g3w-image col-md-6 col-sm-12">
         <img class="img-thumbnail" @click="showGallery(index)" :src="getSrc(value)"/>
       </div>
     </div>
@@ -32,14 +32,14 @@
     },
     methods: {
       getSrc(value) {
-        if (typeof value == 'object') {
+        if (typeof value === 'object') {
           return value.photo;
         }
         return value
       },
       showGallery(index) {
         this.active = index;
-        if (typeof this.value == 'object') {
+        if (typeof this.value === 'object') {
           this.value.active = true;
         }
         $('#'+this.galleryId).modal('show');
@@ -61,6 +61,11 @@
 <style scoped>
   .img-responsive {
     cursor: pointer;
+  }
+  .g3w-image{
+    padding-left: 0 !important;
+    min-width: 100px;
+    max-width: 100%;
   }
 
 </style>

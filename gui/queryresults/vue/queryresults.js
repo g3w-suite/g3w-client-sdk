@@ -6,6 +6,7 @@ const GUI = require('gui/gui');
 const t = require('core/i18n/i18n.service').t;
 const fieldsMixin = require('gui/vue/vue.mixins').fieldsMixin;
 import Tabs from '../../tabs/tabs.vue';
+import Link from '../../fields/link.vue';
 
 const maxSubsetLength = 3;
 const headerExpandActionCellWidth = 10;
@@ -26,7 +27,8 @@ const vueComponentOptions = {
     }
   },
   components: {
-    Tabs
+    Tabs,
+    'g3w-link': Link
   },
   computed: {
     hasLayers: function() {

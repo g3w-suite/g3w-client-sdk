@@ -34,7 +34,7 @@
 
 <style scoped>
   .field_link {
-    width: 100%;
-    padding: 2px;
+    max-width: 100%;
   }
+
 </style>
