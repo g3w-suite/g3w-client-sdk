@@ -68,9 +68,9 @@ proto.extractGML = function (response) {
   });
 };
 
-// Method to transform xml from server to present to queryreult component
-proto.handleQueryResponseFromServer = function(layerName, response, projections) {
+proto.handleQueryResponseFromServerSingleLayer = function(layer, response, projections, wms=true) {
   let _fakeLayerName = 'layer';
+  let layerName = layer.getName();
   let parser;
   this._layer.getInfoFormat();
   const format = new ol.format.WMSGetFeatureInfo(({
@@ -91,7 +91,7 @@ proto.handleQueryResponseFromServer = function(layerName, response, projections)
       }
       try {
         if (_.isString(response)) {
-          let layerNameSanitazed = layerName.replace(/[/\s]/g, '');
+          let layerNameSanitazed = wms ? layerName.replace(/[/\s]/g, '') : layerName.replace(/[/\s]/g, '_') ;
           layerNameSanitazed = layerNameSanitazed.replace("'", '');
           layerNameSanitazed = layerNameSanitazed.replace(')', '\\)');
           layerNameSanitazed = layerNameSanitazed.replace('(', '\\(');
@@ -127,9 +127,23 @@ proto.handleQueryResponseFromServer = function(layerName, response, projections)
       }
   }
   return [{
-    layer: this._layer,
-    features: features
+    layer,
+    features
   }];
+};
+
+// Method to transform xml from server to present to queryreult component
+proto.handleQueryResponseFromServer = function(response, projections, layers, wms=true) {
+  if (layers) {
+    const handledResponses = [];
+    for (let i=0; i < layers.length; i++) {
+      const handledResponse = this.handleQueryResponseFromServerSingleLayer(layers[i], response, projections, wms)[0];
+      handledResponses.push(handledResponse);
+    }
+    return handledResponses;
+  }
+  else
+    return this.handleQueryResponseFromServerSingleLayer(this._layer, response, projections, wms);
 };
 
 // digest result
@@ -164,7 +178,7 @@ proto.digestFeaturesForLayers = function(featuresForLayers) {
       layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0].getProperties());
       // check if exist image field
       layerObj.attributes.forEach((attribute) => {
-        if (attribute.type == 'image') {
+        if (attribute.type === 'image') {
           layerObj.hasImageField = true;
         }
       });
@@ -220,18 +234,12 @@ proto._parseAttributes = function(layerAttributes, featureAttributes) {
 };
 
 proto._parseLayerFeatureCollection = function(data, layerName, projections) {
-  const layerData = _.cloneDeep(data);
-  layerData.FeatureCollection.featureMember = [];
-  let featureMembers = data.FeatureCollection.featureMember;
-  featureMembers = _.isArray(featureMembers) ? featureMembers : [featureMembers];
-  _.forEach(featureMembers,function(featureMember){
-    const isLayerMember = _.get(featureMember, layerName);
-    if (isLayerMember) {
-      layerData.FeatureCollection.featureMember.push(featureMember);
-    }
-  });
+  if (data.FeatureCollection.featureMember === undefined)
+    data.FeatureCollection.featureMember = [];
+  else
+    data.FeatureCollection.featureMember = Array.isArray(data.FeatureCollection.featureMember) ? data.FeatureCollection.featureMember : [data.FeatureCollection.featureMember];
   const x2js = new X2JS();
-  let layerFeatureCollectionXML = x2js.json2xml_str(layerData);
+  let layerFeatureCollectionXML = x2js.json2xml_str(data);
   const parser = new ol.format.WMSGetFeatureInfo();
   const mainProjection = projections.layer ? projections.layer : projections.map;
   let invertedAxis = mainProjection.getAxisOrientation().substr(0,2) === 'ne';

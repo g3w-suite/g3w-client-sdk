@@ -52,7 +52,7 @@ proto.isDisabled = function() {
 proto.setDisabled = function(resolution) {
   if (this.state.scalebasedvisibility) {
     const mapScale = resToScale(resolution);
-    this.state.disabled = !(this.state.minscale >= mapScale && this.state.maxscale <= mapScale);
+    this.state.disabled =  !(mapScale >= this.state.maxscale && mapScale <= this.state.minscale);
   } else {
     this.state.disabled = false
   }
@@ -66,9 +66,6 @@ proto.getGeometryType = function() {
   return this.config.geometrytype;
 };
 
-proto.getMultiLayerId = function() {
-  return this.config.multilayerid;
-};
 
 proto.setProjection = function(crs,proj4) {
   this.config.projection = Projections.get(crs,proj4);

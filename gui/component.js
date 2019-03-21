@@ -97,6 +97,10 @@ proto.insertComponentAt = function(index, Component) {
   this._components.splice(index, 0, Component);
 };
 
+proto.destroy = function() {
+  //TODO
+};
+
 proto.removeCompomentAt = function(index) {
   this._components.splice(index, 1);
 };
@@ -119,7 +123,7 @@ proto.removeComponent = function(Component) {
 };
 
 proto.setComponents = function(components) {
-  this._components = _.isArray(components) ? components: [];
+  this._components = Array.isArray(components) ? components: [];
 };
 
 proto.exendComponents = function(components) {
@@ -131,11 +135,11 @@ proto.getInternalComponent = function() {
 };
 
 proto.setInternalComponent = function(internalComponent) {
-  if (!internalComponent && this.internalComponentClass) {
+  if (!internalComponent && this.internalComponentClass)
     this.internalComponent = new this.internalComponentClass;
-  } else {
+  else
     this.internalComponent = internalComponent;
-  }
+
 };
 
 proto.createVueComponent = function (vueObjOptions) {
@@ -240,7 +244,5 @@ proto._setOpen = function(bool) {};
 proto._setVisible = function() {};
 
 proto._reload = function() {};
-
-
 
 module.exports = Component;

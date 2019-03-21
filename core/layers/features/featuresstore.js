@@ -6,8 +6,8 @@ const G3WObject = require('core/g3wobject');
 function FeaturesStore(options={}) {
   this._features = [];
   this._provider = options.provider || null;
-  this._loadedPks = []; // contiene gli id loccati (che alla fine sono gli stessi delle feature caricate)
-  this._lockIds = []; // contiene le features loccate
+  this._loadedPks = []; // store loeckedids
+  this._lockIds = []; // store locked features
   this.setters = {
     addFeatures: function(features) {
       features.forEach((feature) => {
@@ -43,20 +43,18 @@ inherit(FeaturesStore, G3WObject);
 
 const proto = FeaturesStore.prototype;
 
-// funzione per l'unlock delle features
+// method unlock features
 proto.unlock = function() {
   return this._provider.unlock();
 };
 
-// funzione che recupera le features o dal server o dall'attributo _features
+// method get all features from server or attribute _features
 proto._getFeatures = function(options) {
   const d = $.Deferred();
-  let features;
-  // verifico che ci sia un provider altrimenti vado a recuperare le
   if (this._provider && options) {
     this._provider.getFeatures(options)
       .then((options) => {
-        features = this._filterFeaturesResponse(options);
+        const features = this._filterFeaturesResponse(options);
         this.addFeatures(features);
         d.resolve(features);
       })
@@ -87,7 +85,7 @@ proto._filterFeaturesResponse = function(options={}) {
   return featuresToAdd;
 };
 
-// funzione che mi dice le feature loccate
+// method cget fetaures locked
 proto._filterLockIds = function(featurelocks) {
   const toAddLockId = _.differenceBy(featurelocks, this._lockIds, 'featureid');
   this._lockIds = _.union(this._lockIds, toAddLockId);
@@ -97,7 +95,7 @@ proto.getLockIds = function() {
   return this._lockIds;
 };
 
-// aggiunge nuovi lock Ids
+//method to add new lockid
 proto.addLockIds = function(lockIds) {
   this._lockIds = _.union(this._lockIds, lockIds);
 };
@@ -106,10 +104,8 @@ proto._readFeatures = function() {
   return this._features;
 };
 
-proto._commit = function(commitItems, featurestore) {
+proto._commit = function(commitItems) {
   const d = $.Deferred();
-  // verifico che ci siano opzioni e un provider altrimenti vado a recuperare le
-  // features direttamente nel featuresstore
   if (commitItems && this._provider) {
     commitItems.lockids = this._lockIds;
     this._provider.commit(commitItems)
@@ -170,7 +166,7 @@ proto._clearFeatures = function() {
 };
 
 proto.getDataProvider = function() {
-  return this._dataprovider;
+  return this._provider;
 };
 
 // only read downloaded features

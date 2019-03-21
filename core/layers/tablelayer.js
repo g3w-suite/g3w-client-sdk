@@ -6,9 +6,8 @@ const FeaturesStore = require('./features/featuresstore');
 const Feature = require('./features/feature');
 const Relations = require('core/relations/relations');
 
-
 // Base Layer that support editing
-function TableLayer(config, options={}) {
+function TableLayer(config={}, options={}) {
   const ProjectsRegistry = require('core/project/projectsregistry');
   // setters
   this.setters = {
@@ -48,18 +47,16 @@ function TableLayer(config, options={}) {
     },
     commit: function(commitItems, featurestore) {
       const d = $.Deferred();
-      this._featuresStore.commit(commitItems, featurestore)
+      this._featuresStore.commit(commitItems)
         .then((promise) => {
           promise
             .then((response) => {
               // if commit go right
-              let features;
-              if (featurestore)
-                features = _.clone(featurestore.readFeatures());
-              features.forEach((feature) => {
-                  feature.clearState();
-                });
+              // apply commit changes to features store eventually passed (ex: session featurestore)
+              if (featurestore) {
+                features = featurestore.readFeatures();
                 this._featuresStore.setFeatures(features);
+              }
               this.applyCommitResponse(response);
               return d.resolve(response);
             })
@@ -94,18 +91,19 @@ function TableLayer(config, options={}) {
   const projectType = currentProject.getType();
   const projectId = currentProject.getId();
   const vectorUrl = initConfig.vectorurl;
-  const suffixUrl = projectType + '/' + projectId + '/' + config.id + '/';
+  const suffixUrl = `${projectType}/${projectId}/${config.id}/`;
   // add urls
-  config.urls = {
-    editing: vectorUrl + 'editing/' + suffixUrl ,
-    commit:vectorUrl + 'commit/' + suffixUrl ,
-    config: vectorUrl + 'config/' + suffixUrl,
-    unlock: vectorUrl + 'unlock/' + suffixUrl,
+  config.urls = config.urls || {};
+  Object.assign(config.urls || {}, {
+    editing: `${vectorUrl}editing/${suffixUrl}` ,
+    commit: `${vectorUrl}commit/${suffixUrl}` ,
+    config: `${vectorUrl}config/${suffixUrl}`,
+    unlock: `${vectorUrl}unlock/${suffixUrl}`,
     widget: {
-      unique: vectorUrl + 'widget/unique/data/' + suffixUrl
+      unique: `${vectorUrl}widget/unique/data/${suffixUrl}`
     }
-  };
-  // add cediting configurations
+  });
+  // add editing configurations
   config.editing = {
     pk: null, // primary key
     fields: [] // editing fields
@@ -183,7 +181,7 @@ proto.isFieldRequired = function(fieldName) {
 };
 
 // apply response data from server in case of new inserted feature
-proto.applyCommitResponse = function(response) {
+proto.applyCommitResponse = function(response={}) {
   const data = response;
   if (data && data.result) {
     let feature;

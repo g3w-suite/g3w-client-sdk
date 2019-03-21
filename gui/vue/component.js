@@ -35,7 +35,7 @@ proto.mount = function(parent, append) {
 };
 
 proto.unmount = function() {
-  if (_.isNil(this.internalComponent)) {
+  if (!this.internalComponent) {
     return resolve();
   }
   if (this.state.resizable) {

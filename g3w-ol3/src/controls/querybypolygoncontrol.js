@@ -1,6 +1,7 @@
 const utils = require('../utils');
 const InteractionControl = require('./interactioncontrol');
 const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
+const VALIDGEOMETRIES = ['Polygon', 'MultiPolygon'];
 
 const QueryByPolygonControl = function(options = {}) {
   const _options = {
@@ -13,20 +14,21 @@ const QueryByPolygonControl = function(options = {}) {
   };
   options = utils.merge(options,_options);
   const layers = options.layers || [];
-  if (!layers.length || layers.length == 1) {
+  // if no layer or just one
+  if (!layers.length || layers.length === 1) {
       options.visible = false
   } else {
     // geometryes to check
-    const geometryTypes = options.geometryTypes = ['Polygon', 'MultiPolygon'];
+    const geometryTypes = options.geometryTypes = VALIDGEOMETRIES ;
     // gell all layer that have the geometries above
     const mainQueryLayers = layers.filter((layer) => {
-      return geometryTypes.indexOf(layer.getGeometryType()) > -1
+      return geometryTypes.indexOf(layer.getGeometryType()) !== -1
     });
     // get all layers that haven't the geometries above na dare filterable
     const layersToQuery = layers.filter((layer) => {
-      return geometryTypes.indexOf(layer.getGeometryType()) == -1 && layer.isFilterable()
+      return layer.isFilterable() && (mainQueryLayers.length > 1 ? true : layer !== mainQueryLayers[0]);
     });
-    options.visible = (mainQueryLayers.length > 1) || !!(mainQueryLayers.length && layersToQuery.length);
+    options.visible = !!layersToQuery.length && !!mainQueryLayers.length;
   }
   InteractionControl.call(this, options);
 };

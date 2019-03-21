@@ -10,14 +10,17 @@ function ToolsService(){
     loading: false
   };
   this.setters = {
-    addTools: function(order, groupName, tools) {
-      this._addTools(order, groupName, tools);
+    addTool(tool, groupName) {
+      return this._addTool(tool, groupName);
     },
-    addToolGroup: function(order, name) {
-      this._addToolGroup(order, name);
+    addTools(tools, groupName) {
+      return this._addTools(tools, groupName);
     },
-    removeTools:function() {
-      this._removeTools();
+    addToolGroup(order, name) {
+      return this._addToolGroup(order, name);
+    },
+    removeTools() {
+      return this._removeTools();
     }
   };
 
@@ -25,10 +28,14 @@ function ToolsService(){
     this.removeTools();
   };
 
-  this._addTools = function(tools, {position : order, title: name}) {
+  this._addTool = function(tool, {position : order, title: name}) {
     let group = this._addToolGroup(order, name);
+    group.tools.push(tool);
+  };
+
+  this._addTools = function(tools, groupName) {
     tools.forEach((tool) => {
-      group.tools.push(tool);
+      this.addTool(tool, groupName)
     });
   };
 

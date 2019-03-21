@@ -3,8 +3,7 @@ const base = require('core/utils//utils').base;
 const G3WObject = require('core/g3wobject');
 
 // class Editor bind editor to layer to do main actions
-function Editor(options) {
-  options = options || {};
+function Editor(options={}) {
   this.setters = {
     save: function() {
       this._save();

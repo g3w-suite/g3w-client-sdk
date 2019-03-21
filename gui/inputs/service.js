@@ -58,7 +58,7 @@ proto.validate = function() {
 };
 
 proto.getErrorValidateMessage = function(field_type) {
-  return t("form.inputs.input_validation_error") + "("+t("form.inputs." + field_type) + ")";
+  return t("sdk.form.inputs.input_validation_error") + "("+t("sdk.form.inputs." + field_type) + ")";
 };
 
 proto.isEditable = function() {

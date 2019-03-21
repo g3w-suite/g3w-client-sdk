@@ -23,6 +23,8 @@ function Project(config={}, options={}) {
     initbaselayer
   }
   */
+  // for future implementation catalog tab actived
+  config.catalog_tab = config._catalog_tab || 'layers'; // values : layers, baselayers, legend
   this.state = config;
   // process layers
   this._processLayers();
@@ -46,6 +48,25 @@ function Project(config={}, options={}) {
 inherit(Project, G3WObject);
 
 const proto = Project.prototype;
+
+proto.getActiveCatalogTab = function() {
+  return this.state.catalog_tab;
+};
+
+proto.setActiveCatalogTab = function(tab) {
+  tab = tab || 'layers';
+  this.state.catalog_tab = tab;
+};
+
+// check if multi
+
+proto.getQueryFeatureCount = function() {
+  return this.state.feature_count || 5;
+};
+
+proto.isQueryMultiLayers = function(mapcontrol) {
+  return this.state.querymultilayers && this.state.querymultilayers.indexOf(mapcontrol) !== -1;
+};
 
 proto.getRelations = function() {
   return this.state.relations;

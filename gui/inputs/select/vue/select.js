@@ -52,16 +52,20 @@ var SelectInput = Vue.extend({
             }
           },
         });
-      } else
+      } else {
         select2 = selectElement.select2({
           language
         });
+        if (!this.state.value) {
+          this.state.value = this.state.input.options.values[0].value;
+        }
+      }
       if (this.state.value)
         select2.val(this.state.value).trigger('change');
       select2.on('select2:select', (event) => {
         const value = event.params.data.$value? event.params.data.$value : event.params.data.id;
         this.changeSelect(value);
-      })
+      });
     })
   }
 });

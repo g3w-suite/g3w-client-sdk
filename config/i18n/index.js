@@ -94,6 +94,17 @@ export default {
           list_of_relations_feature: 'Lista delle relazioni della feature'
         },
         form: {
+          inputs: {
+            input_validation_error: "Campo obbligatorio o tipo valore non corretto",
+            integer: "intero",
+            text: "testuale",
+            string: "stringa",
+            date: "data",
+            float: "float"
+          },
+          footer: {
+            required_fields: "Campi richiesti"
+          },
           messages: {
             qgis_input_widget_relation: "Gestisci le relazioni tramite form dedicato"
           }
@@ -165,7 +176,6 @@ export default {
                   'keywords': "PAROLE CHIAVE",
                   'metadataurl':'METADATA URL',
                   'dataurl': "DATA URL"
-
                 }
               },
               'groups' : {
@@ -205,6 +215,17 @@ export default {
           list_of_relations_feature: 'List of relations of feature'
         },
         form: {
+          inputs: {
+            input_validation_error: "Mandatory Field or wrong data type",
+            integer: "integer",
+            text: "text",
+            string: "string",
+            date: "date",
+            float: "float"
+          },
+          footer: {
+            "required_fields": "Required fields"
+          },
           messages: {
             qgis_input_widget_relation: "Use relation specific form to work with relation"
           }

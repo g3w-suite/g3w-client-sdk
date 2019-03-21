@@ -49,10 +49,8 @@ const proto = ImageLayer.prototype;
 
 proto.getLayerForEditing = function({force=false}={}) {
   if (this.isEditable() || force) {
-    // clone configuration
-    const config = _.cloneDeep(this.config);
     //return istance of vectorlayer
-    const editingLayer = new VectorLayer(config);
+    const editingLayer = new VectorLayer(this.config);
     // set editing layer
     this.setEditingLayer(editingLayer);
     return editingLayer;
@@ -111,6 +109,12 @@ proto.getQueryUrl = function() {
   return url;
 };
 
+proto.getIconUrlFromLegend = function() {
+  return this.getLegendUrl({
+    layertitle: false
+  })
+};
+
 proto.getLegendUrl = function(params={}) {
   const {
     color="white",
@@ -131,7 +135,7 @@ proto.getLegendUrl = function(params={}) {
   return [`${url}${sep}SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.3.0&WIDTH=300`,
     `&FORMAT=image/png`,
     `&TRANSPARENT=${transparent}`,
-    `${color ? '&ITEMFONTCOLOR=' + color: ''}`,
+    `&ITEMFONTCOLOR=${color}`,
     `&LAYERTITLE=${layertitle}`,
     `&ITEMFONTSIZE=${fontsize}`,
     `${boxspace ? '&BOXSPACE=' + boxspace: ''}`,

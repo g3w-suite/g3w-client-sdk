@@ -29,7 +29,7 @@ function CatalogService() {
       nodes
     }
   };
-
+  
   // method to add a custom layers group
   this.addLayersGroup = function(layersGroup) {
     this.state.layersgroups.push(layersGroup);

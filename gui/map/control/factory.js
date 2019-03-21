@@ -20,7 +20,6 @@ const ControlsFactory = {
   create: function(options) {
     let control;
     const ControlClass = ControlsFactory.CONTROLS[options.type];
-    //const layers = options.layers; //check if there are layers to enable control
     if (ControlClass) {
       control = new ControlClass(options);
     }

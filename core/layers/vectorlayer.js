@@ -6,7 +6,7 @@ const TableLayer = require('./tablelayer');
 const GeoLayerMixin = require('./geolayermixin');
 const VectoMapLayer = require('./map/vectorlayer');
 
-function VectorLayer(config, options) {
+function VectorLayer(config={}, options) {
   base(this, config, options);
   this._mapLayer = null; // later tah will be added to map
   this.type = Layer.LayerTypes.VECTOR;

@@ -20,13 +20,14 @@ function ComponentsRegistry() {
   this.getComponents = function() {
     return this.components;
   };
+  
   this.unregisterComponent = function(id) {
-    const component = this._components[id];
+    const component = this.components[id];
     if (component) {
-      if (_.isFunction(component.destroy)) {
+      if (typeof component.destroy === 'function') {
         component.destroy();
       }
-      this._components[id] = null;
+      this.components[id] = null;
     }
   };
   base(this);

@@ -1,11 +1,11 @@
 var selectMixin = {
   methods: {
     changeSelect: function(value) {
-      this.state.value = value == 'null' ? null : value;
+      this.state.value = value === 'null' ? null : value;
       this.change();
     },
     getValue: function(value) {
-      return _.isNull(value) ? 'null' : value;
+      return value === null ? 'null' : value;
     },
     resetValues() {
       this.state.input.options.values.splice(0);

@@ -3,7 +3,7 @@ const base = require('core/utils//utils').base;
 const FeaturesStore = require('./featuresstore');
 
 // Storage of the feature in vector layer
-function OlFeaturesStore(options) {
+function OlFeaturesStore(options={}) {
   base(this, options);
   this._features = new ol.Collection();
 }
@@ -12,9 +12,12 @@ inherit(OlFeaturesStore, FeaturesStore);
 
 proto = OlFeaturesStore.prototype;
 
+proto.getLength = function() {
+  return this._features.getLength();
+};
+
 //overwrite
-proto.setFeatures = function(features) {
-  this._features.clear();
+proto.setFeatures = function(features=[]) {
   features.forEach((feature) => {
     this._features.push(feature);
   })
@@ -41,29 +44,40 @@ proto._addFeature = function(feature) {
 
 //sobtitute the feature after modify
 proto._updateFeature = function(feature) {
-  this._features.forEach(function(feat, idx) {
-    if (feat.getId() === feature.getId()) {
-      this.setAt(idx, feature);
-      return false;
+  // set index at -1
+  let index = -1;
+  const featuresArray = this._features.getArray();
+  for (let i = 0; featuresArray.length; i++) {
+    const _feature = featuresArray[i];
+    if(_feature.getId() === feature.getId()) {
+      index = i;
+      break;
     }
-  }, this._features);
-  this._features.dispatchEvent('change')
+  }
+  if (index >=0) {
+    this._features.setAt(index, feature);
+    this._features.dispatchEvent('change')
+  }
 };
 
 // remove feature from store
 proto._removeFeature = function(feature) {
-  this._features.forEach(function(feat, idx) {
+  this._features.forEach((feat, idx) => {
     if (feature.getId() === feat.getId()) {
-      this.removeAt(idx);
+      this._features.removeAt(idx);
       return false
     }
-  }, this._features);
+  });
   this._features.dispatchEvent('change')
 };
 
 proto._clearFeatures = function() {
-  ///remove feature in reactive way
-  this._features.clear();
+  this._features.clear({
+    fast: true
+  });
+  // needed if we use Modify or snap interaction in ol to remove listeners addfeature
+  this._features = null;
+  this._features = new ol.Collection()
 };
 
 module.exports = OlFeaturesStore;

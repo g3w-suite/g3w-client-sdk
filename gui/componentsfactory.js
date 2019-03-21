@@ -1,7 +1,7 @@
 const Component = require('./vue/component');
 const ComponentsFactory = {
-  build({vueComponentObject, service}) {
-    const component = new Component();
+  build({vueComponentObject, service}, options={}) {
+    const component = new Component(options);
     component.init({
       vueComponentObject,
       service

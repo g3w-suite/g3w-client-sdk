@@ -8251,6 +8251,7 @@ ol.inherits(ol.Collection, ol.Object);
  * @api
  */
 ol.Collection.prototype.clear = function() {
+  console.log(this)
   while (this.getLength() > 0) {
     this.pop();
   }
@@ -8350,6 +8351,7 @@ ol.Collection.prototype.insertAt = function(index, elem) {
  * @api
  */
 ol.Collection.prototype.pop = function() {
+  console.log(this)
   return this.removeAt(this.getLength() - 1);
 };
 
@@ -82551,7 +82553,7 @@ goog.exportProperty(
     ol.Attribution.prototype.getHTML);
 
 goog.exportSymbol(
-    'ol.CanvasMap',
+  'ol.CanvasMap',
     ol.CanvasMap,
     OPENLAYERS);
 

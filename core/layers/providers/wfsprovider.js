@@ -21,15 +21,18 @@ proto.getData = function() {
 
 // query method
 proto.query = function(options={}, params = {}) {
+  const feature_count = options.feature_count || 10;
+  params.MAXFEATURES = feature_count;
   const filter = options.filter;
   const d = $.Deferred();
-  this._doRequest(filter, params)
+  const layers = options.layers;
+  this._doRequest(filter, params, layers)
     .then((response) => {
       const projections = {
         map: this._layer.getMapProjection(),
         layer: this._layer.getProjection()
       };
-      const featuresForLayers = this.handleQueryResponseFromServer(this._layerName, response, projections);
+      const featuresForLayers = this.handleQueryResponseFromServer(response, projections, layers, wms=false);
       d.resolve({
         data: featuresForLayers
       });
@@ -41,7 +44,7 @@ proto.query = function(options={}, params = {}) {
 };
 
 proto._post = function(url, params) {
-  url = url + '/';
+  url = url.match(/\/$/) ? url : url + '/';
   return  $.post(url, params)
 };
 
@@ -54,17 +57,17 @@ proto._get = function(url, params) {
 };
 
 //request to server
-proto._doRequest = function(filter, params = {}) {
+proto._doRequest = function(filter, params = {}, layers) {
   filter = filter || new Filter();
-  const layer = this._layer;
+  const layer = layers ? layers[0]: this._layer;
   const url = layer.getQueryUrl();
   const infoFormat = layer.getInfoFormat();
-
+  const layerNames = layers ? layers.map(layer => layer.getName()).join(','): this._layerName;
   params = Object.assign(params, {
     SERVICE: 'WFS',
     VERSION: '1.3.0',
     REQUEST: 'GetFeature',
-    TYPENAME: this._layerName,
+    TYPENAME: layerNames,
     OUTPUTFORMAT: infoFormat,
     SRSNAME: layer.getProjection().getCode()
   });

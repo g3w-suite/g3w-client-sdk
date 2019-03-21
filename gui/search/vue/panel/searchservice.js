@@ -4,6 +4,7 @@ const t = require('core/i18n/i18n.service').t;
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 const CatalogLayersStorRegistry = require('core/catalog/cataloglayersstoresregistry');
+const ProjectsRegistry = require('core/project/projectsregistry');
 const Filter = require('core/layers/filter/filter');
 const Expression = require('core/layers/filter/expression');
 
@@ -25,7 +26,7 @@ function SearchService(config={}) {
     loading: {},
     searching: false
   };
-
+  this.project = ProjectsRegistry.getCurrentProject();
   this.searchLayer = null;
   this.filter = null;
   this.init = function(config) {
@@ -47,6 +48,7 @@ inherit(SearchService, G3WObject);
 const proto = SearchService.prototype;
 
 proto._run = function() {
+  const feature_count = this.project.getQueryFeatureCount();
   this.state.searching = true;
   const filter = this.fillFilterInputsWithValues();
   GUI.closeContent();
@@ -59,7 +61,8 @@ proto._run = function() {
   _filter.setExpression(expression.get());
   this.searchLayer.search({
     filter: _filter,
-    queryUrl: this.url
+    queryUrl: this.url,
+    feature_count
   })
     .then((results) => {
       results = {
@@ -67,7 +70,7 @@ proto._run = function() {
       };
       queryResultsPanel.setQueryResponse(results);
     })
-    .fail(() => {
+    .fail((err) => {
       GUI.notify.error(t('server_error'));
       GUI.closeContent();
     })
@@ -127,12 +130,12 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=''}={}) {
           const subscribe = subscribers[i];
           const values = this.state.cachedependencies[field][value][subscribe.attribute];
           if (values && values.length) {
+            subscribe.value = '';
             subscribe.options.values.splice(1);
             for (let i = 0; i <values.length; i++) {
               subscribe.options.values.push(values[i]);
             }
           }
-          subscribe.value = '';
           subscribe.options.disabled = false;
           resolve()
         }
@@ -154,7 +157,8 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=''}={}) {
         const _filter = new Filter();
         _filter.setExpression(expression.get());
         this.searchLayer.search({
-          filter: _filter
+          filter: _filter,
+          feature_count: 1000 //SET HIGHT LEVELOF FEATURE COUNT TO GET MAXIMUM RESPONSES
         }).then((response) => {
           const digestResults = this.queryService._digestFeaturesForLayers(response);
           if (digestResults.length) {

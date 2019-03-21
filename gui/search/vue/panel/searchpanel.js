@@ -33,21 +33,24 @@ const SearchPanelComponent = Vue.extend({
         return attribute === _dependency.observer
       });
       if (dependency) {
-        this.state.searching = true;
-        this.$options.service.fillDependencyInputs({
-          field: attribute,
-          subscribers: dependency.subscribers,
-          value
-        }).then(()=> {
-          this.state.searching = false;
-        });
         if (!value) {
-          for (let i =0; i< dependency.subscribers.length; i++) {
+          for (let i =0; i < dependency.subscribers.length; i++) {
             const forminputvalue = this.state.forminputs.find((input) => {
               return input.attribute === dependency.subscribers[i].attribute;
             });
+            forminputvalue.options.values.splice(1);
+            forminputvalue.options.disabled = true;
             forminputvalue.value = '';
           }
+        } else {
+          this.state.searching = true;
+          this.$options.service.fillDependencyInputs({
+            field: attribute,
+            subscribers: dependency.subscribers,
+            value
+          }).then(() => {
+            this.state.searching = false;
+          });
         }
       }
     },
@@ -89,20 +92,9 @@ const SearchPanelComponent = Vue.extend({
           }
         },
       });
-      this.select2.on('select2:select', (evt) => {
-        const attribute = $(evt.target).attr('name');
-        const value = evt.params.data.id;
-        this.selectChange(attribute, value);
-        this.$options.service.changeInput({
-          attribute,
-          value
-        })
-
-      })
     })
   },
   beforeDestroy() {
-    this.select2.off('select2:select');
     this.select2 = null;
   }
 });

@@ -5,7 +5,7 @@ const Chartsfactory = {
     }
   },
   /*
-  * type: <libary(es:c3)>:<chartType:(es.lineXY)>
+  * type: <library(es:c3)>:<chartType:(es.lineXY)>
   * */
   build({type, hooks={}} = {}) {
     const [library='c3', chartType='lineXY'] = type.split(':');

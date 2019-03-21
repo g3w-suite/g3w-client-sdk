@@ -81,7 +81,11 @@ proto.setConfig = function(config) {
 //check if plugin is compatible with current project
 proto.isCurrentProjectCompatible = function(projectId) {
   const project = ProjectsRegistry.getCurrentProject();
-  return projectId == project.getGid();
+  return projectId === project.getGid();
+};
+
+proto.getProject = function() {
+  return ProjectsRegistry.getCurrentProject();
 };
 
 //register the plugin if compatible
@@ -137,16 +141,21 @@ proto.addToolGroup = function({hook="tools", position:order, title:group} = {}) 
   service.addToolGroup(order, group);
 };
 
-proto.addTools = function({hook="tools", action} = {}, options) {
+proto.addTools = function({hook="tools", action, html, loading=false, disabled=false} = {}, groupTools) {
   this._hook = hook;
   const service = this._services[hook];
   const configs = this.config.configs || [this.config];
-  for (const config of configs) {
-    service.addTools([{
+  const tools = configs.map((config) => {
+    return {
       name: config.name,
+      html,
+      loading,
+      disabled,
       action: action.bind(this, config)
-    }], options);
-  }
+    }
+  });
+  service.addTools(tools, groupTools);
+  return tools;
 };
 
 proto.removeTools = function() {

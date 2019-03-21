@@ -86,6 +86,9 @@ const vueComponentOptions = {
       });
       return this.state.externallayers.length > 0 || layerstresslength >0 || this.state.layersgroups.length > 0 ;
     },
+    activeTab() {
+      return this.project.state.catalog_tab || 'layers';
+    },
     hasBaseLayersVisible: function() {
       let visible = false;
       this.baselayers.find((baselayer) => {
@@ -425,11 +428,15 @@ Vue.component('tristate-tree', {
       return this.layerstree.hidden && (this.layerstree.hidden === true);
     },
     selected: function() {
-      const isSelected = this.layerstree.selected ? "SI" : "NO";
-      return isSelected;
+      this.layerstree.selected = this.layerstree.disabled && this.layerstree.selected ? false : this.layerstree.selected;
     },
     isHighLight: function() {
       return this.highlightlayers && !this.isFolder && this.ishighligtable && this.layerstree.visible;
+    }
+  },
+  watch:{
+    'layerstree.disabled'(bool) {
+      this.layerstree.selected = bool && this.layerstree.selected ? false : this.layerstree.selected;
     }
   },
   methods: {
@@ -537,7 +544,7 @@ Vue.component('tristate-tree', {
 
 Vue.component('layerslegend',{
     template: require('./legend.html'),
-    props: ['layerstree', 'legend'],
+    props: ['layerstree', 'legend', 'active'],
     data: function() {
       return {}
     },

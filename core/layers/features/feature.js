@@ -130,7 +130,7 @@ proto.getAlphanumericProperties = function() {
   return alphanumericproperties;
 };
 
-// vado a fare il clena dello state della feature
+//clean state of the features
 proto.clearState = function() {
   this.state.state = null;
   this.state.new = false;

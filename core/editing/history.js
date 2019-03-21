@@ -76,7 +76,7 @@ proto.getRelationStates = function(layerId, {clear=false}={}) {
   for (let i=0; i < this._states.length; i++) {
     const state = this._states[i];
     const relationItems = state.items.filter((item) => {
-      const _layerId = Array.isArray(item) ? item[0].layerId: item.layeId;
+      const _layerId = Array.isArray(item) ? item[0].layerId: item.layerId;
       return _layerId === layerId
     });
     relationItems.length && relationStates.push({
@@ -107,6 +107,7 @@ proto.insertState = function(state) {
 };
 
 proto.removeState = function(stateId) {
+  let index;
   for (i = 0; i < this._states.length; i++) {
     const state = this._states[i];
     if (state.id === stateId) {
@@ -243,7 +244,7 @@ proto._clearAll =  function() {
 proto.getState = function(id) {
   let state = null;
   this._states.forEach((state) => {
-    if (state.id == id) {
+    if (state.id === id) {
       state = state;
       return false;
     }

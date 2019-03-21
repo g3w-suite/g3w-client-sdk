@@ -57,6 +57,12 @@
         })
       }
     },
+    watch : {
+      'forminput.value'(value) {
+        if (!value)
+          this.select2.val('');
+      }
+    },
     mounted() {
       this.$nextTick(()=> {
         this._initSelect2Element();

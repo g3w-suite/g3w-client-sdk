@@ -1,5 +1,6 @@
 const Validators = {
   validators: {
+    float: require('./float'),
     integer: require('./integer'),
     checkbox: require('./checkbox'),
     datetimepicker: require('./datetimepicker'),

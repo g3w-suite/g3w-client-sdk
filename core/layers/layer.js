@@ -11,32 +11,23 @@ function Layer(config = {}) {
   ProjectsRegistry.onafter('setCurrentProject', (project) => {
     const projectType = project.getType();
     const projectId = project.getId();
-    const suffixUrl = projectType + '/' + projectId + '/' + config.id + '/';
+    const suffixUrl = `${projectType}/${projectId}/${config.id}/`;
     const vectorUrl = initConfig.vectorurl;
     this.config.urls.data = `${vectorUrl}data/${suffixUrl}`;
     this.config.urls.shp = `${vectorUrl}shp/${suffixUrl}`;
   });
-  this.config = _.merge({
-    id: config.id || 'Layer' ,
-    title: config.title  || config.name,
-    name: config.name || null,
-    download: !!config.download,
-    origname: config.origname || null,
-    capabilities: config.capabilities || null,
-    editops: config.editops || null,
-    editor_form_structure: config.editor_form_structure || null,
-    infoformat: config.infoformat || null,
-    servertype: config.servertype || null,
-    source: config.source || null,
-    geolayer: false,
-    baseLayer: false,
-    fields: config.fields || {},
-    urls: {
-      query: config.infourl && config.infourl != '' || config.wmsUrl
-    }
-  }, config);
+  // assign some attribute
+  config.id = config.id || 'Layer';
+  config.title = config.title || config.name;
+  config.download = !!config.download;
+  config.geolayer = false;
+  config.baseLayer =  false;
+  config.fields = config.fields || {};
+  config.urls = config.urls || {
+    query: config.infourl && config.infourl !== '' ? config.infourl : config.wmsUrl
+  };
+  this.config = config;
   // dinamic layer values
-  //this.state = config; //catalog reactive
   this.state = {
     id: config.id,
     title: config.title,
@@ -48,6 +39,7 @@ function Layer(config = {}) {
     removable: config.removable || false,
     source: config.source
   };
+
   this._editingLayer = null;
   // refferred to (layersstore);
   this._layersstore = config.layersstore || null;
@@ -176,6 +168,8 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
 
 // search method
 proto.search = function(options={}) {
+  // check option feature_count
+  options.feature_count = options.feature_count || 10;
   const d = $.Deferred();
   const provider = this.getProvider('search');
   if (provider) {
@@ -340,8 +334,12 @@ proto.isSelected = function() {
   return this.state.selected;
 };
 
+proto.setSelected = function(bool) {
+  this.state.selected = bool;
+};
+
 proto.setDisabled = function(bool) {
-  this.stets.disabled = bool
+  this.state.disabled = bool
 };
 
 proto.isDisabled = function() {
@@ -478,11 +476,11 @@ proto.setLayersStore = function(layerstore) {
 };
 
 proto.canShowTable = function() {
-  if (this.getServerType() == 'QGIS') {
-    if([Layer.SourceTypes.POSTGIS, Layer.SourceTypes.SPATIALITE].indexOf(this.config.source.type) > -1) {
+  if (this.getServerType() === 'QGIS') {
+    if( ([Layer.SourceTypes.POSTGIS, Layer.SourceTypes.SPATIALITE].indexOf(this.config.source.type) > -1) && this.isQueryable()) {
       return true
     }
-  } else if (this.getServerType() == 'G3WSUITE') {
+  } else if (this.getServerType() === 'G3WSUITE') {
       if (this.get('source').type == "geojson")
         return true
   } else if (this.isFilterable())

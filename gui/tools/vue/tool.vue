@@ -11,9 +11,14 @@
         {{ tool.name }}
       </label>
     </div>
-    <div v-else class="tool" @click="fireAction(tool)">
+    <div v-else class="tool" @click="!disabled ? fireAction(tool) : null" :class="{tool_disabled: disabled}">
+      <bar-loader :loading="tool.loading"></bar-loader>
       <i :class="g3wtemplate.getFontClass('caret-right')"></i>
-      <span >{{ tool.name }}</span>
+      <span v-if="tool.html" >
+        <i :class="tool.html.icon"></i>
+        {{ tool.html.text || tool.name}}
+      </span>
+      <span v-else>{{ tool.name }}</span>
     </div>
   </div>
 </template>
@@ -29,10 +34,22 @@
       fireAction() {
         this.tool.action()
       }
+    },
+    computed: {
+      disabled() {
+        return this.tool.loading || this.tool.disabled;
+      }
     }
+
   }
 </script>
 
 <style scoped>
+  .tool_disabled {
+    cursor: not-allowed;
+  }
 
+  .tool_disabled > span {
+    color: #777;
+  }
 </style>

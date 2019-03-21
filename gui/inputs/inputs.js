@@ -3,7 +3,7 @@ const InputsComponents = {
   'textarea_input': require('./textarea/vue/textarea'),
   'integer_input': require('./integer/vue/integer'),
   'string_input':require('./text/vue/text'), //temporary
-  'float_input': require('./integer/vue/integer'), // temporary,
+  'float_input': require('./float/vue/float'),
   'radio_input': require('./radio/vue/radio'),
   'check_input': require('./checkbox/vue/checkbox'),
   'range_input': require('./range/vue/range'),

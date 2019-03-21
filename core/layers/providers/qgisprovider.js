@@ -8,7 +8,7 @@ const Parsers = require('core/parsers/parsers');
 function QGISProvider(options = {}) {
   base(this);
   this._name = 'qgis';
-  this._layer = options.layer || null;
+  this._layer = options.layer || {};
   this._projections = {
     map: null,
     layer: null
@@ -35,11 +35,14 @@ const proto = QGISProvider.prototype;
 //query by filter
 proto.query = function(options = {}) {
   const d = $.Deferred();
+  const feature_count = options.feature_count || 10;
   const filter = options.filter || null;
   const layerProjection = this._layer.getProjection();
   this._projections.map = this._layer.getMapProjection() || layerProjection;
   const crs = this._projections.map.getCode();
   const queryUrl = options.queryUrl || this._queryUrl;
+  const layers = options.layers;
+  const layerNames = layers ? layers.map(layer => layer.getName()).join(','): this._layerName;
   if (filter) {
     // check if geomemtry filter. If not i have to remove projection layer
     if (filter.getType() === 'geometry')
@@ -51,10 +54,10 @@ proto.query = function(options = {}) {
       SERVICE: 'WMS',
       VERSION: '1.3.0',
       REQUEST: 'GetFeatureInfo',
-      LAYERS: this._layerName,
-      QUERY_LAYERS: this._layerName,
+      LAYERS: layerNames,
+      QUERY_LAYERS: layerNames,
       INFO_FORMAT: this._infoFormat,
-      FEATURE_COUNT: 200,
+      FEATURE_COUNT: feature_count,
       CRS: crs,
       FILTER: filter.get(),
       WITH_GEOMETRY:1
@@ -63,10 +66,10 @@ proto.query = function(options = {}) {
       url,
       params
     }).then((response) => {
-      const featuresForLayers = this.handleQueryResponseFromServer(this._layerName, response, this._projections);
+      const featuresForLayers = this.handleQueryResponseFromServer(response, this._projections, layers);
       d.resolve(featuresForLayers);
-    }).catch(() => {
-      d.reject();
+    }).catch((err) => {
+      d.reject(err);
     });
   }
   return d.promise();
@@ -147,6 +150,7 @@ proto.getFeatures = function(options = {}, params = {}) {
   //editing mode
   if (options.editing) {
     url = this._editingUrl;
+
     let filter = options.filter || null;
     if (filter && filter.bbox) {
       const bbox = filter.bbox;
