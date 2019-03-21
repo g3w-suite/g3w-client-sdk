@@ -55,7 +55,8 @@ proto._updateFeature = function(feature) {
     }
   }
   if (index >=0) {
-    this._features.setAt(index, feature);
+    this._features.removeAt(index);
+    this._features.insertAt(index, feature);
     this._features.dispatchEvent('change')
   }
 };
@@ -75,9 +76,9 @@ proto._clearFeatures = function() {
   this._features.clear({
     fast: true
   });
-  // needed if we use Modify or snap interaction in ol to remove listeners addfeature
+  // needed if we use Modify or snap interaction in ol to remove listerner on add or remove event on collection
   this._features = null;
-  this._features = new ol.Collection()
+  this._features = new ol.Collection();
 };
 
 module.exports = OlFeaturesStore;
