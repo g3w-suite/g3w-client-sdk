@@ -33,9 +33,9 @@
     },
     computed: {
       type() {
-        const value = this.state.value && typeof  this.state.value === 'object' && this.state.value.constructor === Object && !this.state.value.coordinates? this.state.value.value : this.state.value;
+        const value = this.state.value && typeof this.state.value === 'object' && !this.state.value.coordinates ? this.state.value.value : this.state.value;
         let type;
-        if (_.isNil(value)) {
+        if (!value) {
           type = FieldType.SIMPLE;
         } else if (value && typeof value == 'object' && value.coordinates) {
           type = FieldType.GEO;

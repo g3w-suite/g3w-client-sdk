@@ -8251,7 +8251,6 @@ ol.inherits(ol.Collection, ol.Object);
  * @api
  */
 ol.Collection.prototype.clear = function() {
-  console.log(this)
   while (this.getLength() > 0) {
     this.pop();
   }
@@ -8351,7 +8350,6 @@ ol.Collection.prototype.insertAt = function(index, elem) {
  * @api
  */
 ol.Collection.prototype.pop = function() {
-  console.log(this)
   return this.removeAt(this.getLength() - 1);
 };
 
@@ -23631,7 +23629,6 @@ ol.render.canvas.drawImage = function(context,
   if (transform) {
     context.setTransform.apply(context, transform);
   }
-
   context.drawImage(image, originX, originY, w, h, x, y, w * scale, h * scale);
 
   if (alpha) {

@@ -108,14 +108,14 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
           const count = response.count;
           const title = this.getTitle();
           let headers, features;
-          if (this.getType() == 'table') {
+          if (this.getType() === 'table') {
             features = data.map((feature) => {
               return {
                 properties: feature
               }
             });
             headers = this.getAttributes();
-          } else if (this.get('source').type == 'geojson') {
+          } else if (this.get('source').type === 'geojson') {
             const data = provider.digestFeaturesForLayers([{
               layer: this,
               features: response
@@ -123,12 +123,15 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
             headers = data[0].attributes;
             features = data[0].features;
           } else {
-            pkProperties = this.getFields().find((field) => response.pk == field.name);
+            pkProperties = this.getFields().find((field) => ((response.pk === field.name) && field.show));
             features = data.features;
             headers = features.length ? features[0].properties : [];
-            headers = [pkProperties].concat(provider._parseAttributes(this.getAttributes(), headers ));
+            headers = provider._parseAttributes(this.getAttributes(), headers);
+            if (pkProperties)
+              headers.unshift(pkProperties);
           }
           const dataTableObject = {
+            pk: !!pkProperties,
             headers,
             features,
             title,
@@ -347,7 +350,7 @@ proto.isDisabled = function() {
 };
 
 proto.isVisible = function() {
-  return this.state.visible;
+  return this.state.visible && !this.isDisabled();
 };
 
 proto.setVisible = function(bool) {

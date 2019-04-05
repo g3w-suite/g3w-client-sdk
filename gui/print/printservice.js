@@ -5,8 +5,8 @@ const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const PrintService = require('core/print/printservice');
-const resToScale = require('g3w-ol3/src/utils/utils').resToScale;
-const scaleToRes = require('g3w-ol3/src/utils/utils').scaleToRes;
+const getScaleFromResolution = require('g3w-ol3/src/utils/utils').getScaleFromResolution;
+const getResolutionFromScale = require('g3w-ol3/src/utils/utils').getResolutionFromScale;
 const printConfig = require('./printconfig');
 const PrintPage = require('./vue/printpage');
 const scale = printConfig.scale;
@@ -25,6 +25,7 @@ function PrintComponentService() {
   this._page = null;
   this._mapService = null;
   this._map = null;
+  this._mapUnits;
   this._scalesResolutions = {};
   this.init = function() {
     this._project = ProjectsRegistry.getCurrentProject();
@@ -32,6 +33,14 @@ function PrintComponentService() {
     this.state.visible = (this.state.print && this.state.print.length) ? true : false;
     this.state.isShow = false;
     this.state.url = null;
+    this.state.output = {
+      url: null,
+      method: this._project.getOwsMethod(),
+      layers: true,
+      format: null,
+      loading: false,
+      type: null
+    };
     this.state.printextent = {
       minx: [0,0],
       miny: [0,0],
@@ -49,7 +58,7 @@ function PrintComponentService() {
       this.state.dpis = dpis;
       this.state.dpi = dpis[0];
       this.state.formats = formats;
-      this.state.format = formats[0].value;
+      this.state.output.format = formats[0].value;
       this.state.map = null;//;this.state.print[0].maps[0].name;
       this.state.width = null;//this.state.print[0].maps[0].w;
       this.state.height = null;//this.state.print[0].maps[0].h;
@@ -60,7 +69,7 @@ function PrintComponentService() {
     if (!this.state.template) return;
     const template = this.state.template;
     this.state.print.forEach((print) => {
-      if (print.name == template) {
+      if (print.name === template) {
         this.state.width = print.maps[0].w;
         this.state.height = print.maps[0].h;
         this.state.map = print.maps[0].name;
@@ -94,7 +103,7 @@ function PrintComponentService() {
       dpi: this.state.dpi,// dpi
       template: this.state.template,
       map: this.state.map,
-      format: this.state.format//(map0)
+      format: this.state.output.format//(map0)
     };
     return options;
   };
@@ -107,7 +116,8 @@ function PrintComponentService() {
   };
 
   this.print = function() {
-    this.state.url = null;
+    this.state.output.url = null;
+    this.state.output.layers = true;
     this._page = new PrintPage({
       service: this
     });
@@ -117,15 +127,21 @@ function PrintComponentService() {
       perc:100
     });
     const options = this._getOptionsPrint();
-    this.state.url = this.printService.getPrintUrl(options);
+    this.printService.print(options, method=this.state.output.method).then((data) => {
+      this.state.output.url = data.url;
+      this.state.output.layers = data.layers;
+      this.state.output.mime_type = data.mime_type;
+    }).catch(()=> {
+      this.showError();
+    })
   };
 
   this.startLoading = function() {
-    this.state.loading = true;
+    this.state.output.loading = true;
   };
 
   this.stopLoading = function() {
-    this.state.loading = false;
+    this.state.output.loading = false;
   };
 
   this.showError = function() {
@@ -153,7 +169,8 @@ function PrintComponentService() {
 
   this._setPrintArea = function() {
     this.state.size = this._map.getSize();
-    this.state.currentScala = resToScale(this._map.getView().getResolution());
+    const resolution = this._map.getView().getResolution();
+    this.state.currentScala = getScaleFromResolution(resolution, this._mapUnits);
     this.state.center = this._map.getView().getCenter();
     this._calculateInternalPrintExtent();
     this._mapService.setInnerGreyCoverBBox({
@@ -171,13 +188,13 @@ function PrintComponentService() {
 
   this._setAllScalesBasedOnMaxResolution = function(maxResolution) {
     let resolution = maxResolution;
-    const mapScala = resToScale(resolution);
+    const mapScala = getScaleFromResolution(resolution, this._mapUnits);
     const orderScales = _.orderBy(this.state.scale, ['value'], ['desc']);
     let scale = [];
     orderScales.forEach((scala) => {
       if (mapScala > scala.value) {
         scale.push(scala);
-        resolution = scaleToRes(scala.value);
+        resolution = getResolutionFromScale(scala.value, this._mapUnits);
         this._scalesResolutions[scala.value] = resolution;
         resolution = resolution / 2;
       }
@@ -187,7 +204,7 @@ function PrintComponentService() {
 
   this._setInitialScalaSelect = function() {
     const initialResolution = this._map.getView().getResolution();
-    const initialScala = resToScale(initialResolution);
+    const initialScala = getScaleFromResolution(initialResolution, this._mapUnits);
     let found = false;
     this.state.scale.forEach((scala, index) => {
       if (initialScala < scala.value && !this.state.scala) {
@@ -262,6 +279,7 @@ function PrintComponentService() {
           } else {
             this._clearPrint();
           }
+          this._mapUnits = this._mapService.getMapUnits();
         });
         this._mapService.getMap().renderSync();
       })

@@ -54,7 +54,7 @@
         return images
       }
     },
-    created() {}
+    created () {}
   }
 </script>
 

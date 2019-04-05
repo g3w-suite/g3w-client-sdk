@@ -15,15 +15,22 @@ const FooterFormComponent = Vue.extend({
     _enterEventHandler(evt) {
       if (evt.which === 13) {
         evt.preventDefault();
-        if (this.isValid())
+        if (this.isValid() && this.active)
           $(this.$el).find('button').click();
       }
     }
   },
   data() {
     return {
-      id:"footer"
+      id:"footer",
+      active: true
     }
+  },
+  activated(){
+    this.active = true;
+  },
+  deactivated() {
+    this.active = false;
   },
   mounted() {
     this.$nextTick(() => {

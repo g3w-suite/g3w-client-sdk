@@ -1,6 +1,6 @@
 <template>
   <field :state="state">
-    <div slot="field" align="center">
+    <div slot="field" style="text-align: left">
       <img v-for="(value, index) in values" class="img-responsive" style="max-height:50px" @click="showGallery(index)" :src="getSrc(value)"/>
       <gallery :id="galleryId" :active="active" :images="getGalleryImages()"></gallery>
     </div>
@@ -31,14 +31,14 @@
     },
     methods: {
       getSrc(value) {
-        if (typeof value == 'object') {
+        if (typeof value === 'object') {
           return value.photo;
         }
         return value
       },
       showGallery(index) {
         this.active = index;
-        if (typeof this.value == 'object') {
+        if (typeof this.value === 'object') {
           this.value.active = true;
         }
         $('#'+this.galleryId).modal('show');
@@ -52,8 +52,7 @@
         });
         return images
       }
-    },
-    created() {}
+    }
   }
 </script>
 

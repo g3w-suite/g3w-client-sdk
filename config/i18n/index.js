@@ -4,6 +4,9 @@ export default {
         search: {
           all: 'TUTTE'
         },
+        print: {
+          no_layers: 'Nessun Layer visibile'
+        },
         'metadata': {
           "title": "Metadati",
           'groups': {
@@ -124,6 +127,9 @@ export default {
       "sdk": {
         search: {
           all: 'ALL'
+        },
+        print: {
+          no_layers: 'No Layer to print'
         },
         'metadata': {
           'title': 'Metadata',

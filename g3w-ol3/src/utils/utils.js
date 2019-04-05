@@ -1,5 +1,10 @@
 const OGC_PIXEL_WIDTH = 0.28;
-const OGC_DPI = 25.4/OGC_PIXEL_WIDTH;
+
+const INCHES_PER_UNIT = {
+  m: 39.37, //
+  degrees: 4374754
+};
+const DOTS_PER_INCH = 96; //DPI96
 
 const utils = {
   getExtentForViewAndSize: function(center, resolution, rotation, size) {
@@ -53,8 +58,7 @@ const utils = {
     geometry.setCoordinates(coordinates);
     return geometry
   },
-  resToScale: function(resolution, unit) {
-    unit = unit || 'm';
+  resToScale: function(resolution, unit='m') {
     let scale;
     switch (unit) {
       case 'm':
@@ -72,6 +76,13 @@ const utils = {
         break
     }
     return resolution;
+  },
+  getScaleFromResolution: function(resolution, units="m") {
+    return Math.round(resolution * INCHES_PER_UNIT[units] * DOTS_PER_INCH);
+  },
+  getResolutionFromScale: function(scale, units="m") {
+    const normScale = (scale > 1.0) ? (1.0 / scale) : scale; // just to prevent that scale is passed as 1:10000 or 0.0001
+    return  1 / (normScale * INCHES_PER_UNIT[units] * DOTS_PER_INCH);
   }
 };
 

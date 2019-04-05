@@ -7,12 +7,16 @@ function WFSDataProvider(options) {
   options = options || {};
   base(this, options);
   this._name = 'wfs';
-  this._layerName = this._layer.getQueryLayerName().replace(/ /g,'_');
+  this._layerName = this._getTypeName(this._layer.getQueryLayerName())
 }
 
 inherit(WFSDataProvider, DataProvider);
 
 const proto = WFSDataProvider.prototype;
+
+proto._getTypeName = function(layerQueryName) {
+  return layerQueryName.replace(/[/\s]/g, '_') ;
+};
 
 proto.getData = function() {
   const d = $.Deferred();
@@ -44,25 +48,42 @@ proto.query = function(options={}, params = {}) {
 };
 
 proto._post = function(url, params) {
-  url = url.match(/\/$/) ? url : url + '/';
-  return  $.post(url, params)
+  url = url.match(/\/$/) ? url : `${url}/`;
+  const d = $.Deferred();
+  $.post(url, params).then((response) => {
+      d.resolve(response);
+    })
+    .fail((err) => {
+      if (err.status === 200)
+        d.resolve(err.responseText);
+      d.reject(err);
+    });
+  return d.promise();
 };
 
 // get request
 proto._get = function(url, params) {
   // trasform parameters
+  url = url.match(/\/$/) ? url : `${url}/`;
+  const d = $.Deferred();
   const urlParams = $.param(params);
   url = url + '?' + urlParams;
-  return $.get(url)
+  $.get(url).then((response) => {
+    d.resolve(response);
+  }).fail((err) => {
+    d.reject(err);
+  });
+  return d.promise();
 };
 
 //request to server
 proto._doRequest = function(filter, params = {}, layers) {
+  const d = $.Deferred();
   filter = filter || new Filter();
   const layer = layers ? layers[0]: this._layer;
   const url = layer.getQueryUrl();
   const infoFormat = layer.getInfoFormat();
-  const layerNames = layers ? layers.map(layer => layer.getName()).join(','): this._layerName;
+  const layerNames = layers ? layers.map(layer => this._getTypeName(layer.getQueryLayerName())).join(','): this._layerName;
   params = Object.assign(params, {
     SERVICE: 'WFS',
     VERSION: '1.3.0',
@@ -102,9 +123,19 @@ proto._doRequest = function(filter, params = {}, layers) {
         break;
     }
     params.FILTER = featureRequest.children[0].innerHTML;
-    request = this._post(url, params);
-    return request;
+    this._post(url, params)
+      .then((response) => {
+        d.resolve(response)
+      }).fail((err) => {
+        if (err.status === 200)
+          d.resolve(responseText);
+        else
+          d.reject(err)
+      })
+  } else {
+    d.reject()
   }
+  return d.promise()
 };
 
 

@@ -23,7 +23,7 @@
       }
     },
     created() {
-      if (this.state.value && typeof  this.state.value === 'object' && this.state.value.constructor === Object) {
+      if (this.state.value && typeof this.state.value === 'object') {
         this.value = this.state.value.value;
       } else {
         this.value = this.state.value

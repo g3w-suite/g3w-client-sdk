@@ -1,7 +1,7 @@
 const layout = require('./utils').layout;
 const changeLayout = require('./utils').changeLayoutBottomControl;
-const scaleToRes = require('../utils/utils').scaleToRes;
-const resToScale = require('../utils/utils').resToScale;
+const getResolutionFromScale = require('../utils/utils').getResolutionFromScale;
+const getScaleFromResolution = require('../utils/utils').getScaleFromResolution;
 const SCALES = [
   1000000,5000000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 2000, 1000
 ];
@@ -94,8 +94,10 @@ proto.layout = function(map) {
 
   map.on('moveend', function() {
     if (isMapResolutionChanged) {
-      const resolution = this.getView().getResolution();
-      const scale = parseInt(resToScale(resolution));
+      const view = this.getView();
+      const resolution = view.getResolution();
+      const mapUnits = view.getProjection().getUnits();
+      const scale = parseInt(getScaleFromResolution(resolution, mapUnits));
       const data = {
         id: scale,
         text: `1:${scale}`,
@@ -119,14 +121,17 @@ proto.layout = function(map) {
       deleteLastCustomScale();
       addCustomTag(data);
     }
+    const mapUnits = map.getView().getProjection().getUnits();
     const scale = 1*data.id;
-    const resolution = scaleToRes(scale);
+    const resolution = getResolutionFromScale(scale, mapUnits);
     map.getView().setResolution(resolution);
   });
 };
 
 proto._setScales = function(map) {
-  const currentScale = parseInt(resToScale(map.getView().getResolution()));
+  const mapUnits = map.getView().getProjection().getUnits();
+  const currentResolution = map.getView().getResolution();
+  const currentScale = parseInt(getScaleFromResolution(currentResolution, mapUnits));
   this.scales = SCALES.filter((scale) => {
     return scale < currentScale;
   });

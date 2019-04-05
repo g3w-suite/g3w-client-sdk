@@ -42,7 +42,7 @@ const vueComponentOptions = {
     showHideControls: function () {
       const mapControls = this.$options.service.getMapControls();
       mapControls.forEach((control) => {
-        if (control.type != "scaleline")
+        if (control.type !== "scaleline")
           control.control.showHide();
       })
     }

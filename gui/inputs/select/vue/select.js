@@ -23,10 +23,9 @@ var SelectInput = Vue.extend({
   mounted() {
     this.$nextTick(() => {
       const selectElement = $(this.$el).find('select');
-      let select2;
       const language = this.service.getLanguage();
       if (this.autocomplete) {
-        select2 = selectElement.select2({
+        this.select2 = selectElement.select2({
           minimumInputLength: 1,
           language,
           ajax: {
@@ -53,7 +52,7 @@ var SelectInput = Vue.extend({
           },
         });
       } else {
-        select2 = selectElement.select2({
+        this.select2 = selectElement.select2({
           language
         });
         if (!this.state.value) {
@@ -61,8 +60,8 @@ var SelectInput = Vue.extend({
         }
       }
       if (this.state.value)
-        select2.val(this.state.value).trigger('change');
-      select2.on('select2:select', (event) => {
+        this.select2.val(this.state.value).trigger('change');
+      this.select2.on('select2:select', (event) => {
         const value = event.params.data.$value? event.params.data.$value : event.params.data.id;
         this.changeSelect(value);
       });

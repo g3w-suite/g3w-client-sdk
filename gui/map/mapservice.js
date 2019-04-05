@@ -10,6 +10,7 @@ const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const Filter = require('core/layers/filter/filter');
 const WFSProvider = require('core/layers/providers/wfsprovider');
 const ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
+const getResolutionFromScale = require('g3w-ol3/src/utils/utils').getResolutionFromScale;
 const ControlsFactory = require('gui/map/control/factory');
 const StreetViewService = require('gui/streetview/streetviewservice');
 const ControlsRegistry = require('gui/map/control/registry');
@@ -23,12 +24,13 @@ function MapService(options={}) {
   this.target = options.target || null;
   this.maps_container = options.maps_container || null;
   this._layersStoresEventKeys = {};
-  this.project   = null;
+  this.project = null;
   this._mapControls = [];
   this._mapLayers = [];
   this.mapBaseLayers = {};
   this.layersExtraParams = {};
   this.state = {
+    mapUnits: 'm',
     bbox: [],
     hidemaps:[],
     resolution: null,
@@ -243,7 +245,7 @@ proto._showHideMapElement = function({map, show=false} = {}) {
 proto.createMapImage = function({map, background} = {}) {
   return new Promise((resolve, reject) => {
     try {
-     const canvas = this.getMapCanvas(map);
+      const canvas = this.getMapCanvas(map);
       if (navigator.msSaveBlob) {
         resolve(canvas.msToBlob());
       } else {
@@ -443,10 +445,11 @@ proto.getQueryLayerPromiseByCoordinates = function({layer, coordinates} = {}) {
 };
 
 proto.getQueryLayersPromisesByGeometry = function(layerFilterObject, options={}) {
+  const d = $.Deferred();
   let filterGeometry = options.geometry;
   const excludeLayers = options.excludeLayers || [];
   const bbox = options.bbox;
-  const queryPromises = [];
+  const queryResponses = [];
   const feature_count = this.project.getQueryFeatureCount();
   const layers = this.getLayers(layerFilterObject).filter(layer => excludeLayers.indexOf(layer) === -1);
   if (!layers.length)
@@ -455,6 +458,7 @@ proto.getQueryLayersPromisesByGeometry = function(layerFilterObject, options={})
   const multiLayers = _.groupBy(layers, function(layer) {
     return `${layer.getMultiLayerId()}_${layer.getProjection().getCode()}`;
   });
+  let layersLenght = Object.keys(multiLayers).length;
   for (let key in multiLayers) {
     const filter = new Filter();
     const _multilayer = multiLayers[key];
@@ -471,17 +475,24 @@ proto.getQueryLayersPromisesByGeometry = function(layerFilterObject, options={})
       }
     }
     bbox && filter.setBBOX(filterGeometry) ||  filter.setGeometry(filterGeometry);
-    queryPromises.push(provider.query({
+    provider.query({
       filter,
       layers,
       feature_count
-    }))
+    }).then((response)=> {
+      queryResponses.push(response);
+    }).always(() => {
+      layersLenght -= 1;
+      if (layersLenght === 0)
+        d.resolve(queryResponses)
+    })
   }
-  return queryPromises;
+  return d.promise();
 };
 
 proto.getQueryLayersPromisesByCoordinates = function(layerFilterObject, coordinates, querymultilayers=false) {
   const d = $.Deferred();
+  const size = this.getMap().getSize();
   const feature_count = this.project.getQueryFeatureCount();
   const layers = this.getLayers(layerFilterObject) || [];
   if (!layers.length)
@@ -504,6 +515,7 @@ proto.getQueryLayersPromisesByCoordinates = function(layerFilterObject, coordina
         coordinates,
         mapProjection,
         resolution,
+        size,
         layers
       }).then((response)=> {
         queryResponses.push(response);
@@ -520,7 +532,8 @@ proto.getQueryLayersPromisesByCoordinates = function(layerFilterObject, coordina
         feature_count,
         coordinates,
         mapProjection,
-        resolution
+        size,
+        resolution,
       }).then((response) => {
         queryResponses.push(response)
       }).always(() => {
@@ -706,7 +719,7 @@ proto.setupControls = function() {
               let queryResulsPromise = this.getQueryLayersPromisesByCoordinates(layersFilterObject, coordinates);
               queryResulsPromise.then((responses) => {
                 let layersResults = responses;
-                let queryPromises = [];
+                let queriesPromise;
                 results = {};
                 // unify results of the promises
                 results.query = layersResults[0] ? layersResults[0].query : null;
@@ -723,30 +736,40 @@ proto.setupControls = function() {
                     const querymultilayers = this.project.isQueryMultiLayers(controlType);
                     let filterGeometry = geometry;
                     if (querymultilayers) {
-                      queryPromises = this.getQueryLayersPromisesByGeometry(layerFilterObject, {
+                      queriesPromise = this.getQueryLayersPromisesByGeometry(layerFilterObject, {
                         geometry,
                         bbox:false,
                         excludeLayers
                       })
                     } else {
+                      const d = $.Deferred();
+                      queriesPromise = d.promise();
+                      const queryResponses = [];
                       const feature_count = this.project.getQueryFeatureCount();
                       const layers = this.getLayers(layerFilterObject);
                       const mapCrs = this.getCrs();
+                      let layersLenght = layers.length;
                       layers.forEach((layer) => {
                         const layerCrs = layer.getProjection().getCode();
                         if (mapCrs !== layerCrs)
                           filterGeometry = geometry.clone().transform(mapCrs, layerCrs);
                         filter.setGeometry(filterGeometry);
-                        queryPromises.push(layer.query({
+                        layer.query({
                           filter,
                           feature_count
-                        }))
+                        }).then((response) => {
+                          queryResponses.push(response)
+                        }).always(() => {
+                          layersLenght -= 1;
+                          if (layersLenght === 0)
+                            d.resolve(queryResponses)
+                        })
                       });
                     }
                     this.highlightGeometry(geometry);
                   }
-                  $.when.apply(this, queryPromises)
-                    .then((...args) => {
+                  queriesPromise
+                    .then((args) => {
                       layersResults = args;
                       const results = {
                         query: layersResults[0] ? layersResults[0].query : null,
@@ -756,9 +779,10 @@ proto.setupControls = function() {
                         if (result.data)
                           result.data.forEach(data => {results.data.push(data)});
                       });
+                      queryResultsPanel.setZoomToResults(false);
                       queryResultsPanel.setQueryResponse(results, geometry, this.state.resolution);
                     })
-                    .fail(() => {
+                    .fail((error) => {
                       GUI.notify.error(t("info.server_error"));
                       GUI.closeContent();
                     })
@@ -800,39 +824,46 @@ proto.setupControls = function() {
                   FILTERABLE: true,
                   VISIBLE: true
                 };
-                const layers = this.getLayers({
-                  SELECTEDORALL: true,
-                  FILTERABLE: true,
-                  VISIBLE: true
-                });
-                let queryPromises = [];
+                const layers = this.getLayers(layersFilterObject);
+                let queriesPromise;
                 const querymultilayers = this.project.isQueryMultiLayers(controlType);
                 if (querymultilayers) {
-                  queryPromises = this.getQueryLayersPromisesByGeometry(layersFilterObject, {
+                  queriesPromise = this.getQueryLayersPromisesByGeometry(layersFilterObject, {
                     geometry: bbox,
                     bbox: true
                   })
                 } else {
+                  const d = $.Deferred();
+                  queriesPromise = d.promise();
+                  const queryResponses = [];
                   const feature_count = this.project.getQueryFeatureCount();
+                  let layersLenght = layers.length;
                   layers.forEach((layer) => {
                     const filter = new Filter();
                     const mapCrs = this.getCrs();
                     const layerCrs = layer.getProjection().getCode();
-                    if (mapCrs != layerCrs) {
+                    if (mapCrs !== layerCrs) {
                       const geometry = ol.geom.Polygon.fromExtent(bbox);
                       filterBBox = geometry.transform(mapCrs, layerCrs).getExtent();
                     }
                     filter.setBBOX(filterBBox);
-                    queryPromises.push(layer.query({
+                    layer.query({
                       filter: filter,
                       feature_count
-                    }))
+                    }).then((response) => {
+                      queryResponses.push(response)
+                    }).always(() => {
+                      layersLenght -= 1;
+                      if (layersLenght === 0)
+                        d.resolve(queryResponses)
+                    })
                   });
                 }
                 const showQueryResults = GUI.showContentFactory('query');
                 const queryResultsPanel = showQueryResults('');
-                $.when.apply(this, queryPromises)
-                  .then((...args) => {
+                queryResultsPanel.setZoomToResults(false);
+                queriesPromise
+                  .then((args) => {
                     layersResults = args;
                     const results = {
                       query: layersResults[0] ? layersResults[0].query: null,
@@ -842,7 +873,6 @@ proto.setupControls = function() {
                       if (result.data)
                         result.data.forEach(data => {results.data.push(data)});
                     });
-
                     queryResultsPanel.setQueryResponse(results, bbox, this.state.resolution);
                   })
                   .fail((error) => {
@@ -1335,7 +1365,7 @@ proto._resetView = function() {
     projection: this.viewer.map.getView().getProjection(),
     center: this.viewer.map.getView().getCenter(),
     resolution: this.viewer.map.getView().getResolution(),
-    //maxResolution: maxResolution
+    maxResolution
   });
   this.viewer.map.setView(view);
 };
@@ -1350,7 +1380,7 @@ proto._setupViewer = function(width,height) {
   const maxResolution = Math.max(maxxRes,minyRes);
   const initxRes = ol.extent.getWidth(initextent) / width;
   const inityRes = ol.extent.getHeight(initextent) / height;
-  const resolution = Math.max(initxRes,inityRes);
+  let resolution = Math.max(initxRes,inityRes);
   const center = ol.extent.getCenter(initextent);
   this.viewer = ol3helpers.createViewer({
     id: this.target,
@@ -1362,6 +1392,8 @@ proto._setupViewer = function(width,height) {
       resolution
     }
   });
+  //set mapunit
+  this.state.mapUnits = this.viewer.map.getView().getProjection().getUnits();
 
   if (this.config.background_color) {
     $('#' + this.target).css('background-color', this.config.background_color);
@@ -1391,6 +1423,10 @@ proto._setupViewer = function(width,height) {
   this.viewer.map.addOverlay(this._marker);
 
   this.emit('ready');
+};
+
+proto.getMapUnits = function() {
+  return this.state.mapUnits;
 };
 
 proto._removeListeners = function() {
@@ -1615,7 +1651,7 @@ proto.updateMapLayer = function(mapLayer, options={force: false}) {
 };
 
 // run update function on ech mapLayer
-proto.updateMapLayers = function(options) {
+proto.updateMapLayers = function(options={}) {
   this.getMapLayers().forEach((mapLayer) => {
     this.updateMapLayer(mapLayer, options)
   });
@@ -1676,7 +1712,7 @@ proto.goTo = function(coordinates,zoom) {
 
 proto.goToRes = function(coordinates, resolution){
   const options = {
-    resolution: resolution
+    resolution
   };
   this.viewer.goToRes(coordinates,options);
 };
@@ -1725,7 +1761,7 @@ let animatingHighlight = false;
 
 proto.highlightGeometry = function(geometryObj, options = {}) {
   this.clearHighlightGeometry();
-  let zoom = (typeof options.zoom == 'boolean') ? options.zoom : true;
+  let zoom = (typeof options.zoom === 'boolean') ? options.zoom : true;
   let hide = options.hide;
   if (hide) {
     hide = typeof hide === 'function' ? hide: null;
@@ -1779,20 +1815,16 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
   }
   const geometryType = geometry.getType();
   if (zoom) {
-    if (geometryType == 'Point' || (geometryType == 'MultiPoint' && geometry.getPoints().length == 1)) {
+    const goToResolution = getResolutionFromScale(2000, this.getMapUnits());
+    if (geometryType === 'Point' || (geometryType === 'MultiPoint' && geometry.getPoints().length === 1)) {
       const coordinates = geometryType == 'Point' ? geometry.getCoordinates() : geometry.getPoint(0).getCoordinates();
-      if (this.project.state.crs != 4326 && this.project.state.crs != 3857) {
-        const res = this.getResolutionForMeters(100);
-        this.goToRes(coordinates,res);
-      } else {
-        zoom = this.viewer.map.getView().getZoom() > 6 ? this.viewer.map.getView().getZoom() : 6;
-        this.goTo(coordinates, zoom);
-      }
+      this.goToRes(coordinates, goToResolution);
     } else {
+      options.minResolution = goToResolution;
+      options.constrainResolution = false;
       this.viewer.fit(geometry, options);
     }
   }
-
   if (highlight) {
     const feature = new ol.Feature({
       geometry: geometry

@@ -21,6 +21,7 @@ function QueryResultsService() {
   this._relations = [];
   const project = ProjectsRegistry.getCurrentProject();
   this.state = {
+    zoomToResult: true,
     components: []
   };
   this.init = function() {
@@ -57,6 +58,10 @@ inherit(QueryResultsService, G3WObject);
 
 
 const proto = QueryResultsService.prototype;
+
+proto.setZoomToResults = function(bool=true) {
+  this.state.zoomToResult = bool;
+};
 
 proto.zoomToLayerFeaturesExtent = function(layer, options) {
   const mapService = ComponentsRegistry.getComponent('map').getService();
@@ -188,7 +193,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
 proto._parseAttributes = function(layerAttributes, featureAttributes) {
   let featureAttributesNames = _.keys(featureAttributes);
   featureAttributesNames = _.filter(featureAttributesNames,function(featureAttributesName){
-    return ['boundedBy','geom','the_geom','geometry','bbox', 'GEOMETRY'].indexOf(featureAttributesName) == -1;
+    return ['boundedBy','geom','the_geom','geometry','bbox', 'GEOMETRY'].indexOf(featureAttributesName) === -1;
   });
   if (layerAttributes && layerAttributes.length) {
     return _.filter(layerAttributes,function(attribute){

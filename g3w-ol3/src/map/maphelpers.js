@@ -124,9 +124,8 @@ _Viewer.prototype.goToRes = function(coordinates, options){
   }
 };
 
-_Viewer.prototype.fit = function(geometry, options){
+_Viewer.prototype.fit = function(geometry, options={}){
   const view = this.map.getView();
-  options = options || {};
   const animate = options.animate || true;
   let panAnimation;
   let zoomAnimation;
@@ -145,10 +144,10 @@ _Viewer.prototype.fit = function(geometry, options){
   if (options.animate) {
     delete options.animate; // non lo passo al metodo di OL3 perché è un'opzione interna
   }
-  options.constrainResolution = options.constrainResolution || true;
+  options.constrainResolution = options.constrainResolution === undefined && true ||  options.constrainResolution;
   options.size = this.map.getSize();
 
-  view.fit(geometry,options);
+  view.fit(geometry, options);
 };
 
 _Viewer.prototype.getZoom = function(){

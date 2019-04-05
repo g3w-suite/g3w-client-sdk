@@ -126,7 +126,7 @@ proto.getListableProjects = function() {
     if (!_.isNil(project.listable)) {
       return project.listable;
     }
-    if (project.id === currentProjectId || (project.overviewprojectgid && project.gid == project.overviewprojectgid.gid)) {
+    if (project.id === currentProjectId || (project.overviewprojectgid && project.gid === project.overviewprojectgid.gid)) {
       return false
     }
     return project;
@@ -177,7 +177,7 @@ proto.getProject = function(projectGid) {
 proto._setProjectRelations = function(projectConfig) {
   projectConfig.relations = projectConfig.relations ? projectConfig.relations : [];
   projectConfig.relations = projectConfig.relations.map((relation) => {
-    if (relation.type == "ONE") {
+    if (relation.type === "ONE") {
       projectConfig.layers.find((layer) => {
         if (layer.id === relation.referencingLayer) {
           relation.name = layer.name;

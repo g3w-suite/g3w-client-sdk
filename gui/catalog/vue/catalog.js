@@ -152,7 +152,7 @@ const vueComponentOptions = {
     },
     canShowWmsUrl(layerId) {
       const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
-      return !!originalLayer.getFullWmsUrl
+      return !!originalLayer.getFullWmsUrl()
     },
     canDownloadShp(layerId) {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
@@ -578,12 +578,8 @@ Vue.component('layerslegend',{
     },
     created() {
       this.$emit('showlegend', !!this.visiblelayers.length);
-    },
-    mounted: function() {
-      this.$nextTick(function() {
-        $('.legend-item').perfectScrollbar();
-      });
     }
+
 });
 
 Vue.component('layerslegend-items',{
@@ -620,9 +616,6 @@ Vue.component('layerslegend-items',{
         }
       });
       return _legendurl;
-    },
-    updateLegendScroll: function(evt) {
-      $(evt.target).perfectScrollbar('update');
     }
   }
 });

@@ -55,7 +55,6 @@ proto.show = function(options = {}) {
     .finally(() => {
       this.emit('show')
     })
-
 };
 
 proto.unmount = function() {

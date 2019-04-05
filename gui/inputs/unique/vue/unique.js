@@ -1,12 +1,12 @@
 const Input = require('gui/inputs/input');
 const selectMixin = require('gui/inputs/select/vue/selectmixin');
-const WidgetMixins = require('gui/inputs/widgetmixins');
 const Service = require('../service');
 
 const UniqueInput = Vue.extend({
-  mixins: [Input, selectMixin, WidgetMixins],
+  mixins: [Input, selectMixin],
   template: require('./unique.html'),
   data: function() {
+    this.select2;
     const uniqueid = 'uniqueinputid_' + Date.now();
     return {
       service: new Service({
@@ -15,25 +15,23 @@ const UniqueInput = Vue.extend({
       id: uniqueid
     }
   },
-  methods: {
-    stateValueChanged(value) {
-      value = value === null ? 'null': value;
-      $('#'+this.id).val(value).trigger('change.select2');
+  watch: {
+    'state.input.options.values'(values) {
+      this.state.value = this.state.value ? this.state.value: values[0];
+      this.change();
+      this.$nextTick(()=>{
+        if (this.state.input.options.editable) {
+          this.select2 = $(`#${this.id}`).select2({
+            tags: true
+          });
+          this.select2.val(this.state.value).trigger('change');
+          this.select2.on('select2:select', (event) => {
+            const value = event.params.data.$value? event.params.data.$value : event.params.data.id;
+            this.changeSelect(value);
+          })
+        }
+      })
     }
-  },
-  mounted: function() {
-    const self = this;
-    this.$nextTick(function() {
-      if (self.state.input.options.editable) {
-        $('#'+self.id).select2({
-          tags: true
-        });
-        $('#'+self.id).on('change', function(e) {
-          self.state.value = this.value == 'null' ? null : this.value;
-          self.widgetChanged();
-        })
-      }
-    })
   }
 });
 

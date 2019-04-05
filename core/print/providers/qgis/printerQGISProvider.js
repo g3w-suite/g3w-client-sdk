@@ -1,50 +1,109 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
+const convertObjectToUrlParams = require('core/utils/utils').convertObjectToUrlParams;
 const PrintProvider = require('../printerprovider');
 const ProjectsRegistry = require('core/project/projectsregistry');
 
 function PrinterQGISProvider() {
   base(this);
-
-  this.getPrintUrl = function(options) {
-    options = options || {};
-    const layersStore =   ProjectsRegistry.getCurrentProject().getLayersStore();
-    const templateMap = options.map || 'map0';
-    let url = layersStore.getWmsUrl();
-    // reverse of layer because the order is important
-    let layers = _.reverse(layersStore.getLayers({
-      ACTIVE: true,
-      VISIBLE: true,
-      SERVERTYPE: 'QGIS'
-    }));
-    layers = _.map(layers,function(layer){
-      return layer.getQueryLayerName()
-    });
-    const params = {
-      SERVICE: 'WMS',
-      VERSION: '1.3.0',
-      REQUEST: 'GetPrint',
-      TEMPLATE: options.template,
-      DPI: options.dpi,
-      FORMAT: options.format,
-      CRS:layersStore.getProjection().getCode(),
-      LAYERS: layers.join()
-    };
-    // AL comento commento
-    params[templateMap+':SCALE'] = options.scale;
-    params[templateMap+':EXTENT'] = options.extent;
-    params[templateMap+':ROTATION'] = options.rotation;
-    url = url + '?' + $.param(params);
-    return url;
-  };
-
-  this.print = function(options) {
-    options = options || {};
-    return this.getPrintUrl(options);
-  };
 }
 
 inherit(PrinterQGISProvider, PrintProvider);
+
+const proto = PrinterQGISProvider.prototype;
+
+proto.POST = function({url, params, mime_type}) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url, true);
+    xhr.responseType = 'blob';
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        try {
+          window.URL = window.URL || window.webkitURL;
+          const url = window.URL.createObjectURL(xhr.response);
+          resolve({
+            url,
+            layers: true,
+            mime_type
+          });
+        } catch (e) {
+          reject(e)
+        }
+      } else if(xhr.status === 500) {
+        reject()
+      }
+    };
+    xhr.onerror = function () {
+      reject()
+    };
+    xhr.send(convertObjectToUrlParams(params))
+  })
+};
+
+proto.GET = function({url, params, mime_type}) {
+  return new Promise((resolve, reject) => {
+    url = `${url}?${convertObjectToUrlParams(params)}`;
+    resolve({
+      url,
+      layers: true,
+      mime_type
+    });
+  })
+};
+
+proto._getParamsFromOptions = function(layers, options) {
+  const templateMap = options.map || 'map0';
+  layers = layers.map((layer) => {
+    return layer.getQueryLayerName()
+  });
+  const params = {
+    SERVICE: 'WMS',
+    VERSION: '1.3.0',
+    REQUEST: 'GetPrint',
+    TEMPLATE: options.template,
+    DPI: options.dpi,
+    FORMAT: options.format,
+    CRS: options.crs,
+    LAYERS: layers.join()
+  };
+  params[templateMap + ':SCALE'] = options.scale;
+  params[templateMap + ':EXTENT'] = options.extent;
+  params[templateMap + ':ROTATION'] = options.rotation;
+  return params;
+};
+
+proto.print = function(options={}, method="GET") {
+  const layersStore = ProjectsRegistry.getCurrentProject().getLayersStore();
+  let url = layersStore.getWmsUrl();
+  // reverse of layer because the order is important
+  let layers = _.reverse(layersStore.getLayers({
+    PRINTABLE: {
+      scale: options.scale
+    },
+    SERVERTYPE: 'QGIS'
+  }));
+  if (layers.length) {
+    options.crs = layersStore.getProjection().getCode();
+    const params = this._getParamsFromOptions(layers, options);
+    const formats = {
+      pdf: 'application/pdf',
+      jpg: 'image/jpeg'
+    };
+    const mime_type = formats[params.FORMAT];
+    return this[method]({
+      url,
+      params,
+      mime_type
+    })
+  } else
+    return Promise.resolve({
+      layers: !!layers.length
+    })
+
+};
+
 
 module.exports = PrinterQGISProvider;
 

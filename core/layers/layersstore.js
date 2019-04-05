@@ -27,7 +27,8 @@ function LayersStore(config={}) {
       const layers = [];
       layersIds.forEach((layerId) => {
         const layer = this.getLayerById(layerId);
-        layer.state.visible = visible;
+        layer.setVisible(visible);
+        layer.setChecked(visible);
         layers.push(layer);
       });
       return layers;
@@ -97,6 +98,7 @@ proto.getLayersDict = function(options = {}) {
   if (!options) {
     return this._layers;
   }
+  const filterPrintable = options.PRINTABLE;
   const filterActive = options.ACTIVE;
   const filterQueryable = options.QUERYABLE;
   const filterFilterable = options.FILTERABLE;
@@ -126,13 +128,13 @@ proto.getLayersDict = function(options = {}) {
     && _.isUndefined(filterDisabled)
     && _.isUndefined(filterBaseLayer)
     && _.isUndefined(filterVectorLayer)
+    && _.isUndefined(filterPrintable)
   ) {
     return this._layers;
   }
   let layers = [];
 
   for(let key in this._layers) {
-
     layers.push(this._layers[key]);
   }
 
@@ -171,7 +173,7 @@ proto.getLayersDict = function(options = {}) {
 
   if (typeof filterVisible == 'boolean') {
     layers = layers.filter((layer) => {
-      return filterVisible == layer.isVisible();
+      return filterVisible === layer.isVisible();
     });
   }
 
@@ -195,7 +197,7 @@ proto.getLayersDict = function(options = {}) {
 
   if (typeof filterGeoLayer == 'boolean') {
     layers = layers.filter((layer) => {
-      return filterGeoLayer == layer.state.geolayer;
+      return filterGeoLayer === layer.state.geolayer;
     });
   }
 
@@ -221,6 +223,15 @@ proto.getLayersDict = function(options = {}) {
     layers = layers.filter((layer) => {
       return filterServerType == layer.getServerType();
     });
+  }
+
+
+  if (filterPrintable) {
+    layers = layers.filter((layer) => {
+      return layer.state.geolayer && layer.isPrintable({
+        scale: filterPrintable.scale
+      })
+    })
   }
 
 

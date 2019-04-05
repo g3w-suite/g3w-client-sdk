@@ -63,12 +63,14 @@ proto._updateFeature = function(feature) {
 
 // remove feature from store
 proto._removeFeature = function(feature) {
-  this._features.forEach((feat, idx) => {
+  const featuresArray = this._features.getArray();
+  for (let i = 0; i < featuresArray.length; i++) {
+    const feat = featuresArray[i];
     if (feature.getId() === feat.getId()) {
-      this._features.removeAt(idx);
-      return false
+      this._features.removeAt(i);
+      break;
     }
-  });
+  }
   this._features.dispatchEvent('change')
 };
 

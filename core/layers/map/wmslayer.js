@@ -53,13 +53,13 @@ proto.addLayer = function(layer) {
 
 proto.removeLayer = function(layer) {
   this.layers = this.layers.filter((_layer) => {
-    return layer != _layer;
+    return layer !== _layer;
   })
 };
 
 proto.toggleLayer = function(layer) {
   this.layers.forEach((_layer) => {
-    if (_layer.id == layer.id){
+    if (_layer.id === layer.id){
       _layer.visible = layer.visible;
     }
   });
@@ -128,22 +128,23 @@ proto._makeOlLayer = function(withLayers) {
   return olLayer
 };
 
-proto.checkLayerDisabled = function(layer,resolution) {
-  layer.setDisabled(resolution);
+proto.checkLayerDisabled = function(layer, resolution, mapUnits) {
+  layer.setDisabled(resolution, mapUnits);
   return layer.isDisabled();
 };
 
 // check which layers has to be disabled
-proto.checkLayersDisabled = function(resolution) {
+proto.checkLayersDisabled = function(resolution, mapUnits) {
   this.allLayers.forEach((layer) => {
-    this.checkLayerDisabled(layer, resolution);
+    this.checkLayerDisabled(layer, resolution, mapUnits);
   });
 };
 
 //update Layers
 proto._updateLayers = function(mapState = {}, extraParams = {}) {
   //checsk disabled layers
-  this.checkLayersDisabled(mapState.resolution);
+  const {mapUnits} = mapState;
+  this.checkLayersDisabled(mapState.resolution, mapUnits);
   const visibleLayers = this._getVisibleLayers(mapState);
   if (visibleLayers.length > 0) {
     let params = {

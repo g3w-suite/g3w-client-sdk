@@ -69,7 +69,7 @@
       })
     },
     beforeDestroy() {
-      this.select2.off('select2:select');
+      this.select2.select2('destroy');
       this.select2 = null;
     }
   }

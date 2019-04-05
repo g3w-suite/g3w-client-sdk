@@ -34,9 +34,9 @@ RasterLayers._WMSLayer = function(options) {
 
   const sourceOptions = {
     url: layerObj.url,
-    params: params,
+    params,
     ratio: 1,
-    ptojection: projection
+    projection
   };
 
   const imageOptions = {
@@ -52,8 +52,7 @@ RasterLayers._WMSLayer = function(options) {
   if (tiled) {
     source = new ol.source.TileWMS(sourceOptions);
     imageClass = ol.layer.Tile;
-  }
-  else {
+  } else {
     source = new ol.source.ImageWMS(sourceOptions);
     imageClass = ol.layer.Image;
   }

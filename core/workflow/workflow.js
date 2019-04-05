@@ -6,9 +6,8 @@ const Flow = require('./flow');
 const WorkflowsStack = require('./workflowsstack');
 const MESSAGES = require('./step').MESSAGES;
 //Class to manage flow of steps
-function Workflow(options) {
+function Workflow(options={}) {
   base(this);
-  options = options || {};
   // inputs mandatory to work with editing
   this._inputs = options.inputs || null;
   this._context = options.context || null;
@@ -133,8 +132,7 @@ proto._stopChild = function() {
 };
 
 // start workflow
-proto.start = function(options) {
-  options = options || {};
+proto.start = function(options={}) {
   const d = $.Deferred();
   this._inputs = options.inputs;
   this._context = options.context || {};
@@ -151,7 +149,6 @@ proto.start = function(options) {
       d.resolve(outputs);
     })
     .fail((error) => {
-      console.log(error)
       d.reject(error);
     });
 

@@ -25,7 +25,7 @@ const proto = TableService.prototype;
 
 proto.getHeaders = function(fields) {
   const headers = fields.filter((field) => {
-    return  ['boundedBy', 'geom','the_geom','geometry','bbox', 'GEOMETRY'].indexOf(field.name) == -1
+    return  ['boundedBy', 'geom','the_geom','geometry','bbox', 'GEOMETRY'].indexOf(field.name) === -1
   });
   return headers;
 };
@@ -55,7 +55,7 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
       });
     else {
       let searchText = search.value && search.value.length > 0 ? search.value : null;
-      this.state.features.splice(0, this.state.features.length);
+      this.state.features.splice(0);
       if (!order.length) {
         order.push({
           column: 0,
@@ -71,7 +71,7 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
         ordering
       }).then((data) => {
         let features = data.features;
-        this.addFeatures(features);
+        this.addFeatures(features, data.pk);
         this.state.pagination = !!data.count;
         this.state.allfeatures = data.count || this.state.features.length;
         this.state.featurescount += features.length;
@@ -98,9 +98,9 @@ proto.addFeature = function(feature) {
   this.state.features.push(tableFeature);
 };
 
-proto.addFeatures = function(features) {
+proto.addFeatures = function(features, pk) {
   this.state.hasGeometry = this.hasGeometry(features);
-  this._addPkProperties(features);
+  pk &&  this._addPkProperties(features);
   features.forEach((feature) => {
     this.addFeature(feature);
   });
@@ -129,8 +129,8 @@ proto.hasGeometry = function(features) {
 
 proto._addPkProperties = function(features) {
   features.forEach((feature) => {
-    if (!feature.attributes && feature.id)
-      feature.properties[this.state.headers[0].name] = feature.id;
+    const pkField = this.state.headers[0];
+    feature.properties[pkField.name] = feature.id;
   })
 };
 

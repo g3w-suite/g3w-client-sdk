@@ -4,15 +4,24 @@ const geoutils = require('g3w-ol3/src/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 function Provider(options = {}) {
+  const ProjectsRegistry = require('core/project/projectsregistry');
+  ProjectsRegistry.onafter('setCurrentProject', (project) => {
+    this._ows_method = project.getOwsMethod();
+  });
   this._isReady = false;
   this._name = 'provider';
   this._layer = options.layer;
+  this._ows_method = 'GET';
   base(this);
 }
 
 inherit(Provider, G3WObject);
 
 const proto = Provider.prototype;
+
+proto.getOwsMethod = function() {
+  return this._ows_method;
+};
 
 proto.getLayer = function() {
   return this._layer;
@@ -69,15 +78,13 @@ proto.extractGML = function (response) {
 };
 
 proto.handleQueryResponseFromServerSingleLayer = function(layer, response, projections, wms=true) {
-  let _fakeLayerName = 'layer';
   let layerName = layer.getName();
   let parser;
-  this._layer.getInfoFormat();
   const format = new ol.format.WMSGetFeatureInfo(({
-    layers: [this._layer.getId()]
+    layers: [layer.getId()]
   }));
   let features = format.readFeatures(response);
-  switch (this._layer.getInfoFormat()) {
+  switch (layer.getInfoFormat()) {
     case 'json':
       parser = this._parseLayerGeoJSON;
       data = response.vector.data;
@@ -85,29 +92,34 @@ proto.handleQueryResponseFromServerSingleLayer = function(layer, response, proje
       break;
     default:
       const x2js = new X2JS();
-      if (!_.isString(response)) {
-        // convert to string
-        response = new XMLSerializer().serializeToString(response)
-      }
+      if (!_.isString(response))
+        response = new XMLSerializer().serializeToString(response);
       try {
         if (_.isString(response)) {
-          let layerNameSanitazed = wms ? layerName.replace(/[/\s]/g, '') : layerName.replace(/[/\s]/g, '_') ;
-          layerNameSanitazed = layerNameSanitazed.replace("'", '');
-          layerNameSanitazed = layerNameSanitazed.replace(')', '\\)');
-          layerNameSanitazed = layerNameSanitazed.replace('(', '\\(');
-          let reg = new RegExp(layerNameSanitazed, "g");
-          response = response.replace(reg, _fakeLayerName);
-          layerName = layerName.replace(')', '\\)');
-          layerName = layerName.replace('(', '\\(');
-          reg = new RegExp(layerName,"g");
-          response = response.replace(reg, _fakeLayerName);
-          jsonresponse = x2js.xml_str2json(response);
-        } else {
-          _fakeLayerName = layerName;
-          jsonresponse = x2js.xml_str2json(response);
+          // check if contain msGMLOutput
+          if (!/msGMLOutput/.test(response)) {
+            layerName = wms ? layerName.replace(/[/\s]/g, '') : layerName.replace(/[/\s]/g, '_') ;
+            layerName = layerName.replace(/(\'+)/, '');
+            layerName = layerName.replace(/(\)+)/, '');
+            layerName = layerName.replace(/(\(+)/, '');
+            let reg = new RegExp(`qgs:${layerName}\\b`, "g");
+            const fakeName = `g3wlayer${layerName}`;
+            response = response.replace(reg, `qgs:${fakeName}`);
+            //other layer evantually with name starting with numerber
+            response = response.replace(/qgs:[0-9]+/g, 'qgs:otherLayer');
+            jsonresponse = x2js.xml_str2json(response);
+            const FeatureCollection = jsonresponse.FeatureCollection;
+            if (FeatureCollection && FeatureCollection.featureMember)
+              FeatureCollection.featureMember =  Array.isArray(FeatureCollection.featureMember) ? FeatureCollection.featureMember.filter((feature) => {
+                return feature[fakeName];
+              }) : FeatureCollection.featureMember[fakeName] ? [FeatureCollection.featureMember] : [];
+            else
+              FeatureCollection.featureMember  = [];
+          } else {
+            jsonresponse = x2js.xml_str2json(response);
+          }
         }
-      }
-      catch (e) {
+      } catch (error) {
         return;
       }
       const rootNode = _.keys(jsonresponse)[0];
@@ -115,10 +127,10 @@ proto.handleQueryResponseFromServerSingleLayer = function(layer, response, proje
         case 'FeatureCollection':
           parser = this._parseLayerFeatureCollection;
           data = jsonresponse;
-          features = parser.call(this, data, _fakeLayerName, projections);
+          features = parser.call(this, data, layerName, projections);
           break;
         case "msGMLOutput":
-          const layers = this._layer.getQueryLayerOrigName();
+          const layers = layer.getQueryLayerOrigName();
           parser = new ol.format.WMSGetFeatureInfo({
             layers: layers
           });
@@ -137,8 +149,10 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
   if (layers) {
     const handledResponses = [];
     for (let i=0; i < layers.length; i++) {
-      const handledResponse = this.handleQueryResponseFromServerSingleLayer(layers[i], response, projections, wms)[0];
-      handledResponses.push(handledResponse);
+      const layer = layers[i];
+      let handledResponse = this.handleQueryResponseFromServerSingleLayer(layer, response, projections, wms);
+      if (handledResponse)
+        handledResponses.push(handledResponse[0]);
     }
     return handledResponses;
   }
@@ -234,15 +248,11 @@ proto._parseAttributes = function(layerAttributes, featureAttributes) {
 };
 
 proto._parseLayerFeatureCollection = function(data, layerName, projections) {
-  if (data.FeatureCollection.featureMember === undefined)
-    data.FeatureCollection.featureMember = [];
-  else
-    data.FeatureCollection.featureMember = Array.isArray(data.FeatureCollection.featureMember) ? data.FeatureCollection.featureMember : [data.FeatureCollection.featureMember];
   const x2js = new X2JS();
   let layerFeatureCollectionXML = x2js.json2xml_str(data);
   const parser = new ol.format.WMSGetFeatureInfo();
   const mainProjection = projections.layer ? projections.layer : projections.map;
-  let invertedAxis = mainProjection.getAxisOrientation().substr(0,2) === 'ne';
+  let invertedAxis = mainProjection.getAxisOrientation().substr(0,2) == 'ne';
   let features = parser.readFeatures(layerFeatureCollectionXML);
   if (features.length && !!features[0].getGeometry()) {
     if (projections.layer && (projections.layer.getCode() !== projections.map.getCode())) {

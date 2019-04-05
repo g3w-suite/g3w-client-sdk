@@ -18,6 +18,10 @@ var selectMixin = {
     loadingState() {
       return this.state.input.options.loading ? this.state.input.options.loading.state : null;
     }
+  },
+  beforeDestroy() {
+    this.select2 && this.select2.select2('destroy');
+    this.select2 = null;
   }
 };
 

@@ -17,7 +17,7 @@
         <label for="rotation">Rotazione</label>
         <input min="-360" max="360"  @input="onChangeRotation" v-model="state.rotation" id="rotation" class="form-control" type="number">
         <label for="format">Formato</label>
-        <select class="form-control" v-model="state.format" id="format" placeholder="Seleziona formato stampa">
+        <select class="form-control" v-model="state.output.format" id="format" placeholder="Seleziona formato stampa">
           <option v-for="format in state.formats" :value="format.value">{{ format.label }}</option>
         </select>
       </div>

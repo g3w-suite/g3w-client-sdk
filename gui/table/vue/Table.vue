@@ -1,18 +1,12 @@
 <template>
   <div id="open_attribute_table">
-    <table v-if="hasHeaders()" id="layer_attribute_table" class="table table-striped display compact nowrap" style="width:100%">
+    <table v-if="hasHeaders()"  id="layer_attribute_table" class="table table-striped display compact nowrap" style="width:100%">
       <thead>
         <tr>
           <th v-for="header in state.headers">{{ header.label }}</th>
         </tr>
       </thead>
-      <tbody>
-        <tr class="feature_attribute" :id="'open_table_row_' + index"  v-for="(feature, index) in state.features" :key="index" @click="zoomAndHighLightSelectedFeature(feature); toggleRow(index)" :selected="selectedRow === index" :class="[{geometry: state.hasGeometry}]">
-          <td v-for="header in state.headers">
-            <field :state="{value: feature.attributes[header.name]}"></field>
-          </td>
-        </tr>
-      </tbody>
+      <table-body :headers="state.headers" :features="state.features" :hasGeometry="state.hasGeometry" :zoomAndHighLightSelectedFeature="zoomAndHighLightSelectedFeature"></table-body>
     </table>
     <div id="noheaders" v-t="'dataTable.no_data'" v-else>
     </div>
@@ -20,20 +14,23 @@
 </template>
 
 <script>
+  import TableBody from "./components/tablebody.vue";
   const Field = require('gui/fields/g3w-field.vue');
   const debounce = require('core/utils/utils').debounce;
   let dataTable;
+  let fieldsComponents = [];
   export default {
     name: "G3WTable",
     data: function() {
       return {
+        tableBodyComponent:null,
         state: null,
         table: null,
         selectedRow: null
       }
     },
     components: {
-      Field
+      TableBody
     },
     methods: {
       _setLayout: function() {
@@ -43,16 +40,51 @@
         if (this.state.geometry)
           this.$options.service.zoomAndHighLightSelectedFeature(feature, zoom);
       },
-      toggleRow(index) {
-        this.selectedRow = this.selectedRow === index ? null : index;
+      reloadLayout() {
+        this.$nextTick(() => {
+          dataTable.responsive.recalc();
+          dataTable.columns.adjust();
+        });
       },
       hasHeaders() {
         return !!this.state.headers.length;
       },
-      reloadLayout() {
-        this.$nextTick(() => {
-          dataTable.columns.adjust();
+      createTdContentBody() {
+        const self = this;
+        fieldsComponents = fieldsComponents.filter((fieldComponent) => {
+          fieldComponent.$destroy();
+          return false;
         });
+        $('#layer_attribute_table tbody tr').each((index, element) => {
+          const feature = this.state.features[index];
+          if (this.state.hasGeometry)
+            $(element).on('click', function() {
+              if ($(this).hasClass( "selected" ))
+                $(this).removeClass( "selected" );
+              else {
+                $('#layer_attribute_table tbody tr').removeClass('selected');
+                $(this).addClass( "selected" )
+              }
+              self.zoomAndHighLightSelectedFeature(feature);
+            });
+          $(element).children().each((index, element)=> {
+            const header = this.state.headers[index];
+            const fieldClass = Vue.extend(Field);
+            const fieldInstance = new fieldClass({
+              propsData: {
+                state: {
+                  value: feature.attributes[header.name]
+                }
+              }
+            });
+            fieldInstance.$mount();
+            fieldsComponents.push(fieldInstance);
+            $(element).html(fieldInstance.$el);
+          })
+        });
+        setTimeout(()=> {
+          this.reloadLayout()
+        }, 0)
       }
     },
     created() {},
@@ -61,9 +93,10 @@
         $('.dataTables_info, .dataTables_length').hide();
         $('#layer_attribute_table_previous, #layer_attribute_table_next').hide();
         $('.dataTables_filter').css('float', 'right');
-        $('.dataTables_paginate').css('margin', '0px');
+        $('.dataTables_paginate').css('margin', '0');
       };
       this.$nextTick(() => {
+        this.first = false;
         if (this.state.pagination) {
           //pagination
           dataTable = $('#open_attribute_table table').DataTable({
@@ -74,10 +107,10 @@
             "columns": this.state.headers,
             "ajax": debounce((data, callback) => {
               this.$options.service.getData(data)
-                .then((dataTable) => {
-                  callback(dataTable);
+                .then((serverData) => {
+                  callback(serverData);
                   this.$nextTick(() => {
-                    $('#open_attribute_table table tbody tr').not('.odd, .even').remove();
+                    this.createTdContentBody();
                     if (this.isMobile()) {
                       hideElements();
                     }

@@ -21,10 +21,12 @@ function Project(config={}, options={}) {
     overviewprojectgid,
     baselayers,
     initbaselayer
+    ows_method <POST or GET>
   }
   */
   // for future implementation catalog tab actived
   config.catalog_tab = config._catalog_tab || 'layers'; // values : layers, baselayers, legend
+  config.ows_method = config.ows_method || 'GET';
   this.state = config;
   // process layers
   this._processLayers();
@@ -76,6 +78,10 @@ proto.getRelationById = function(relationId){
   return this.state.relations.find((relation) => {
     return relation.id === relationId
   })
+};
+
+proto.getOwsMethod = function() {
+  return this.state.ows_method;
 };
 
 // process layerstree and baselayers of the project

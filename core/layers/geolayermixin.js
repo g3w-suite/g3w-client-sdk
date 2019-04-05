@@ -1,6 +1,6 @@
 const Projections = require('g3w-ol3/src/projection/projections');
-const resToScale = require('g3w-ol3/src/utils/utils').resToScale;
-function GeoLayerMixin(config) {}
+const getScaleFromResolution = require('g3w-ol3/src/utils/utils').getScaleFromResolution;
+function GeoLayerMixin(config={}) {}
 
 const proto = GeoLayerMixin.prototype;
 
@@ -17,6 +17,7 @@ proto.setup = function(config) {
     external: config.external || false,
     bbox: config.bbox || null,
     visible: config.visible || false,
+    checked: config.visible || false,
     hidden: config.hidden || false,
     scalebasedvisibility: config.scalebasedvisibility || false,
     minscale: config.minscale,
@@ -24,13 +25,21 @@ proto.setup = function(config) {
     exclude_from_legend: (typeof config.exclude_from_legend == 'boolean') ? config.exclude_from_legend : true
   });
   if (config.projection) {
-    if (config.projection.getCode() == config.crs)
+    if (config.projection.getCode() === config.crs)
       this.config.projection = config.projection;
     else
       this.config.projection = Projections.get(config.crs,config.proj4);
   } else if (config.attributions) {
     this.config.attributions = config.attributions;
   }
+};
+
+proto.setChecked = function(bool) {
+  this.state.checked = bool;
+};
+
+proto.isChecked = function() {
+  return this.state.checked;
 };
 
 proto.setVisible = function(visible) {
@@ -49,9 +58,13 @@ proto.isDisabled = function() {
   return this.state.disabled
 };
 
-proto.setDisabled = function(resolution) {
+proto.isPrintable = function({scale}={}) {
+  return this.isChecked() && (!this.state.scalebasedvisibility || (scale >= this.state.maxscale && scale <= this.state.minscale));
+};
+
+proto.setDisabled = function(resolution, mapUnits='m') {
   if (this.state.scalebasedvisibility) {
-    const mapScale = resToScale(resolution);
+    const mapScale = getScaleFromResolution(resolution, mapUnits);
     this.state.disabled =  !(mapScale >= this.state.maxscale && mapScale <= this.state.minscale);
   } else {
     this.state.disabled = false
@@ -95,7 +108,7 @@ proto.getCacheUrl = function() {
 proto.hasAxisInverted = function() {
   const projection = this.getProjection();
   const axisOrientation = projection.getAxisOrientation ? projection.getAxisOrientation() : "enu";
-  return axisOrientation.substr(0, 2) == 'ne';
+  return axisOrientation.substr(0, 2) === 'ne';
 };
 
 proto.getMapLayer = function() {

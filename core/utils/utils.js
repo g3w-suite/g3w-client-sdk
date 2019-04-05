@@ -176,6 +176,9 @@ const utils = {
     });
     return d.promise();
   },
+  convertObjectToUrlParams: function(params = {}) {
+    return $.param(params)
+  },
   // Appends query parameters to a URI
   appendParams: function(uri, params) {
     const keyParams = [];

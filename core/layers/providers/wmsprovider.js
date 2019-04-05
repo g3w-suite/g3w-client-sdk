@@ -3,16 +3,16 @@ const base = require('core/utils/utils').base;
 const utils = require('core/utils/utils');
 const geoutils = require('g3w-ol3/src/utils/utils');
 const DataProvider = require('core/layers/providers/provider');
+
 //overwrite method to read feature
 // da un geojson
 const PIXEL_TOLERANCE = 10;
 const GETFEATUREINFO_IMAGE_SIZE = [101, 101];
+const DPI = 96;
 
-function WMSDataProvider(options) {
-  options = options || {};
+function WMSDataProvider(options = {}) {
   base(this, options);
   this._name = 'wms';
-  this._url = this._layer.getQueryUrl();
   this._projections = {
     map: null,
     layer: null
@@ -25,64 +25,15 @@ inherit(WMSDataProvider, DataProvider);
 
 const proto = WMSDataProvider.prototype;
 
-
-proto._getRequestUrl = function(url, extent, size, pixelRatio, params) {
-  let bbox;
-  if (!('STYLES' in params)) {
-    params['STYLES'] = '';
-  }
-  params['DPI'] = 90 * pixelRatio;
-  params['WIDTH'] = size[0];
-  params['HEIGHT'] = size[1];
-  if (this._projections.map.getAxisOrientation().substr(0, 2) == 'ne') {
-    bbox = [extent[1], extent[0], extent[3], extent[2]];
-  } else {
-    bbox = extent;
-  }
-  params['BBOX'] = bbox.join(',');
-
-  return utils.appendParams(url, params);
-};
-
-// exttrac from mapserveice
-proto._getGetFeatureInfoUrlForLayer = function({url, coordinates,resolution, params}) {
-  const extent = geoutils.getExtentForViewAndSize(coordinates, resolution, 0, GETFEATUREINFO_IMAGE_SIZE);
-  const baseParams = {
-    'SERVICE': 'WMS',
-    'VERSION': '1.3.0',
-    'REQUEST': 'GetFeatureInfo',
-    'QUERY_LAYERS': this._layerName
-  };
-  _.merge(baseParams, params);
+proto._getRequestParameters = function({layers, feature_count, coordinates, resolution, size}) {
+  const layerNames = layers ? layers.map(layer => layer.getName()).join(',') : this._layerName;
+  const extent = geoutils.getExtentForViewAndSize(coordinates, resolution, 0, size);
   const x = Math.floor((coordinates[0] - extent[0]) / resolution);
   const y = Math.floor((extent[3] - coordinates[1]) / resolution);
-  baseParams[ 'I' ] = x;
-  baseParams['J'] = y;
-  return this._getRequestUrl(
-    url, extent, GETFEATUREINFO_IMAGE_SIZE,
-    1, baseParams);
-};
-
-proto.query = function(options = {}) {
-  const d = $.Deferred();
-  const feature_count = options.feature_count || 10;
-  const layerProjection = this._layer.getProjection();
-  this._projections.map = this._layer.getMapProjection() || layerProjection;
-  const coordinates = options.coordinates || [];
-  const resolution = options.resolution || null;
-  const layers = options.layers;
-  const layerNames = layers ? layers.map(layer => layer.getName()).join(',') : this._layerName;
-  let url = this._url;
-  let sourceParam = url.split('SOURCE');
-  if (sourceParam.length) {
-    url = sourceParam[0];
-    if (sourceParam.length > 1) {
-      sourceParam = '&SOURCE' + sourceParam[1];
-    } else {
-      sourceParam = '';
-    }
-  }
   const params = {
+    SERVICE: 'WMS',
+    VERSION: '1.3.0',
+    REQUEST: 'GetFeatureInfo',
     CRS: this._projections.map.getCode(),
     LAYERS: layerNames,
     QUERY_LAYERS: layerNames,
@@ -93,55 +44,77 @@ proto.query = function(options = {}) {
     FI_LINE_TOLERANCE: PIXEL_TOLERANCE,
     FI_POLYGON_TOLERANCE: PIXEL_TOLERANCE,
     G3W_TOLERANCE: PIXEL_TOLERANCE * resolution,
-    WITH_GEOMETRY:1
+    WITH_GEOMETRY:1,
+    I: x,
+    J: y,
+    DPI,
+    WIDTH: size[0],
+    HEIGHT: size[1],
   };
-  const getFeatureInfoUrl = this._getGetFeatureInfoUrlForLayer({url, coordinates, resolution, params});
-  const queryString = getFeatureInfoUrl.split('?')[1];
-  url += '?'+queryString + sourceParam;
-  this.makeQueryForLayer({
-    url,
-    coordinates,
-    resolution,
-    layers})
-    .then(function(response) {
-      d.resolve(response)
+  let bbox;
+  if (!('STYLES' in params)) {
+    params['STYLES'] = '';
+  }
+
+  if (this._projections.map.getAxisOrientation().substr(0, 2) == 'ne') {
+    bbox = [extent[1], extent[0], extent[3], extent[2]];
+  } else {
+    bbox = extent;
+  }
+  params['BBOX'] = bbox.join(',');
+  return params;
+};
+
+proto.query = function(options = {}) {
+  const d = $.Deferred();
+  const size = options.size || GETFEATUREINFO_IMAGE_SIZE;
+  const feature_count = options.feature_count || 10;
+  const layerProjection = this._layer.getProjection();
+  this._projections.map = this._layer.getMapProjection() || layerProjection;
+  const coordinates = options.coordinates || [];
+  const resolution = options.resolution || null;
+  const layers = options.layers;
+  const layer = layers ? layers[0] : this._layer;
+  let url = layer.getQueryUrl();
+  const METHOD = layer.isExternalWMS() || !/^\/ows/.test(url) ? 'GET' : this.getOwsMethod();
+  const params = this._getRequestParameters({layers, feature_count, coordinates, resolution, size});
+  this[METHOD]({url, layers, params })
+    .then((response) => {
+      const data = this.handleQueryResponseFromServer(response, this._projections, layers);
+      d.resolve({
+        data,
+        query: {
+          coordinates,
+          resolution
+        }
+      });
     })
-    .fail(function(e){
-      d.reject(e);
+    .fail((err) =>{
+      d.reject(err);
     });
+
   return d.promise();
 };
 
-proto.makeQueryForLayer = function({url, coordinates, resolution, layers}) {
-  const d = $.Deferred();
-  const queryInfo = {
-    coordinates: coordinates,
-    resolution: resolution
-  };
-  this.doRequestAndParse({url, layers})
-    .then((response) => {
-      d.resolve({
-        data: response,
-        query: queryInfo
-      });
-    })
-    .fail(function(e){
-      d.reject(e);
-    });
-  return d.promise()
+proto.GET = function({url, params}) {
+  let sourceParam = url.split('SOURCE');
+  if (sourceParam.length) {
+    url = sourceParam[0];
+    if (sourceParam.length > 1) {
+      sourceParam = '&SOURCE' + sourceParam[1];
+    } else {
+      sourceParam = '';
+    }
+  }
+  url = utils.appendParams(url, params);
+  url = `${url} ${sourceParam && '?'+sourceParam}`;
+  return $.get(url)
 };
 
-proto.doRequestAndParse = function({url, layers}) {
-  const d = $.Deferred();
-  $.get(url)
-    .then((response) => {
-      const featuresForLayers = this.handleQueryResponseFromServer(response, this._projections, layers);
-      d.resolve(featuresForLayers);
-    })
-    .fail(() => {
-      d.reject();
-    });
-  return d;
+
+proto.POST = function({url, params}) {
+  return $.post(url, params)
 };
+
 
 module.exports = WMSDataProvider;

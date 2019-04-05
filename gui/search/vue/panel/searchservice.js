@@ -158,7 +158,7 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=''}={}) {
         _filter.setExpression(expression.get());
         this.searchLayer.search({
           filter: _filter,
-          feature_count: 1000 //SET HIGHT LEVELOF FEATURE COUNT TO GET MAXIMUM RESPONSES
+          feature_count: 10000 //SET HIGHT LEVELOF FEATURE COUNT TO GET MAXIMUM RESPONSES
         }).then((response) => {
           const digestResults = this.queryService._digestFeaturesForLayers(response);
           if (digestResults.length) {
@@ -258,7 +258,7 @@ proto.createQueryFilterObject = function({ogcService='wms', filter={}}={}) {
 };
 
 proto.getInfoFromLayer = function(ogcService) {
-  const queryUrl = ogcService == 'wfs' ? this.searchLayer.getProject().getWmsUrl() : this.searchLayer.getQueryUrl();
+  const queryUrl = ogcService === 'wfs' ? this.searchLayer.getProject().getWmsUrl() : this.searchLayer.getQueryUrl();
   return {
     url: queryUrl,
     layers: [],

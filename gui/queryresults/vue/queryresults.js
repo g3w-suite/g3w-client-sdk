@@ -237,7 +237,7 @@ const vueComponentOptions = {
   watch: {
     'state.layers': function(layers) {
       if (layers.length) {
-        if (layers.length === 1 && layers[0].features.length)
+        if (layers.length === 1 && layers[0].features.length && this.state.zoomToResult)
           this.zoomToLayerFeaturesExtent(layers[0], {
             maxZoom: 8
           });
@@ -258,6 +258,9 @@ const vueComponentOptions = {
       .then(() => {
         $('.action-button[data-toggle="tooltip"]').tooltip();
     })
+  },
+  beforeDestroy() {
+    this.state.zoomToResult = true;
   }
 };
 

@@ -86,24 +86,19 @@ proto.getStringBBox = function() {
 
 proto.getFullWmsUrl = function() {
   const ProjectsRegistry = require('core/project/projectsregistry');
-  const wms_url = ProjectsRegistry.getCurrentProject().getState().metadata.wms_url;
-  const url = this.isExternalWMS() || !wms_url ? this.getWmsUrl() : wms_url ;
-  return url;
+  const metadata_wms_url = ProjectsRegistry.getCurrentProject().getState().metadata.wms_url;
+  return this.isExternalWMS() || !metadata_wms_url ? this.getWmsUrl() : metadata_wms_url ;
 };
 
 proto.getWmsUrl = function() {
-  let url;
-  if (this.config.source && this.config.source.type == 'wms' && this.config.source.url) {
-    url = this.config.source.url
-  } else {
-    url = this.config.wmsUrl;
-  }
-  return url;
+  return (this.config.source && this.config.source.type === 'wms' && this.config.source.url) ?
+    this.config.source.url :
+    this.config.wmsUrl;
 };
 
 proto.getQueryUrl = function() {
   let url = base(this, 'getQueryUrl');
-  if (this.getServerType() == 'QGIS' && this.config.source && this.config.source.type == 'wms' && this.config.source.external) {
+  if (this.getServerType() === 'QGIS' && this.config.source && this.config.source.type === 'wms' && this.config.source.external) {
     url+='SOURCE=wms';
   }
   return url;
@@ -127,12 +122,13 @@ proto.getLegendUrl = function(params={}) {
     symbolspace,
     iconlabelspace,
     symbolwidth,
-    symbolheight
+    symbolheight,
+    sld_version='1.1.0'
   } = params;
   const layer = this.getWMSLayerName();
   let url = this.getWmsUrl();
   const sep = (url.indexOf('?') > -1) ? '&' : '?';
-  return [`${url}${sep}SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.3.0&WIDTH=300`,
+  return [`${url}${sep}SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=${sld_version}&WIDTH=300`,
     `&FORMAT=image/png`,
     `&TRANSPARENT=${transparent}`,
     `&ITEMFONTCOLOR=${color}`,
