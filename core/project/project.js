@@ -22,6 +22,7 @@ function Project(config={}, options={}) {
     baselayers,
     initbaselayer
     ows_method <POST or GET>
+    wms_use_layer_ids: <TRUE OR FALSE>
   }
   */
   // for future implementation catalog tab actived
@@ -55,13 +56,15 @@ proto.getActiveCatalogTab = function() {
   return this.state.catalog_tab;
 };
 
-proto.setActiveCatalogTab = function(tab) {
-  tab = tab || 'layers';
+proto.setActiveCatalogTab = function(tab='layers') {
   this.state.catalog_tab = tab;
 };
 
-// check if multi
+proto.isWmsUseLayerIds = function() {
+  return this.state.wms_use_layer_ids;
+};
 
+// check if multi
 proto.getQueryFeatureCount = function() {
   return this.state.feature_count || 5;
 };
@@ -140,6 +143,9 @@ proto._buildLayersStore = function() {
   layers.forEach((layerConfig) => {
     // add projection
     layerConfig.projection = layerConfig.crs ? Projections.get(layerConfig.crs, layerConfig.proj4) : this._projection;
+    //add ows_method
+    layerConfig.ows_method = this.getOwsMethod();
+    layerConfig.wms_use_layer_ids = this.state.wms_use_layer_ids;
     const layer = LayerFactory.build(layerConfig, {
       project: this
     });

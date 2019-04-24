@@ -55,7 +55,7 @@ proto._run = function() {
   const showQueryResults = GUI.showContentFactory('query');
   const queryResultsPanel = showQueryResults(this.state.title);
   const expression = new Expression();
-  const layerName = this.searchLayer.getName();
+  const layerName = this.searchLayer.getWMSLayerName();
   expression.createExpressionFromFilter(filter, layerName);
   const _filter = new Filter();
   _filter.setExpression(expression.get());

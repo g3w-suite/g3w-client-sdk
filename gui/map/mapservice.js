@@ -1588,14 +1588,14 @@ proto._setupMapLayers = function() {
   });
   let mapLayers = [];
   Object.entries(multiLayers).forEach(([id, layers]) => {
-    const multilayerId = 'layer_'+id;
+    const multilayerId = `layer_${id}`;
     let mapLayer;
-    const layer = layers[0];
-    if (layers.length == 1) {
+    const layer = layers[0] || [];
+    if (layers.length === 1) {
       mapLayer = layer.getMapLayer({
         id: multilayerId,
         projection: this.getProjection()
-      });
+      }, {});
       this.registerMapLayerListeners(mapLayer);
       mapLayer.addLayer(layer);
       mapLayers.push(mapLayer)

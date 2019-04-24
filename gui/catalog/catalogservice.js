@@ -29,7 +29,7 @@ function CatalogService() {
       nodes
     }
   };
-  
+
   // method to add a custom layers group
   this.addLayersGroup = function(layersGroup) {
     this.state.layersgroups.push(layersGroup);
@@ -64,7 +64,7 @@ function CatalogService() {
 
   CatalogLayersStoresRegistry.onafter('removeLayersStore', (layersStore) => {
     this.state.layerstrees.forEach((layersTree, idx) => {
-      if (layersTree.storeid == layersStore.getId()) {
+      if (layersTree.storeid === layersStore.getId()) {
         this.state.layerstrees.splice(idx, 1);
         return false;
       }

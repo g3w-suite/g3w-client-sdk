@@ -152,7 +152,7 @@ const vueComponentOptions = {
     },
     canShowWmsUrl(layerId) {
       const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
-      return !!originalLayer.getFullWmsUrl()
+      return !!(!originalLayer.isType('table') && originalLayer.getFullWmsUrl());
     },
     canDownloadShp(layerId) {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
@@ -585,24 +585,14 @@ Vue.component('layerslegend',{
 Vue.component('layerslegend-items',{
   template: require('./legend_items.html'),
   props: ['layers', 'legend'],
-  computed: {
-    legendurls() {
-      const urlLayersName = {};
-      const legendUrls = [];
-      const layers = this.layers.reverse();
-      for (let i=0; i< layers.length; i++) {
-        const layer = layers[i];
-        const url = this.getLegendUrl(layer, this.legend);
-        const [prefix, layerName] = url.split('LAYER=');
-        if (!urlLayersName[prefix])
-          urlLayersName[prefix] = [];
-        urlLayersName[prefix].push(layerName)
-      }
-      for (const url in urlLayersName) {
-        const legendUrl = `${url}&LAYER=${urlLayersName[url].join(',')}`;
-        legendUrls.push(legendUrl);
-      }
-      return legendUrls
+  data() {
+    return {
+      legendurls: []
+    }
+  },
+  watch: {
+    layers(layers) {
+      this.getLegendSrc(layers);
     }
   },
   methods: {
@@ -616,7 +606,71 @@ Vue.component('layerslegend-items',{
         }
       });
       return _legendurl;
+    },
+    getLegendSrc(_layers) {
+      const urlMethodsLayersName = {
+        GET: {},
+        POST: {}
+      };
+      const self = this;
+      this.legendurls = [];
+      const layers = _layers.reverse();
+      for (let i=0; i< layers.length; i++) {
+        const layer = layers[i];
+        const urlLayersName = layer.external ? urlMethodsLayersName.GET : urlMethodsLayersName[layer.ows_method];
+        const url = this.getLegendUrl(layer, this.legend);
+        const [prefix, layerName] = url.split('LAYER=');
+        if (!urlLayersName[prefix])
+          urlLayersName[prefix] = [];
+        urlLayersName[prefix].push(layerName)
+      }
+      for (const method in urlMethodsLayersName) {
+        const urlLayersName = urlMethodsLayersName[method];
+        if (method === 'GET')
+          for (const url in urlLayersName ) {
+            const legendUrl = `${url}&LAYER=${urlLayersName[url].join(',')}`;
+            this.legendurls.push({
+              loading: true,
+              url: legendUrl
+            });
+          }
+        else {
+          for (const url in urlLayersName ) {
+            const xhr = new XMLHttpRequest();
+            let [_url, params] = url.split('?');
+            params = params.split('&');
+            const econdedParams = [];
+            params.forEach((param) => {
+              const [key, value] = param.split('=');
+              econdedParams.push(`${key}=${encodeURIComponent(value)}`);
+            });
+            params = econdedParams.join('&');
+            params = `${params}&LAYERS=${encodeURIComponent(urlLayersName[url].join(','))}`;
+            xhr.open('POST', _url);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+            xhr.responseType = 'blob';
+            const legendUrlObject = {
+              loading: true,
+              url: null
+            };
+            self.legendurls.push(legendUrlObject);
+            xhr.onload = function() {
+              const data = this.response;
+              if (data !== undefined)
+                legendUrlObject.url = window.URL.createObjectURL(data);
+              legendUrlObject.loading = false;
+            };
+            xhr.onerror = function() {
+              legendUrlObject.loading = false;
+            };
+            xhr.send(params);
+          }
+        }
+      }
     }
+  },
+  created() {
+    this.getLegendSrc(this.layers);
   }
 });
 

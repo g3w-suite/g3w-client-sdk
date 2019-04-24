@@ -1,15 +1,15 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
-const geo = require('core/utils/geo');
 const MapLayer = require('./maplayer');
 const RasterLayers = require('g3w-ol3/src/layers/rasters');
 
-function WMSLayer(options, extraParams) {
+function WMSLayer(options, extraParams, method='GET') {
   this.LAYERTYPE = {
     LAYER: 'layer',
     MULTILAYER: 'multilayer'
   };
   this.extraParams = extraParams;
+  this._method = method;
   this.layers = []; // store all enabled layers
   this.allLayers = []; // store all layers
 
@@ -76,7 +76,7 @@ proto.isVisible = function(){
 
 proto.getQueryUrl = function() {
   const layer = this.layers[0];
-  if (layer.infourl && layer.infourl != '') {
+  if (layer.infourl && layer.infourl !== '') {
     return layer.infourl;
   }
   return this.config.url;
@@ -112,11 +112,10 @@ proto._makeOlLayer = function(withLayers) {
     });
   }
   const representativeLayer = this.layers[0];
-
-  if (representativeLayer && representativeLayer.state.source && representativeLayer.state.source.type == 'wms' && representativeLayer.state.source.url){
+  if (representativeLayer && representativeLayer.state.source && representativeLayer.state.source.type === 'wms' && representativeLayer.state.source.url){
     wmsConfig.url = representativeLayer.state.source.url;
   }
-  const olLayer = new RasterLayers.WMSLayer(wmsConfig,this.extraParams);
+  const olLayer = new RasterLayers.WMSLayer(wmsConfig, this.extraParams, this._method);
 
   olLayer.getSource().on('imageloadstart', () => {
         this.emit("loadstart");
@@ -145,22 +144,21 @@ proto._updateLayers = function(mapState = {}, extraParams = {}) {
   //checsk disabled layers
   const {mapUnits} = mapState;
   this.checkLayersDisabled(mapState.resolution, mapUnits);
-  const visibleLayers = this._getVisibleLayers(mapState);
+  const visibleLayers = this._getVisibleLayers(mapState) || [];
   if (visibleLayers.length > 0) {
     let params = {
-      LAYERS: _.join(_.map(visibleLayers, function(layer) {
+      LAYERS: visibleLayers.map((layer) => {
         return layer.getWMSLayerName();
-      }),',')
+      }).join(',')
     };
     if (extraParams) {
       params = _.assign(params,extraParams);
     }
     this._olLayer.setVisible(true);
     this._olLayer.getSource().updateParams(params);
-  }
-  else {
+  } else
     this._olLayer.setVisible(false);
-  }
+
 };
 
 module.exports = WMSLayer;

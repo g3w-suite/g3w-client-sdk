@@ -17,7 +17,6 @@ function WMSDataProvider(options = {}) {
     map: null,
     layer: null
   };
-  this._layerName = this._layer.getName() || null;
   this._infoFormat = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
 }
 
@@ -26,7 +25,7 @@ inherit(WMSDataProvider, DataProvider);
 const proto = WMSDataProvider.prototype;
 
 proto._getRequestParameters = function({layers, feature_count, coordinates, resolution, size}) {
-  const layerNames = layers ? layers.map(layer => layer.getName()).join(',') : this._layerName;
+  const layerNames = layers ? layers.map(layer => layer.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
   const extent = geoutils.getExtentForViewAndSize(coordinates, resolution, 0, size);
   const x = Math.floor((coordinates[0] - extent[0]) / resolution);
   const y = Math.floor((extent[3] - coordinates[1]) / resolution);
@@ -76,7 +75,7 @@ proto.query = function(options = {}) {
   const layers = options.layers;
   const layer = layers ? layers[0] : this._layer;
   let url = layer.getQueryUrl();
-  const METHOD = layer.isExternalWMS() || !/^\/ows/.test(url) ? 'GET' : this.getOwsMethod();
+  const METHOD = layer.isExternalWMS() || !/^\/ows/.test(url) ? 'GET' : layer.getOwsMethod();
   const params = this._getRequestParameters({layers, feature_count, coordinates, resolution, size});
   this[METHOD]({url, layers, params })
     .then((response) => {
@@ -92,7 +91,6 @@ proto.query = function(options = {}) {
     .fail((err) =>{
       d.reject(err);
     });
-
   return d.promise();
 };
 

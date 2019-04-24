@@ -58098,6 +58098,7 @@ ol.Image.prototype.handleImageLoad_ = function() {
  * @api
  */
 ol.Image.prototype.load = function() {
+  console.log(this._image)
   if (this.state == ol.ImageState.IDLE || this.state == ol.ImageState.ERROR) {
     this.state = ol.ImageState.LOADING;
     this.changed();
@@ -77955,12 +77956,10 @@ ol.source.ImageWMS.prototype.getImageInternal = function(extent, resolution, pix
 
   var url = this.getRequestUrl_(requestExtent, this.imageSize_, pixelRatio,
       projection, params);
-
   this.image_ = new ol.Image(requestExtent, resolution, pixelRatio,
       url, this.crossOrigin_, this.imageLoadFunction_);
 
   this.renderedRevision_ = this.getRevision();
-
   ol.events.listen(this.image_, ol.events.EventType.CHANGE,
       this.handleImageChange, this);
 
@@ -80296,7 +80295,6 @@ ol.source.TileWMS.prototype.fixedTileUrlFunction = function(tileCoord, pixelRati
     'TRANSPARENT': true
   };
   ol.obj.assign(baseParams, this.params_);
-
   return this.getRequestUrl_(tileCoord, tileSize, tileExtent,
       pixelRatio, projection, baseParams);
 };

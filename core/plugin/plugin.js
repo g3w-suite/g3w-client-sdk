@@ -141,12 +141,13 @@ proto.addToolGroup = function({hook="tools", position:order, title:group} = {}) 
   service.addToolGroup(order, group);
 };
 
-proto.addTools = function({hook="tools", action, html, loading=false, disabled=false} = {}, groupTools) {
+proto.addTools = function({hook="tools", action, html, icon, loading=false, disabled=false} = {}, groupTools) {
   this._hook = hook;
   const service = this._services[hook];
   const configs = this.config.configs || [this.config];
   const tools = configs.map((config) => {
     return {
+      icon,
       name: config.name,
       html,
       loading,

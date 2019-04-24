@@ -14,7 +14,7 @@ proto.setup = function(config) {
   // and adding informations of bbox
   _.extend(this.state, {
     geolayer: true,
-    external: config.external || false,
+    external: config.source && config.source.external || false,
     bbox: config.bbox || null,
     visible: config.visible || false,
     checked: config.visible || false,
@@ -22,6 +22,7 @@ proto.setup = function(config) {
     scalebasedvisibility: config.scalebasedvisibility || false,
     minscale: config.minscale,
     maxscale: config.maxscale,
+    ows_method: config.ows_method,
     exclude_from_legend: (typeof config.exclude_from_legend == 'boolean') ? config.exclude_from_legend : true
   });
   if (config.projection) {
@@ -79,6 +80,9 @@ proto.getGeometryType = function() {
   return this.config.geometrytype;
 };
 
+proto.getOwsMethod = function() {
+  return this.config.ows_method;
+};
 
 proto.setProjection = function(crs,proj4) {
   this.config.projection = Projections.get(crs,proj4);

@@ -34,6 +34,8 @@ function ImageLayer(config={}) {
     visible,
     scalebasedvisibility,
     wfscapabilities
+    ows_method
+    wms_use_layer_ids
   }*/
   base(this, config);
   this.config.baselayer = config.baselayer || false;
@@ -68,11 +70,11 @@ proto.isWMS = function() {
 };
 
 proto.isExternalWMS = function() {
-  return (this.config.source && this.config.source.url);
+  return !!(this.config.source && this.config.source.external && this.config.source.url);
 };
 
 proto.getWMSLayerName = function() {
-  let layerName = this.config.name;
+  let layerName = (!this.isExternalWMS() && this.isWmsUseLayerIds()) ? this.config.id : this.config.name;
   if (this.config.source && this.config.source.layers) {
     layerName = this.config.source.layers;
   }
@@ -153,19 +155,26 @@ proto.getWFSLayerName = function() {
   return layerName;
 };
 
+
 proto.getWfsCapabilities = function() {
-  return this.config.wfscapabilities || this.config.capabilities == 1 ;
+  return this.config.wfscapabilities || this.config.capabilities === 1 ;
 };
 
 proto.getMapLayer = function(options = {}, extraParams) {
   let mapLayer;
+  const method = this.isExternalWMS() ? 'GET' : this.getOwsMethod();
   if (this.isCached()) {
-    mapLayer = new XYZLayer(options);
+    mapLayer = new XYZLayer(options, method);
   } else {
     options.url = options.url || this.getWmsUrl();
-    mapLayer = new WMSLayer(options, extraParams);
+    mapLayer = new WMSLayer(options, extraParams, method);
   }
   return mapLayer;
+};
+
+
+proto.isWmsUseLayerIds = function() {
+  return this.config.wms_use_layer_ids;
 };
 
 ImageLayer.WMSServerTypes = [

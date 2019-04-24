@@ -3,8 +3,9 @@ const base = require('core/utils/utils').base;
 const MapLayer = require('./maplayer');
 const RasterLayers = require('g3w-ol3/src/layers/rasters');
 
-function XYZLayer(options){
+function XYZLayer(options, method="GET") {
   base(this, options);
+  this._method = method;
   this.layer = null;
 }
 
@@ -52,7 +53,7 @@ proto._makeOlLayer = function(){
   };
 
   layerOptions.projection = projection;
-  this._olLayer = new RasterLayers.XYZLayer(layerOptions);
+  this._olLayer = new RasterLayers.XYZLayer(layerOptions, this._method);
 
   this._olLayer.getSource().on('imageloadstart', () => {
     this.emit("loadstart");

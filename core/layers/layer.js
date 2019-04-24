@@ -37,7 +37,8 @@ function Layer(config = {}) {
     metadata_querable: this.isQueryable({onMap:false}),
     openattributetable: this.canShowTable(),
     removable: config.removable || false,
-    source: config.source
+    source: config.source,
+    geolayer: false
   };
 
   this._editingLayer = null;
@@ -84,6 +85,10 @@ proto.getShp = function() {
     url,
     httpMethod: "GET"
   })
+};
+
+proto.isGeoLayer = function() {
+  return this.state.geolayer;
 };
 
 proto.getDataTable = function({ page = null, page_size=null, ordering=null, search=null, suggest=null } = {}) {
@@ -406,7 +411,7 @@ proto.setQueryUrl = function(queryUrl) {
 
 proto.getQueryLayerName = function() {
   let queryLayerName;
-  if (this.config.infolayer && this.config.infolayer != '') {
+  if (this.config.infolayer && this.config.infolayer !== '') {
     queryLayerName = this.config.infolayer;
   }
   else {

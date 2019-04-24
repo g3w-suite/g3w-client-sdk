@@ -213,8 +213,13 @@ proto._setOtherConfigParameters = function(config) {
 };
 
 // return layer fields
-proto.getEditingFields = function() {
-  return this.config.editing.fields.length ? this.config.editing.fields: this.config.fields;
+proto.getEditingFields = function(editable=false) {
+  let fields = this.config.editing.fields.length ? this.config.editing.fields: this.config.fields;
+  if (editable)
+    fields = fields.filter((field) => {
+      return field.editable;
+    });
+  return fields;
 };
 
 proto.getFieldsLabel = function() {

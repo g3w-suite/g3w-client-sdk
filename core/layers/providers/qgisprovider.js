@@ -42,7 +42,7 @@ proto.query = function(options = {}) {
   const crs = this._projections.map.getCode();
   const queryUrl = options.queryUrl || this._queryUrl;
   const layers = options.layers;
-  const layerNames = layers ? layers.map(layer => layer.getName()).join(','): this._layerName;
+  const layerNames = layers ? layers.map(layer => layer.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
   if (filter) {
     // check if geomemtry filter. If not i have to remove projection layer
     if (filter.getType() === 'geometry')

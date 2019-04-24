@@ -13,7 +13,7 @@
     </div>
     <div v-else class="tool" @click="!disabled ? fireAction(tool) : null" :class="{tool_disabled: disabled}">
       <bar-loader :loading="tool.loading"></bar-loader>
-      <i :class="g3wtemplate.getFontClass('caret-right')"></i>
+      <i :class="g3wtemplate.getFontClass(icon)"></i>
       <span v-if="tool.html" >
         <i :class="tool.html.icon"></i>
         {{ tool.html.text || tool.name}}
@@ -26,7 +26,11 @@
 <script>
   export default {
     name: "g3w-tool",
-    props: ['tool'],
+    props: {
+      tool: {
+        required: true
+      }
+    },
     data() {
       return {}
     },
@@ -38,6 +42,9 @@
     computed: {
       disabled() {
         return this.tool.loading || this.tool.disabled;
+      },
+      icon() {
+        return this.tool.icon || 'caret-right'
       }
     }
 
