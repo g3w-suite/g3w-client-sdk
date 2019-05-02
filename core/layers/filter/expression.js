@@ -94,7 +94,7 @@ proto.createExpressionFromFilter = function(filterObject, layername) {
               const field = input[operator];
               for (const name in field) {
                 const value = field[name];
-                if (value !== null && !(Number.isNaN(value) || !value.toString().trim())) {
+                if ((value !== null && value !== undefined) && !(Number.isNaN(value) || !value.toString().trim())) {
                   const filterElement = `"${name}" ${filterOp} '${valueExtra}${value}${valueExtra}'`;
                   filterElements.push(filterElement);
                 }

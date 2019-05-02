@@ -1,6 +1,5 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
-const t = require('core/i18n/i18n.service').t;
 const Panel = require('gui/panel');
 const Service = require('./searchservice');
 import Select2 from './select2.vue'
@@ -27,75 +26,49 @@ const SearchPanelComponent = Vue.extend({
         });
       }
     },
-    changeInput({attribute, value}={}) {
-      this.$options.service.changeInput({attribute, value});
-      const dependency = !!this.state.dependencies.length && this.state.dependencies.find((_dependency) => {
+    changeDependencyFields({attribute, value, fillfieldspromises=[]}) {
+      const dependency = this.state.dependencies.find((_dependency) => {
         return attribute === _dependency.observer
       });
       if (dependency) {
-        if (!value) {
-          for (let i =0; i < dependency.subscribers.length; i++) {
-            const forminputvalue = this.state.forminputs.find((input) => {
-              return input.attribute === dependency.subscribers[i].attribute;
-            });
-            forminputvalue.options.values.splice(1);
-            forminputvalue.options.disabled = true;
-            forminputvalue.value = '';
-          }
-        } else {
-          this.state.searching = true;
-          this.$options.service.fillDependencyInputs({
-            field: attribute,
-            subscribers: dependency.subscribers,
-            value
-          }).then(() => {
-            this.state.searching = false;
+        const subscribers = dependency.subscribers || [];
+        for (let i = subscribers.length; i--;) {
+          const forminputvalue = this.state.forminputs.find((input) => {
+            return input.attribute === subscribers[i].attribute;
           });
+          fillfieldspromises.push(this.$options.service.fillDependencyInputs({
+            field: attribute,
+            subscribers,
+            value
+          }));
+          forminputvalue.value = '';
+          this.changeDependencyFields({
+            attribute: forminputvalue.attribute,
+            value: forminputvalue.value,
+            fillfieldspromises
+          })
         }
+      }
+      return fillfieldspromises;
+    },
+    changeInput({attribute, value}={}) {
+      this.$options.service.changeInput({attribute, value});
+      //check id there are dependencies
+      const fillDependencyPromises = this.changeDependencyFields({
+        attribute,
+        value
+      });
+      if (fillDependencyPromises.length) {
+        this.state.searching = true;
+        Promise.all(fillDependencyPromises).then(() => {
+          this.state.searching = false;
+        })
       }
     },
     doSearch: function(event) {
       event.preventDefault();
       this.$options.service.run();
     }
-  },
-  mounted() {
-    function matchCustom(params, data) {
-      // If there are no search terms, return all of the data
-      if ($.trim(params.term) === '') {
-        return data;
-      }
-
-      // Do not display the item if there is no 'text' property
-      if (typeof data.text === 'undefined') {
-        return null;
-      }
-
-      // `params.term` should be the term that is used for searching
-      // `data.text` is the text that is displayed for the data object
-      if (data.text.indexOf(params.term) > -1) {
-        const modifiedData = $.extend({}, data, true);
-        // You can return modified objects from here
-        // This includes matching the `children` how you want in nested data sets
-        return modifiedData;
-      }
-      // Return `null` if the term should not be displayed
-      return null;
-    }
-    this.$nextTick(() => {
-      this.select2 = $('#g3w-search-form > select').select2({
-        width: '100%',
-        matcher: matchCustom,
-        "language": {
-          "noResults": function(){
-            return t("no_results");
-          }
-        },
-      });
-    })
-  },
-  beforeDestroy() {
-    this.select2 = null;
   }
 });
 

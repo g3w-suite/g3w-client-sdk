@@ -29,6 +29,8 @@ function SearchService(config={}) {
   this.project = ProjectsRegistry.getCurrentProject();
   this.searchLayer = null;
   this.filter = null;
+  this.currentFilter = {};
+  this._rootFilterOperator = 'AND';
   this.init = function(config) {
     this.state.title = config.name;
     const options = config.options || {};
@@ -37,6 +39,7 @@ function SearchService(config={}) {
     const layerid = options.querylayerid || options.layerid || null;
     this.searchLayer = CatalogLayersStorRegistry.getLayerById(layerid);
     const filter = options.filter || {AND:[]};
+    this._rootFilterOperator = Object.keys(filter)[0];
     this.fillInputsFormFromFilter({filter});
   };
   // set run function
@@ -47,8 +50,9 @@ inherit(SearchService, G3WObject);
 
 const proto = SearchService.prototype;
 
+
 proto._run = function() {
-  const feature_count = this.project.getQueryFeatureCount();
+  //const feature_count = this.project.getQueryFeatureCount();
   this.state.searching = true;
   const filter = this.fillFilterInputsWithValues();
   GUI.closeContent();
@@ -62,7 +66,7 @@ proto._run = function() {
   this.searchLayer.search({
     filter: _filter,
     queryUrl: this.url,
-    feature_count
+    feature_count: 10000
   })
     .then((results) => {
       results = {
@@ -119,10 +123,31 @@ proto.createQueryFilterFromConfig = function({filter}) {
   return queryFilter;
 };
 
+proto._getExpressionOperatorFromInput = function(field) {
+  const dependanceCascadeField = this.filter[this._rootFilterOperator].find((input) => {
+    return input.attribute === field;
+  });
+  return dependanceCascadeField ? dependanceCascadeField.op : null;
+};
+
+proto._getCascadeDependanciesFilter = function(field, dependencies=[]) {
+  const dependanceCascadeField = this.filter[this._rootFilterOperator].find((input) => {
+    return input.attribute === field;
+  });
+  const dependance = dependanceCascadeField.input.options.dependance;
+  if (dependance) {
+    dependencies.unshift(dependance);
+    this._getCascadeDependanciesFilter(dependance, dependencies)
+  }
+  return dependencies
+};
+
 proto.fillDependencyInputs = function({field, subscribers=[], value=''}={}) {
   return new Promise((resolve, reject) => {
     subscribers.forEach((subscribe) => {
       subscribe.options.disabled = true;
+      subscribe.value = '';
+      subscribe.options.values.splice(1);
     });
     if (value) {
       if (this.state.cachedependencies[field] && this.state.cachedependencies[field][value]) {
@@ -130,43 +155,43 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=''}={}) {
           const subscribe = subscribers[i];
           const values = this.state.cachedependencies[field][value][subscribe.attribute];
           if (values && values.length) {
-            subscribe.value = '';
-            subscribe.options.values.splice(1);
             for (let i = 0; i <values.length; i++) {
               subscribe.options.values.push(values[i]);
             }
+            subscribe.options.disabled = false;
           }
-          subscribe.options.disabled = false;
           resolve()
         }
       } else {
+        this.queryService = GUI.getComponent('queryresults').getService();
         this.state.loading[field] = true;
         this.state.cachedependencies[field] = this.state.cachedependencies[field] ? this.state.cachedependencies[field] : {};
         this.state.cachedependencies[field][value] = this.state.cachedependencies[field][value] ? this.state.cachedependencies[field][value] : {};
-        this.queryService = GUI.getComponent('queryresults').getService();
         const equality = {};
+        const inputFilterObject = {};
         equality[field] = value;
-        const filter = {
-          AND: [{
-            eq: equality
-          }]
-        };
+        const operator = this._getExpressionOperatorFromInput(field);
+        inputFilterObject[operator] = equality;
+        const filter = {};
+        filter[this._rootFilterOperator] = [inputFilterObject];
+        this._getCascadeDependanciesFilter(field).forEach((dependanceField) => {
+          filter[this._rootFilterOperator].splice(filter[this._rootFilterOperator].length -1, 0,this.currentFilter[dependanceField]);
+        });
         const expression = new Expression();
-        const layerName = this.searchLayer.getName();
+        const layerName = this.searchLayer.getWMSLayerName();
         expression.createExpressionFromFilter(filter, layerName);
         const _filter = new Filter();
         _filter.setExpression(expression.get());
+        this.currentFilter[field] = inputFilterObject;
         this.searchLayer.search({
           filter: _filter,
-          feature_count: 10000 //SET HIGHT LEVELOF FEATURE COUNT TO GET MAXIMUM RESPONSES
+          feature_count: 10000 //SET HIGHT LEVEL OF FEATURE COUNT TO GET MAXIMUM RESPONSES
         }).then((response) => {
           const digestResults = this.queryService._digestFeaturesForLayers(response);
           if (digestResults.length) {
             const features = digestResults[0].features;
             for (let i = 0; i < subscribers.length; i++) {
               const subscribe = subscribers[i];
-              subscribe.value = '';
-              subscribe.options.values.splice(1);
               let uniqueValue = new Set();
               features.forEach((feature) => {
                 let value = feature.attributes[subscribe.attribute];
@@ -179,40 +204,32 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=''}={}) {
               this.state.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
               subscribe.options.disabled = false;
             }
-          } else
-            subscribe.options.values.splice(1);
-        }).fail((err) => {})
-          .always(() => {
+          }
+        }).fail((err) => {
+          reject(err);
+        }).always(() => {
             this.state.loading[field] = false;
             resolve();
           })
       }
     } else {
-      for (let i = 0; i < subscribers.length; i++) {
-        const subscribe = subscribers[i];
-        subscribe.options.disabled = true;
-        subscribe.options.values.splice(1);
-      }
       resolve()
     }
   })
 };
 
 proto._checkInputDependencies = function(forminput) {
-  if (forminput.options.dependance) {
-    const key = forminput.options.dependance;
-    let dependency = this.state.dependencies.find((_dependency) => {
-      _dependency.observer === key;
-    });
-    if (!dependency) {
-      dependency = {
-        observer: key,
-        subscribers: []
-      };
-      this.state.dependencies.push(dependency)
-    }
+  const { dependance } = forminput.options;
+  const dependency = this.state.dependencies.find((_dependency) => {
+    return _dependency.observer === dependance;
+  });
+  if (!dependency) {
+    this.state.dependencies.push({
+      observer: dependance,
+      subscribers: [forminput]
+    })
+  } else
     dependency.subscribers.push(forminput)
-  }
 };
 
 proto.fillInputsFormFromFilter = function({filter}) {
@@ -234,6 +251,7 @@ proto.fillInputsFormFromFilter = function({filter}) {
         if (field) {
           this.state.loading[field] = false;
           forminput.options.disabled = true;
+          this._checkInputDependencies(forminput);
         }
         if (forminput.options.values[0] !== '')
           //add a starting all
@@ -241,7 +259,6 @@ proto.fillInputsFormFromFilter = function({filter}) {
         forminput.value = '';
       } else
         forminput.value = null;
-      this._checkInputDependencies(forminput);
       this.state.forminputs.push(forminput);
       id+=1;
     });
@@ -251,8 +268,8 @@ proto.fillInputsFormFromFilter = function({filter}) {
 proto.createQueryFilterObject = function({ogcService='wms', filter={}}={}) {
   const info = this.getInfoFromLayer(ogcService);
   Object.assign(info, {
-    ogcService: ogcService,
-    filter : filter
+    ogcService,
+    filter
   });
   return info;
 };
@@ -268,34 +285,33 @@ proto.getInfoFromLayer = function(ogcService) {
   };
 };
 
-proto.fillFilterInputsWithValues = function(filter=this.filter, filterWithValues={}) {
+proto.fillFilterInputsWithValues = function(filter=this.filter, filterWithValues={}, exclude=[]) {
   const forminputs = this.state.forminputs;
   for (const operator in filter) {
     filterWithValues[operator] = [];
     const inputs = filter[operator];
     inputs.forEach((input) => {
       const _input = input.input;
-      if (Array.isArray(_input)){
-        this.fillFilterInputsWithValues(_input);
-      } else {
-        const _operator = input.op;
-        const fieldName = input.attribute;
-        const filterInput = {};
-        filterInput[_operator] = {};
-        const forminputwithvalue = forminputs.find((forminput) => {
-            return forminput.attribute === fieldName;
-        });
-        const type = forminputwithvalue.type;
-        const value = forminputwithvalue.value;
-        filterInput[_operator][fieldName] = type === 'numberfield' ? parseInt(value) : value;
-        filterWithValues[operator].push(filterInput);
-      }
+      if (exclude.indexOf(_input.attribute) === -1)
+        if (Array.isArray(_input)){
+          this.fillFilterInputsWithValues(_input);
+        } else {
+          const _operator = input.op;
+          const fieldName = input.attribute;
+          const filterInput = {};
+          filterInput[_operator] = {};
+          const forminputwithvalue = forminputs.find((forminput) => {
+              return forminput.attribute === fieldName;
+          });
+          const type = forminputwithvalue.type;
+          const value = forminputwithvalue.value;
+          filterInput[_operator][fieldName] = type === 'numberfield' ? parseInt(value) : value;
+          filterWithValues[operator].push(filterInput);
+        }
     })
   }
   return filterWithValues;
 };
-
-
 
 proto.setSearchLayer = function(layer) {
   this.searchLayer = layer;

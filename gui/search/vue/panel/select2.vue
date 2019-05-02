@@ -1,6 +1,6 @@
 <template>
   <select :name="forminput.attribute" class="form-control" :id="forminput.id" :disabled="forminput.options.disabled">
-    <option :value="value" v-for="value in forminput.options.values" >
+    <option :value="value" v-for="value in forminput.options.values" :key="value">
       <span v-if="value === ''" v-t="'sdk.search.all'"></span>
       <span v-else>{{ value }}</span>
     </option>
@@ -12,10 +12,6 @@
   export default {
     name: "select2",
     props: ['forminput'],
-    updated() {
-      this._initSelect2Element();
-      this.select2.val('');
-    },
     methods: {
       _initSelect2Element() {
         this.select2 = $(this.$el).select2({
