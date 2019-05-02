@@ -11,7 +11,8 @@
 
   <span v-if="isFolder"
     @click.stop="toggle(true)"
-    :class="folderClass">
+    style="color: #ffffff"
+    :class="[triClass()]">
   </span>
   <span v-else-if="isTable"
         v-show="!layerstree.hidden"

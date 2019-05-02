@@ -30,6 +30,10 @@ function CatalogService() {
     }
   };
 
+  this.getMajorQgisVersion = function() {
+    return +this.state.prstate.qgis_version.split('.')[0];
+  };
+
   // method to add a custom layers group
   this.addLayersGroup = function(layersGroup) {
     this.state.layersgroups.push(layersGroup);

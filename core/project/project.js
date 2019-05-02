@@ -194,6 +194,10 @@ proto.getCrs = function() {
   return this._projection.getCode();
 };
 
+proto.getQgisVersion = function() {
+  return this.state.qgis_version;
+};
+
 proto.getProjection = function() {
   return this._projection;
 };

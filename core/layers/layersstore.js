@@ -412,6 +412,7 @@ proto.setLayersTree = function(layerstree, name) {
     this.state.layerstree.splice(0,0,{
       title: name || this.config.id,
       expanded: true,
+      checked: true,
       nodes: layerstree
     });
   }

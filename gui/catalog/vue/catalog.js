@@ -10,7 +10,7 @@ const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresreg
 const Service = require('../catalogservice');
 const ChromeComponent = VueColor.Chrome;
 const CatalogEventHub = new Vue();
-const QGISVERSION = 2;
+let QGISVERSION;
 
 const vueComponentOptions = {
   template: require('./catalog.html'),
@@ -296,20 +296,33 @@ const vueComponentOptions = {
           }
         })
       } else {
-        const turnOnOffSubGroups = (node) => {
+        const layerStore = CatalogLayersStoresRegistry.getLayersStore(storeid);
+        const parentLayers = [{
+          checked: isFolderChecked,
+          layersIds: []
+        }];
+        let currentLayersIds = parentLayers[0].layersIds;
+        const turnOnOffSubGroups = (parentChecked, node) => {
           if (node.nodes) {
-            node.disabled = !isFolderChecked;
-            node.nodes.map(turnOnOffSubGroups)
-          } else if (node.geolayer && node.checked) {
-            layersIds.push(node.id)
+            node.disabled = !parentChecked;
+            const groupLayers = {
+              checked: parentChecked,
+              layersIds: []
+            };
+            currentLayersIds = groupLayers.layersIds;
+            parentLayers.push(groupLayers);
+            node.nodes.map(turnOnOffSubGroups.bind(null, (node.checked && parentChecked)))
+          } else if (node.geolayer) {
+            if (node.checked)
+              currentLayersIds.push(node.id);
+            node.groupdisabled = !parentChecked;
           }
         };
-        nodes.map(turnOnOffSubGroups);
-        CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayers(layersIds, isFolderChecked , qgisVersion=QGISVERSION).then((layers) => {
-          for (let i= layers.length; i--;) {
-            layers[i].state.groupdisabled = !isFolderChecked;
-          }
-        })
+        nodes.map(turnOnOffSubGroups.bind(null, isFolderChecked));
+        for (let i = parentLayers.length; i--;) {
+          const {layersIds, checked} = parentLayers[i];
+          layerStore.toggleLayers(layersIds, checked , qgisVersion=QGISVERSION);
+        }
       }
     });
 
@@ -387,9 +400,54 @@ Vue.component('tristate-tree', {
   },
   computed: {
     isFolder: function() {
+      let _visibleChilds = 0;
+      let _childsLength = 0;
       const isFolder = !!this.layerstree.nodes;
-      if (isFolder)
-        this.isFolderChecked = true;
+      if (isFolder) {
+        if (QGISVERSION === 2) {
+          // function that count number of layers of each folder and visible layers
+          let countLayersVisible = (layerstree) => {
+            //if mutually exclusive count 1
+            if (layerstree.mutually_exclusive) {
+              _childsLength+=1;
+              layerstree.nodes.forEach((layer) => {
+                if (!layer.nodes) {
+                  if (layer.visible) {
+                    layerstree.lastLayerIdVisible = layer.id;
+                    _visibleChilds += 1;
+                  }
+                } else {
+                  const countMEVisibleLayers = (nodes) => {
+                    const vME = nodes.reduce((previous, node) => {
+                        if (node.id) return node.visible || previous;
+                        else return countMEVisibleLayers(node.nodes) || previous;
+                      }
+                      , false);
+                    return vME;
+                  };
+                  _visibleChilds += countMEVisibleLayers(layer.nodes);
+                }
+              })
+            } else { // not mutually exclusive
+              layerstree.nodes.forEach((layer) => {
+                if (!layer.nodes && layer.geolayer) {
+                  _childsLength+=1;
+                  if (layer.visible) {
+                    _visibleChilds += 1;
+                  }
+                } else if (layer.nodes) {
+                  countLayersVisible(layer);
+                }
+              });
+            }
+          };
+          countLayersVisible(this.layerstree);
+          this.n_childs = _childsLength;
+          this.n_visibleChilds = _visibleChilds;
+          //set folder is checked based on the behaviour of the child
+          this.isFolderChecked = !(this.n_childs - this.n_visibleChilds);
+        }
+      }
       return isFolder
     },
     isTable: function() {
@@ -405,10 +463,7 @@ Vue.component('tristate-tree', {
     },
     isHighLight: function() {
       return this.highlightlayers && !this.isFolder && this.ishighligtable && this.layerstree.visible;
-    },
-    folderClass: function() {
-      return this.isFolderChecked ? this.g3wtemplate.getFontClass('check') : this.g3wtemplate.getFontClass('uncheck');
-    },
+    }
   },
   watch:{
     'layerstree.disabled'(bool) {
@@ -418,10 +473,64 @@ Vue.component('tristate-tree', {
   methods: {
     toggle: function(isFolder) {
       if (isFolder) {
-        this.isFolderChecked = ! this.isFolderChecked;
-        CatalogEventHub.$emit('treenodestoogled', this.storeid, this.layerstree.nodes, this.isFolderChecked, this.parent_mutually_exclusive);
+        if (QGISVERSION === 2) {
+          if (this.layerstree.mutually_exclusive && this.layerstree.nodes.length) {
+            if (!this.layerstree.lastLayerIdVisible) {
+              let layerId;
+              const getLayerId = (nodes) => {
+                nodes.some((node) => {
+                  if (node.id)
+                    if (node.geolayer) {
+                      layerId = node.id;
+                      return true
+                    } else {
+                      getLayerId(node.nodes);
+                    }
+                });
+              };
+              getLayerId(this.layerstree.nodes);
+              this.layerstree.lastLayerIdVisible = layerId;
+            }
+            if (!this.isFolderChecked) {
+              CatalogEventHub.$emit('treenodetoogled', this.storeid, {
+                id: this.layerstree.lastLayerIdVisible //id of visible layers
+              }, this.layerstree.mutually_exclusive);
+            } else {
+              CatalogEventHub.$emit('treenodestoogled', this.storeid, this.layerstree.nodes, false, this.parent_mutually_exclusive)
+            }
+            this.isFolderChecked = !this.isFolderChecked;
+          } else {
+            if (this.isFolderChecked && !this.n_visibleChilds) {
+              this.isFolderChecked = true;
+            } else if (this.isFolderChecked && this.n_visibleChilds) {
+              this.isFolderChecked = false;
+            } else {
+              this.isFolderChecked = !this.isFolderChecked;
+            }
+            CatalogEventHub.$emit('treenodestoogled', this.storeid, this.layerstree.nodes, this.isFolderChecked, this.parent_mutually_exclusive);
+          }
+          if (this.isFolderChecked && this.parent_mutually_exclusive) {
+            this.parent.nodes.forEach((node) => {
+              let nodes = [];
+              if (node.title !== this.layerstree.title)
+                nodes.push(node);
+              CatalogEventHub.$emit('treenodestoogled', this.storeid, nodes, false, this.parent_mutually_exclusive)
+            })
+          }
+        } else {
+          this.layerstree.checked = !this.layerstree.checked;
+          CatalogEventHub.$emit('treenodestoogled', this.storeid, this.layerstree.nodes, this.layerstree.checked, this.parent_mutually_exclusive);
+        }
       } else {
-        CatalogEventHub.$emit('treenodetoogled', this.storeid, this.layerstree, this.parent_mutually_exclusive);
+        if (QGISVERSION === 2)
+          CatalogEventHub.$emit('treenodetoogled', this.storeid, this.layerstree, this.parent_mutually_exclusive);
+        else {
+          if (this.layerstree.groupdisabled){
+            this.layerstree.checked = !this.layerstree.checked;
+          } else {
+            CatalogEventHub.$emit('treenodetoogled', this.storeid, this.layerstree, this.parent_mutually_exclusive);
+          }
+        }
       }
     },
     expandCollapse: function() {
@@ -431,6 +540,27 @@ Vue.component('tristate-tree', {
       if (!this.isFolder && !this.layerstree.external && !this.isTable) {
         CatalogEventHub.$emit('treenodeselected',this.storeid, this.layerstree);
       }
+    },
+    triClass: function () {
+      if (QGISVERSION === 2) {
+        if (this.n_visibleChilds === this.n_childs) {
+          //checked
+          return this.g3wtemplate.getFontClass('check');
+        } else if ((this.n_visibleChilds > 0) && (this.n_visibleChilds < this.n_childs)) {
+          if (this.layerstree.mutually_exclusive) {
+            //checked
+            return this.g3wtemplate.getFontClass('uncheck');
+          }
+          // white square
+          return this.g3wtemplate.getFontClass('filluncheck');
+        } else {
+          //unchecked
+          return this.g3wtemplate.getFontClass('uncheck');
+        }
+      } else {
+        return this.layerstree.checked ? this.g3wtemplate.getFontClass('check') : this.g3wtemplate.getFontClass('uncheck');
+      }
+
     },
     removeExternalLayer: function(name) {
       const mapService = GUI.getComponent('map').getService();
@@ -606,6 +736,7 @@ function CatalogComponent(options={}) {
     legend
   }));
   this.internalComponent.state = this.getService().state;
+  QGISVERSION = 3 //service.getMajorQgisVersion();
   let listenToMapVisibility = (map) => {
     const mapService = map.getService();
     this.state.visible = !mapService.state.hidden;
@@ -622,10 +753,8 @@ function CatalogComponent(options={}) {
           listenToMapVisibility(component);
         }
       })
-    }
-    else {
+    } else
       listenToMapVisibility(map)
-    }
   }
 }
 

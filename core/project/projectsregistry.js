@@ -19,11 +19,12 @@ function ProjectsRegistry() {
   this.projectType = null;
   this.setters = {
     setCurrentProject: function(project) {
-      if (this.state.currentProject != project) {
+      if (this.state.currentProject !== project) {
         CatalogLayersStoresRegistry.removeLayersStores();
         MapLayersStoresRegistry.removeLayersStores();
       }
       this.state.currentProject = project;
+      this.state.qgis_version = project.getQgisVersion();
       this.setProjectType(project.state.type);
       const projectLayersStore = project.getLayersStore();
       //set in first position (catalog)
@@ -37,8 +38,10 @@ function ProjectsRegistry() {
     baseLayers: {},
     minScale: null,
     maxscale: null,
-    currentProject: null
+    currentProject: null,
+    qgis_version: null
   };
+
 
   // (lazy loading)
   this._pendingProjects = [];
@@ -81,7 +84,6 @@ proto.getConfig = function() {
   return this.config;
 };
 
-
 proto.getState = function() {
   return this.state;
 };
@@ -94,6 +96,7 @@ proto.setupState = function() {
   this.state.proj4 = this.config.proj4;
   const overViewProject = (this.config.overviewproject && this.config.overviewproject.gid) ? this.config.overviewproject : null;
   this.config.projects.forEach((project) => {
+    this.state.qgis_version = project.qgis_version || this.state.qgis_version;
     project.baselayers = _.cloneDeep(this.config.baselayers);
     project.minscale = this.config.minscale;
     project.maxscale = this.config.maxscale;
