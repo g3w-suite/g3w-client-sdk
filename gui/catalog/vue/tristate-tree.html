@@ -1,9 +1,8 @@
 <li
   class="tree-item"
   @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)"
-  @click="!layerstree.disabled? select(): null"
-  :class="{selected: !isFolder || !isTable ? layerstree.selected : false, itemmarginbottom: !isFolder,  disabled: layerstree.disabled}">
-
+  @click="select()"
+  :class="{selected: !isFolder || !isTable ? layerstree.selected : false, itemmarginbottom: !isFolder,  disabled: ((layerstree.disabled || layerstree.groupdisabled) || layerstree.checked === false)}">
   <span v-if="isFolder"
     :class="[{bold : isFolder}, layerstree.expanded ? g3wtemplate.getFontClass('arrow-down') : g3wtemplate.getFontClass('arrow-right')]"
     @click="expandCollapse"
@@ -12,7 +11,7 @@
 
   <span v-if="isFolder"
     @click.stop="toggle(true)"
-    :class="[triClass()]">
+    :class="folderClass">
   </span>
   <span v-else-if="isTable"
         v-show="!layerstree.hidden"
@@ -24,14 +23,14 @@
           @click="removeExternalLayer(layerstree.name)">
     </span>
     <span v-show="!layerstree.hidden"
-      @click.stop="!layerstree.disabled ? toggle(false) : null"
-      :class="[layerstree.visible  ? g3wtemplate.getFontClass('check'): g3wtemplate.getFontClass('uncheck'),  parentFolder ? 'child' : 'root' ]"
+      @click.stop="toggle(false)"
+      :class="[layerstree.checked  ? g3wtemplate.getFontClass('check'): g3wtemplate.getFontClass('uncheck'),  parentFolder ? 'child' : 'root' ]"
       class="checkbox-layer"></span>
   </template>
 
   <span v-show="!layerstree.hidden || isFolder"
     class="tree-node-title"
-    :class="{'bold': isFolder, 'disabled': layerstree.disabled, 'highlightlayer': isHighLight }"> {{ layerstree.title }}
+    :class="{'disabled': layerstree.disabled, 'bold': isFolder, 'highlightlayer': isHighLight }"> {{ layerstree.title }}
   </span>
 
   <ul v-if="isFolder" v-show="layerstree.expanded">
@@ -39,7 +38,6 @@
       :root="false"
       :highlightlayers="highlightlayers"
       :parentFolder="isFolder"
-      :n_visible-childs="n_visibleChilds"
       :layerstree="_layerstree"
       :storeid="storeid"
       :parent="layerstree"

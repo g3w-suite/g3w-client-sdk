@@ -37,7 +37,7 @@ function CatalogService() {
 
   this.removeExternalLayer = function(name) {
     this.state.externallayers.forEach((layer, index) => {
-      if (layer.name == name) {
+      if (layer.name === name) {
         this.state.externallayers.splice(index, 1);
         return false
       }

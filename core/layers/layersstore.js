@@ -23,12 +23,12 @@ function LayersStore(config={}) {
   this._layers = this.config.layers || {};
 
   this.setters = {
-    setLayersVisible: function (layersIds, visible) {
+    setLayersVisible: function (layersIds, visible, qgisVersion=2) {
       const layers = [];
       layersIds.forEach((layerId) => {
         const layer = this.getLayerById(layerId);
         layer.setVisible(visible);
-        layer.setChecked(visible);
+        qgisVersion === 2 ? layer.setChecked(visible): null;
         layers.push(layer);
       });
       return layers;
@@ -311,7 +311,7 @@ proto._getAllParentLayersId = function(layerstree, node) {
 
   traverse({
     nodes: layerstree.nodes.filter((_node) => {
-      return _node != node;
+      return _node !== node;
     })
   });
   return nodeIds;
@@ -362,8 +362,8 @@ proto.toggleLayer = function(layerId, visible, mutually_exclusive) {
   return layer;
 };
 
-proto.toggleLayers = function(layersIds, visible) {
-  return this.setLayersVisible(layersIds, visible)
+proto.toggleLayers = function(layersIds, visible, qgisVersion=2) {
+  return this.setLayersVisible(layersIds, visible, qgisVersion)
 };
 
 proto.selectLayer = function(layerId){
@@ -398,8 +398,11 @@ proto.setLayersTree = function(layerstree, name) {
      //heck if lis layer and not a folder
       if (!_.isNil(layer.id)) {
         obj[key] = this.getLayerById(layer.id).getState();
+        obj[key].groupdisabled = false;
       }
-      if (!_.isNil(layer.nodes)){
+      if (layer.nodes) {
+        layer.disabled = false;
+        layer.checked = true;
         traverse(layer.nodes);
       }
     });
