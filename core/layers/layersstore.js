@@ -393,16 +393,20 @@ proto.getWmsUrl = function() {
 
 // set layersstree of layers inside the laysstore
 proto.setLayersTree = function(layerstree, name) {
-  let traverse = (obj) => {
+  let parentDisabled = false;
+  const traverse = (obj) => {
     Object.entries(obj).forEach(([key, layer]) => {
      //heck if lis layer and not a folder
-      if (!_.isNil(layer.id)) {
+      if (layer.id !== undefined) {
         obj[key] = this.getLayerById(layer.id).getState();
-        obj[key].groupdisabled = false;
+        obj[key].groupdisabled = parentDisabled;
       }
       if (layer.nodes) {
-        layer.disabled = false;
         layer.checked = true;
+        layer.disabled = false;
+        // if (layer.title === 'PRG - Zone residenziali') {
+        //   parentDisabled = layer.checked = false;
+        // }
         traverse(layer.nodes);
       }
     });
@@ -412,6 +416,7 @@ proto.setLayersTree = function(layerstree, name) {
     this.state.layerstree.splice(0,0,{
       title: name || this.config.id,
       expanded: true,
+      disabled: false,
       checked: true,
       nodes: layerstree
     });
