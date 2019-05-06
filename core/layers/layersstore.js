@@ -23,12 +23,12 @@ function LayersStore(config={}) {
   this._layers = this.config.layers || {};
 
   this.setters = {
-    setLayersVisible: function (layersIds, visible, qgisVersion=2) {
+    setLayersVisible: function (layersIds, visible, checked=true) {
       const layers = [];
       layersIds.forEach((layerId) => {
         const layer = this.getLayerById(layerId);
         layer.setVisible(visible);
-        qgisVersion === 2 ? layer.setChecked(visible): null;
+        checked && layer.setChecked(visible);
         layers.push(layer);
       });
       return layers;
@@ -323,7 +323,7 @@ proto._mutuallyExclude = function(layerId) {
     Object.entries(obj).forEach(([key, layer]) => {
       if (!_.isNil(layer.nodes)) {
         let found = layer.nodes.reduce((previous, node) => {
-          return node.id == layerId ||  previous ;
+          return node.id === layerId ||  previous ;
         }, false);
         // if found mean that a found a group that contain layer with layerId
         if (found) {
@@ -354,16 +354,20 @@ proto._mutuallyExclude = function(layerId) {
 
 proto.toggleLayer = function(layerId, visible, mutually_exclusive) {
   const layer = this.getLayerById(layerId);
-  visible = visible || !layer.state.visible;
-  if (mutually_exclusive && visible) {
+  const checked = visible !== null;
+  const oldChecked = layer.isChecked();
+  visible = visible !== null ? visible : !layer.state.visible;
+  if (mutually_exclusive) {
     this._mutuallyExclude(layerId)
   }
-  this.setLayersVisible([layerId],visible);
+  this.setLayersVisible([layerId], visible);
+  if (checked)
+    layer.setChecked(!oldChecked);
   return layer;
 };
 
-proto.toggleLayers = function(layersIds, visible, qgisVersion=2) {
-  return this.setLayersVisible(layersIds, visible, qgisVersion)
+proto.toggleLayers = function(layersIds, visible, checked=true) {
+  return this.setLayersVisible(layersIds, visible, checked)
 };
 
 proto.selectLayer = function(layerId){

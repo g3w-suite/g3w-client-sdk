@@ -252,6 +252,8 @@ const vueComponentOptions = {
           if (!node.groupdisabled) {
             let layer = CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayer(node.id, null, parent_mutually_exclusive);
             mapService.emit('cataloglayertoggled', layer);
+          } else {
+            CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayer(node.id, false, parent_mutually_exclusive)
           }
         }
       }
@@ -266,7 +268,7 @@ const vueComponentOptions = {
               if(obj.lastLayerIdVisible)
                 layersIds.push(obj.lastLayerIdVisible);
               else {
-                if(!isFolderChecked) {
+                if(!isGroupChecked) {
                   layersIds = CatalogLayersStoresRegistry.getLayersStore(storeid)._getAllSiblingsChildrenLayersId(obj);
                 } else {
                   const getLayerIds = (nodes) => {
@@ -329,7 +331,7 @@ const vueComponentOptions = {
         nodes.map(turnOnOffSubGroups.bind(null, isGroupChecked, currentLayersIds));
         for (let i = parentLayers.length; i--;) {
           const {layersIds, checked} = parentLayers[i];
-          layerStore.toggleLayers(layersIds, checked , qgisVersion=QGISVERSION);
+          layerStore.toggleLayers(layersIds, checked , QGISVERSION===2);
         }
       }
     });
@@ -534,11 +536,7 @@ Vue.component('tristate-tree', {
         if (QGISVERSION === 2)
           CatalogEventHub.$emit('treenodetoogled', this.storeid, this.layerstree, this.parent_mutually_exclusive);
         else {
-          if (this.layerstree.groupdisabled){
-            this.layerstree.checked = !this.layerstree.checked;
-          } else {
-            CatalogEventHub.$emit('treenodetoogled', this.storeid, this.layerstree, this.parent_mutually_exclusive);
-          }
+          CatalogEventHub.$emit('treenodetoogled', this.storeid, this.layerstree, this.parent_mutually_exclusive);
         }
       }
     },
@@ -744,7 +742,7 @@ function CatalogComponent(options={}) {
     legend
   }));
   this.internalComponent.state = this.getService().state;
-  QGISVERSION = 3 // service.getMajorQgisVersion();
+  QGISVERSION = service.getMajorQgisVersion();
   let listenToMapVisibility = (map) => {
     const mapService = map.getService();
     this.state.visible = !mapService.state.hidden;
