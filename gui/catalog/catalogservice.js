@@ -31,7 +31,7 @@ function CatalogService() {
   };
 
   this.getMajorQgisVersion = function() {
-    return +this.state.prstate.qgis_version.split('.')[0];
+    return this.state.prstate.qgis_version ? +this.state.prstate.qgis_version.split('.')[0]: 2;
   };
 
   // method to add a custom layers group
