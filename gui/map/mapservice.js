@@ -723,7 +723,7 @@ proto.setupControls = function() {
                 results = {};
                 // unify results of the promises
                 results.query = layersResults[0] ? layersResults[0].query : null;
-                if (layersResults[0] && layersResults[0].data && layersResults[0].data[0].features.length) {
+                if (layersResults[0] && layersResults[0].data.length && layersResults[0].data[0].features.length) {
                   geometry = layersResults[0].data[0].features[0].getGeometry();
                   const excludeLayers = [layersResults[0].data[0].layer];
                   if (geometry) {
