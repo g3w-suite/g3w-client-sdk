@@ -88,7 +88,6 @@ RasterLayers.XYZLayer = function(options={}, method='GET') {
   if (!options.url){
     return;
   }
-
   const sourceOptions = {
     url: options.url
   };

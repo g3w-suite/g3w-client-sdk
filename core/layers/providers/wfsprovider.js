@@ -54,8 +54,6 @@ proto._post = function(url, params) {
       d.resolve(response);
     })
     .fail((err) => {
-      if (err.status === 200)
-        d.resolve(err.responseText);
       d.reject(err);
     });
   return d.promise();
@@ -81,6 +79,7 @@ proto._doRequest = function(filter, params = {}, layers) {
   const d = $.Deferred();
   filter = filter || new Filter();
   const layer = layers ? layers[0]: this._layer;
+  const httpMethod = layer.getOwsMethod();
   const url = layer.getQueryUrl();
   const infoFormat = layer.getInfoFormat();
   const layerNames = layers ? layers.map(layer => this._getTypeName(layer.getQueryLayerName())).join(','): this._layerName;
@@ -123,8 +122,8 @@ proto._doRequest = function(filter, params = {}, layers) {
         break;
     }
     params.FILTER = featureRequest.children[0].innerHTML;
-    this._post(url, params)
-      .then((response) => {
+    const queryPromise = httpMethod === 'GET' ? this._get(url, params) : this._post(url, params);
+    queryPromise.then((response) => {
         d.resolve(response)
       }).fail((err) => {
         if (err.status === 200)
