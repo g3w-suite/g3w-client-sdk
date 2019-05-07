@@ -6,7 +6,7 @@
     slot="body"
     style="width:100%"
     v-disabled="!isEditable() || loadingState === 'loading' || loadingState === 'error'"
-    :class="{'input-error-validation' : !state.validate.valid}"
+    :class="{'input-error-validation' : notvalid}"
     class="form-control" >
     <option :value="getValue(value.value)" v-for="value in state.input.options.values">{{ value.key }}</option>
   </select>

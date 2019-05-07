@@ -4,7 +4,7 @@
     class="form-control"
     style="width:100%"
     v-disabled="!isEditable()"
-    :class="{'input-error-validation' : !state.validate.valid}"
+    :class="{'input-error-validation' : notvalid}"
     v-model="state.value"
     slot="body"
     type="number"

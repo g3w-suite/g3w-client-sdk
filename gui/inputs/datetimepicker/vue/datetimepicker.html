@@ -6,7 +6,7 @@
         :readonly="!isEditable() ? 'readonly' : null"
         type='text'
         v-disabled="!isEditable()"
-        :class="{'input-error-validation' : !state.validate.valid}"
+        :class="{'input-error-validation' : notvalid}"
         class="form-control" />
       <span
         class="input-group-addon caret">

@@ -62,7 +62,10 @@ function FormService() {
       disabled: false,
       valid: true, // global form validation state. True at beginning
       // when input change will be update
-      tovalidate: [], // object array to be validate. They have at list valid key (boolean)
+      tovalidate: {
+        invalids: [],
+        inputs: {}
+      } // object array to be validate. They have at list valid key (boolean)
     };
     this.setFormFields(fields);
     this.setFormStructure(options.formStructure);
@@ -75,7 +78,7 @@ function FormService() {
           return fieldsoutofformstructure.indexOf(field.name) > -1;
         })
       }
-    } 
+    }
   }
 }
 
@@ -88,15 +91,72 @@ proto.setLoading = function(bool=false) {
 };
 
 // Every input send to form it valid value that will change the genaral state of form
-proto.isValid = function() {
-  let bool = true;
-  this.state.tovalidate.forEach((tovalidate) => {
-    if (tovalidate && !tovalidate.valid) {
-      bool = false;
-      return false;
+proto.isValid = function(input) {
+  const invalidInputsLength = this.state.tovalidate.invalids.length;
+  if (input) {
+    //check a specific input
+    const valid = input.validate.valid;
+    if (invalidInputsLength === 0) {
+      !valid && this.state.tovalidate.invalids.push(input.name);
+      this.state.valid = valid;
+    } else {
+      const index = this.state.tovalidate.invalids.indexOf(input.name);
+      if (index === -1) {
+        !valid && this.state.tovalidate.invalids.push(input.name);
+      } else {
+        valid && this.state.tovalidate.invalids.splice(index, 1);
+      }
     }
-  });
-  this.state.valid = bool;
+  }
+  this.state.valid = invalidInputsLength === 0 ? true: this._checkFormValidationComplete(input);
+};
+
+proto._checkFormValidationComplete = function(input) {
+  let valid = true;
+  const init = !input;
+  const checkInputMutuallyValidation = (input) => {
+    const isvalidinput = input.validate.valid;
+    const isEmpty = _.isEmpty(_.trim(input.value));
+    if (input.validate.mutually) {
+      let mutuallyValidInput;
+      if (isvalidinput) {
+        input.validate.mutually.map((inputName) => {
+          const mutallyInput = this.state.tovalidate.inputs[inputName];
+          mutallyInput.validate.valid = (mutallyInput.validate.valid === false && _.isEmpty(_.trim(mutallyInput.value))) ? undefined: mutallyInput.validate.valid;
+        });
+        valid = !input.validate.mutually.find((inputName) => {
+          return this.state.tovalidate.inputs[inputName].validate.valid === false;
+        });
+      } else {
+        if (!init) {
+          mutuallyValidInput = !!input.validate.mutually.find((inputName) => {
+            return this.state.tovalidate.inputs[inputName].validate.valid;
+          });
+          input.validate.mutually.map((inputName) => {
+            const mutallyInput = this.state.tovalidate.inputs[inputName];
+            mutallyInput.validate.valid = (!mutuallyValidInput && mutallyInput.validate.valid === undefined) ? false: mutallyInput.validate.valid;
+          });
+        }
+        mutuallyValidInput = !!input.validate.mutually.find((inputName) => {
+          return this.state.tovalidate.inputs[inputName].validate.valid;
+        });
+        input.validate.valid =  mutuallyValidInput && isEmpty ? undefined: isvalidinput;
+        valid = input.validate.valid || (input.validate.valid === undefined && !mutuallyValidInput);
+      }
+    } else
+      valid = isvalidinput || input.validate.valid === undefined
+  };
+  if (input)
+    checkInputMutuallyValidation(input);
+  else {
+    const invalidInputs = this.state.tovalidate.invalids;
+    for (let i = invalidInputs.length; i--;) {
+      const inputName = invalidInputs[i];
+      const input = this.state.tovalidate.inputs[inputName];
+      checkInputMutuallyValidation(input);
+    }
+  }
+  return valid;
 };
 
 proto.addComponents = function(components = []) {
@@ -119,8 +179,9 @@ proto.addedComponentTo = function(formcomponent = 'body') {
   this.state.addedcomponentto[formcomponent] = true;
 };
 
-proto.addToValidate = function(validate) {
-  this.state.tovalidate.push(validate);
+proto.addToValidate = function(input) {
+  this.state.tovalidate.inputs[input.name] = input;
+  input.validate.valid === false && this.state.tovalidate.invalids.push(input.name);
 };
 
 proto.getState = function () {
@@ -145,7 +206,6 @@ proto._getField = function(fieldName){
 proto.getEventBus = function() {
   return this.eventBus;
 };
-
 
 proto.setIndexHeader = function(index) {
   this.state.currentheaderindex = index;

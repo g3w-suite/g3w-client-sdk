@@ -6,7 +6,7 @@
       :data-url="state.input.options.uploadurl"
       @change="onChange"
       v-disabled="!isEditable()"
-      :class="{'input-error-validation' : !state.validate.valid}"
+      :class="{'input-error-validation' : notvalid}"
       type="file">
     <bar-loader :loading="loading"></bar-loader>
     <g3w-media :state="data">

@@ -11,9 +11,14 @@ const BaseInput = {
     }
   },
   template: require('./baseinput.html'),
+  computed: {
+    notvalid() {
+      return this.state.validate.valid === false;
+    }
+  },
   methods: {
-    // called when input value chage
-    change: function(options) {
+    // called when input value change
+    change: function(options={}) {
       // validate input
       this.service.validate(options);
       // emit change input
@@ -26,15 +31,13 @@ const BaseInput = {
   },
   created() {
     if (this.state.validate === undefined)
-      this.$set(this.state, 'validate', {});
-    this.$set(this.state.validate, 'valid', true);
-    this.$set(this.state.validate, 'message', null);
-    this.change();
-  },
-  mounted: function() {
-    this.$nextTick(() => {
-      this.$emit('addinput', this.state);
-    })
+      this.state.validate = {};
+    this.$set(this.state.validate, 'valid', false);
+    this.$set(this.state.validate, 'message', this.service.getErrorMessage(this.state.type));
+    if (this.state.validate.required === undefined)
+      this.$set(this.state.validate, 'required', false) ;
+    this.service.validate();
+    this.$emit('addinput', this.state);
   }
 };
 

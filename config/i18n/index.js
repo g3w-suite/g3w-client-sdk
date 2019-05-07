@@ -101,6 +101,7 @@ export default {
             input_validation_error: "Campo obbligatorio o tipo valore non corretto",
             integer: "intero",
             text: "testuale",
+            textarea: "testuale",
             string: "stringa",
             date: "data",
             float: "float"
@@ -225,6 +226,7 @@ export default {
             input_validation_error: "Mandatory Field or wrong data type",
             integer: "integer",
             text: "text",
+            textarea: "text",
             string: "string",
             date: "date",
             float: "float"

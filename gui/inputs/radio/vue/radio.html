@@ -7,7 +7,7 @@
         :value="value.value"
         style="width:100%"
         v-disabled="!isEditable()"
-        :class="{'input-error-validation' : !state.validate.valid}"
+        :class="{'input-error-validation' : notvalid}"
         class="magic-radio"
         v-model="radio_value"
         type="radio">

@@ -5,10 +5,10 @@ function Service(options = {}) {
   // set state of input
   this.state = options.state || {};
   // type of input
-  const validatorType = this.state.type;
+  const type = this.state.type;
   this._validatorOptions = options.validatorOptions || this.state.input.options || {};
   // useful for the validator to validate imput
-  this._validator = Validators.get(validatorType);
+  this._validator = Validators.get(type);
 }
 
 const proto = Service.prototype;
@@ -48,17 +48,15 @@ proto.setValidator = function(validator) {
 
 // general method to check the value of the state is valid or not
 proto.validate = function() {
-  if (!_.isEmpty(_.trim(this.state.value))) {
+  if (!_.isEmpty(_.trim(this.state.value)))
     this.state.validate.valid = this._validator.validate(this.state.value, this._validatorOptions);
-  } else {
-    this.state.validate.valid = !!!this.state.validate.required;
-  }
-  this.state.validate.message = this.state.validate.valid ? null : this.getErrorValidateMessage(this.state.type) ;
-  return this.state.valid;
+  else
+    this.state.validate.valid = !this.state.validate.required;
+  return this.state.validate.valid;
 };
 
-proto.getErrorValidateMessage = function(field_type) {
-  return t("sdk.form.inputs.input_validation_error") + "("+t("sdk.form.inputs." + field_type) + ")";
+proto.getErrorMessage = function(type) {
+  return t("sdk.form.inputs.input_validation_error") + "("+t("sdk.form.inputs." + type) + ")";
 };
 
 proto.isEditable = function() {

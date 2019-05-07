@@ -24,8 +24,8 @@ const vueComponentObject = {
       this.$options.service.setIndexHeader(index);
       this.$options.service.setComponent(this.state.components[index]);
     },
-    changeInput: function() {
-      return this.$options.service.isValid();
+    changeInput: function(input) {
+      return this.$options.service.isValid(input);
     },
     addToValidate: function(validate) {
       this.$options.service.addToValidate(validate);
@@ -44,6 +44,9 @@ const vueComponentObject = {
       this.switchComponent(0);
     });
     this.$options.service.getEventBus().$on('addtovalidate', this.addToValidate);
+  },
+  mounted() {
+    this.$options.service.isValid();
   },
   beforeDestroy() {
     this.$options.service.getEventBus().$off('addtovalidate');
@@ -96,8 +99,6 @@ function FormComponent(options = {}) {
     .then(() => {
       // set modal window to true
       GUI.setModal(true);
-      //checkform validation
-      this.getService().isValid();
     });
   };
 

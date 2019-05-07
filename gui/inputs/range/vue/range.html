@@ -6,7 +6,7 @@
       style="width:100%; padding-right: 5px;"
       class="form-control"
       v-disabled="!isEditable()"
-      :class="{'input-error-validation' : !state.validate.valid}"
+      :class="{'input-error-validation' : notvalid}"
       v-model="state.value"
       type="number"
       :min="min"

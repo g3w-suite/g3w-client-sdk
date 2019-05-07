@@ -17,7 +17,7 @@ const BodyFormComponent = Vue.extend({
   },
   methods: {
     addToValidate: function(input) {
-      this.$emit('addtovalidate', input.validate);
+      this.$emit('addtovalidate', input);
     },
     changeInput: function(input) {
       this.$emit('changeinput', input);
