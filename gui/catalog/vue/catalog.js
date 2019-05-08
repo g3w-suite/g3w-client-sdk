@@ -235,7 +235,7 @@ const vueComponentOptions = {
   created() {
     CatalogEventHub.$on('treenodetoogled', (storeid, node, parent_mutually_exclusive) => {
       const mapService = GUI.getComponent('map').getService();
-      if(node.external) {
+      if (node.external && !node.source) {
         let layer = mapService.getLayerByName(node.name);
         layer.setVisible(!layer.getVisible());
         node.visible = !node.visible;
