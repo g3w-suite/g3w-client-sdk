@@ -36,6 +36,7 @@ const BaseInput = {
     this.$set(this.state.validate, 'message', this.service.getErrorMessage(this.state.type));
     if (this.state.validate.required === undefined)
       this.$set(this.state.validate, 'required', false) ;
+    this.state.validate.required && this.$set(this.state.validate, 'empty', true); 
     this.service.validate();
     this.$emit('addinput', this.state);
   }

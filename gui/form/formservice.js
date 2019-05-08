@@ -92,11 +92,10 @@ proto.setLoading = function(bool=false) {
 
 // Every input send to form it valid value that will change the genaral state of form
 proto.isValid = function(input) {
-  const invalidInputsLength = this.state.tovalidate.invalids.length;
   if (input) {
     //check a specific input
     const valid = input.validate.valid;
-    if (invalidInputsLength === 0) {
+    if (this.state.tovalidate.invalids.length === 0) {
       !valid && this.state.tovalidate.invalids.push(input.name);
       this.state.valid = valid;
     } else {
@@ -108,7 +107,7 @@ proto.isValid = function(input) {
       }
     }
   }
-  this.state.valid = invalidInputsLength === 0 ? true: this._checkFormValidationComplete(input);
+  this.state.valid = this.state.tovalidate.invalids.length === 0 ? true: this._checkFormValidationComplete(input);
 };
 
 proto._checkFormValidationComplete = function(input) {
@@ -116,13 +115,13 @@ proto._checkFormValidationComplete = function(input) {
   const init = !input;
   const checkInputMutuallyValidation = (input) => {
     const isvalidinput = input.validate.valid;
-    const isEmpty = _.isEmpty(_.trim(input.value));
+    const isEmpty = input.validate.empty;
     if (input.validate.mutually) {
       let mutuallyValidInput;
       if (isvalidinput) {
         input.validate.mutually.map((inputName) => {
           const mutallyInput = this.state.tovalidate.inputs[inputName];
-          mutallyInput.validate.valid = (mutallyInput.validate.valid === false && _.isEmpty(_.trim(mutallyInput.value))) ? undefined: mutallyInput.validate.valid;
+          mutallyInput.validate.valid = (mutallyInput.validate.valid === false && mutallyInput.validate.empty) ? undefined: mutallyInput.validate.valid;
         });
         valid = !input.validate.mutually.find((inputName) => {
           return this.state.tovalidate.inputs[inputName].validate.valid === false;
@@ -141,7 +140,7 @@ proto._checkFormValidationComplete = function(input) {
           return this.state.tovalidate.inputs[inputName].validate.valid;
         });
         input.validate.valid =  mutuallyValidInput && isEmpty ? undefined: isvalidinput;
-        valid = input.validate.valid || (input.validate.valid === undefined && !mutuallyValidInput);
+        valid = input.validate.valid || (input.validate.valid === undefined && mutuallyValidInput);
       }
     } else
       valid = isvalidinput || input.validate.valid === undefined

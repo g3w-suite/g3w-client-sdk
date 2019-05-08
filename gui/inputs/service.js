@@ -48,10 +48,14 @@ proto.setValidator = function(validator) {
 
 // general method to check the value of the state is valid or not
 proto.validate = function() {
-  if (!_.isEmpty(_.trim(this.state.value)))
+  if (!_.isEmpty(_.trim(this.state.value))) {
+    this.state.validate.empty = false;
     this.state.validate.valid = this._validator.validate(this.state.value, this._validatorOptions);
-  else
+  }
+  else {
+    this.state.validate.empty = true;
     this.state.validate.valid = !this.state.validate.required;
+  }
   return this.state.validate.valid;
 };
 
