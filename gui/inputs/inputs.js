@@ -12,6 +12,7 @@ const InputsComponents = {
   'select_input': require('./select/vue/select'),
   'media_input': require('./media/vue/media'),
   'select_autocomplete_input': require('./select/vue/select'),
+  'table_input': require('./relations/table/vue/table')
 };
 
 module.exports = InputsComponents;
