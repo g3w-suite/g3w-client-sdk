@@ -31,6 +31,20 @@ const relationsComponent = {
       });
       return infoFeatures
     }
+  },
+  mounted() {
+   this.$nextTick(()=> {
+     if (this.relations.length === 1) {
+       const relation = this.relations[0];
+       relation.noback = true;
+       this.showRelation(relation);
+     }
+   })
+  },
+  beforeDestroy() {
+    if (this.relations.length === 1) {
+      delete this.relations[0].noback;
+    }
   }
 };
 /*-----------------------------------*/
@@ -44,10 +58,10 @@ const relationComponent = {
   },
   computed: {
     showrelationslist() {
-      return this.previousview === 'relations'
+      return this.previousview === 'relations' && !this.relation.noback;
     },
     one() {
-      return this.relation.type == 'ONE'
+      return this.relation.type === 'ONE'
     }
   },
   methods: {
@@ -129,7 +143,7 @@ const InternalComponent = Vue.extend({
       RelationPageEventBus.$emit('reload');
     },
     isOneRelation() {
-      return this.relations.length == 1 && this.relations[0].type == 'ONE'
+      return this.relations.length == 1 && this.relations[0].type === 'ONE'
     },
     showRelation: function(relation) {
       this.relation = relation;
