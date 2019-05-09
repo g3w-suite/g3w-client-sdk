@@ -20,7 +20,7 @@ const relationsComponent = {
       let index = 0;
       _.forEach(this.feature.attributes, function(value, key) {
         if (index > 2) return false;
-        if (value && _.isString(value) && value.indexOf('/') == -1 ) {
+        if (value && _.isString(value) && value.indexOf('/') === -1 ) {
           infoFeatures.push({
             key: key,
             value: value
@@ -33,13 +33,11 @@ const relationsComponent = {
     }
   },
   mounted() {
-   this.$nextTick(()=> {
-     if (this.relations.length === 1) {
-       const relation = this.relations[0];
-       relation.noback = true;
-       this.showRelation(relation);
-     }
-   })
+    if (this.relations.length === 1) {
+      const relation = this.relations[0];
+      relation.noback = true;
+      this.showRelation(relation);
+    }
   },
   beforeDestroy() {
     if (this.relations.length === 1) {
@@ -53,12 +51,13 @@ let relationDataTable;
 const relationComponent = {
   template: require('./relation.html'),
   props: ['table', 'relation', 'previousview'],
+  inject: ['relationnoback'],
   components: {
     Field
   },
   computed: {
     showrelationslist() {
-      return this.previousview === 'relations' && !this.relation.noback;
+      return this.previousview === 'relations' && !this.relationnoback;
     },
     one() {
       return this.relation.type === 'ONE'
@@ -134,6 +133,11 @@ const InternalComponent = Vue.extend({
       previousview: this.$options.currentview
     }
   },
+  provide() {
+    return {
+      relationnoback: this.$options.relations.length === 1
+    }
+  },
   components: {
     'relations': relationsComponent,
     'relation': relationComponent
@@ -157,9 +161,6 @@ const InternalComponent = Vue.extend({
         this.table = this.$options.service.buildRelationTable(relations);
         this.currentview = 'relation';
         this.previousview = 'relations';
-        Vue.nextTick(() => {
-          $(".query-relations .nano").nanoScroller();
-        })
       }).catch((err) => {
       }).finally(() => {
         GUI.setLoadingContent(false);

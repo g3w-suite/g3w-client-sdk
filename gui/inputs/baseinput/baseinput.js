@@ -30,13 +30,17 @@ const BaseInput = {
     isVisible: function() {}
   },
   created() {
+    ///DEV
+    if (this.state.input.type === 'table')
+      this.state.value = [['Pippo', 10]];
+    ///DEV
     if (this.state.validate === undefined)
       this.state.validate = {};
     this.$set(this.state.validate, 'valid', false);
     this.$set(this.state.validate, 'message', this.service.getErrorMessage(this.state.type));
     if (this.state.validate.required === undefined)
       this.$set(this.state.validate, 'required', false) ;
-    this.state.validate.required && this.$set(this.state.validate, 'empty', true); 
+    this.state.validate.required && this.$set(this.state.validate, 'empty', true);
     this.service.validate();
     this.$emit('addinput', this.state);
   }

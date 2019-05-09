@@ -1,20 +1,11 @@
 <baseinput :state="state">
   <div slot="body" v-disabled="!isEditable()" :class="{'input-error-validation' : notvalid}" style="max-width: 100%; min-width: 100%">
     <div class="input_table_header" style="display: flex; justify-content: flex-end" >
-      <span @click="addRow">Add</span>
+      <span @click="addRow" class="skin-color" :class="g3wtemplate.font['plus']"></span>
     </div>
-    <table class="table">
-      <tr>
-        <th v-for="header in state.input.options.headers">{{header.name}}</th>
-      </tr>
-      <tr>
-        <td>Jill</td>
-        <td>50</td>
-      </tr>
-      <tr>
-        <td>Eve</td>
-        <td>94</td>
-      </tr>
+    <table class="table table-bordered">
+      <input-table-header :headers="headers"></input-table-header>
+      <input-table-body :columntypes="columntypes" :rows="state.value"></input-table-body>
     </table>
   </div>
 
