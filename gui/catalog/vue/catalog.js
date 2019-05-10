@@ -422,14 +422,14 @@ Vue.component('tristate-tree', {
               _childsLength+=1;
               layerstree.nodes.forEach((layer) => {
                 if (!layer.nodes) {
-                  if (layer.visible) {
+                  if (layer.checked) {
                     layerstree.lastLayerIdVisible = layer.id;
                     _visibleChilds += 1;
                   }
                 } else {
                   const countMEVisibleLayers = (nodes) => {
                     const vME = nodes.reduce((previous, node) => {
-                        if (node.id) return node.visible || previous;
+                        if (node.id) return node.checked || previous;
                         else return countMEVisibleLayers(node.nodes) || previous;
                       }
                       , false);
@@ -442,7 +442,7 @@ Vue.component('tristate-tree', {
               layerstree.nodes.forEach((layer) => {
                 if (!layer.nodes && layer.geolayer) {
                   _childsLength+=1;
-                  if (layer.visible) {
+                  if (layer.checked) {
                     _visibleChilds += 1;
                   }
                 } else if (layer.nodes) {

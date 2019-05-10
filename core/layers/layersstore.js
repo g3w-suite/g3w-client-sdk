@@ -331,7 +331,7 @@ proto._mutuallyExclude = function(layerId) {
           let nodeIds = [];
           layer.nodes.forEach((node) => {
             if (node.id) {
-              if (node.id != layerId && node.geolayer)
+              if (node.id !== layerId && node.geolayer)
                 nodeIds.push(node.id);
               else
                 checked_node = node;
@@ -354,15 +354,16 @@ proto._mutuallyExclude = function(layerId) {
 
 proto.toggleLayer = function(layerId, visible, mutually_exclusive) {
   const layer = this.getLayerById(layerId);
-  const checked = visible !== null;
-  const oldChecked = layer.isChecked();
-  visible = visible !== null ? visible : !layer.state.visible;
+  const checked = layer.isChecked();
+  visible = visible !== null ? checked : !checked;
   if (mutually_exclusive) {
     this._mutuallyExclude(layerId)
   }
-  this.setLayersVisible([layerId], visible);
-  if (checked)
-    layer.setChecked(!oldChecked);
+  if (layer.isDisabled())
+    layer.setVisible(false);
+  else
+    this.setLayersVisible([layerId], visible);
+  layer.setChecked(!checked);
   return layer;
 };
 
