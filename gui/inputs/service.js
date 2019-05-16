@@ -6,9 +6,9 @@ function Service(options = {}) {
   this.state = options.state || {};
   // type of input
   const type = this.state.type;
-  this._validatorOptions = options.validatorOptions || this.state.input.options || {};
+  const validatorOptions = (options.validatorOptions || this.state.input.options) || {};
   // useful for the validator to validate imput
-  this._validator = Validators.get(type);
+  this._validator = Validators.get(type, validatorOptions);
 }
 
 const proto = Service.prototype;
@@ -48,11 +48,10 @@ proto.setValidator = function(validator) {
 
 // general method to check the value of the state is valid or not
 proto.validate = function() {
-  if (!_.isEmpty(_.trim(this.state.value))) {
+  if ((Array.isArray(this.state.value) && this.state.value.length) || !_.isEmpty(_.trim(this.state.value))) {
     this.state.validate.empty = false;
-    this.state.validate.valid = this._validator.validate(this.state.value, this._validatorOptions);
-  }
-  else {
+    this.state.validate.valid = this._validator.validate(this.state.value);
+  } else {
     this.state.validate.empty = true;
     this.state.validate.valid = !this.state.validate.required;
   }

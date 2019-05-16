@@ -6,7 +6,7 @@ const Filter = require('core/layers/filter/filter');
 const ProviderFactory = require('core/layers/providers/providersfactory');
 
 // Base Class of all Layer
-function Layer(config = {}) {
+function Layer(config={}) {
   const ProjectsRegistry = require('core/project/projectsregistry');
   ProjectsRegistry.onafter('setCurrentProject', (project) => {
     const projectType = project.getType();
@@ -23,8 +23,9 @@ function Layer(config = {}) {
   config.geolayer = false;
   config.baseLayer =  false;
   config.fields = config.fields || {};
-  config.urls = config.urls || {
-    query: config.infourl && config.infourl !== '' ? config.infourl : config.wmsUrl
+  config.urls = {
+    query: config.infourl && config.infourl !== '' ? config.infourl : config.wmsUrl,
+    ...(config.urls || {})
   };
   this.config = config;
   // dinamic layer values
@@ -79,6 +80,14 @@ inherit(Layer, G3WObject);
 
 const proto = Layer.prototype;
 
+proto.getWMSLayerName = function() {
+  return this.isWmsUseLayerIds() ? this.getId() : this.getName()
+};
+
+proto.isWmsUseLayerIds = function() {
+  return this.config.wms_use_layer_ids;
+};
+
 proto.getShp = function() {
   const url = this.getUrl('shp');
   return XHR.fileDownload({
@@ -104,7 +113,7 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
   if (!(this.getProvider('filter')  || this.getProvider('data'))) {
    d.reject();
   } else {
-    if (this.getServerType() == 'QGIS' && [Layer.SourceTypes.POSTGIS,Layer.SourceTypes.SPATIALITE].indexOf(this.config.source.type) != -1) {
+    if (this.getServerType() === 'QGIS' && [Layer.SourceTypes.POSTGIS,Layer.SourceTypes.SPATIALITE].indexOf(this.config.source.type) !== -1) {
       provider = this.getProvider('data');
       provider.getFeatures({editing: false}, params)
         .done((response) => {
@@ -152,7 +161,7 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
       const filter = new Filter();
       filter.getAll();
       provider.query({
-        filter: filter
+        filter
       })
         .done((response) => {
           const data = provider.digestFeaturesForLayers(response.data);
@@ -170,7 +179,6 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
       d.reject()
     }
   }
-
   return d.promise();
 };
 
@@ -460,7 +468,7 @@ proto.changeAttribute = function(attribute, type, options) {
 proto.getAttributeLabel = function(name) {
   let label;
   this.getAttributes().forEach((field) => {
-    if (field.name == name){
+    if (field.name === name){
       label = field.label;
     }
   });

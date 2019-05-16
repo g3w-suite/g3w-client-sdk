@@ -146,7 +146,7 @@ proto.handleQueryResponseFromServerSingleLayer = function(layer, response, proje
 proto.handleQueryResponseFromServer = function(response, projections, layers, wms=true) {
   layers = layers ? layers : [this._layer];
   const layer = layers[0];
-  if (!layer.isExternalWMS()) {
+  if (layer.getType() === "table" || !layer.isExternalWMS()) {
     const wmsAndUseLayerIds = wms && layer.isWmsUseLayerIds();
     response =  wmsAndUseLayerIds ? response : this._handleXMLStringResponseBeforeConvertToJSON({
       layers,

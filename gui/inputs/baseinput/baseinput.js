@@ -3,13 +3,6 @@ const Service = require('../service');
 
 const BaseInput = {
   props: ['state'],
-  data: function() {
-    return {
-      service: new Service({
-        state: this.state
-      })
-    }
-  },
   template: require('./baseinput.html'),
   computed: {
     notvalid() {
@@ -18,9 +11,9 @@ const BaseInput = {
   },
   methods: {
     // called when input value change
-    change: function(options={}) {
+    change: function() {
       // validate input
-      this.service.validate(options);
+      this.service.validate();
       // emit change input
       this.$emit('changeinput', this.state);
     },
@@ -30,10 +23,10 @@ const BaseInput = {
     isVisible: function() {}
   },
   created() {
-    ///DEV
-    if (this.state.input.type === 'table')
-      this.state.value = [['Pippo', 10]];
-    ///DEV
+    if (!this.service)
+      this.service = new Service({
+        state: this.state
+      });
     if (this.state.validate === undefined)
       this.state.validate = {};
     this.$set(this.state.validate, 'valid', false);

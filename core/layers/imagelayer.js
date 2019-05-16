@@ -74,7 +74,7 @@ proto.isExternalWMS = function() {
 };
 
 proto.getWMSLayerName = function() {
-  let layerName = (!this.isExternalWMS() && this.isWmsUseLayerIds()) ? this.config.id : this.config.name;
+  let layerName = (!this.isExternalWMS() && this.isWmsUseLayerIds()) ? this.getId() : this.getName();
   if (this.config.source && this.config.source.layers) {
     layerName = this.config.source.layers;
   }
@@ -172,10 +172,6 @@ proto.getMapLayer = function(options = {}, extraParams) {
   return mapLayer;
 };
 
-
-proto.isWmsUseLayerIds = function() {
-  return this.config.wms_use_layer_ids;
-};
 
 ImageLayer.WMSServerTypes = [
   Layer.ServerTypes.QGIS,

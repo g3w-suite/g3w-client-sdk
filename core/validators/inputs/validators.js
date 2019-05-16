@@ -10,9 +10,9 @@ const Validators = {
     default: require('./validator'),
   },
 
-  get(type) {
+  get(type, options={}) {
     const Validator = this.validators[type] || this.validators.default;
-    return new Validator;
+    return new Validator(options);
   }
 
 };

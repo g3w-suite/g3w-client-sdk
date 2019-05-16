@@ -62,8 +62,8 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
           dir: 'asc'
         })
       }
-      const ordering = order[0].dir == 'asc' ? this.state.headers[order[0].column].name : '-'+this.state.headers[order[0].column].name;
-      this.currentPage = start == 0  ? 1 : (start/length) + 1;
+      const ordering = order[0].dir === 'asc' ? this.state.headers[order[0].column].name : '-'+this.state.headers[order[0].column].name;
+      this.currentPage = start === 0  ? 1 : (start/length) + 1;
       this.layer.getDataTable({
         page: this.currentPage,
         page_size: length,

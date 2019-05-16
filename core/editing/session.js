@@ -9,7 +9,7 @@ const SessionsRegistry = require('./sessionsregistry');
 // classe Session
 function Session(options = {}) {
   this.setters = {
-    start: function(options) {
+    start: function(options={}) {
       return this._start(options);
     },
     getFeatures: function(options) {
@@ -54,7 +54,7 @@ proto.deleteState = function(stateId) {
   this._history.removeState(stateId);
 };
 
-proto._start = function(options) {
+proto._start = function(options={}) {
   const d = $.Deferred();
   // vado a registrare la sessione
   SessionsRegistry.register(this);
@@ -91,10 +91,9 @@ proto._getFeatures = function(options) {
   return d.promise();
 };
 
-// funzione che permette di clonerae le feature che vengono reperite tramite editor
+//clone features method
 proto._cloneFeatures = function(features) {
-  const cloneFeatures = features.map((feature) => feature.clone());
-  return cloneFeatures;
+  return features.map((feature) => feature.clone());
 };
 
 proto.isStarted = function() {
@@ -353,14 +352,13 @@ proto.getCommitItems = function() {
 
 // funzione che serializzerà tutto che è stato scritto nella history e passato al server
 // per poterlo salvare nel database
-proto.commit = function(options= {}) {
+proto.commit = function({ids=null, relations=true}={}) {
   const d = $.Deferred();
   let commitItems;
   //console.log("Sessione Committing...");
   //vado a verificare se nell'opzione del commit
   // è stato passato gli gli ids degli stati che devono essere committati,
   //nel caso di non specifica committo tutto
-  const ids = options.ids || null;
   // vado a leggete l'id dal layer necessario al server
   if (ids) {
     commitItems = this._history.commit(ids);
@@ -371,6 +369,9 @@ proto.commit = function(options= {}) {
     commitItems = this._history.commit();
     // le serializzo
     commitItems = this._serializeCommit(commitItems);
+    // if relations.is set to false no relations are commitetted to server
+    if (!relations) commitItems.relations = {};
+    // in case op
     // passo all'editor un secondo parametro.
     this._editor.commit(commitItems, this._featuresstore)
       .then((response) => {

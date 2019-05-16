@@ -37,17 +37,17 @@ proto.query = function(options = {}) {
   const d = $.Deferred();
   const feature_count = options.feature_count || 10;
   const filter = options.filter || null;
-  const layerProjection = this._layer.getProjection();
-  this._projections.map = this._layer.getMapProjection() || layerProjection;
-  const crs = this._projections.map.getCode();
+  const crs = this._projections.map ? this._projections.map.getCode() : null;
   const queryUrl = options.queryUrl || this._queryUrl;
   const layers = options.layers;
-  const layerNames = layers ? layers.map(layer => layer.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
+  const isVector = this._layer.getType() === "vector";
+  const layerNames = layers ? layers.map(layer => layer.getName()).join(',') : this._layer.getName();
   if (filter) {
     // check if geomemtry filter. If not i have to remove projection layer
-    if (filter.getType() === 'geometry')
-      this._projections.layer = layerProjection;
-    else
+    if (filter.getType() === 'geometry') {
+      this._projections.layer = this._layer.getProjection();
+      this._projections.map = this._layer.getMapProjection() || this._projections.layer;
+    } else
       this._projections.layer = null;
     const url = queryUrl ;
     const params = {
@@ -60,7 +60,7 @@ proto.query = function(options = {}) {
       FEATURE_COUNT: feature_count,
       CRS: crs,
       FILTER: filter.get(),
-      WITH_GEOMETRY:1
+      WITH_GEOMETRY: isVector ? 1: 0
     };
     XHR.get({
       url,

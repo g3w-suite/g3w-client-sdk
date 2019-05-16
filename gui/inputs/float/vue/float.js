@@ -4,14 +4,14 @@ const Service = require('../service');
 
 const FloatInput = Vue.extend({
   mixins: [Input],
+  template: require('./float.html'),
   data: function() {
     return {
       service: new Service({
         state: this.state
       })
     }
-  },
-  template: require('./float.html')
+  }
 });
 
 module.exports = FloatInput;

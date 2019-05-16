@@ -104,7 +104,8 @@ export default {
             textarea: "testuale",
             string: "stringa",
             date: "data",
-            float: "float"
+            float: "float",
+            table: "table"
           },
           footer: {
             required_fields: "Campi richiesti"
@@ -229,7 +230,8 @@ export default {
             textarea: "text",
             string: "string",
             date: "date",
-            float: "float"
+            float: "float",
+            table: "table"
           },
           footer: {
             "required_fields": "Required fields"
