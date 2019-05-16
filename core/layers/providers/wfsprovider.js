@@ -127,7 +127,7 @@ proto._doRequest = function(filter, params = {}, layers) {
         d.resolve(response)
       }).fail((err) => {
         if (err.status === 200)
-          d.resolve(responseText);
+          d.resolve(err.responseText);
         else
           d.reject(err)
       })
