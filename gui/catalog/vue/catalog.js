@@ -152,11 +152,11 @@ const vueComponentOptions = {
     },
     canShowWmsUrl(layerId) {
       const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
-      return !!(!originalLayer.isType('table') && originalLayer.getFullWmsUrl());
+      return originalLayer ? (!!(!originalLayer.isType('table') && originalLayer.getFullWmsUrl())) : false;
     },
     canDownloadShp(layerId) {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-      return layer.isShpDownlodable();
+      return layer ? layer.isShpDownlodable(): false;
     },
     copyWmsUrl(evt, layerId) {
       const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
@@ -221,7 +221,7 @@ const vueComponentOptions = {
       const mapService = GUI.getComponent('map').getService();
       this.layerMenu.colorMenu.color = val;
       const layer = mapService.getLayerByName(this.layerMenu.name);
-      layer.setStyle(mapService.setExternalLayerColor(val));
+      layer.setStyle(mapService.setExternalLayerStyle(val));
     },
     showColorMenu: function(bool, evt) {
       if(bool) {
@@ -239,6 +239,7 @@ const vueComponentOptions = {
         let layer = mapService.getLayerByName(node.name);
         layer.setVisible(!layer.getVisible());
         node.visible = !node.visible;
+        node.checked = node.visible;
       } else if(!storeid) {
         node.visible = !node.visible;
         let layer = mapService.getLayerById(node.id);

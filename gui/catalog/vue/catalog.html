@@ -62,7 +62,7 @@
       <span :class="g3wtemplate.getFontClass('list')"> </span>  {{ layerMenu.items.open_attribute_table }}
       </i>
     </li>
-    <li @click.prevent.stop="" v-if="layerMenu.layer.external" @mouseleave.self="showColorMenu(false,$event)" @mouseover.self="showColorMenu(true,$event)"> Setta/Cambia Colore <i :class="g3wtemplate.getFontClass('arrow-right')" style="padding-left:10px;" aria-hidden="true"></i>
+    <li @click.prevent.stop="" v-if="layerMenu.layer.external && !layerMenu.layer.source" @mouseleave.self="showColorMenu(false,$event)" @mouseover.self="showColorMenu(true,$event)"> Setta/Cambia Colore <i :class="g3wtemplate.getFontClass('arrow-right')" style="padding-left:10px;" aria-hidden="true"></i>
       <ul v-if="layerMenu.colorMenu.show" style="position:fixed" :style="{ top: layerMenu.colorMenu.top + 'px', left: layerMenu.colorMenu.left +   'px' }">
         <li style="padding:0;">
           <chrome-picker

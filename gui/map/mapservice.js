@@ -2069,6 +2069,7 @@ proto.addExternalLayer = function(externalLayer) {
       maxx: extent[2],
       maxy: extent[3]
     };
+    externalLayer.checked = true;
     map.addLayer(vectorLayer);
     QueryResultService.registerVectorLayer(vectorLayer);
     catalogService.addExternalLayer(externalLayer);

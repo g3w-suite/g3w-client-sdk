@@ -74,11 +74,15 @@ proto.isExternalWMS = function() {
 };
 
 proto.getWMSLayerName = function() {
-  let layerName = (!this.isExternalWMS() && this.isWmsUseLayerIds()) ? this.config.id : this.config.name;
+  let layerName = (!this.isExternalWMS() && this.isWmsUseLayerIds()) ? this.getId() : this.getName();
   if (this.config.source && this.config.source.layers) {
     layerName = this.config.source.layers;
   }
   return layerName;
+};
+
+proto.getPrintLayerName = function() {
+  return this.isWmsUseLayerIds() ? this.getId() : this.getName();
 };
 
 proto.getStringBBox = function() {

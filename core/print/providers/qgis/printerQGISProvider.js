@@ -56,7 +56,7 @@ proto.GET = function({url, params, mime_type}) {
 proto._getParamsFromOptions = function(layers, options) {
   const templateMap = options.map || 'map0';
   layers = layers.map((layer) => {
-    return layer.getWMSLayerName()
+    return layer.getPrintLayerName()
   });
   const params = {
     SERVICE: 'WMS',
