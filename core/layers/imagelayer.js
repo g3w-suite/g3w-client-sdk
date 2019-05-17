@@ -81,6 +81,10 @@ proto.getWMSLayerName = function() {
   return layerName;
 };
 
+proto.getPrintLayerName = function() {
+  return this.isWmsUseLayerIds() ? this.getId() : this.getName();
+};
+
 proto.getStringBBox = function() {
   const bbox = this.config.bbox;
   return `${bbox.minx},${bbox.miny},${bbox.maxx},${bbox.maxy}`;
