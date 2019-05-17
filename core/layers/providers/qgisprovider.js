@@ -37,17 +37,18 @@ proto.query = function(options = {}) {
   const d = $.Deferred();
   const feature_count = options.feature_count || 10;
   const filter = options.filter || null;
-  const crs = this._projections.map ? this._projections.map.getCode() : null;
+  const isVector = this._layer.getType() !== "table";
+  if (isVector) {
+    this._projections.layer = this._layer.getProjection();
+    this._projections.map = this._layer.getMapProjection() || this._projections.layer;
+  }
+  const crs = isVector ? this._projections.map.getCode() : null;
   const queryUrl = options.queryUrl || this._queryUrl;
   const layers = options.layers;
-  const isVector = this._layer.getType() === "vector";
   const layerNames = layers ? layers.map(layer => layer.getName()).join(',') : this._layer.getName();
   if (filter) {
     // check if geomemtry filter. If not i have to remove projection layer
-    if (filter.getType() === 'geometry') {
-      this._projections.layer = this._layer.getProjection();
-      this._projections.map = this._layer.getMapProjection() || this._projections.layer;
-    } else
+    if (filter.getType() !== 'geometry')
       this._projections.layer = null;
     const url = queryUrl ;
     const params = {
