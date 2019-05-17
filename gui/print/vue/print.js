@@ -50,7 +50,7 @@ const vueComponentOptions = {
 };
 
 
-function PrintComponent(options) {
+function PrintComponent(options={}) {
   base(this, options);
   this.title = "print";
   this.vueComponent = vueComponentOptions;
