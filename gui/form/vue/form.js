@@ -27,8 +27,8 @@ const vueComponentObject = {
     changeInput: function(input) {
       return this.$options.service.isValid(input);
     },
-    addToValidate: function(validate) {
-      this.$options.service.addToValidate(validate);
+    addToValidate: function(input) {
+      this.$options.service.addToValidate(input);
     },
     // set layout
     reloadLayout: function() {

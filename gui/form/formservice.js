@@ -143,7 +143,7 @@ proto._checkFormValidationComplete = function(input) {
         valid = input.validate.valid || (input.validate.valid === undefined && mutuallyValidInput);
       }
     } else
-      valid = isvalidinput || input.validate.valid === undefined
+      valid = isvalidinput && this.state.tovalidate.invalids.length === 0;
   };
   if (input)
     checkInputMutuallyValidation(input);
