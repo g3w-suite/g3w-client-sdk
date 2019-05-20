@@ -79,7 +79,10 @@ function FormService() {
         })
       }
     }
-  }
+  };
+  this.eventBus.$on('set-loading-form', (bool=false) => {
+    this.state.loading = bool;
+  })
 }
 
 inherit(FormService, G3WObject);
@@ -220,6 +223,13 @@ proto.getSession = function() {
 
 proto.getInputs = function() {
   return this.context_inputs.inputs;
+};
+
+//method to clear all the open thinghs opened by service
+proto.clearAll = function() {
+  this.eventBus.$off('addtovalidate');
+  this.eventBus.$off('set-main-component');
+  this.eventBus.$off('set-loading-form');
 };
 
 

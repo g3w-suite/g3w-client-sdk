@@ -49,8 +49,7 @@ const vueComponentObject = {
     this.$options.service.isValid();
   },
   beforeDestroy() {
-    this.$options.service.getEventBus().$off('addtovalidate');
-    this.$options.service.getEventBus().$off('set-main-component');
+    this.$options.service.clearAll();
   }
 };
 
@@ -105,7 +104,6 @@ function FormComponent(options = {}) {
   this.layout = function() {
     this.internalComponent.reloadLayout();
   };
-
 }
 
 inherit(FormComponent, Component);
