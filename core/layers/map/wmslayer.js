@@ -91,8 +91,7 @@ proto.getQueryableLayers = function() {
 proto._getVisibleLayers = function() {
   const visibleLayers = [];
   this.layers.forEach((layer) => {
-    layer.setVisible(!layer.isDisabled());
-    if (layer.isVisible() && layer.isChecked()) {
+    if (layer.isVisible()) {
       visibleLayers.push(layer);
     }
   });

@@ -332,7 +332,7 @@ const vueComponentOptions = {
         nodes.map(turnOnOffSubGroups.bind(null, isGroupChecked, currentLayersIds));
         for (let i = parentLayers.length; i--;) {
           const {layersIds, checked} = parentLayers[i];
-          layerStore.toggleLayers(layersIds, checked , QGISVERSION===2);
+          layerStore.toggleLayers(layersIds, checked , QGISVERSION === 2);
         }
       }
     });

@@ -5,6 +5,7 @@ function GeoLayerMixin(config={}) {}
 const proto = GeoLayerMixin.prototype;
 
 proto.setup = function(config) {
+
   if (!this.config) {
     console.log("GeoLayerMixin must be used from a valid (geo) Layer instance");
     return;
@@ -65,8 +66,13 @@ proto.isPrintable = function({scale}={}) {
 
 proto.setDisabled = function(resolution, mapUnits='m') {
   if (this.state.scalebasedvisibility) {
+    const ProjectsRegistry = require('core/project/projectsregistry');
+    const QGISVERSION = ProjectsRegistry.getCurrentProject().getQgisVersion({
+      type: 'major'
+    });
     const mapScale = getScaleFromResolution(resolution, mapUnits);
-    this.state.disabled =  !(mapScale >= this.state.maxscale && mapScale <= this.state.minscale);
+    this.state.disabled = !(mapScale >= this.state.maxscale && mapScale <= this.state.minscale);
+    this.state.disabled = (QGISVERSION === 3 && this.state.minscale === 0) ? !(mapScale >= this.state.maxscale) : this.state.disabled;
   } else {
     this.state.disabled = false
   }
