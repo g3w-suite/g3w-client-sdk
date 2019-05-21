@@ -24,7 +24,7 @@
           @click="removeExternalLayer(layerstree.name)">
     </span>
     <span v-show="!layerstree.hidden"
-      @click.stop="!layerstree.disabled ? toggle(false) : null"
+      @click.stop="toggle(false)"
       :class="[layerstree.visible  ? g3wtemplate.getFontClass('check'): g3wtemplate.getFontClass('uncheck'),  parentFolder ? 'child' : 'root' ]"
       class="checkbox-layer"></span>
   </template>

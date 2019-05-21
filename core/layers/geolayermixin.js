@@ -66,7 +66,7 @@ proto.isPrintable = function({scale}={}) {
 proto.setDisabled = function(resolution, mapUnits='m') {
   if (this.state.scalebasedvisibility) {
     const mapScale = getScaleFromResolution(resolution, mapUnits);
-    this.state.disabled =  !(mapScale >= this.state.maxscale && mapScale <= this.state.minscale);
+    this.state.disabled = !(mapScale >= this.state.maxscale && mapScale <= this.state.minscale);
   } else {
     this.state.disabled = false
   }
