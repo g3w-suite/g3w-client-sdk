@@ -89,13 +89,9 @@ proto.getQueryableLayers = function() {
 };
 
 proto._getVisibleLayers = function() {
-  const visibleLayers = [];
-  this.layers.forEach((layer) => {
-    if (layer.isVisible()) {
-      visibleLayers.push(layer);
-    }
+  return this.layers.filter((layer) => {
+    return layer.isVisible();
   });
-  return visibleLayers;
 };
 
 proto._makeOlLayer = function(withLayers) {
