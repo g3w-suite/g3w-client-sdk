@@ -51,6 +51,9 @@ const SearchPanelComponent = Vue.extend({
       }
       return fillfieldspromises;
     },
+    changeNumericInput(input) {
+      input.value = input.value || input.value === 0 ? input.value : null;
+    },
     changeInput({attribute, value}={}) {
       this.$options.service.changeInput({attribute, value});
       //check id there are dependencies

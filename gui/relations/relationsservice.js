@@ -8,7 +8,7 @@ function RelationsComponentService() {
   this._service = new RealtionsService();
   base(this);
 
-  this.getRelations = function(options) {
+  this.getRelations = function(options={}) {
     return this._service.getRelations(options)
   };
 

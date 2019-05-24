@@ -194,6 +194,14 @@ proto.getCrs = function() {
   return this._projection.getCode();
 };
 
+/*
+* type: major, minor, patch
+* */
+proto.getQgisVersion = function({type}={}) {
+  const index = ['major', 'minor', 'patch'].indexOf(type);
+  return index === -1 ? this.state.qgis_version:  +this.state.qgis_version.split('.')[index];
+};
+
 proto.getProjection = function() {
   return this._projection;
 };

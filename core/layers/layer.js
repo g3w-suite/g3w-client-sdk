@@ -1,5 +1,6 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
+const t = require('core/i18n/i18n.service').t;
 const XHR = require('core/utils/utils').XHR;
 const G3WObject = require('core/g3wobject');
 const Filter = require('core/layers/filter/filter');
@@ -9,12 +10,22 @@ const ProviderFactory = require('core/layers/providers/providersfactory');
 function Layer(config = {}) {
   const ProjectsRegistry = require('core/project/projectsregistry');
   ProjectsRegistry.onafter('setCurrentProject', (project) => {
+    const qgisVersion = ProjectsRegistry.getCurrentProject().getQgisVersion({
+      type: 'major'
+    });
     const projectType = project.getType();
     const projectId = project.getId();
     const suffixUrl = `${projectType}/${projectId}/${config.id}/`;
     const vectorUrl = initConfig.vectorurl;
     this.config.urls.data = `${vectorUrl}data/${suffixUrl}`;
     this.config.urls.shp = `${vectorUrl}shp/${suffixUrl}`;
+    //set custom parameters based on project qgis version
+    this.config.customParams = {
+      search: {
+        I: qgisVersion === 2 ? null : 0,
+        J: qgisVersion === 2 ? null : 0
+      }
+    }
   });
   // assign some attribute
   config.id = config.id || 'Layer';
@@ -104,7 +115,7 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
   if (!(this.getProvider('filter')  || this.getProvider('data'))) {
    d.reject();
   } else {
-    if (this.getServerType() == 'QGIS' && [Layer.SourceTypes.POSTGIS,Layer.SourceTypes.SPATIALITE].indexOf(this.config.source.type) != -1) {
+    if (this.getServerType() === 'QGIS' && [Layer.SourceTypes.POSTGIS,Layer.SourceTypes.SPATIALITE].indexOf(this.config.source.type) !== -1) {
       provider = this.getProvider('data');
       provider.getFeatures({editing: false}, params)
         .done((response) => {
@@ -178,6 +189,11 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
 proto.search = function(options={}) {
   // check option feature_count
   options.feature_count = options.feature_count || 10;
+  //for qgis 2 / 3 purpose
+  options = {
+    ...options,
+    ...this.config.customParams.search
+  };
   const d = $.Deferred();
   const provider = this.getProvider('search');
   if (provider) {
@@ -189,7 +205,7 @@ proto.search = function(options={}) {
         d.reject(err);
       });
   } else {
-    d.reject('Il layer non è searchable');
+    d.reject(t('sdk.search.layer_not_searchable'));
   }
   return d.promise();
 };

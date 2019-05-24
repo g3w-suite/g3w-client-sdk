@@ -4,13 +4,17 @@
   <slot name="form">
     <form id="g3w-search-form">
       <template v-for="forminput in state.forminputs" :key="forminput.id">
-        <div v-if="forminput.type == 'numberfield'" class="form-group numeric">
+        <div v-if="forminput.type === 'numberfield'" class="form-group numeric">
           <label :for="forminput.id + ' '">{{ forminput.label }}</label>
-          <input type="number" v-model="forminput.value" class="form-control" :id="forminput.id">
+          <input type="number"
+                 @change="changeNumericInput(forminput)"
+                 @keyup="changeNumericInput(forminput)"
+                 v-model="forminput.value" class="form-control"
+                 :id="forminput.id">
         </div>
         <div v-if="forminput.type === 'textfield' || forminput.type === 'textField'" class="form-group form-item-search  text">
           <label :for="forminput.id">{{ forminput.label }}</label>
-          <input @focus="onFocus" type="text" v-model="forminput.value" class="form-control" :id="forminput.id">
+          <input @focus="onFocus" type="text" v-model="forminput.value" class="form-control" :id="forminput.id" >
         </div>
         <div v-if="forminput.type === 'selectfield'" class="form-group text">
           <label :for="forminput.id">{{ forminput.label }}</label>

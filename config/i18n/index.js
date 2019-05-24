@@ -2,7 +2,8 @@ export default {
     "it": {
       "sdk": {
         search: {
-          all: 'TUTTE'
+          all: 'TUTTE',
+          layer_not_searchable: "Il layer non è ricercabile"
         },
         print: {
           no_layers: 'Nessun Layer visibile'
@@ -94,7 +95,8 @@ export default {
           relation_data: 'Dati Relazione',
           no_relations_found: 'Nessuna relazione trovata',
           back_to_relations: 'Ritorna alle relazioni',
-          list_of_relations_feature: 'Lista delle relazioni della feature'
+          list_of_relations_feature: 'Lista delle relazioni della feature',
+          error_missing_father_field: "Il campo relazionato non esiste"
         },
         form: {
           inputs: {
@@ -126,7 +128,8 @@ export default {
     "en": {
       "sdk": {
         search: {
-          all: 'ALL'
+          all: 'ALL',
+          layer_not_searchable: "Layer not searchable"
         },
         print: {
           no_layers: 'No Layer to print'
@@ -218,7 +221,8 @@ export default {
           relation_data: 'Relation data',
           no_relations_found: 'No relations found',
           back_to_relations: 'Back to relations',
-          list_of_relations_feature: 'List of relations of feature'
+          list_of_relations_feature: 'List of relations of feature',
+          error_missing_father_field: "Field is missing"
         },
         form: {
           inputs: {

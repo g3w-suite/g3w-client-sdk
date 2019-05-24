@@ -9,7 +9,8 @@ const InternalComponent = Vue.extend({
     return {
       state: null,
       showdownloadbutton: false,
-      jpegimageurl: null
+      jpegimageurl: null,
+      downloadImageName: ''
     }
   },
   computed: {
@@ -25,9 +26,11 @@ const InternalComponent = Vue.extend({
           if (status === 'error') {
             this.$options.service.showError();
           } else {
-            if (this.state.format === 'jpg') {
+            if (this.state.format === 'jpg' || this.state.format === 'png' ) {
+              this.downloadImageName = `download.${this.state.format}`;
               imageToDataURL({
                 src: this.state.url,
+                type: `image/${this.state.format}`,
                 callback: (url) => {
                   this.showdownloadbutton = true;
                   this.jpegimageurl = url;
