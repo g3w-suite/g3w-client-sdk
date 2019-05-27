@@ -95,8 +95,24 @@ proto.createExpressionFromFilter = function(filterObject, layername) {
               for (const name in field) {
                 const value = field[name];
                 if ((value !== null && value !== undefined) && !(Number.isNaN(value) || !value.toString().trim())) {
-                  const filterElement = `"${name}" ${filterOp} '${valueExtra}${value}${valueExtra}'`;
-                  filterElements.push(filterElement);
+                  const singolequote = typeof value !== 'number' ? value.split("'") : [];
+                  if (singolequote.length > 1) {
+                    const _filterElements = [];
+                    for (let i = 0; i < singolequote.length; i++) {
+                      const value = singolequote[i];
+                      if (!value)
+                        continue;
+                      const filterOp = 'ILIKE';
+                      const filterValue = `%${value}%`.trim();
+                      const filterElement = `"${name}" ${filterOp} '${filterValue}'`;
+                      _filterElements.push(filterElement)
+                    }
+                    filterElements.push(_filterElements.join(' AND '))
+                  } else {
+                    const filterValue = `${valueExtra}${value}${valueExtra}`;
+                    const filterElement = `"${name}" ${filterOp} '${filterValue}'`;
+                    filterElements.push(filterElement);
+                  }
                 }
               }
             }

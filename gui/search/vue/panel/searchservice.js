@@ -303,9 +303,8 @@ proto.fillFilterInputsWithValues = function(filter=this.filter, filterWithValues
           const forminputwithvalue = forminputs.find((forminput) => {
               return forminput.attribute === fieldName;
           });
-          const type = forminputwithvalue.type;
           const value = forminputwithvalue.value;
-          filterInput[_operator][fieldName] = type === 'numberfield' ? parseInt(value) : value;
+          filterInput[_operator][fieldName] = value;
           filterWithValues[operator].push(filterInput);
         }
     })

@@ -10,8 +10,7 @@ function RelationsService() {
   this._project = ProjectsRegistry.getCurrentProject();
   base(this);
 
-  this.getRelations = function(options) {
-    options = options || {};
+  this.getRelations = function(options={}) {
     const projectId = this._project.state.id;
     const value = options.value || null;
     const id = options.id || null;

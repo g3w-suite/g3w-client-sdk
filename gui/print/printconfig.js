@@ -61,8 +61,8 @@ const formats = [
     label: 'PDF'
   },
   {
-    value: 'jpg',
-    label: 'JPEG'
+    value: 'png',
+    label: 'PNG'
   }
 ];
 

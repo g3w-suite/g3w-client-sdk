@@ -45,7 +45,8 @@ proto.query = function(options = {}) {
   const crs = isVector ? this._projections.map.getCode() : null;
   const queryUrl = options.queryUrl || this._queryUrl;
   const layers = options.layers;
-  const layerNames = layers ? layers.map(layer => layer.getName()).join(',') : this._layer.getName();
+  const {I,J} = options;
+  const layerNames = layers ? layers.map(layer => layer.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
   if (filter) {
     // check if geomemtry filter. If not i have to remove projection layer
     if (filter.getType() !== 'geometry')
@@ -60,9 +61,12 @@ proto.query = function(options = {}) {
       INFO_FORMAT: this._infoFormat,
       FEATURE_COUNT: feature_count,
       CRS: crs,
+      I,
+      J,
       FILTER: filter.get(),
       WITH_GEOMETRY: isVector ? 1: 0
     };
+
     XHR.get({
       url,
       params

@@ -2,6 +2,7 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const GUI = require('gui/gui');
 const Component = require('gui/vue/component');
+const t = require('core/i18n/i18n.service').t;
 const Service = require('../relationsservice');
 const Field = require('gui/fields/g3w-field.vue');
 const RelationPageEventBus = new Vue();
@@ -125,6 +126,7 @@ const InternalComponent = Vue.extend({
   data: function() {
     return {
       state: null,
+      error: false,
       table: this.$options.table ? this.$options.service.buildRelationTable(this.$options.table) : null,
       relation: this.$options.relation || null,
       relations: this.$options.relations,
@@ -147,16 +149,29 @@ const InternalComponent = Vue.extend({
       RelationPageEventBus.$emit('reload');
     },
     isOneRelation() {
-      return this.relations.length == 1 && this.relations[0].type === 'ONE'
+      return this.relations.length === 1 && this.relations[0].type === 'ONE'
     },
     showRelation: function(relation) {
       this.relation = relation;
       const field = relation.fieldRef.referencedField;
-      const value = this.feature.attributes[field];
+      let value = this.feature.attributes[field];
+      if (value === null || value === undefined) {
+        try {
+          const splitFieldPk = this.feature[field].split('.');
+          value = splitFieldPk[splitFieldPk.length-1];
+        } catch(err) {}
+        finally {
+          if (value === null || value === undefined) {
+            GUI.notify.error(t('sdk.relations.error_missing_father_field'));
+            this.error = true;
+            return;
+          }
+        }
+      }
       GUI.setLoadingContent(true);
       this.$options.service.getRelations({
         id: relation.id,
-        value: value
+        value
       }).then((relations) => {
         this.table = this.$options.service.buildRelationTable(relations);
         this.currentview = 'relation';
@@ -172,9 +187,16 @@ const InternalComponent = Vue.extend({
     }
   },
   beforeMount () {
-    if (this.isOneRelation()) {
-      this.showRelation(this.relations[0])
-    }
+    this.isOneRelation() && this.showRelation(this.relations[0])
+  },
+  mounted() {
+    this.$nextTick(()=> {
+      if (this.error)
+        requestAnimationFrame(() => {
+          GUI.popContent()
+        });
+      this.error = false;
+    });
   }
 });
 
