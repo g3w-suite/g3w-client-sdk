@@ -138,6 +138,7 @@ proto.getLegendUrl = function(params={}) {
     `&FORMAT=image/png`,
     `&TRANSPARENT=${transparent}`,
     `&ITEMFONTCOLOR=${color}`,
+    `&LAYERFONTCOLOR=${color}`,
     `&LAYERTITLE=${layertitle}`,
     `&ITEMFONTSIZE=${fontsize}`,
     `${boxspace ? '&BOXSPACE=' + boxspace: ''}`,

@@ -305,18 +305,20 @@ proto._parseLayerFeatureCollection = function({jsonresponse, layer, projections}
   const x2js = new X2JS();
   let layerFeatureCollectionXML = x2js.json2xml_str(jsonresponse);
   const parser = new ol.format.WMSGetFeatureInfo();
-  const mainProjection = projections.layer ? projections.layer : projections.map;
-  let invertedAxis = mainProjection.getAxisOrientation().substr(0,2) === 'ne';
   let features = parser.readFeatures(layerFeatureCollectionXML);
-  if (features.length && !!features[0].getGeometry()) {
-    if (projections.layer && (projections.layer.getCode() !== projections.map.getCode())) {
-      features.forEach((feature) => {
-        const geometry = feature.getGeometry();
-        feature.setGeometry(geometry.transform(projections.layer.getCode(), projections.map.getCode()))
-      })
+  if (features.length) {
+    if(!!features[0].getGeometry()) {
+      const mainProjection = projections.layer ? projections.layer : projections.map;
+      const invertedAxis = mainProjection.getAxisOrientation().substr(0,2) === 'ne';
+      if (projections.layer && (projections.layer.getCode() !== projections.map.getCode())) {
+        features.forEach((feature) => {
+          const geometry = feature.getGeometry();
+          feature.setGeometry(geometry.transform(projections.layer.getCode(), projections.map.getCode()))
+        })
+      }
+      if (invertedAxis)
+        features = this._reverseFeaturesCoordinates(features)
     }
-    if (invertedAxis)
-      features = this._reverseFeaturesCoordinates(features)
   }
   return [{
     layer,

@@ -407,12 +407,12 @@ proto.setFieldsWithValues = function(feature, fields) {
         attributes[field.name] = createAttributesFromFields(field.fields);
       } else {
         // check if primary key is editbale
-        if (feature.getPk() == field.name && field.editable) {
-          pkValue = field.type == "integer" ? 1* field.value : field.value;
+        if (feature.getPk() === field.name && field.editable) {
+          pkValue = field.type === "integer" ? 1* field.value : field.value;
           feature.setId(pkValue);
         } else {
           // case selct force to null
-          if (field.value == 'null') {
+          if (field.value === 'null') {
             field.value = null;
           }
           attributes[field.name] = field.value;
@@ -429,12 +429,16 @@ proto.setFieldsWithValues = function(feature, fields) {
 proto.getFieldsWithValues = function(obj, options={}) {
   const exclude = options.exclude || [];
   const relation = options.relation || false;
-  let fields = _.cloneDeep(this.getEditingFields());
+  let fields = this.getEditingFields();
   let feature, attributes;
   if (obj instanceof Feature){
     feature = obj;
-  } else if (obj){
-    feature = this.getFeatureById(obj);
+  } else if (obj instanceof ol.feature.Feature) {
+    feature = new Feature({
+      feature: obj
+    })
+  } else {
+    feature = obj && this.getFeatureById(obj);
   }
   if (feature) {
     attributes = feature.getProperties();

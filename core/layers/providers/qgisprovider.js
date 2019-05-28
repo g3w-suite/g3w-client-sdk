@@ -33,7 +33,7 @@ inherit(QGISProvider, DataProvider);
 const proto = QGISProvider.prototype;
 
 //query by filter
-proto.query = function(options = {}) {
+proto.query = function(options={}) {
   const d = $.Deferred();
   const feature_count = options.feature_count || 10;
   const filter = options.filter || null;

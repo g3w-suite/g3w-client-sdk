@@ -42,7 +42,6 @@ proto.run = function(inputs, context) {
         })
     }
     catch(err) {
-      //console.log(err)
       this.state.error = err;
       this.state.error = 'Problem ..';
       this.stop();

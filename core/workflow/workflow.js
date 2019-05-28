@@ -137,7 +137,7 @@ proto.start = function(options={}) {
   this._inputs = options.inputs;
   this._context = options.context || {};
   //check if are workflow running
-  if (WorkflowsStack.getLength() && WorkflowsStack.getCurrent() != this) {
+  if (WorkflowsStack.getLength() && WorkflowsStack.getCurrent() !== this) {
     WorkflowsStack.getCurrent().addChild(this);
   }
   this._stackIndex = WorkflowsStack.push(this);
@@ -145,11 +145,9 @@ proto.start = function(options={}) {
   this._steps = options.steps || this._steps;
   this._flow.start(this)
     .then((outputs) => {
-      // retunr output
       d.resolve(outputs);
     })
     .fail((error) => {
-      console.log(error)
       d.reject(error);
     });
 
