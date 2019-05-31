@@ -81,14 +81,13 @@ proto._getFeatures = function(options) {
 
 //filter features to add
 proto._filterFeaturesResponse = function(options={}) {
-  let added = false;
   const features = options.features || [];
   const featurelocks = options.featurelocks || [];
   const featuresToAdd = features.filter((feature) => {
     const featureId = feature.getId();
-    added = this._loadedPks.find((pkId) =>{
+    const added = this._loadedPks.find((pkId) =>{
       return pkId === featureId
-    });
+    }) || false;
     if (!added)
       this._loadedPks.push(featureId);
     return !added
@@ -99,8 +98,13 @@ proto._filterFeaturesResponse = function(options={}) {
 
 // method cget fetaures locked
 proto._filterLockIds = function(featurelocks) {
-  const toAddLockId = _.differenceBy(featurelocks, this._lockIds, 'featureid');
-  this._lockIds = _.union(this._lockIds, toAddLockId);
+  const _lockIds = this._lockIds.map((lockid) => {
+    return lockid.featureid;
+  });
+  const toAddLockId = featurelocks.filter((featurelock) => {
+    return _lockIds.indexOf(featurelock.featureid) === -1;
+  });
+  this._lockIds = [...this._lockIds, ...toAddLockId];
 };
 
 proto.getLockIds = function() {

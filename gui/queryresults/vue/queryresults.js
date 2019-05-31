@@ -253,12 +253,6 @@ const vueComponentOptions = {
       GUI.hideSidebar();
     }
   },
-  mounted: function() {
-    this.$nextTick()
-      .then(() => {
-        $('.action-button[data-toggle="tooltip"]').tooltip();
-    })
-  },
   beforeDestroy() {
     this.state.zoomToResult = true;
   }
@@ -266,7 +260,7 @@ const vueComponentOptions = {
 
 const InternalComponent = Vue.extend(vueComponentOptions);
 
-function QueryResultsComponent(options) {
+function QueryResultsComponent(options={}) {
   base(this, options);
   this.id = "queryresults";
   this.title = "Query Results";
@@ -290,6 +284,9 @@ function QueryResultsComponent(options) {
       this.setInternalComponent();
     }
     this.createLayersFeaturesBoxes();
+    requestAnimationFrame(() => {
+      $('.action-button[data-toggle="tooltip"]').tooltip();
+    })
   });
 
   this.createLayersFeaturesBoxes = function() {
