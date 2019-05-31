@@ -10,7 +10,7 @@ const ProviderFactory = require('core/layers/providers/providersfactory');
 function Layer(config={}) {
   const ProjectsRegistry = require('core/project/projectsregistry');
   ProjectsRegistry.onafter('setCurrentProject', (project) => {
-    const qgisVersion = ProjectsRegistry.getCurrentProject().getQgisVersion({
+    const qgisVersion = project.getQgisVersion({
       type: 'major'
     });
     const projectType = project.getType();
@@ -90,6 +90,7 @@ function Layer(config={}) {
 inherit(Layer, G3WObject);
 
 const proto = Layer.prototype;
+
 
 proto.getWMSLayerName = function() {
   return this.isWmsUseLayerIds() ? this.getId() : this.getName()

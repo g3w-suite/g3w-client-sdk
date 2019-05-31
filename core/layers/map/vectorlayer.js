@@ -79,7 +79,7 @@ proto._makeStyle = function(styleConfig) {
   return style
 };
 
-proto.getFeatures = function(options= {}) {
+proto.getFeatures = function(options={}) {
   const d = $.Deferred();
   this.provider.getFeatures(options)
     .then((features) => {

@@ -142,20 +142,19 @@ proto.commit = function(commitItems) {
 };
 
 // METODS LOADING EDITING FEATURES (READ/WRITE) //
-proto.getFeatures = function(options = {}, params = {}) {
+proto.getFeatures = function(options={}, params={}) {
   const d = $.Deferred();
-  // filetr null value
+  // filter null value
   Object.entries(params).forEach(([key, value]) => {
     if (value === null)
       delete params[key]
   });
-  const layerType = options.type || 'vector'; //layer type
+  const layerType = options.type || 'vector'; //layer type vector/table etc
   // check if data are requested in read or write mode;
   let url;
   //editing mode
   if (options.editing) {
     url = this._editingUrl;
-
     let filter = options.filter || null;
     if (filter && filter.bbox) {
       const bbox = filter.bbox;
@@ -176,16 +175,13 @@ proto.getFeatures = function(options = {}, params = {}) {
       contentType: "application/json"
     })
       .then((response) => {
-        const vector = response.vector;
-        const featurelocks = response.featurelocks;
-        const data = vector.data;
-        const geometrytype = vector.geometrytype;
+        const {vector, featurelocks} = response;
+        const {data, geometrytype} = vector;
         const parser = Parsers[layerType].get({
           type: 'json',
           pk
         });
-        let parser_options = {};
-        if (geometrytype != 'No geometry') parser_options = { crs: this._layer.getCrs() };
+        const parser_options = (geometrytype !== 'No geometry') ? { crs: this._layer.getCrs() } : {};
         const lockIds = featurelocks.map((featureLock) => {
           return featureLock.featureid
         });
@@ -200,8 +196,8 @@ proto.getFeatures = function(options = {}, params = {}) {
         });
         // resolve with featers locked and requested
         d.resolve({
-          features: features,
-          featurelocks: featurelocks
+          features,
+          featurelocks
         });
       })
       .fail(function(err) {

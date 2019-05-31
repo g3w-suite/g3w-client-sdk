@@ -28,8 +28,8 @@ function TableLayer(config={}, options={}) {
       this._setFeatures(features);
     },
     // get data from every sources (server, wms, etc..)
-    // throught provider related to fetauresstore
-    getFeatures: function (options) {
+    // throught provider related to featuresstore
+    getFeatures: function (options={}) {
       const d = $.Deferred();
       this._featuresStore.getFeatures(options)
         .then((promise) => {
@@ -141,7 +141,6 @@ function TableLayer(config={}, options={}) {
         this.emit('layer-config-ready', this.config);
       })
   }
-
   this._featuresStore = new FeaturesStore({
     provider: this.providers.data
   });
@@ -150,6 +149,14 @@ function TableLayer(config={}, options={}) {
 inherit(TableLayer, Layer);
 
 const proto = TableLayer.prototype;
+
+proto.clone = function() {
+  return _.cloneDeep(this);
+};
+
+proto.cloneFeatures = function() {
+  return this._featuresStore.clone();
+};
 
 proto._setColor = function(color) {
   this._color = color;
@@ -172,7 +179,7 @@ proto.getLayerForEditing = function() {
 proto.isFieldRequired = function(fieldName) {
   let required = false;
   this.getEditingFields().forEach((field) => {
-    if (fieldName == field.name) {
+    if (fieldName === field.name) {
       required = !!field.validate.required;
       return false;
     }
@@ -429,43 +436,30 @@ proto.setFieldsWithValues = function(feature, fields) {
 proto.getFieldsWithValues = function(obj, options={}) {
   const exclude = options.exclude || [];
   const relation = options.relation || false;
-  let fields = this.getEditingFields();
-  let feature, attributes;
-  if (obj instanceof Feature){
-    feature = obj;
-  } else if (obj instanceof ol.feature.Feature) {
-    feature = new Feature({
+  let fields = JSON.parse(JSON.stringify(this.getEditingFields()));
+  let feature;
+  if (obj instanceof Feature) feature = obj;
+  else if (obj instanceof ol.feature.Feature) feature = new Feature({
       feature: obj
-    })
-  } else {
-    feature = obj && this.getFeatureById(obj);
-  }
+    });
+  else feature = obj && this.getFeatureById(obj);
   if (feature) {
-    attributes = feature.getProperties();
-  }
-  fields = fields.filter((field) =>  {
-    //check if field is pk and if is new nad if is not editable
-    if (!relation && (field.name === this.config.editing.pk) && feature.isNew() && !this.isPkEditable()) {
-        return false;
-    }
-    return exclude.indexOf(field.name) === -1;
-  });
-  fields.forEach((field) => {
-    if (feature) {
+    const attributes = feature.getProperties();
+    fields = fields.filter((field) =>  {
+      //check if field is pk and if is new nad if is not editable
+      return (!relation && (field.name === this.config.editing.pk) && feature.isNew() && !this.isPkEditable()) ? false : exclude.indexOf(field.name) === -1;
+    });
+    fields.forEach((field) => {
       // check if pk
-      if (field.name == this.config.editing.pk) {
+      if (field.name === this.config.editing.pk) {
         let editable = this.isPkEditable();
         // che check if has a value
         if (feature.getId()) {
           field.value = feature.getId();
           editable = false;
-        } else {
-          field.value = null;
-        }
+        } else field.value = null;
         field.editable = editable;
-      } else {
-        field.value = attributes[field.name];
-      }
+      } else field.value = attributes[field.name];
 
       if (field.type !== 'child' && field.input.type === 'select_autocomplete' && !field.input.options.usecompleter) {
         const _configField = this.getEditingFields().find((_field) => {
@@ -475,10 +469,8 @@ proto.getFieldsWithValues = function(obj, options={}) {
         field.input.options.loading = options.loading;
         field.input.options.values = options.values;
       }
-    } else {
-      field.value = null;
-    }
-  });
+    });
+  }
   return fields;
 };
 

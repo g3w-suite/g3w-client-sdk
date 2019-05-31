@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="tool.type == 'checkbox' " class="checkbox">
+    <div v-if="tool.type === 'checkbox' " class="checkbox">
       <label>
         <input style="cursor:pointer"
           :id="tool.layerName"
@@ -35,8 +35,8 @@
       return {}
     },
     methods: {
-      fireAction() {
-        this.tool.action()
+      fireAction(tool) {
+        this.tool.action(tool);
       }
     },
     computed: {
@@ -47,8 +47,8 @@
         return this.tool.icon || 'caret-right'
       }
     }
-
   }
+
 </script>
 
 <style scoped>

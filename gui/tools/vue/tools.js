@@ -16,7 +16,7 @@ const InternalComponent = Vue.extend({
   }
 });
 
-function ToolsComponent(options) {
+function ToolsComponent(options={}) {
   base(this, options);
   this._service = new ToolsService();
   this.title = "tools";

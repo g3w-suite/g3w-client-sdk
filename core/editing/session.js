@@ -6,13 +6,12 @@ const FeaturesStore = require('core/layers/features/featuresstore');
 const ChangesManager = require('./changesmanager');
 const SessionsRegistry = require('./sessionsregistry');
 
-// classe Session
-function Session(options = {}) {
+function Session(options={}) {
   this.setters = {
     start: function(options={}) {
       return this._start(options);
     },
-    getFeatures: function(options) {
+    getFeatures: function(options={}) {
       return this._getFeatures(options);
     },
     stop: function() {
@@ -20,21 +19,20 @@ function Session(options = {}) {
     }
   };
   base(this, options);
+
   this.state = {
     id: options.id, // id session is the same of id layer
     started: false
   };
   // editor
   this._editor = options.editor || null;
-  // featuresstore che contiene tutte le modifiche che vengono eseguite al layer
-  // è la versione temporanea del features store de singolo editor
+  // featuresstore it's a temprary features source of the layer
   this._featuresstore = options.featuresstore || new FeaturesStore();
   // history -- oggetto che contiene gli stati dei layers
   this._history = new History({
     id: this.state.id
   });
-  // contenitore temporaneo che servirà a salvare tutte le modifiche
-  // temporanee che andranno poi salvate nella history e nel featuresstore
+  ///tempraray changes before save iit on history object
   this._temporarychanges = [];
 }
 
@@ -54,18 +52,25 @@ proto.deleteState = function(stateId) {
   this._history.removeState(stateId);
 };
 
+proto.register = function() {
+  SessionsRegistry.register(this);
+};
+
+proto.unregister = function(){
+  SessionsRegistry.unregister(this.getId());
+};
+
 proto._start = function(options={}) {
   const d = $.Deferred();
-  // vado a registrare la sessione
-  SessionsRegistry.register(this);
+  this.register();
   this._editor.start(options)
     .then((features) => {
       // return feature from server - clone it
-      const sessionfeatures = this._cloneFeatures(features);
+      features = this._cloneFeatures(features);
       // add clone feature to internal features store
-      this._featuresstore.addFeatures(sessionfeatures);
+      this._featuresstore.addFeatures(features);
       this.state.started = true;
-      d.resolve(sessionfeatures);
+      d.resolve(features);
     })
     .fail((err) => {
       this.state.started = true;
@@ -74,8 +79,8 @@ proto._start = function(options={}) {
   return d.promise();
 };
 
-//method to getFeature from server through editor
-proto._getFeatures = function(options) {
+//method to getFeature from server by editor
+proto._getFeatures = function(options={}) {
   const d = $.Deferred();
   this._editor.getFeatures(options)
     .then((promise) => {
@@ -108,7 +113,6 @@ proto.setEditor = function(editor) {
   this._editor = editor;
 };
 
-//restituisce il feature store della sessione
 proto.getFeaturesStore = function() {
   return this._featuresstore;
 };
@@ -218,7 +222,7 @@ proto._applyChanges = function(items, reverse=true) {
 
 // method to revert (cancel) all changes in history and clen session
 proto.revert = function() {
-  var d = $.Deferred();
+  const d = $.Deferred();
   this._editor.getFeatures().then((promise) => {
     promise
       .then((features)  =>{
@@ -234,7 +238,7 @@ proto.revert = function() {
   return d.promise();
 };
 
-// organizza i cambiamenti temporanei in base al layer coinvolto
+// handle temporary changes of layer
 proto._filterChanges = function() {
   const id = this.getId();
   const changes = {
@@ -248,18 +252,14 @@ proto._filterChanges = function() {
     else {
       if (!changes.dependencies[change.layerId])
         changes.dependencies[change.layerId] = [];
-      // le vado a posizionare dal più recente al più lontano in ordine inverso FILO
+      // FILO
       changes.dependencies[change.layerId].unshift(change);
     }
   });
   return changes;
 };
 
-// questa in pratica restituirà tutte le modifche che non saranno salvate nella history
-// e nel featuresstore della sessione ma riapplicate al contrario
 proto.rollback = function(changes) {
-  //vado a after il rollback dellle feature temporanee salvate in sessione
-  //console.log('Session Rollback.....', changes);
   const d = $.Deferred();
   if (changes) {
     this._applyChanges(changes, true);
@@ -305,7 +305,7 @@ proto._serializeCommit = function(itemsToCommit) {
     const items = itemsToCommit[key];
     if (key !== id) {
       isRelation = true;
-      var lockids = SessionsRegistry.getSession(key) ? SessionsRegistry.getSession(key).getEditor().getLayer().getFeaturesStore().getLockIds(): [];
+      const lockids = SessionsRegistry.getSession(key) ? SessionsRegistry.getSession(key).getEditor().getLayer().getFeaturesStore().getLockIds(): [];
       commitObj.relations[key] = {
         lockids,
         add: [],
@@ -350,29 +350,16 @@ proto.getCommitItems = function() {
   return this._serializeCommit(commitItems);
 };
 
-// funzione che serializzerà tutto che è stato scritto nella history e passato al server
-// per poterlo salvare nel database
 proto.commit = function({ids=null, relations=true}={}) {
   const d = $.Deferred();
   let commitItems;
-  //console.log("Sessione Committing...");
-  //vado a verificare se nell'opzione del commit
-  // è stato passato gli gli ids degli stati che devono essere committati,
-  //nel caso di non specifica committo tutto
-  // vado a leggete l'id dal layer necessario al server
   if (ids) {
     commitItems = this._history.commit(ids);
     this._history.clear(ids);
   } else {
-    // andà a pescare dalla history tutte le modifiche effettuare
-    // e si occuperà di di eseguire la richiesta al server di salvataggio dei dati
     commitItems = this._history.commit();
-    // le serializzo
     commitItems = this._serializeCommit(commitItems);
-    // if relations.is set to false no relations are commitetted to server
     if (!relations) commitItems.relations = {};
-    // in case op
-    // passo all'editor un secondo parametro.
     this._editor.commit(commitItems, this._featuresstore)
       .then((response) => {
         if (response && response.result)
@@ -394,7 +381,7 @@ proto.commit = function({ids=null, relations=true}={}) {
 proto._stop = function() {
   const d = $.Deferred();
   // unregister a session
-  SessionsRegistry.unregister(this.getId());
+  this.unregister();
   //console.log('Sessione stopping ..');
   this._editor.stop()
     .then(() => {
@@ -405,7 +392,6 @@ proto._stop = function() {
     });
   this.clear();
   return d.promise();
-
 };
 
 // clear all things bind to session

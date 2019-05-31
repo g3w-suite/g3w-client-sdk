@@ -4,7 +4,7 @@ const G3WObject = require('core/g3wobject');
 
 // Object to store and handle features of layer
 function FeaturesStore(options={}) {
-  this._features = [];
+  this._features = options.features || [];
   this._provider = options.provider || null;
   this._loadedPks = []; // store loeckedids
   this._lockIds = []; // store locked features
@@ -28,7 +28,7 @@ function FeaturesStore(options={}) {
       this._lockIds = [];
       this._loadedPks = [];
     },
-    getFeatures: function(options) {
+    getFeatures: function(options={}) {
       return this._getFeatures(options);
     },
     commit: function(commitItems, featurestore) {
@@ -42,6 +42,18 @@ function FeaturesStore(options={}) {
 inherit(FeaturesStore, G3WObject);
 
 const proto = FeaturesStore.prototype;
+
+proto.clone = function() {
+  return _.cloneDeep(this);
+};
+
+proto.setProvider = function(provider) {
+  this._provider = provider;
+};
+
+proto.getProvider = function() {
+  return this._provider;
+};
 
 // method unlock features
 proto.unlock = function() {
@@ -125,7 +137,7 @@ proto._commit = function(commitItems) {
 proto.getFeatureById = function(featureId) {
   let feat;
   this._features.find((feature) => {
-    if (feature.getId() == featureId) {
+    if (feature.getId() === featureId) {
       feat = feature;
       return true;
     }
@@ -140,7 +152,7 @@ proto._addFeature = function(feature) {
 //substitute feature after update
 proto._updateFeature = function(feature) {
   this._features.find((feat, idx) => {
-    if (feat.getId() == feature.getId()) {
+    if (feat.getId() === feature.getId()) {
       this._features[idx] = feature;
       return true;
     }
