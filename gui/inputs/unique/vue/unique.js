@@ -6,7 +6,6 @@ const UniqueInput = Vue.extend({
   mixins: [Input, selectMixin],
   template: require('./unique.html'),
   data: function() {
-    this.select2;
     const uniqueid = 'uniqueinputid_' + Date.now();
     return {
       service: new Service({
@@ -18,6 +17,9 @@ const UniqueInput = Vue.extend({
   watch: {
     'state.input.options.values'(values) {
       this.state.value = this.state.value ? this.state.value: values[0];
+      if (this.state.value && this.state.input.options.values.indexOf(this.state.value) === -1) {
+        this.service.addValueToValues(this.state.value);
+      }
       this.change();
       this.$nextTick(()=>{
         if (this.state.input.options.editable) {

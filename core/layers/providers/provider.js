@@ -147,8 +147,7 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
   layers = layers ? layers : [this._layer];
   const layer = layers[0];
   if (layer.getType() === "table" || !layer.isExternalWMS()) {
-    const wmsAndUseLayerIds = wms && layer.isWmsUseLayerIds();
-    response =  wmsAndUseLayerIds ? response : this._handleXMLStringResponseBeforeConvertToJSON({
+    response =  this._handleXMLStringResponseBeforeConvertToJSON({
       layers,
       response,
       wms
@@ -156,8 +155,8 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
     return this._getHandledResponsesFromResponse({
       response,
       layers,
-      projections,
-      id: wmsAndUseLayerIds
+      projections
+      //id: false //used in case of layer id .. but for now is set to false in case of layerid starting with number
     });
   } else {
     //case of
@@ -206,7 +205,7 @@ proto._handleXMLStringResponseBeforeConvertToJSON = function({response, layers, 
     response = new XMLSerializer().serializeToString(response);
   for (let i=0; i < layers.length; i++) {
     const layer = layers[i];
-    let originalName = layer.getName();
+    let originalName = layer.isWmsUseLayerIds() ? layer.getId(): layer.getName();
     let sanitizeLayerName = wms ? originalName.replace(/[/\s]/g, '') : originalName.replace(/[/\s]/g, '_');
     sanitizeLayerName = sanitizeLayerName.replace(/(\'+)/, '');
     sanitizeLayerName = sanitizeLayerName.replace(/(\)+)/, '');

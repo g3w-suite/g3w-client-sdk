@@ -1,6 +1,7 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const XHR = require('core/utils/utils').XHR;
+const t = require('core/i18n/i18n.service').t;
 const DataProvider = require('core/layers/providers/provider');
 const Feature = require('core/layers/features/feature');
 const Parsers = require('core/parsers/parsers');
@@ -170,38 +171,46 @@ proto.getFeatures = function(options={}, params={}) {
     const urlParams = $.param(params);
     url+=  urlParams ? '?' + urlParams : '';
     $.post({
-      url: url,
+      url,
       data: jsonFilter,
       contentType: "application/json"
     })
       .then((response) => {
-        const {vector, featurelocks} = response;
-        const {data, geometrytype} = vector;
-        const parser = Parsers[layerType].get({
-          type: 'json',
-          pk
-        });
-        const parser_options = (geometrytype !== 'No geometry') ? { crs: this._layer.getCrs() } : {};
-        const lockIds = featurelocks.map((featureLock) => {
-          return featureLock.featureid
-        });
-        parser(data, parser_options).forEach((feature) => {
-          const featureId = `${feature.getId()}`;
-          if (lockIds.indexOf(featureId) > -1) {
-            features.push(new Feature({
-              feature,
-              pk
-            }));
-          }
-        });
-        // resolve with featers locked and requested
-        d.resolve({
-          features,
-          featurelocks
-        });
+        const {vector, result, featurelocks} = response;
+        if (result) {
+          const {data, geometrytype} = vector;
+          const parser = Parsers[layerType].get({
+            type: 'json',
+            pk
+          });
+          const parser_options = (geometrytype !== 'No geometry') ? { crs: this._layer.getCrs() } : {};
+          const lockIds = featurelocks.map((featureLock) => {
+            return featureLock.featureid
+          });
+          parser(data, parser_options).forEach((feature) => {
+            const featureId = `${feature.getId()}`;
+            if (lockIds.indexOf(featureId) > -1) {
+              features.push(new Feature({
+                feature,
+                pk
+              }));
+            }
+          });
+          // resolve with featers locked and requested
+          d.resolve({
+            features,
+            featurelocks
+          });
+        } else {// case when server responde with result false (error)
+          d.reject({
+            message: t("info.server_error")
+          });
+        }
       })
       .fail(function(err) {
-        d.reject(err);
+        d.reject({
+          message: t("info.server_error")
+        });
       });
   } else {
     url = this._layer.getUrl('data');

@@ -4,6 +4,7 @@ const t = require('core/i18n/i18n.service').t;
 function Service(options = {}) {
   // set state of input
   this.state = options.state || {};
+  this.setValue(this.state.value);
   // type of input
   const type = this.state.type;
   const validatorOptions = (options.validatorOptions || this.state.input.options) || {};
@@ -22,11 +23,12 @@ proto.getValue = function() {
 };
 
 proto.setValue = function(value) {
-  this.state.value = value;
+  this.state.value = (value !== null && value !== undefined) ? value :
+    Array.isArray(this.state.input.options) ? this.state.input.options[0].default: this.state.input.options.default;
 };
 
 proto.addValueToValues = function(value) {
-  this.state.input.options.values.push(value)
+  this.state.input.options.values.unshift(value)
 };
 
 proto._getValidatorType = function() {
@@ -65,5 +67,7 @@ proto.getErrorMessage = function(type) {
 proto.isEditable = function() {
   return this.state.editable;
 };
+
+
 
 module.exports = Service;
