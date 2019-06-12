@@ -146,9 +146,8 @@ proto.handleQueryResponseFromServerSingleLayer = function(layer, response, proje
 proto.handleQueryResponseFromServer = function(response, projections, layers, wms=true) {
   layers = layers ? layers : [this._layer];
   const layer = layers[0];
-  if (!layer.isExternalWMS()) {
-    const wmsAndUseLayerIds = wms && layer.isWmsUseLayerIds();
-    response =  wmsAndUseLayerIds ? response : this._handleXMLStringResponseBeforeConvertToJSON({
+  if (layer.getType() === "table" || !layer.isExternalWMS()) {
+    response =  this._handleXMLStringResponseBeforeConvertToJSON({
       layers,
       response,
       wms
@@ -156,8 +155,8 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
     return this._getHandledResponsesFromResponse({
       response,
       layers,
-      projections,
-      id: wmsAndUseLayerIds
+      projections
+      //id: false //used in case of layer id .. but for now is set to false in case of layerid starting with number
     });
   } else {
     //case of
@@ -180,6 +179,11 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
 proto._getHandledResponsesFromResponse = function({response, layers, projections, id=false}) {
   const x2js = new X2JS();
   const jsonresponse =  x2js.xml_str2json(response);
+  // in case of parser return null
+  if (!jsonresponse) return [{
+    layer: layers[0],
+    features: []
+  }];
   const FeatureCollection = jsonresponse.FeatureCollection;
   const handledResponses = [];
   if (FeatureCollection.featureMember) {
@@ -206,7 +210,7 @@ proto._handleXMLStringResponseBeforeConvertToJSON = function({response, layers, 
     response = new XMLSerializer().serializeToString(response);
   for (let i=0; i < layers.length; i++) {
     const layer = layers[i];
-    let originalName = layer.getName();
+    let originalName = (wms && layer.isWmsUseLayerIds()) ? layer.getId(): layer.getName();
     let sanitizeLayerName = wms ? originalName.replace(/[/\s]/g, '') : originalName.replace(/[/\s]/g, '_');
     sanitizeLayerName = sanitizeLayerName.replace(/(\'+)/, '');
     sanitizeLayerName = sanitizeLayerName.replace(/(\)+)/, '');
@@ -305,18 +309,20 @@ proto._parseLayerFeatureCollection = function({jsonresponse, layer, projections}
   const x2js = new X2JS();
   let layerFeatureCollectionXML = x2js.json2xml_str(jsonresponse);
   const parser = new ol.format.WMSGetFeatureInfo();
-  const mainProjection = projections.layer ? projections.layer : projections.map;
-  let invertedAxis = mainProjection.getAxisOrientation().substr(0,2) === 'ne';
   let features = parser.readFeatures(layerFeatureCollectionXML);
-  if (features.length && !!features[0].getGeometry()) {
-    if (projections.layer && (projections.layer.getCode() !== projections.map.getCode())) {
-      features.forEach((feature) => {
-        const geometry = feature.getGeometry();
-        feature.setGeometry(geometry.transform(projections.layer.getCode(), projections.map.getCode()))
-      })
+  if (features.length) {
+    if(!!features[0].getGeometry()) {
+      const mainProjection = projections.layer ? projections.layer : projections.map;
+      const invertedAxis = mainProjection.getAxisOrientation().substr(0,2) === 'ne';
+      if (projections.layer && (projections.layer.getCode() !== projections.map.getCode())) {
+        features.forEach((feature) => {
+          const geometry = feature.getGeometry();
+          feature.setGeometry(geometry.transform(projections.layer.getCode(), projections.map.getCode()))
+        })
+      }
+      if (invertedAxis)
+        features = this._reverseFeaturesCoordinates(features)
     }
-    if (invertedAxis)
-      features = this._reverseFeaturesCoordinates(features)
   }
   return [{
     layer,

@@ -16,7 +16,7 @@ const CheckBoxInput = Vue.extend({
         state: this.state,
         // options to customize validator
         validatorOptions: {
-          values: values
+          values
         }
       }),
       value: false,

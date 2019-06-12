@@ -1,6 +1,7 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const XHR = require('core/utils/utils').XHR;
+const t = require('core/i18n/i18n.service').t;
 const DataProvider = require('core/layers/providers/provider');
 const Feature = require('core/layers/features/feature');
 const Parsers = require('core/parsers/parsers');
@@ -33,22 +34,23 @@ inherit(QGISProvider, DataProvider);
 const proto = QGISProvider.prototype;
 
 //query by filter
-proto.query = function(options = {}) {
+proto.query = function(options={}) {
   const d = $.Deferred();
   const feature_count = options.feature_count || 10;
   const filter = options.filter || null;
-  const layerProjection = this._layer.getProjection();
-  this._projections.map = this._layer.getMapProjection() || layerProjection;
-  const crs = this._projections.map.getCode();
+  const isVector = this._layer.getType() !== "table";
+  if (isVector) {
+    this._projections.layer = this._layer.getProjection();
+    this._projections.map = this._layer.getMapProjection() || this._projections.layer;
+  }
+  const crs = isVector ? this._projections.map.getCode() : null;
   const queryUrl = options.queryUrl || this._queryUrl;
   const layers = options.layers;
   const {I,J} = options;
   const layerNames = layers ? layers.map(layer => layer.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
   if (filter) {
     // check if geomemtry filter. If not i have to remove projection layer
-    if (filter.getType() === 'geometry')
-      this._projections.layer = layerProjection;
-    else
+    if (filter.getType() !== 'geometry')
       this._projections.layer = null;
     const url = queryUrl ;
     const params = {
@@ -63,7 +65,7 @@ proto.query = function(options = {}) {
       I,
       J,
       FILTER: filter.get(),
-      WITH_GEOMETRY:1
+      WITH_GEOMETRY: isVector ? 1: 0
     };
 
     XHR.get({
@@ -141,20 +143,19 @@ proto.commit = function(commitItems) {
 };
 
 // METODS LOADING EDITING FEATURES (READ/WRITE) //
-proto.getFeatures = function(options = {}, params = {}) {
+proto.getFeatures = function(options={}, params={}) {
   const d = $.Deferred();
-  // filetr null value
+  // filter null value
   Object.entries(params).forEach(([key, value]) => {
     if (value === null)
       delete params[key]
   });
-  const layerType = options.type || 'vector'; //layer type
+  const layerType = options.type || 'vector'; //layer type vector/table etc
   // check if data are requested in read or write mode;
   let url;
   //editing mode
   if (options.editing) {
     url = this._editingUrl;
-
     let filter = options.filter || null;
     if (filter && filter.bbox) {
       const bbox = filter.bbox;
@@ -170,41 +171,46 @@ proto.getFeatures = function(options = {}, params = {}) {
     const urlParams = $.param(params);
     url+=  urlParams ? '?' + urlParams : '';
     $.post({
-      url: url,
+      url,
       data: jsonFilter,
       contentType: "application/json"
     })
       .then((response) => {
-        const vector = response.vector;
-        const featurelocks = response.featurelocks;
-        const data = vector.data;
-        const geometrytype = vector.geometrytype;
-        const parser = Parsers[layerType].get({
-          type: 'json',
-          pk
-        });
-        let parser_options = {};
-        if (geometrytype != 'No geometry') parser_options = { crs: this._layer.getCrs() };
-        const lockIds = featurelocks.map((featureLock) => {
-          return featureLock.featureid
-        });
-        parser(data, parser_options).forEach((feature) => {
-          const featureId = `${feature.getId()}`;
-          if (lockIds.indexOf(featureId) > -1) {
-            features.push(new Feature({
-              feature,
-              pk
-            }));
-          }
-        });
-        // resolve with featers locked and requested
-        d.resolve({
-          features: features,
-          featurelocks: featurelocks
-        });
+        const {vector, result, featurelocks} = response;
+        if (result) {
+          const {data, geometrytype} = vector;
+          const parser = Parsers[layerType].get({
+            type: 'json',
+            pk
+          });
+          const parser_options = (geometrytype !== 'No geometry') ? { crs: this._layer.getCrs() } : {};
+          const lockIds = featurelocks.map((featureLock) => {
+            return featureLock.featureid
+          });
+          parser(data, parser_options).forEach((feature) => {
+            const featureId = `${feature.getId()}`;
+            if (lockIds.indexOf(featureId) > -1) {
+              features.push(new Feature({
+                feature,
+                pk
+              }));
+            }
+          });
+          // resolve with featers locked and requested
+          d.resolve({
+            features,
+            featurelocks
+          });
+        } else {// case when server responde with result false (error)
+          d.reject({
+            message: t("info.server_error")
+          });
+        }
       })
       .fail(function(err) {
-        d.reject(err);
+        d.reject({
+          message: t("info.server_error")
+        });
       });
   } else {
     url = this._layer.getUrl('data');

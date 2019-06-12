@@ -11,7 +11,7 @@ const InputsComponents = {
   'unique_input': require('./unique/vue/unique'),
   'select_input': require('./select/vue/select'),
   'media_input': require('./media/vue/media'),
-  'select_autocomplete_input': require('./select/vue/select'),
+  'select_autocomplete_input': require('./select/vue/select')
 };
 
 module.exports = InputsComponents;

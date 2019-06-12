@@ -7,10 +7,10 @@ const Filter = require('core/layers/filter/filter');
 const ProviderFactory = require('core/layers/providers/providersfactory');
 
 // Base Class of all Layer
-function Layer(config = {}) {
+function Layer(config={}) {
   const ProjectsRegistry = require('core/project/projectsregistry');
   ProjectsRegistry.onafter('setCurrentProject', (project) => {
-    const qgisVersion = ProjectsRegistry.getCurrentProject().getQgisVersion({
+    const qgisVersion = project.getQgisVersion({
       type: 'major'
     });
     const projectType = project.getType();
@@ -34,8 +34,9 @@ function Layer(config = {}) {
   config.geolayer = false;
   config.baseLayer =  false;
   config.fields = config.fields || {};
-  config.urls = config.urls || {
-    query: config.infourl && config.infourl !== '' ? config.infourl : config.wmsUrl
+  config.urls = {
+    query: config.infourl && config.infourl !== '' ? config.infourl : config.wmsUrl,
+    ...(config.urls || {})
   };
   this.config = config;
   // dinamic layer values
@@ -89,6 +90,15 @@ function Layer(config = {}) {
 inherit(Layer, G3WObject);
 
 const proto = Layer.prototype;
+
+
+proto.getWMSLayerName = function() {
+  return this.isWmsUseLayerIds() ? this.getId() : this.getName()
+};
+
+proto.isWmsUseLayerIds = function() {
+  return this.config.wms_use_layer_ids;
+};
 
 proto.getShp = function() {
   const url = this.getUrl('shp');
@@ -163,7 +173,7 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
       const filter = new Filter();
       filter.getAll();
       provider.query({
-        filter: filter
+        filter
       })
         .done((response) => {
           const data = provider.digestFeaturesForLayers(response.data);
@@ -181,7 +191,6 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
       d.reject()
     }
   }
-
   return d.promise();
 };
 
@@ -429,9 +438,8 @@ proto.getQueryLayerName = function() {
   let queryLayerName;
   if (this.config.infolayer && this.config.infolayer !== '') {
     queryLayerName = this.config.infolayer;
-  }
-  else {
-    queryLayerName = this.config.name;
+  } else {
+    queryLayerName = this.getName();
   }
   return queryLayerName;
 };
@@ -476,7 +484,7 @@ proto.changeAttribute = function(attribute, type, options) {
 proto.getAttributeLabel = function(name) {
   let label;
   this.getAttributes().forEach((field) => {
-    if (field.name == name){
+    if (field.name === name){
       label = field.label;
     }
   });
