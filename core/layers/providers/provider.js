@@ -179,6 +179,11 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
 proto._getHandledResponsesFromResponse = function({response, layers, projections, id=false}) {
   const x2js = new X2JS();
   const jsonresponse =  x2js.xml_str2json(response);
+  // in case of parser return null
+  if (!jsonresponse) return [{
+    layer: layers[0],
+    features: []
+  }];
   const FeatureCollection = jsonresponse.FeatureCollection;
   const handledResponses = [];
   if (FeatureCollection.featureMember) {
@@ -205,7 +210,7 @@ proto._handleXMLStringResponseBeforeConvertToJSON = function({response, layers, 
     response = new XMLSerializer().serializeToString(response);
   for (let i=0; i < layers.length; i++) {
     const layer = layers[i];
-    let originalName = layer.isWmsUseLayerIds() ? layer.getId(): layer.getName();
+    let originalName = (wms && layer.isWmsUseLayerIds()) ? layer.getId(): layer.getName();
     let sanitizeLayerName = wms ? originalName.replace(/[/\s]/g, '') : originalName.replace(/[/\s]/g, '_');
     sanitizeLayerName = sanitizeLayerName.replace(/(\'+)/, '');
     sanitizeLayerName = sanitizeLayerName.replace(/(\)+)/, '');

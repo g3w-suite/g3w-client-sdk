@@ -1,17 +1,18 @@
 const Input = require('gui/inputs/input');
 const selectMixin = require('gui/inputs/select/vue/selectmixin');
+const getUniqueDomId = require('core/utils/utils').getUniqueDomId;
 const Service = require('../service');
 
 const UniqueInput = Vue.extend({
   mixins: [Input, selectMixin],
   template: require('./unique.html'),
   data: function() {
-    const uniqueid = 'uniqueinputid_' + Date.now();
+    const id = `unique_${getUniqueDomId()}`;
     return {
       service: new Service({
         state: this.state
       }),
-      id: uniqueid
+      id
     }
   },
   watch: {

@@ -8,7 +8,7 @@
             <div class="box-header with-border" data-widget="collapse">
               <div class="box-title query-layer-title">{{ layer.title }}
                 <span class="query-layer-feature-count">({{layer.features.length}})</span>
-                <span v-if="layer.hasgeometry && layer.features.length > 1" @click.stop="zoomToLayerFeaturesExtent(layer)" style="margin-left: 10px;" class="action-button" data-placement="top" data-toggle="tooltip"
+                <span v-if="layer.hasgeometry && layer.features.length > 1" @click.stop="zoomToLayerFeaturesExtent(layer)" style="margin-left: 10px;" class="action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip"
                        title="zoomToExtent">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('marker')"></span>
                 </span>

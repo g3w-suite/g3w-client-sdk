@@ -438,9 +438,8 @@ proto.getQueryLayerName = function() {
   let queryLayerName;
   if (this.config.infolayer && this.config.infolayer !== '') {
     queryLayerName = this.config.infolayer;
-  }
-  else {
-    queryLayerName = this.config.name;
+  } else {
+    queryLayerName = this.getName();
   }
   return queryLayerName;
 };

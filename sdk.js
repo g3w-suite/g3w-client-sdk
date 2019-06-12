@@ -83,6 +83,7 @@ g3w.gui = {
   ComponentsFactory: require('gui/componentsfactory'),
   vue: {
     Component: require('gui/vue/component'),
+    Panel: require('gui/panel'),
     MetadataComponent: require('gui/metadata/vue/metadata'),
     SearchComponent: require('gui/search/vue/search'),
     SearchPanel: require('gui/search/vue/panel/searchpanel'),
