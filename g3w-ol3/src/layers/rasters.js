@@ -17,19 +17,19 @@ RasterLayers.WMSLayer = function(layerObj,extraParams, method='GET'){
   };
   return RasterLayers._WMSLayer(options);
 };
-
 RasterLayers._WMSLayer = function(options={}) {
+
   const layerObj = options.layerObj;
   const method = options.method || 'GET';
   const extraParams = options.extraParams;
   const tiled = options.tiled || false;
   const projection = layerObj.projection ? layerObj.projection.getCode() : null;
-
   let params = {
     LAYERS: layerObj.layers || '',
     VERSION: '1.3.0',
     TRANSPARENT: true,
     SLD_VERSION: '1.1.0',
+    DPI:  window.devicePixelRatio ? window.devicePixelRatio * 96: 96
   };
   params = Object.assign({},params,extraParams);
   const sourceOptions = {
