@@ -61,6 +61,9 @@ proto._makeOlLayer = function(){
   this._olLayer.getSource().on('imageloadend', () => {
     this.emit("loadend");
   });
+  this._olLayer.getSource().on('imageloaderror', () => {
+    this.emit("loaderror");
+  });
 
   return this._olLayer
 };

@@ -17,7 +17,7 @@ const ScreenshotControl = require('g3w-ol3/src/controls/screenshotcontrol');
 
 
 const ControlsFactory = {
-  create: function(options) {
+  create: function(options={}) {
     let control;
     const ControlClass = ControlsFactory.CONTROLS[options.type];
     if (ControlClass) {

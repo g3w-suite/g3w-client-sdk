@@ -343,7 +343,7 @@ proto.getOrigName = function() {
 };
 
 proto.getServerType = function() {
-  if (this.config.servertype && this.config.servertype != '') {
+  if (this.config.servertype && this.config.servertype !== '') {
     return this.config.servertype;
   }
   else {
@@ -446,7 +446,7 @@ proto.getQueryLayerName = function() {
 
 proto.getQueryLayerOrigName = function() {
   let queryLayerName;
-  if (this.state.infolayer && this.config.infolayer != '') {
+  if (this.state.infolayer && this.config.infolayer !== '') {
     queryLayerName = this.config.infolayer;
   }
   else {
@@ -513,7 +513,7 @@ proto.canShowTable = function() {
       return true
     }
   } else if (this.getServerType() === 'G3WSUITE') {
-      if (this.get('source').type == "geojson")
+      if (this.get('source').type === "geojson")
         return true
   } else if (this.isFilterable())
     return true;

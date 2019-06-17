@@ -82,7 +82,7 @@ proto.getWMSLayerName = function() {
 };
 
 proto.getPrintLayerName = function() {
-  return (!this.isExternalWMS() && this.isWmsUseLayerIds()) ? this.getId() : this.getName();
+  return this.isWmsUseLayerIds() ? this.getId() : this.getName();
 };
 
 proto.getStringBBox = function() {

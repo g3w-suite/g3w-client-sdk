@@ -8,7 +8,12 @@ export default {
         print: {
           no_layers: 'Nessun Layer visibile'
         },
-        'metadata': {
+        errors: {
+          layers: {
+            load: "ATTENZIONE: alcuni servizi WMS presenti nel progetto non sono attualmente disponibili e quindi non compaiono nell'attuale visualizzazione"
+          }
+        },
+        metadata: {
           "title": "Metadati",
           'groups': {
             'general': {
@@ -136,7 +141,12 @@ export default {
         print: {
           no_layers: 'No Layer to print'
         },
-        'metadata': {
+        errors: {
+          layers: {
+            load: "WARNING: some WMS services are not available"
+          }
+        },
+        metadata: {
           'title': 'Metadata',
           'groups': {
             'general': {
