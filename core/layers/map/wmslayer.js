@@ -3,7 +3,7 @@ const base = require('core/utils/utils').base;
 const MapLayer = require('./maplayer');
 const RasterLayers = require('g3w-ol3/src/layers/rasters');
 
-function WMSLayer(options, extraParams, method='GET') {
+function WMSLayer(options={}, extraParams={}, method='GET') {
   this.LAYERTYPE = {
     LAYER: 'layer',
     MULTILAYER: 'multilayer'
@@ -112,12 +112,15 @@ proto._makeOlLayer = function(withLayers) {
   const olLayer = new RasterLayers.WMSLayer(wmsConfig, this.extraParams, this._method);
 
   olLayer.getSource().on('imageloadstart', () => {
-        this.emit("loadstart");
-      });
+    this.emit("loadstart");
+  });
   olLayer.getSource().on('imageloadend', () => {
-      this.emit("loadend");
+    this.emit("loadend");
   });
 
+  olLayer.getSource().on('imageloaderror', ()=> {
+    this.emit("loaderror");
+  });
   return olLayer
 };
 
@@ -134,7 +137,7 @@ proto.checkLayersDisabled = function(resolution, mapUnits) {
 };
 
 //update Layers
-proto._updateLayers = function(mapState = {}, extraParams = {}) {
+proto._updateLayers = function(mapState={}, extraParams={}) {
   //checsk disabled layers
   const {mapUnits} = mapState;
   this.checkLayersDisabled(mapState.resolution, mapUnits);

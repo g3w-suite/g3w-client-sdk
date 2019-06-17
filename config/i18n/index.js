@@ -8,7 +8,12 @@ export default {
         print: {
           no_layers: 'Nessun Layer visibile'
         },
-        'metadata': {
+        errors: {
+          layers: {
+            load: "ATTENZIONE: alcuni servizi WMS presenti nel progetto non sono attualmente disponibili e quindi non compaiono nell'attuale visualizzazione"
+          }
+        },
+        metadata: {
           "title": "Metadati",
           'groups': {
             'general': {
@@ -103,9 +108,11 @@ export default {
             input_validation_error: "Campo obbligatorio o tipo valore non corretto",
             integer: "intero",
             text: "testuale",
+            textarea: "testuale",
             string: "stringa",
             date: "data",
-            float: "float"
+            float: "float",
+            table: "table"
           },
           footer: {
             required_fields: "Campi richiesti"
@@ -134,7 +141,12 @@ export default {
         print: {
           no_layers: 'No Layer to print'
         },
-        'metadata': {
+        errors: {
+          layers: {
+            load: "WARNING: some WMS services are not available"
+          }
+        },
+        metadata: {
           'title': 'Metadata',
           'groups': {
             'general': {
@@ -229,9 +241,11 @@ export default {
             input_validation_error: "Mandatory Field or wrong data type",
             integer: "integer",
             text: "text",
+            textarea: "text",
             string: "string",
             date: "date",
-            float: "float"
+            float: "float",
+            table: "table"
           },
           footer: {
             "required_fields": "Required fields"

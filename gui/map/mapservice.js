@@ -64,9 +64,10 @@ function MapService(options={}) {
   };
   this.config = options.config || ApplicationService.getConfig();
   this._howManyAreLoading = 0;
+  this._layersLoadingError = false;
   // function to show spinner layers
-  this._incrementLoaders = function() {
-    if (this._howManyAreLoading == 0){
+  this._incrementLoaders = () => {
+    if (this._howManyAreLoading === 0) {
       this.emit('loadstart');
       GUI.showSpinner({
         container: $('#map-spinner'),
@@ -77,12 +78,20 @@ function MapService(options={}) {
     this._howManyAreLoading += 1;
   };
 
-  this._decrementLoaders = function() {
+  this._decrementLoaders = () => {
     this._howManyAreLoading -= 1;
-    if (this._howManyAreLoading == 0){
+    if (this._howManyAreLoading === 0){
       this.emit('loadend');
       GUI.hideSpinner('maploadspinner');
     }
+  };
+
+  this._mapLayerLoadError = () => {
+    if (!this._layersLoadingError) {
+      GUI.notify.warning(t('sdk.errors.layers.load'));
+      this._layersLoadingError = true;
+    }
+    this._decrementLoaders();
   };
 
   if(!_.isNil(options.project)) {
@@ -124,7 +133,7 @@ function MapService(options={}) {
       this.state.hidden = bool;
     },
     setupViewer: function(width,height) {
-      if (width == 0 || height == 0) {
+      if (width === 0 || height === 0) {
         return
       }
       if (this.viewer) {
@@ -145,22 +154,25 @@ function MapService(options={}) {
   };
 
   this._onCatalogSelectLayer = function(layer) {
-    if (layer && layer.isQueryable()) {
+    if (layer) {
+      const geometryType  = layer.getGeometryType();
+      const querable = layer.isQueryable();
       for (let i = 0; i< this._mapControls.length; i++) {
         const mapcontrol = this._mapControls[i];
-        if (mapcontrol.control._onSelectLayer && mapcontrol.control.getGeometryTypes().indexOf(layer.getGeometryType()) > -1) {
-          mapcontrol.control.setEnable(layer.isVisible());
-          // listen changes
-          this.on('cataloglayertoggled', (_toggledLayer) => {
-            if (layer === _toggledLayer) {
-              mapcontrol.control.setEnable(layer.isVisible())
-            }
-          })
+        if (mapcontrol.control._onSelectLayer) {
+          if (mapcontrol.control.getGeometryTypes().indexOf(geometryType) !== -1) {
+            mapcontrol.control.setEnable(querable? layer.isVisible(): querable);
+            // listen changes
+            querable && this.on('cataloglayertoggled', (_toggledLayer) => {
+              if (layer === _toggledLayer)
+                mapcontrol.control.setEnable(layer.isVisible())
+            })
+          } else
+            mapcontrol.control.setEnable(false)
         }
       }
     }
   };
-
 
   this.on('cataloglayerselected', this._onCatalogSelectLayer);
 
@@ -694,10 +706,15 @@ proto.setupControls = function() {
           control.toggle();
           break;
         case 'querybypolygon':
-          const controlLayers = this.getLayers({
+          const controlQuerableLayers = this.getLayers({
             QUERYABLE: true,
             SELECTEDORALL: true
           });
+          const controlFiltrableLayers = this.getLayers({
+            FILTERABLE: true,
+            SELECTEDORALL: true
+          });
+          const controlLayers = [... new Set([...controlFiltrableLayers, ...controlQuerableLayers])];
           control = ControlsFactory.create({
             type: controlType,
             layers: controlLayers,
@@ -744,27 +761,30 @@ proto.setupControls = function() {
                     } else {
                       const d = $.Deferred();
                       queriesPromise = d.promise();
-                      const queryResponses = [];
-                      const feature_count = this.project.getQueryFeatureCount();
                       const layers = this.getLayers(layerFilterObject);
-                      const mapCrs = this.getCrs();
-                      let layersLenght = layers.length;
-                      layers.forEach((layer) => {
-                        const layerCrs = layer.getProjection().getCode();
-                        if (mapCrs !== layerCrs)
-                          filterGeometry = geometry.clone().transform(mapCrs, layerCrs);
-                        filter.setGeometry(filterGeometry);
-                        layer.query({
-                          filter,
-                          feature_count
-                        }).then((response) => {
-                          queryResponses.push(response)
-                        }).always(() => {
-                          layersLenght -= 1;
-                          if (layersLenght === 0)
-                            d.resolve(queryResponses)
-                        })
-                      });
+                      if (layers.length === 0) d.resolve([]);
+                      else {
+                        const queryResponses = [];
+                        const feature_count = this.project.getQueryFeatureCount();
+                        const mapCrs = this.getCrs();
+                        let layersLenght = layers.length;
+                        layers.forEach((layer) => {
+                          const layerCrs = layer.getProjection().getCode();
+                          if (mapCrs !== layerCrs)
+                            filterGeometry = geometry.clone().transform(mapCrs, layerCrs);
+                          filter.setGeometry(filterGeometry);
+                          layer.query({
+                            filter,
+                            feature_count
+                          }).then((response) => {
+                            queryResponses.push(response)
+                          }).always(() => {
+                            layersLenght -= 1;
+                            if (layersLenght === 0)
+                              d.resolve(queryResponses)
+                          })
+                        });
+                      }
                     }
                     this.highlightGeometry(geometry);
                   }
@@ -789,8 +809,7 @@ proto.setupControls = function() {
                     .always(() => {
                       this.clearHighlightGeometry();
                     });
-                }
-                else
+                } else
                   queryResultsPanel.setQueryResponse([]);
               })
               .fail(() => {
@@ -1107,7 +1126,6 @@ proto.getLayers = function(filter) {
 
 proto.filterableLayersAvailable = function() {
   const layers = this.getLayers({
-    QUERYABLE: true,
     FILTERABLE: true,
     SELECTEDORALL: true
   });
@@ -1125,7 +1143,7 @@ proto.getMapControlsAlignement = function() {
 };
 
 proto.isMapControlsVerticalAlignement = function() {
-  return this.state.mapcontrolsalignement.indexOf('v') != -1;
+  return this.state.mapcontrolsalignement.indexOf('v') !== -1;
 };
 
 proto.setMapControlsVerticalAlignement = function() {
@@ -1266,8 +1284,7 @@ proto.toggleControls = function(toggle, types) {
       if (types.indexOf(controlObj.type) > -1) {
         controlObj.visible = toggle;
       }
-    }
-    else {
+    } else {
       controlObj.visible = toggle;
     }
   });
@@ -1657,21 +1674,23 @@ proto.updateMapLayers = function(options={}) {
   });
   const baseLayers = this.getBaseLayers();
   //updatebase layer
-  Object.entries(baseLayers).forEach(([layerid, baseLayer]) => {
+  Object.values(baseLayers).forEach((baseLayer) => {
     baseLayer.update(this.state, this.layersExtraParams);
   })
 };
 
 // register map Layer listeners of creation
 proto.registerMapLayerListeners = function(mapLayer) {
-  mapLayer.on('loadstart', this._incrementLoaders.bind(this) );
-  mapLayer.on('loadend', this._decrementLoaders.bind(this)) ;
+  mapLayer.on('loadstart', this._incrementLoaders);
+  mapLayer.on('loadend', this._decrementLoaders);
+  mapLayer.on('loaderror', this._mapLayerLoadError);
 };
 
 // unregister listeners of mapLayers creation
 proto.unregisterMapLayerListeners = function(mapLayer) {
   mapLayer.un('loadstart', this._incrementLoaders );
   mapLayer.un('loadend', this._decrementLoaders );
+  mapLayer.on('loaderror', this._mapLayerLoadError);
 };
 
 proto.setTarget = function(elId) {
