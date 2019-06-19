@@ -13,7 +13,7 @@ inherit(PrintService, G3WObject);
 
 const proto = PrintService.prototype;
 
-proto.print = function(options, method="GET") {
+proto.print = function(options={}, method="GET") {
   return this.provider.print(options, method);
 };
 

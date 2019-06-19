@@ -4,7 +4,8 @@ const INCHES_PER_UNIT = {
   m: 39.37, //
   degrees: 4374754
 };
-const DOTS_PER_INCH = 96; //DPI96
+
+const DOTS_PER_INCH = window.devicePixelRatio ? window.devicePixelRatio * 96 : 96; //DPI96
 
 const utils = {
   getExtentForViewAndSize: function(center, resolution, rotation, size) {
@@ -83,6 +84,9 @@ const utils = {
   getResolutionFromScale: function(scale, units="m") {
     const normScale = (scale > 1.0) ? (1.0 / scale) : scale; // just to prevent that scale is passed as 1:10000 or 0.0001
     return  1 / (normScale * INCHES_PER_UNIT[units] * DOTS_PER_INCH);
+  },
+  getDPI() {
+    return DOTS_PER_INCH;
   }
 };
 

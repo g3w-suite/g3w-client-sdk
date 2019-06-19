@@ -1,4 +1,5 @@
 const RasterLayers = {};
+const DPI = require('../utils/utils').getDPI();
 
 RasterLayers.TiledWMSLayer = function(layerObj,extraParams){
   const options = {
@@ -17,8 +18,8 @@ RasterLayers.WMSLayer = function(layerObj,extraParams, method='GET'){
   };
   return RasterLayers._WMSLayer(options);
 };
-RasterLayers._WMSLayer = function(options={}) {
 
+RasterLayers._WMSLayer = function(options={}) {
   const layerObj = options.layerObj;
   const method = options.method || 'GET';
   const extraParams = options.extraParams;
@@ -29,7 +30,7 @@ RasterLayers._WMSLayer = function(options={}) {
     VERSION: '1.3.0',
     TRANSPARENT: true,
     SLD_VERSION: '1.1.0',
-    DPI:  window.devicePixelRatio ? window.devicePixelRatio * 96: 96
+    DPI
   };
   params = Object.assign({},params,extraParams);
   const sourceOptions = {
