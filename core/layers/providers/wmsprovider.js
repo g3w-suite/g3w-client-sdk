@@ -8,7 +8,7 @@ const DataProvider = require('core/layers/providers/provider');
 // da un geojson
 const PIXEL_TOLERANCE = 10;
 const GETFEATUREINFO_IMAGE_SIZE = [101, 101];
-const DPI = 96;
+const DPI = geoutils.getDPI();
 
 function WMSDataProvider(options = {}) {
   base(this, options);
