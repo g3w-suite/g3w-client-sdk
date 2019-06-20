@@ -407,11 +407,6 @@ proto.setLayersTree = function(layerstree, name) {
         obj[key].groupdisabled = parentDisabled;
       }
       if (layer.nodes) {
-        layer.checked = true;
-        layer.disabled = false;
-        // if (layer.title === 'PRG - Zone residenziali') {
-        //   parentDisabled = layer.checked = false;
-        // }
         traverse(layer.nodes);
       }
     });
@@ -448,6 +443,7 @@ proto.createLayersTree = function(groupName, options = {}) {
             lightlayer.title = layer.name;
             lightlayer.expanded = layer.expanded;
             lightlayer.nodes = [];
+            lightlayer.checked = layer.checked;
             lightlayer.mutually_exclusive = layer["mutually-exclusive"];
             traverse(layer.nodes, lightlayer.nodes)
           }

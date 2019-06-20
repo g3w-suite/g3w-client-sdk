@@ -45,9 +45,9 @@ proto._handleClick = function(event) {
   // remove all the other, eventually toggled, interactioncontrols
   const controls = map.getControls();
   controls.forEach((control) => {
-    if(control.id && control.toggle && (control.id != this.id)) {
+    if(control.id && control.toggle && (control.id !== this.id)) {
       control.toggle(false);
-      if (control.name == 'reset') {
+      if (control.name === 'reset') {
         resetControl = control;
       }
     }
@@ -55,7 +55,7 @@ proto._handleClick = function(event) {
   if (!this._toggled && resetControl) {
     resetControl.toggle(true);
   }
-  this.dispatchEvent('controlclick', this.toggled);
+  this.dispatchEvent('controlclick');
 };
 
 //shift of control position

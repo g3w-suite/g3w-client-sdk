@@ -703,7 +703,7 @@ proto.setupControls = function() {
           }));
           this.addControl(controlType,control);
           //set active control by default
-          control.toggle();
+          control.toggle(true);
           break;
         case 'querybypolygon':
           const controlQuerableLayers = this.getLayers({
