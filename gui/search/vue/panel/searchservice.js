@@ -243,7 +243,7 @@ proto.fillInputsFormFromFilter = function({filter}) {
         type: input.input.type || 'textfield',
         options: Object.assign({}, input.input.options),
         value: '',
-        id: input.id
+        id: input.id || id
       };
 
       if (forminput.type === 'selectfield') {
@@ -287,6 +287,7 @@ proto.getInfoFromLayer = function(ogcService) {
 
 proto.fillFilterInputsWithValues = function(filter=this.filter, filterWithValues={}, exclude=[]) {
   const forminputs = this.state.forminputs;
+  const getvaluefromforminputid = [];
   for (const operator in filter) {
     filterWithValues[operator] = [];
     const inputs = filter[operator];
@@ -301,8 +302,9 @@ proto.fillFilterInputsWithValues = function(filter=this.filter, filterWithValues
           const filterInput = {};
           filterInput[_operator] = {};
           const forminputwithvalue = forminputs.find((forminput) => {
-              return forminput.attribute === fieldName;
+              return forminput.attribute === fieldName && getvaluefromforminputid.indexOf(forminput.id) === -1;
           });
+          getvaluefromforminputid.push(forminputwithvalue.id);
           const value = forminputwithvalue.value;
           filterInput[_operator][fieldName] = value;
           filterWithValues[operator].push(filterInput);

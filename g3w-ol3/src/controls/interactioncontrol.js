@@ -86,17 +86,13 @@ proto.toggle = function(toggle) {
   const controlButton = $(this.element).find('button').first();
   if (toggle) {
     this._showModalHelp();
-    if (this._interaction) {
-      this._interaction.setActive(true);
-    }
+    this._interaction && this._interaction.setActive(true);
     controlButton.addClass('g3w-ol-toggled');
-  }
-  else {
-    if (this._interaction) {
-      this._interaction.setActive(false);
-    }
+  } else {
+    this._interaction && this._interaction.setActive(false);
     controlButton.removeClass('g3w-ol-toggled');
   }
+  this.dispatchEvent('toggled', toggle);
 };
 
 // funzione che abilita e disabilita il controllo

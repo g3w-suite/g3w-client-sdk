@@ -6,11 +6,13 @@
       <template v-for="forminput in state.forminputs" :key="forminput.id">
         <div v-if="forminput.type === 'numberfield'" class="form-group numeric">
           <label :for="forminput.id + ' '">{{ forminput.label }}</label>
-          <input type="number"
-                 @change="changeNumericInput(forminput)"
-                 @keyup="changeNumericInput(forminput)"
-                 v-model="forminput.value" class="form-control"
-                 :id="forminput.id">
+          <input
+            type="number"
+            min="0"
+            @change="changeNumericInput(forminput)"
+            @keyup="changeNumericInput(forminput)"
+            v-model="forminput.value" class="form-control"
+            :id="forminput.id">
         </div>
         <div v-if="forminput.type === 'textfield' || forminput.type === 'textField'" class="form-group form-item-search  text">
           <label :for="forminput.id">{{ forminput.label }}</label>
