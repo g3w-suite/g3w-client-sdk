@@ -19,7 +19,10 @@ function QueryResultsService() {
     'clearHighlightGeometry': QueryResultsService.clearHighlightGeometry
   };
   this._relations = [];
-  const project = ProjectsRegistry.getCurrentProject();
+  const project = this._project = ProjectsRegistry.getCurrentProject();
+  this._projectLayerIds = this._project.getConfigLayers().map((layer) => {
+    return layer.id;
+  });
   this.state = {
     zoomToResult: true,
     components: []
@@ -37,6 +40,7 @@ function QueryResultsService() {
       this.setLayersData(layers);
     },
     setLayersData: function(layers) {
+      this._orderResponseByProjectLayers(layers);
       this.state.loading = false;
       this.state.layers =  layers;
       this.setActionsForLayers(layers);
@@ -58,6 +62,14 @@ inherit(QueryResultsService, G3WObject);
 
 
 const proto = QueryResultsService.prototype;
+
+proto._orderResponseByProjectLayers = function(layers) {
+  layers.sort((layerA, layerB) => {
+    const aIndex = this._projectLayerIds.indexOf(layerA.id);
+    const bIndex = this._projectLayerIds.indexOf(layerB.id);
+    return aIndex > bIndex ? 1 : -1;
+  });
+};
 
 proto.setZoomToResults = function(bool=true) {
   this.state.zoomToResult = bool;
