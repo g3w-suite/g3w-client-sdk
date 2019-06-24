@@ -162,6 +162,10 @@ proto.getLayers = function() {
   return [...this.state.layers, ...this.state.baselayers];
 };
 
+proto.getConfigLayers = function() {
+  return this.state.layers;
+};
+
 proto.getThumbnail = function() {
   return this.state.thumbnail;
 };

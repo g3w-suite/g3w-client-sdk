@@ -61,7 +61,12 @@ proto.isDisabled = function() {
 };
 
 proto.isPrintable = function({scale}={}) {
-  return this.isChecked() && (!this.state.scalebasedvisibility || (scale >= this.state.maxscale && scale <= this.state.minscale));
+  const ProjectsRegistry = require('core/project/projectsregistry');
+  const QGISVERSION = ProjectsRegistry.getCurrentProject().getQgisVersion({
+    type: 'major'
+  });
+  const visible = QGISVERSION === 3 ? !this.state.groupdisabled : true;
+  return this.isChecked() && visible && (!this.state.scalebasedvisibility || (scale >= this.state.maxscale && scale <= this.state.minscale));
 };
 
 proto.setDisabled = function(resolution, mapUnits='m') {
