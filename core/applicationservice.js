@@ -9,21 +9,15 @@ const PluginsRegistry = require('core/plugin/pluginsregistry');
 const ClipboardService = require('core/clipboardservice');
 const GlobalComponents = require('gui/vue/vue.globalcomponents');
 const GlobalDirective = require('gui/vue/vue.directives');
-import Store from './store/store';
-
+const G3W_VERSION = "{G3W_VERSION}";
 // install global components
 Vue.use(GlobalComponents);
 // install gloabl directive
 Vue.use(GlobalDirective);
 
-
-const G3W_VERSION = "{G3W_VERSION}";
-
 //Manage Application
 const ApplicationService = function() {
-  this._appStore = Store;
-  this.version = G3W_VERSION.indexOf("G3W_VERSION") == -1 ? G3W_VERSION  : "";
-  this.secret = "### G3W Client Application Service ###";
+  this.version = G3W_VERSION.indexOf("G3W_VERSION") === -1 ? G3W_VERSION  : "";
   this.ready = false;
   this.complete = false;
   this._acquirePostBoostrap = false;
@@ -41,10 +35,6 @@ const ApplicationService = function() {
     }
     // run bbotstrap
     return this._bootstrap();
-  };
-
-  this.getStore = function() {
-    return this._appStore;
   };
 
   // get config
