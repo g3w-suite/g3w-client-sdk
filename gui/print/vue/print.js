@@ -19,7 +19,7 @@ const vueComponentOptions = {
   },
   computed: {
     disabled() {
-      return this.state.loading;
+      return this.state.output.loading;
     }
   },
   methods: {
@@ -48,7 +48,6 @@ const vueComponentOptions = {
     }
   }
 };
-
 
 function PrintComponent(options={}) {
   base(this, options);
