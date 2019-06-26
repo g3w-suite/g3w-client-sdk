@@ -3,8 +3,7 @@ const base = require('core/utils/utils').base;
 const DataProvider = require('core/layers/providers/provider');
 const Filter = require('core/layers/filter/filter');
 
-function WFSDataProvider(options) {
-  options = options || {};
+function WFSDataProvider(options={}) {
   base(this, options);
   this._name = 'wfs';
   this._layerName = this._getTypeName(this._layer.getQueryLayerName())

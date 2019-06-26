@@ -1,5 +1,6 @@
 //Expression
-function Expression() {
+function Expression(options={}) {
+  this._layerName = options.layerName;
   this._expression = '';
 }
 
@@ -68,11 +69,11 @@ proto.clear = function() {
 
 // get expression method to get the realt value of the expression
 proto.get = function() {
-  return this._expression;
+  return this._layerName ? `${this._layerName}: ${this._expression}`: this._expression;
 };
 
 proto._build = function(operator, field, value) {
-  return [field, Expression.OPERATORS[operator], value].join(' ')
+  return [`"${field}"`, Expression.OPERATORS[operator], `${value}`].join(' ');
 };
 
 proto.createExpressionFromFilter = function(filterObject, layername) {
@@ -136,7 +137,7 @@ Expression.OPERATORS = {
   gt: '>',
   gte: '>=',
   lt: '<',
-  lte: '=<',
+  lte: '<=',
   LIKE: 'LIKE',
   ILIKE: 'ILIKE',
   AND: 'AND',
