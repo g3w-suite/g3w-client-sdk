@@ -12,6 +12,12 @@
                        title="zoomToExtent">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('marker')"></span>
                 </span>
+                <span>
+                  <span class="action-button-icon" title="CSV" class="action-button skin-tooltip-right"
+                    data-placement="right" data-toggle="tooltip"
+                    :class="g3wtemplate.getFontClass('csv')" @click.stop="saveLayerResult(layer)">
+                  </span>
+                </span>
               </div>
               <div class="box-tools pull-right">
                 <button class="btn btn-box-tool" data-widget="collapse"><i class="btn-collapser skin-color" :class="g3wtemplate.font['minus']"></i></button>

@@ -36,6 +36,9 @@ const vueComponentOptions = {
     }
   },
   methods: {
+    saveLayerResult(layer) {
+      this.$options.queryResultsService.saveLayerResult(layer);
+    },
     hasLayerOneFeature(layer) {
       return layer.features.length === 1;
     },

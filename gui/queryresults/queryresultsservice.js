@@ -1,4 +1,5 @@
 const inherit = require('core/utils/utils').inherit;
+const getAlphanumericPropertiesFromFeature = require('core/utils/geo').getAlphanumericPropertiesFromFeature;
 const base = require('core/utils/utils').base;
 const t = require('core/i18n/i18n.service').t;
 const ProjectsRegistry = require('core/project/projectsregistry');
@@ -203,16 +204,14 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
 };
 
 proto._parseAttributes = function(layerAttributes, featureAttributes) {
-  let featureAttributesNames = _.keys(featureAttributes);
-  featureAttributesNames = _.filter(featureAttributesNames,function(featureAttributesName){
-    return ['boundedBy','geom','the_geom','geometry','bbox', 'GEOMETRY'].indexOf(featureAttributesName) === -1;
-  });
+  let featureAttributesNames = Object.keys(featureAttributes);
+  featureAttributesNames = getAlphanumericPropertiesFromFeature(featureAttributesNames);
   if (layerAttributes && layerAttributes.length) {
-    return _.filter(layerAttributes,function(attribute){
+    return layerAttributes.filter((attribute) => {
       return featureAttributesNames.indexOf(attribute.name) > -1;
     })
   } else {
-    return _.map(featureAttributesNames, function(featureAttributesName) {
+    return featureAttributesNames.map((featureAttributesName) => {
       return {
         name: featureAttributesName,
         label: featureAttributesName
@@ -283,7 +282,7 @@ proto.triggerLayerAction = function(action,layer,feature) {
     url = urlTemplate.replace(/{(\w*)}/g,function(m,key){
       return feature.attributes.hasOwnProperty(key) ? feature.attributes[key] : "";
     });
-    if (url && url != '') {
+    if (url && url !== '') {
       GUI.goto(url);
     }
   }
@@ -297,7 +296,7 @@ proto.registerVectorLayer = function(vectorLayer) {
 
 proto.unregisterVectorLayer = function(vectorLayer) {
   const index = this._vectorLayers.indexOf(vectorLayer);
-  if ( index != -1) {
+  if ( index !== -1) {
     this._vectorLayers.splice(index, 1);
   }
 };
@@ -320,7 +319,7 @@ proto._addVectorLayersDataToQueryResponse = function() {
       }
       if ((queryResponse.data && queryResponse.data.length && queryResponse.data[0].layer == vectorLayer) || !coordinates || isVisible ) { return true}
       if (_.isArray(coordinates)) {
-        if (coordinates.length == 2) {
+        if (coordinates.length === 2) {
           const pixel = mapService.viewer.map.getPixelFromCoordinate(coordinates);
           mapService.viewer.map.forEachFeatureAtPixel(pixel, function (feature, layer) {
             features.push(feature);
@@ -329,7 +328,7 @@ proto._addVectorLayersDataToQueryResponse = function() {
               return layer === vectorLayer;
             }
           });
-        } else if (coordinates.length == 4) {
+        } else if (coordinates.length === 4) {
           intersectGeom = ol.geom.Polygon.fromExtent(coordinates);
           switch (vectorLayer.constructor) {
             case VectorLayer:
@@ -371,6 +370,66 @@ proto._addVectorLayersDataToQueryResponse = function() {
 //function to add c custom componet in query result
 proto._addComponent = function(component) {
   this.state.components.push(component)
+};
+
+//save layer result
+proto.saveLayerResult = function(layer) {
+  try {
+    //get headers
+    const headers = getAlphanumericPropertiesFromFeature(Object.keys(layer.features[0].attributes));
+    function convertToCSV(objArray) {
+      const array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+      let str = '';
+      for (let i = 0; i < array.length; i++) {
+        var line = '';
+        for (let index in array[i]) {
+          if (line !== '') line += ',';
+          line += array[i][index];
+        }
+        str += line + '\r\n';
+      }
+      return str;
+    }
+
+    function exportCSVFile(headers, items, fileTitle) {
+      if (headers) {
+        items.unshift(headers);
+      }
+      // Convert Object to JSON
+      const jsonObject = JSON.stringify(items);
+      const csv = convertToCSV(jsonObject);
+      const exportedFilenmae = `${layer.id}.csv`;
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      if (navigator.msSaveBlob) { // IE 10+
+        navigator.msSaveBlob(blob, exportedFilenmae);
+      } else {
+        const link = document.createElement("a");
+        if (link.download !== undefined) { // feature detection
+          // Browsers that support HTML5 download attribute
+          const url = URL.createObjectURL(blob);
+          link.setAttribute("href", url);
+          link.setAttribute("download", exportedFilenmae);
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      }
+    }
+
+    const itemsFormatted = layer.features.map((feature) => {
+      const attributes = feature.attributes;
+      const item = {};
+      headers.forEach((header) => {
+        item[header] = attributes[header];
+      });
+      return item;
+    });
+
+    exportCSVFile(headers, itemsFormatted);
+  } catch(e) {
+    GUI.notify.error(t('info.server_error'));
+  }
 };
 
 QueryResultsService.zoomToElement = function(layer, feature) {
@@ -417,6 +476,8 @@ QueryResultsService.showQueryRelations = function(layer, feature, action) {
     closable: false
   });
 };
+
+
 
 module.exports = QueryResultsService;
 

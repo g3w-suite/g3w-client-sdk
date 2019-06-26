@@ -137,7 +137,7 @@ Expression.OPERATORS = {
   gt: '>',
   gte: '>=',
   lt: '<',
-  lte: '=<',
+  lte: '<=',
   LIKE: 'LIKE',
   ILIKE: 'ILIKE',
   AND: 'AND',

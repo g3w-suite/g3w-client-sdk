@@ -207,5 +207,11 @@ module.exports = {
     }
     olLayer.setStyle(style);
     return olLayer;
+  },
+  getAlphanumericPropertiesFromFeature(properties=[]) {
+    properties = Array.isArray(properties) ? properties : Object.keys(properties);
+    return properties.filter((property) => {
+      return ['boundedBy', 'geom', 'the_geom', 'geometry', 'bbox', 'GEOMETRY'].indexOf(property) === -1;
+    });
   }
 };
