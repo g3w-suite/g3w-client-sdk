@@ -4,6 +4,7 @@ import config from './config';
 g3w.core = {
   G3WObject: require('core/g3wobject'),
   utils: require('core/utils/utils'),
+  geoutils: require('core/utils/geo'),
   ApplicationService: require('core/applicationservice'),
   ApiService: require('core/apiservice'),
   Router: require('core/router'),

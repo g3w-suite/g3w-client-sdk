@@ -208,6 +208,41 @@ module.exports = {
     olLayer.setStyle(style);
     return olLayer;
   },
+  createSelectedStyle({geometryType}) {
+    let style = null;
+    if (geometryType === 'LineString' || geometryType === 'MultiLineString') {
+      style = new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color: 'rgb(255,255,0)',
+          width: 4
+        })
+      });
+    }
+    else if (geometryType === 'Point' || geometryType === 'MultiPoint') {
+      style = new ol.style.Style({
+        image: new ol.style.Circle({
+          radius: 6,
+          fill: new ol.style.Fill({
+            color: 'rgb(255,255,0)'
+          })
+        }),
+        zIndex: Infinity
+      });
+      
+    } else if (geometryType === 'MultiPolygon' || geometryType === 'Polygon') {
+      style = new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color: 'rgb(255,255,0)',
+          width: 4
+        }),
+        fill: new ol.style.Fill({
+          color: 'rgba(255, 255, 0, 0.5)'
+        })
+      });
+    }
+    return style;
+    
+  },
   getAlphanumericPropertiesFromFeature(properties=[]) {
     properties = Array.isArray(properties) ? properties : Object.keys(properties);
     return properties.filter((property) => {

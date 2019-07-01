@@ -2,7 +2,7 @@ const inherit = require('core/utils/utils').inherit;
 const t = require('core/i18n/i18n.service').t;
 const base = require('core/utils/utils').base;
 const G3WObject = require('core/g3wobject');
-const shpToGeojson = require('core/utils/geo').shpToGeojson;
+const {shpToGeojson, createSelectedStyle} = require('core/utils/geo');
 const GUI = require('gui/gui');
 const ApplicationService = require('core/applicationservice');
 const ProjectsRegistry = require('core/project/projectsregistry');
@@ -1789,38 +1789,10 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
   const defaultStyle = function(feature){
     let styles = [];
     const geometryType = feature.getGeometry().getType();
-    if (geometryType == 'LineString' || geometryType == 'MultiLineString') {
-      const style = new ol.style.Style({
-        stroke: new ol.style.Stroke({
-          color: 'rgb(255,255,0)',
-          width: 4
-        })
-      });
-      styles.push(style);
-    }
-    else if (geometryType == 'Point' || geometryType == 'MultiPoint') {
-      const style = new ol.style.Style({
-        image: new ol.style.Circle({
-          radius: 6,
-          fill: new ol.style.Fill({
-            color: 'rgb(255,255,0)'
-          })
-        }),
-        zIndex: Infinity
-      });
-      styles.push(style);
-    } else if (geometryType == 'MultiPolygon' || geometryType == 'Polygon') {
-      const style = new ol.style.Style({
-        stroke: new ol.style.Stroke({
-          color: 'rgb(255,255,0)',
-          width: 4
-        }),
-        fill: new ol.style.Fill({
-          color: 'rgba(255, 255, 0, 0.5)'
-        })
-      });
-      styles.push(style);
-    }
+    const style = createSelectedStyle({
+      geometryType
+    });
+    styles.push(style);
     return styles;
   };
   const highlight = (typeof options.highlight == 'boolean') ? options.highlight : true;
