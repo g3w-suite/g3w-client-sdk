@@ -1,5 +1,9 @@
 <div class="g3wform_header box-header with-border">
-  <span style="display:flex;" :class="[{item_selected: currentindex === index && headers.length > 1}, [headers.length > 1 ? 'tabs' : 'one' ]]" v-for="(header, index) in headers" :key="header.title" class="title" @click="click(index)">
+  <span style="display:flex;"
+    class="title"
+    :class="[{item_selected: currentindex === index && headers.length > 1},[headers.length > 1 ? 'tabs' : 'one' ]]"
+    v-for="(header, index) in headers" :key="header.title"
+    @click="click(index)">
     <span v.if="header.icon" style="margin-right: 5px">
       <i :class="header.icon"></i>
     </span>

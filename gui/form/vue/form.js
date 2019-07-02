@@ -6,6 +6,8 @@ const base = require('core/utils/utils').base;
 const Template = require('./form.html');
 const HeaderFormComponent = require('../components/header/vue/header');
 const BodyFormComponent = require('../components/body/vue/body');
+const G3wFormFooter = require('gui/form/components/footer/vue/footer');
+
 
 //vue component
 const vueComponentObject = {
@@ -16,7 +18,8 @@ const vueComponentObject = {
     }
   },
   components: {
-    g3wformheader: HeaderFormComponent
+    g3wformheader: HeaderFormComponent,
+    G3wFormFooter
   },
   transitions: {'addremovetransition': 'showhide'},
   methods: {
