@@ -49,6 +49,7 @@ const vueComponentObject = {
     this.$options.service.getEventBus().$on('addtovalidate', this.addToValidate);
   },
   mounted() {
+    // check if is valid form (it used by footer component)
     this.$options.service.isValid();
   },
   beforeDestroy() {

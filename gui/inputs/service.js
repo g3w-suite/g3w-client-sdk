@@ -52,6 +52,12 @@ proto.setValidator = function(validator) {
 proto.validate = function() {
   if ((Array.isArray(this.state.value) && this.state.value.length) || !_.isEmpty(_.trim(this.state.value))) {
     this.state.validate.empty = false;
+    if (this.state.validate.exclude_values && this.state.validate.exclude_values.length) {
+      if (this.state.validate.exclude_values.indexOf(this.state.value) !== -1) {
+        this.state.validate.valid = false;
+        return this.state.validate.valid;
+      }
+    }
     this.state.validate.valid = this._validator.validate(this.state.value);
   } else {
     this.state.validate.empty = true;
@@ -60,8 +66,17 @@ proto.validate = function() {
   return this.state.validate.valid;
 };
 
-proto.getErrorMessage = function(type) {
-  return t("sdk.form.inputs.input_validation_error") + "("+t("sdk.form.inputs." + type) + ")";
+proto.getErrorMessage = function(input) {
+  if (input.validate.mutually)
+    return `${t("sdk.form.inputs.input_validation_mutually_eclusive")} ( ${input.validate.mutually.join(',')} )`;
+  else if (input.validate.max_field)
+    return `${t("sdk.form.inputs.input_validation_max_field")} (${input.validate.max_field})`;
+  else if (input.validate.min_field)
+    return `${t("sdk.form.inputs.input_validation_min_field")} (${input.validate.min_field})`;
+  else if (input.validate.exclude_fields)
+    return `${t("sdk.form.inputs.input_validation_exclude_fields")}`;
+  else if (input.validate.required)
+    return `${t("sdk.form.inputs.input_validation_error")} ( ${t("sdk.form.inputs." + input.type)} )`;
 };
 
 proto.isEditable = function() {

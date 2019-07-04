@@ -22,24 +22,24 @@ const DateTimePickerInput = Vue.extend({
   },
   methods: {
     timeOnly : function() {
-      return !this.state.input.options[0].date;
+      return !this.state.input.options.formats[0].date;
     },
     stateValueChanged(value) {
-      const datetimedisplayformat = this.service.convertQGISDateTimeFormatToMoment(this.state.input.options[0].displayformat);
+      const datetimedisplayformat = this.service.convertQGISDateTimeFormatToMoment(this.state.input.options.formats[0].displayformat);
       const date = moment(value).format(datetimedisplayformat);
       $('#'+this.idinputdatetimepiker).val(date);
     }
   },
   mounted: function() {
     this.$nextTick(() => {
-      const fielddatetimeformat =  this.state.input.options[0].fieldformat.replace('yyyy','YYYY').replace('dd','DD');
+      const fielddatetimeformat =  this.state.input.options.formats[0].fieldformat.replace('yyyy','YYYY').replace('dd','DD');
       this.service.setValidatorOptions({
         fielddatetimeformat: fielddatetimeformat
       });
       const date = moment(this.state.value, fielddatetimeformat, true).isValid() ? moment(this.state.value, fielddatetimeformat).toDate() : null;
       const locale = this.service.getLocale();
-      const datetimedisplayformat = this.service.convertQGISDateTimeFormatToMoment(this.state.input.options[0].displayformat);
-      const datetimefieldformat = this.service.convertQGISDateTimeFormatToMoment(this.state.input.options[0].fieldformat);
+      const datetimedisplayformat = this.service.convertQGISDateTimeFormatToMoment(this.state.input.options.formats[0].displayformat);
+      const datetimefieldformat = this.service.convertQGISDateTimeFormatToMoment(this.state.input.options.formats[0].fieldformat);
       $(() => {
         $(`#${this.iddatetimepicker}`).datetimepicker({
           defaultDate: date,

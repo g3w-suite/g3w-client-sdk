@@ -62,10 +62,7 @@ function FormService() {
       disabled: false,
       valid: true, // global form validation state. True at beginning
       // when input change will be update
-      tovalidate: {
-        invalids: [],
-        inputs: {}
-      } // object array to be validate. They have at list valid key (boolean)
+      tovalidate: {}
     };
     this.setFormFields(fields);
     this.setFormStructure(options.formStructure);
@@ -96,70 +93,40 @@ proto.setLoading = function(bool=false) {
 // Every input send to form it valid value that will change the genaral state of form
 proto.isValid = function(input) {
   if (input) {
-    //check a specific input
-    const valid = input.validate.valid;
-    if (this.state.tovalidate.invalids.length === 0) {
-      !valid && this.state.tovalidate.invalids.push(input.name);
-      this.state.valid = valid;
-    } else {
-      const index = this.state.tovalidate.invalids.indexOf(input.name);
-      if (index === -1) {
-        !valid && this.state.tovalidate.invalids.push(input.name);
-      } else {
-        valid && this.state.tovalidate.invalids.splice(index, 1);
+    if (input.validate.mutually) {
+      if (!input.validate.required) {
+        if (!input.validate.empty) {
+          input.validate.valid = input.validate.mutually.reduce((previous, inputname) => {
+            return previous && this.state.tovalidate[inputname].validate.empty;
+          }, true)
+        } else {
+          let countNoTEmptyInputName = [];
+          for (let i = input.validate.mutually.length; i--;) {
+            const inputname = input.validate.mutually[i];
+            !this.state.tovalidate[inputname].validate.empty && countNoTEmptyInputName.push(inputname) ;
+          }
+          if (countNoTEmptyInputName.length < 2) {
+            input.validate.valid = true;
+            input.value = null;
+            countNoTEmptyInputName.forEach((inputname) => {
+              this.state.tovalidate[inputname].validate.valid = true;
+            })
+          }
+        }
       }
+      //check if min_field or max_field is set
+    } else if (!input.validate.empty && (input.validate.min_field || input.validate.max_field)) {
+        input.validate.valid = input.validate.min_field ?
+          this.state.tovalidate[input.validate.min_field].validate.empty || 1*input.value >= 1*this.state.tovalidate[input.validate.min_field].value :
+          this.state.tovalidate[input.validate.max_field].validate.empty || 1*input.value <= 1*this.state.tovalidate[input.validate.max_field].value;
     }
   }
-  this.state.valid = this.state.tovalidate.invalids.length === 0 ? true: this._checkFormValidationComplete(input);
+
+  this.state.valid = Object.values(this.state.tovalidate).reduce((previous, input) => {
+    return previous && input.validate.valid;
+  }, true)
 };
 
-proto._checkFormValidationComplete = function(input) {
-  let valid = true;
-  const init = !input;
-  const checkInputMutuallyValidation = (input) => {
-    const isvalidinput = input.validate.valid;
-    const isEmpty = input.validate.empty;
-    if (input.validate.mutually) {
-      let mutuallyValidInput;
-      if (isvalidinput) {
-        input.validate.mutually.map((inputName) => {
-          const mutallyInput = this.state.tovalidate.inputs[inputName];
-          mutallyInput.validate.valid = (mutallyInput.validate.valid === false && mutallyInput.validate.empty) ? undefined: mutallyInput.validate.valid;
-        });
-        valid = !input.validate.mutually.find((inputName) => {
-          return this.state.tovalidate.inputs[inputName].validate.valid === false;
-        });
-      } else {
-        if (!init) {
-          mutuallyValidInput = !!input.validate.mutually.find((inputName) => {
-            return this.state.tovalidate.inputs[inputName].validate.valid;
-          });
-          input.validate.mutually.map((inputName) => {
-            const mutallyInput = this.state.tovalidate.inputs[inputName];
-            mutallyInput.validate.valid = (!mutuallyValidInput && mutallyInput.validate.valid === undefined) ? false: mutallyInput.validate.valid;
-          });
-        }
-        mutuallyValidInput = !!input.validate.mutually.find((inputName) => {
-          return this.state.tovalidate.inputs[inputName].validate.valid;
-        });
-        input.validate.valid =  mutuallyValidInput && isEmpty ? undefined: isvalidinput;
-        valid = input.validate.valid || (input.validate.valid === undefined && mutuallyValidInput);
-      }
-    } else
-      valid = isvalidinput && this.state.tovalidate.invalids.length === 0;
-  };
-  if (input)
-    checkInputMutuallyValidation(input);
-  else {
-    const invalidInputs = this.state.tovalidate.invalids;
-    for (let i = invalidInputs.length; i--;) {
-      const inputName = invalidInputs[i];
-      const input = this.state.tovalidate.inputs[inputName];
-      checkInputMutuallyValidation(input);
-    }
-  }
-  return valid;
-};
 
 proto.addComponents = function(components = []) {
   for (const component of components) {
@@ -182,8 +149,7 @@ proto.addedComponentTo = function(formcomponent = 'body') {
 };
 
 proto.addToValidate = function(input) {
-  this.state.tovalidate.inputs[input.name] = input;
-  input.validate.valid === false && this.state.tovalidate.invalids.push(input.name);
+  this.state.tovalidate[input.name] = input;
 };
 
 proto.getState = function () {

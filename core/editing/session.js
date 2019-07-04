@@ -27,11 +27,15 @@ function Session(options={}) {
   // editor
   this._editor = options.editor || null;
   // featuresstore it's a temprary features source of the layer
-  this._featuresstore = options.featuresstore || new FeaturesStore();
+  this._featuresstore = options.featuresstore || new FeaturesStore({
+    provider: this._editor && this._editor.getLayer() && this._editor.getLayer().getProvider('data')
+  });
   // history -- oggetto che contiene gli stati dei layers
   this._history = new History({
     id: this.state.id
   });
+  // this is usefult in case of using a features store of editing layer
+  this._add = options.add === undefined ? true: options.add;
   ///tempraray changes before save iit on history object
   this._temporarychanges = [];
 }
@@ -65,10 +69,12 @@ proto._start = function(options={}) {
   this.register();
   this._editor.start(options)
     .then((features) => {
-      // return feature from server - clone it
-      features = this._cloneFeatures(features);
-      // add clone feature to internal features store
-      this._featuresstore.addFeatures(features);
+      if (this._add) {
+        // return feature from server - clone it
+        features = this._cloneFeatures(features);
+        // add clone feature to internal features store
+        this._featuresstore.addFeatures(features);
+      }
       this.state.started = true;
       d.resolve(features);
     })
@@ -85,8 +91,10 @@ proto._getFeatures = function(options={}) {
   this._editor.getFeatures(options)
     .then((promise) => {
       promise.then((features) => {
-        features = this._cloneFeatures(features);
-        this._featuresstore.addFeatures(features);
+        if (this._add) {
+          features = this._cloneFeatures(features);
+          this._featuresstore.addFeatures(features);
+        }
         d.resolve(features);
       })
       .fail((err) => {

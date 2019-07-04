@@ -2,10 +2,11 @@ const PickFeatureEventType = {
   PICKED: 'picked'
 };
 
-const PickFeatureEvent = function(type, coordinate, feature) {
+const PickFeatureEvent = function(type, coordinate, layer, feature) {
   this.type = type;
   this.feature = feature;
   this.coordinate = coordinate;
+  this.layer = layer;
 };
 
 const PickFeatureInteraction = function(options) {
@@ -17,8 +18,11 @@ const PickFeatureInteraction = function(options) {
   this.features_ = options.features || null;
   this.layers_ = options.layers || null;
   this.pickedFeature_ = null;
+  this.pickedLayer_ = null;
   this.layerFilter_ = (layer) =>  {
-    return _.includes(this.layers_, layer);
+    const include = _.includes(this.layers_, layer);
+    this.pickedLayer_ = include && layer;
+    return include;
   };
 };
 ol.inherits(PickFeatureInteraction, ol.interaction.Pointer);
@@ -34,6 +38,7 @@ PickFeatureInteraction.handleUpEvent_ = function(event) {
             new PickFeatureEvent(
                 PickFeatureEventType.PICKED,
                 event.coordinate,
+                this.pickedLayer_,
                 this.pickedFeature_));
   }
   return true;

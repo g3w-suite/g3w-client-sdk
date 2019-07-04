@@ -6,7 +6,7 @@ var RangeInput = Vue.extend({
   mixins: [Input],
   template: require('./range.html'),
   data: function() {
-    const options = this.state.input.options[0];
+    const options = this.state.input.options.values[0];
     const min = 1*options.min;
     const max = 1*options.max;
     const step = 1*options.Step;

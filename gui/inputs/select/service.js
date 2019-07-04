@@ -2,7 +2,7 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const getAppLanguage = require('core/i18n/i18n.service').getAppLanguage;
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
-var Service = require('gui/inputs/service');
+const Service = require('gui/inputs/service');
 
 function SelectService(options) {
   options = options || {};
@@ -12,7 +12,7 @@ function SelectService(options) {
 
 inherit(SelectService, Service);
 
-var proto = SelectService.prototype;
+const proto = SelectService.prototype;
 
 proto._getLayerById = function(layer_id) {
   return CatalogLayersStoresRegistry.getLayerById(layer_id);

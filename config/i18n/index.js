@@ -105,7 +105,11 @@ export default {
         },
         form: {
           inputs: {
+            input_validation_mutually_exclusive: "Campo mutualmente esclusivo con ",
             input_validation_error: "Campo obbligatorio o tipo valore non corretto",
+            input_validation_min_field: "Valore deve essere magiore uguale a quello del camp ",
+            input_validation_max_field: "Valore deve essere minore uguale a quello del campo ",
+            input_validation_exclude_values: "Campo deve contenere un valore diverso",
             integer: "intero",
             text: "testuale",
             textarea: "testuale",
@@ -238,7 +242,11 @@ export default {
         },
         form: {
           inputs: {
+            input_validation_mutually_exclusive: "Field mutually exclusive with ",
             input_validation_error: "Mandatory Field or wrong data type",
+            input_validation_min_field: "Value has to be more/equal to field value  ",
+            input_validation_max_field: "Value has to be less/equal to field value ",
+            input_validation_exclude_values: "Value has to be unique",
             integer: "integer",
             text: "text",
             textarea: "text",

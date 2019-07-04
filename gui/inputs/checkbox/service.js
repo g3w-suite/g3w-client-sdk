@@ -13,7 +13,7 @@ const proto = CheckBoxService.prototype;
 
 proto.convertCheckedToValue = function(checked) {
   let value;
-  const options = this.state.input.options;
+  const options = this.state.input.options.values;
   options.forEach((option) => {
     if (option.checked === checked) {
       this.state.value = value = option.value;
@@ -26,7 +26,7 @@ proto.convertCheckedToValue = function(checked) {
 proto.convertValueToChecked = function(value=null) {
   let checked = null;
   const valueToCheck = value|| this.state.value;
-  const options = this.state.input.options;
+  const options = this.state.input.options.values;
   if (valueToCheck === null)
     return false;
   options.forEach((option) => {

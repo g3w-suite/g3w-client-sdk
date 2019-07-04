@@ -80,10 +80,6 @@ function TableLayer(config={}, options={}) {
    *
   */
   this.type = Layer.LayerTypes.TABLE;
-  // creare an instace of editor
-  this._editor = new Editor({
-    layer: this
-  });
   // color
   this._color = null;
   const currentProject = options.project || ProjectsRegistry.getCurrentProject();
@@ -143,6 +139,10 @@ function TableLayer(config={}, options={}) {
   }
   this._featuresStore = new FeaturesStore({
     provider: this.providers.data
+  });
+  // creare an instace of editor
+  this._editor = new Editor({
+    layer: this
   });
 }
 

@@ -30,7 +30,7 @@ const BaseInput = {
     if (this.state.validate === undefined)
       this.state.validate = {};
     this.$set(this.state.validate, 'valid', false);
-    this.$set(this.state.validate, 'message', this.service.getErrorMessage(this.state.type));
+    this.$set(this.state.validate, 'message', this.service.getErrorMessage(this.state));
     if (this.state.validate.required === undefined)
       this.$set(this.state.validate, 'required', false) ;
     this.state.validate.required && this.$set(this.state.validate, 'empty', true);
