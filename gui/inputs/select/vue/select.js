@@ -19,6 +19,9 @@ var SelectInput = Vue.extend({
         search: this.state.value
       })
     }
+    if (!this.state.value) {
+      this.state.value = this.state.input.options.values[0].value;
+    }
   },
   mounted() {
     this.$nextTick(() => {
@@ -55,9 +58,6 @@ var SelectInput = Vue.extend({
         this.select2 = selectElement.select2({
           language
         });
-        if (!this.state.value) {
-          this.state.value = this.state.input.options.values[0].value;
-        }
       }
       if (this.state.value)
         this.select2.val(this.state.value).trigger('change');

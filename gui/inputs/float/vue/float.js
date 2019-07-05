@@ -1,4 +1,3 @@
-// oggetto base utilizzato per i mixins
 const Input = require('gui/inputs/input');
 const Service = require('../service');
 

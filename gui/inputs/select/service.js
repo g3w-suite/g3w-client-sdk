@@ -4,8 +4,7 @@ const getAppLanguage = require('core/i18n/i18n.service').getAppLanguage;
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const Service = require('gui/inputs/service');
 
-function SelectService(options) {
-  options = options || {};
+function SelectService(options={}) {
   base(this, options);
   this.layer = null;
 }
