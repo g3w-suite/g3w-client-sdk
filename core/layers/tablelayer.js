@@ -126,7 +126,11 @@ function TableLayer(config={}, options={}) {
         this.config.editing.pk = vector.pk;
         this.config.editing.fields = vector.fields;
         this.config.editing.format = vector.format;
+        this.config.editing.style = vector.style || {};
         this._setOtherConfigParameters(vector);
+        if (vector.style) {
+          this.setColor(vector.style.color)
+        }
         this._setPkEditable(this.config.editing.fields);
         this.setReady(true);
       })
@@ -174,6 +178,14 @@ proto.readFeatures = function() {
 proto.getLayerForEditing = function() {
   // if the original layer is a vector layer return itself
   return this;
+};
+
+proto.getEditingStyle = function() {
+  return this.config.editing.style;
+};
+
+proto.setEditingStyle = function(style={}) {
+  this.config.editing.style = style;
 };
 
 proto.isFieldRequired = function(fieldName) {
@@ -517,7 +529,7 @@ proto.getRelations = function() {
 proto.getRelationAttributes = function(relationName) {
   let fields = [];
   this._relations.forEach((relation) => {
-    if (relation.name == relationName) {
+    if (relation.name === relationName) {
       fields = relation.fields;
       return false
     }

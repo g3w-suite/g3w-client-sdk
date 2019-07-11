@@ -21,7 +21,8 @@ var RangeInput = Vue.extend({
   },
   methods: {
     checkValue: function() {
-      this.state.value = this.service.setValidRangeValue(1*this.state.value, this.min, this.max, this.step);
+      if (this.state.value)
+        this.state.value = this.service.setValidRangeValue(+this.state.value, this.min, this.max, this.step);
       this.change();
     }
   },

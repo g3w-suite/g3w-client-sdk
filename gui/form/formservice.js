@@ -51,9 +51,11 @@ function FormService() {
     this.pk = options.pk || null;
     this.buttons = options.buttons || [];
     this.context_inputs = options.context_inputs;
+    const footer = options.footer || {};
     this.state = {
       loading:false,
       components: [],
+      disabledcomponents: [],
       component: null,
       headers: [],
       currentheaderindex: 0,
@@ -62,7 +64,9 @@ function FormService() {
       disabled: false,
       valid: true, // global form validation state. True at beginning
       // when input change will be update
-      tovalidate: {}
+      tovalidate: {},
+      componentstovalidate: {},
+      footer
     };
     this.setFormFields(fields);
     this.setFormStructure(options.formStructure);
@@ -88,6 +92,15 @@ const proto = FormService.prototype;
 
 proto.setLoading = function(bool=false) {
   this.state.loading = bool;
+};
+
+proto.setValidComponent = function({id, valid}){
+  this.state.componentstovalidate[id] = valid;
+ this.isValid();
+};
+
+proto.getValidComponent = function(id) {
+  return this.state.componentstovalidate[id];
 };
 
 // Every input send to form it valid value that will change the genaral state of form
@@ -116,15 +129,19 @@ proto.isValid = function(input) {
       }
       //check if min_field or max_field is set
     } else if (!input.validate.empty && (input.validate.min_field || input.validate.max_field)) {
+        const input_name = input.validate.min_field || input.validate.max_field;
         input.validate.valid = input.validate.min_field ?
-          this.state.tovalidate[input.validate.min_field].validate.empty || 1*input.value >= 1*this.state.tovalidate[input.validate.min_field].value :
-          this.state.tovalidate[input.validate.max_field].validate.empty || 1*input.value <= 1*this.state.tovalidate[input.validate.max_field].value;
+          this.state.tovalidate[input.validate.min_field].validate.empty || 1*input.value > 1*this.state.tovalidate[input.validate.min_field].value :
+          this.state.tovalidate[input.validate.max_field].validate.empty || 1*input.value < 1*this.state.tovalidate[input.validate.max_field].value;
+        if (input.validate.valid) this.state.tovalidate[input_name].validate.valid = true
     }
   }
 
   this.state.valid = Object.values(this.state.tovalidate).reduce((previous, input) => {
     return previous && input.validate.valid;
-  }, true)
+  }, true) && Object.values(this.state.componentstovalidate).reduce((previous, valid) => {
+    return previous && valid
+  }, true);
 };
 
 
@@ -135,9 +152,35 @@ proto.addComponents = function(components = []) {
 };
 
 proto.addComponent = function(component) {
-  const {id:title, icon} = component;
+  const {id:title, icon, valid} = component;
+  if (valid !== undefined) {
+    this.state.componentstovalidate[title] = valid;
+    this.state.valid = this.state.valid && valid;
+    this.eventBus.$emit('add-component-validate', {
+      id: title,
+      valid
+    });
+  }
   this.state.headers.push({title, icon});
   this.state.components.push(component.component);
+};
+
+proto.disableComponent = function({index, disabled}) {
+  if (disabled)
+    this.state.disabledcomponents.push(index);
+  else
+    this.state.disabledcomponents = this.state.disabledcomponents.filter(disabledIndex => disabledIndex !== index);
+};
+
+proto.setComponentByIndex = function(index) {
+  if (this.state.disabledcomponents.indexOf(index) === -1) {
+    this.setIndexHeader(index);
+    this.state.component = this.state.components[index];
+  }
+};
+
+proto.getComponentByIndex = function(index) {
+  return this.state.components[index];
 };
 
 proto.setComponent = function(component) {
@@ -196,6 +239,8 @@ proto.clearAll = function() {
   this.eventBus.$off('addtovalidate');
   this.eventBus.$off('set-main-component');
   this.eventBus.$off('set-loading-form');
+  this.eventBus.$off('component-validation');
+  this.eventBus.$off('disable-component');
 };
 
 

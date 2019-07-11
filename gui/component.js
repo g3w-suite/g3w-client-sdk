@@ -16,6 +16,7 @@ const Component = function(options = {}) {
     visible: options.visible || true, // visibile
     open: options.open || false, // open,
     resizable: options.resizable || false,
+    info: options.info || null,
     sizes: {
       width:0,
       height:0

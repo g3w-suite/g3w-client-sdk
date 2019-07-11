@@ -73,7 +73,6 @@ const C3XYLine = {
         width: width,
         height: height || $(`#${this.id}`).height() - 4
       });
-      //this._setAllowedSpace();
     },
     _setAllowedSpace() {
       if (this.components && this.components.length)
@@ -81,12 +80,38 @@ const C3XYLine = {
           this.$el.offsetHeight -
           document.querySelector('.g3wform_header').offsetHeight - 50;
     },
+    _setMaxMin({value, max, min}) {
+      min = value ? +value : +min;
+      max = value ? +value : +max;
+      if (min < this.chart.axis.min().y)
+        this.chart.axis.min(min);
+      else if (max > this.chart.axis.max().y)
+        this.chart.axis.max(max);
+      else {
+        const dataValues = this.data.map(data => +data.value);
+        this.chart.axis.max(Math.max(...dataValues));
+        this.chart.axis.min(Math.min(...dataValues));
+
+      }
+      this.resize();
+
+    },
+    changeItems(items) {
+      if (items.length === 1)
+        this._setMaxMin(items[0].value);
+      else {
+        const max = Math.max(...items.map(item => +item.value));
+        const min = Math.min(...items.map(item => +item.value));
+        this._setMaxMin({
+          max,
+          min
+        })
+      }
+      this.resize();
+    },
     changeItem({item, render=true}) {
-      const value = +item.value;
-      if (this.chart.axis.min().y > value)
-        this.chart.axis.min(value - 5);
-      if (this.chart.axis.max().y < value)
-        this.chart.axis.max(value + 5);
+      const value = item.value;
+      this._setMaxMin({value});
       if (render) {
         this.resize();
       }

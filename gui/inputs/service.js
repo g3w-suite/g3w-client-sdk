@@ -52,29 +52,42 @@ proto.setValidator = function(validator) {
 proto.validate = function() {
   if ((Array.isArray(this.state.value) && this.state.value.length) || !_.isEmpty(_.trim(this.state.value))) {
     this.state.validate.empty = false;
-    if (this.state.validate.exclude_values && this.state.validate.exclude_values.length) {
-      if (this.state.validate.exclude_values.indexOf(this.state.value) !== -1) {
-        this.state.validate.valid = false;
-        return this.state.validate.valid;
-      }
+    if (this.state.input.type === 'integer' || this.state.input.type === 'float') {
+      if (+this.state.value < 0) {
+        this.state.value = null;
+        this.state.validate.empty = true;
+        this.state.validate.valid = !this.state.validate.required;
+      } else
+        this.state.validate.valid = this._validator.validate(this.state.value);
     }
-    this.state.validate.valid = this._validator.validate(this.state.value);
+    if (this.state.validate.exclude_values && this.state.validate.exclude_values.length) {
+        if (this.state.validate.exclude_values.indexOf(this.state.value) !== -1) {
+          this.state.validate.valid = false;
+          this.state.validate.unique = false;
+        } else
+          this.state.validate.unique = true;
+    } else
+      this.state.validate.valid = this._validator.validate(this.state.value);
   } else {
     this.state.validate.empty = true;
+    this.state.value = null;
+    this.state.validate.unique = true;
     this.state.validate.valid = !this.state.validate.required;
   }
+  if (!this.state.validate.valid)
+    this.state.validate.message = this.getErrorMessage(this.state);
   return this.state.validate.valid;
 };
 
 proto.getErrorMessage = function(input) {
   if (input.validate.mutually)
-    return `${t("sdk.form.inputs.input_validation_mutually_eclusive")} ( ${input.validate.mutually.join(',')} )`;
+    return `${t("sdk.form.inputs.input_validation_mutually_exclusive")} ( ${input.validate.mutually.join(',')} )`;
   else if (input.validate.max_field)
     return `${t("sdk.form.inputs.input_validation_max_field")} (${input.validate.max_field})`;
   else if (input.validate.min_field)
     return `${t("sdk.form.inputs.input_validation_min_field")} (${input.validate.min_field})`;
-  else if (input.validate.exclude_fields)
-    return `${t("sdk.form.inputs.input_validation_exclude_fields")}`;
+  else if (!input.validate.unique && input.validate.exclude_values)
+    return `${t("sdk.form.inputs.input_validation_exclude_values")}`;
   else if (input.validate.required)
     return `${t("sdk.form.inputs.input_validation_error")} ( ${t("sdk.form.inputs." + input.type)} )`;
 };

@@ -23,9 +23,14 @@ const vueComponentObject = {
   },
   transitions: {'addremovetransition': 'showhide'},
   methods: {
+    disableComponent({index=-1, disabled=false}) {
+      this.$options.service.disableComponent({
+        index,
+        disabled
+      });
+    },
     switchComponent(index) {
-      this.$options.service.setIndexHeader(index);
-      this.$options.service.setComponent(this.state.components[index]);
+      this.$options.service.setComponentByIndex(index);
     },
     changeInput: function(input) {
       return this.$options.service.isValid(input);
@@ -46,7 +51,14 @@ const vueComponentObject = {
     this.$options.service.getEventBus().$on('set-main-component', () => {
       this.switchComponent(0);
     });
+    this.$options.service.getEventBus().$on('component-validation', ({id, valid}) => {
+      this.$options.service.setValidComponent({
+        id,
+        valid
+      });
+    });
     this.$options.service.getEventBus().$on('addtovalidate', this.addToValidate);
+    this.$options.service.getEventBus().$on('disable-component', this.disableComponent);
   },
   mounted() {
     // check if is valid form (it used by footer component)
@@ -74,6 +86,10 @@ function FormComponent(options = {}) {
 
   this.addFormComponents = function(components = []) {
     this.getService().addComponents(components);
+  };
+
+  this.addFormComponent = function(component) {
+    component && this.getService().addComponent(component)
   };
   // some utilities methods
   this.addDependecyComponents = function(components) {

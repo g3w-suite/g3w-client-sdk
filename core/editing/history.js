@@ -339,10 +339,10 @@ proto.commit = function() {
             const _item = item.feature.clone();
             _item.add();
             commitItems[item.layerId][index] = _item;
-          } else if (item.feature.isUpdated() || item.feature.isDeleted()) {
-            commitItems[item.layerId][index] = item.feature
-          } else if (item.feature.isNew() && item.feature.isDeleted())
+          } else if (item.feature.isNew() && item.feature.isDeleted()) {
             commitItems[item.layerId].splice(index, 1);
+          } else if (item.feature.isUpdated() || item.feature.isDeleted())
+            commitItems[item.layerId][index] = item.feature;
           add = false;
           return false;
         }

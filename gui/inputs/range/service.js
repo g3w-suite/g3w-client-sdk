@@ -10,13 +10,9 @@ inherit(RangeService, Service);
 
 const proto = Service.prototype;
 
-proto.setValidRangeValue = function(value, min, max, step) {
-  if (value > max) {
-    return max;
-  } else if (value < min) {
-    return min;
-  }
-  return value
+proto.setValidRangeValue = function(value, min, max) {
+  return (value > max || value < min) ? null : value;
+
 };
 
 module.exports = RangeService;

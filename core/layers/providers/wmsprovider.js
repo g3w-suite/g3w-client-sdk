@@ -105,7 +105,7 @@ proto.GET = function({url, params}) {
     }
   }
   url = utils.appendParams(url, params);
-  url = `${url} ${sourceParam && '?'+sourceParam}`;
+  url = `${url}${sourceParam && sourceParam}`;
   return $.get(url)
 };
 
