@@ -165,6 +165,10 @@ proto.addComponent = function(component) {
   this.state.components.push(component.component);
 };
 
+proto.replaceComponent = function({index, component}={}) {
+  this.state.components[index] = component;
+};
+
 proto.disableComponent = function({index, disabled}) {
   if (disabled)
     this.state.disabledcomponents.push(index);

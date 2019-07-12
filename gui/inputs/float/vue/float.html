@@ -1,6 +1,7 @@
 <baseinput :state="state">
   <input
     @change="change"
+    @input="change"
     class="form-control"
     style="width:100%"
     v-disabled="!isEditable()"
