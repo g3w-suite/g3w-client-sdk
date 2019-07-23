@@ -111,15 +111,16 @@ proto.reset = function() {
   this.clearState();
 };
 
+
 proto._digestFeaturesForLayers = function(featuresForLayers) {
   let id = 0;
   featuresForLayers = featuresForLayers || [];
-  let layers = [];
+  const layers = [];
   let layerAttributes,
     layerRelationsAttributes,
     layerTitle,
     layerId;
-  featuresForLayers.forEach((featuresForLayer) => {
+  const _handleFeatureFoLayer = (featuresForLayer) => {
     let formStructure;
     const layer = featuresForLayer.layer;
     if (layer instanceof Layer) {
@@ -156,6 +157,13 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       layerRelationsAttributes =  [];
       layerTitle = layer.get('name');
       layerId = layer.get('id');
+    } else if (typeof layer === 'string' || layer instanceof String) {
+      const feature = featuresForLayer.features[0];
+      layerAttributes = feature ? feature.getProperties() : [];
+      layerRelationsAttributes =  [];
+      const split_layer_name = layer.split('_');
+      layerTitle = (split_layer_name.length > 4) ? split_layer_name.slice(0, split_layer_name.length -4).join(' '): layer;
+      layerId = layer;
     }
 
     const layerObj = {
@@ -199,6 +207,14 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     else if (featuresForLayer.error){
       layerObj.error = featuresForLayer.error;
     }
+  };
+  featuresForLayers.forEach((featuresForLayer) => {
+    if (!Array.isArray(featuresForLayer))
+      _handleFeatureFoLayer(featuresForLayer);
+    else
+      featuresForLayer.forEach((featuresForLayer) => {
+        _handleFeatureFoLayer(featuresForLayer);
+      })
   });
   return layers;
 };

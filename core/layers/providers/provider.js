@@ -172,8 +172,51 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
           features
         }
       })
+    } else {
+      return layers.map((layer) => {
+        return this._handleWMSMultilayers({
+          layer,
+          response,
+          projections
+        })
+      })
     }
   }
+};
+
+proto._handleWMSMultilayers = function({layer, response, projections} = {}) {
+  const x2js = new X2JS();
+  const jsonresponse =  x2js.xml_str2json(response);
+  // in case of parser return null
+  if (!jsonresponse) return [{
+    layer,
+    features: []
+  }];
+  const FeatureCollection = jsonresponse.FeatureCollection;
+  const handledResponses = [];
+  if (FeatureCollection.featureMember) {
+    const originalFeatureMember = Array.isArray(FeatureCollection.featureMember) ? FeatureCollection.featureMember : [FeatureCollection.featureMember];
+    let layersNames = new Set();
+    FeatureCollection.featureMember.forEach((featureMember) => {
+      layersNames.add(Object.keys(featureMember)[0]);
+    });
+    for (let layerName of layersNames) {
+      jsonresponse.FeatureCollection.featureMember = originalFeatureMember.filter((feature) => {
+        return feature[layerName]
+      });
+      const handledResponse = this._parseLayerFeatureCollection({
+        jsonresponse,
+        layer,
+        projections
+      });
+      if (handledResponse) {
+        const response = handledResponse[0];
+        response.layer = layerName;
+        handledResponses.push(response);
+      }
+    }
+  }
+  return handledResponses;
 };
 
 proto._getHandledResponsesFromResponse = function({response, layers, projections, id=false}) {
