@@ -1,4 +1,7 @@
 const Geometry = require('core/geometry/geometry');
+const Filter = require('core/layers/filter/filter');
+const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
+
 module.exports = {
   coordinatesToGeometry: function(geometryType, coordinates) {
     let geometryClass;
@@ -128,6 +131,7 @@ module.exports = {
     };
     reader.readAsArrayBuffer(url);
   },
+
   createLayerStyle: function(styleObj) {
     let style;
     const styles = {};
@@ -159,6 +163,7 @@ module.exports = {
     }
     return style
   },
+
   createOlLayer: function(options = {}) {
     const id = options.id;
     const geometryType = options.geometryType;
@@ -208,6 +213,7 @@ module.exports = {
     olLayer.setStyle(style);
     return olLayer;
   },
+
   createSelectedStyle({geometryType}) {
     let style = null;
     if (geometryType === 'LineString' || geometryType === 'MultiLineString') {
@@ -228,7 +234,7 @@ module.exports = {
         }),
         zIndex: Infinity
       });
-      
+
     } else if (geometryType === 'MultiPolygon' || geometryType === 'Polygon') {
       style = new ol.style.Style({
         stroke: new ol.style.Stroke({
@@ -241,12 +247,122 @@ module.exports = {
       });
     }
     return style;
-    
   },
+
   getAlphanumericPropertiesFromFeature(properties=[]) {
     properties = Array.isArray(properties) ? properties : Object.keys(properties);
     return properties.filter((property) => {
       return ['boundedBy', 'geom', 'the_geom', 'geometry', 'bbox', 'GEOMETRY'].indexOf(property) === -1;
     });
+  },
+
+  getQueryLayersPromisesByCoordinates(layers, {coordinates, map, feature_count=10, querymultilayers=false}={}) {
+    const d = $.Deferred();
+    const size = map.getSize();
+    if (!layers.length)
+      return d.resolve(layers);
+    const queryResponses = [];
+    const mapProjection = map.getView().getProjection();
+    const resolution = map.getView().getResolution();
+    if (querymultilayers) {
+      const multiLayers = _.groupBy(layers, function(layer) {
+        return layer.getMultiLayerId();
+      });
+      let layersLenght = Object.keys(multiLayers).length;
+      for (let key in multiLayers) {
+        const _multilayer = multiLayers[key];
+        const layers = _multilayer;
+        const multilayer = multiLayers[key][0];
+        const provider = multilayer.getProvider('query');
+        provider.query({
+          feature_count,
+          coordinates,
+          mapProjection,
+          resolution,
+          size,
+          layers
+        }).then((response)=> {
+          queryResponses.push(response);
+        }).always(() => {
+          layersLenght -= 1;
+          if (layersLenght === 0)
+            d.resolve(queryResponses)
+        })
+      }
+    } else {
+      let layersLenght = layers.length;
+      layers.forEach((layer) => {
+        layer.query({
+          feature_count,
+          coordinates,
+          mapProjection,
+          size,
+          resolution,
+        }).then((response) => {
+          queryResponses.push(response)
+        }).always(() => {
+          layersLenght -= 1;
+          if (layersLenght === 0)
+            d.resolve(queryResponses)
+        })
+      });
+    }
+    return d.promise();
+  },
+  getQueryLayersPromisesByGeometry(layers, options={}) {
+    const d = $.Deferred();
+    let filterGeometry = options.geometry;
+    const bbox = options.bbox;
+    const projection = options.projection;
+    const queryResponses = [];
+    const feature_count = options.feature_count || 10;
+    if (!layers.length)
+      d.resolve([]);
+    const mapCrs = projection.getCode();
+    const multiLayers = _.groupBy(layers, function(layer) {
+      return `${layer.getMultiLayerId()}_${layer.getProjection().getCode()}`;
+    });
+    let layersLenght = Object.keys(multiLayers).length;
+    for (let key in multiLayers) {
+      const filter = new Filter();
+      const _multilayer = multiLayers[key];
+      const layers = _multilayer;
+      const multilayer = multiLayers[key][0];
+      const provider = multilayer.getProvider('filter');
+      const layerCrs = multilayer.getProjection().getCode();
+      if (mapCrs !== layerCrs) {
+        if (bbox) {
+          const geometry = ol.geom.Polygon.fromExtent(filterGeometry);
+          filterGeometry = geometry.transform(mapCrs, layerCrs).getExtent();
+        } else {
+          filterGeometry = filterGeometry.clone().transform(mapCrs, layerCrs);
+        }
+      }
+      bbox && filter.setBBOX(filterGeometry) ||  filter.setGeometry(filterGeometry);
+      provider.query({
+        filter,
+        layers,
+        feature_count
+      }).then((response)=> {
+        queryResponses.push(response);
+      }).always(() => {
+        layersLenght -= 1;
+        if (layersLenght === 0)
+          d.resolve(queryResponses)
+      })
+    }
+    return d.promise();
+  },
+  getMapLayersByFilter(filter) {
+    filter = filter || {};
+    const mapFilter = {
+      GEOLAYER: true
+    };
+    Object.assign(filter, mapFilter);
+    let layers = [];
+    MapLayersStoreRegistry.getQuerableLayersStores().forEach((layerStore) => {
+      layers = layerStore.getLayers(filter);
+    });
+    return layers || [];
   }
 };

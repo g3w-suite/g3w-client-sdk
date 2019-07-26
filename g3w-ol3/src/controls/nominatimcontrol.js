@@ -550,8 +550,8 @@ function NominatimControl(options) {
         format: 'json',
         addressdetails: 1,
         limit: 10,
-        countrycodes: 'IT',
-        'accept-language': 'it-IT',
+        //countrycodes: 'IT',
+        //'accept-language': 'it-IT',
       }
     };
   };
@@ -566,8 +566,8 @@ function NominatimControl(options) {
         format: 'json',
         addressdetails: 1,
         limit: options.limit || this.settings.params.limit,
-        countrycodes: options.countrycodes || this.settings.params.countrycodes,
-        'accept-language': options.lang || this.settings.params['accept-language'],
+        //countrycodes: options.countrycodes || this.settings.params.countrycodes,
+        //'accept-language': options.lang || this.settings.params['accept-language'],
         viewbox: viewbox,
         bounded: 1
       }

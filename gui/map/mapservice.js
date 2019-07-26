@@ -2,7 +2,12 @@ const inherit = require('core/utils/utils').inherit;
 const t = require('core/i18n/i18n.service').t;
 const base = require('core/utils/utils').base;
 const G3WObject = require('core/g3wobject');
-const {shpToGeojson, createSelectedStyle} = require('core/utils/geo');
+const {
+  shpToGeojson,
+  createSelectedStyle,
+  getQueryLayersPromisesByCoordinates,
+  getQueryLayersPromisesByGeometry,
+  getMapLayersByFilter} = require('core/utils/geo');
 const GUI = require('gui/gui');
 const ApplicationService = require('core/applicationservice');
 const ProjectsRegistry = require('core/project/projectsregistry');
@@ -353,7 +358,7 @@ proto.showMarker = function(coordinates, duration) {
 proto.getLayerByName = function(name) {
   let layer = null;
   this.getMap().getLayers().getArray().find((lyr) => {
-    if (lyr.get('name') == name) {
+    if (lyr.get('name') === name) {
       layer = lyr;
       return true
     }
@@ -456,108 +461,6 @@ proto.getQueryLayerPromiseByCoordinates = function({layer, coordinates} = {}) {
   })
 };
 
-proto.getQueryLayersPromisesByGeometry = function(layerFilterObject, options={}) {
-  const d = $.Deferred();
-  let filterGeometry = options.geometry;
-  const excludeLayers = options.excludeLayers || [];
-  const bbox = options.bbox;
-  const queryResponses = [];
-  const feature_count = this.project.getQueryFeatureCount();
-  const layers = this.getLayers(layerFilterObject).filter(layer => excludeLayers.indexOf(layer) === -1);
-  if (!layers.length)
-    d.resolve([]);
-  const mapCrs = this.getCrs();
-  const multiLayers = _.groupBy(layers, function(layer) {
-    return `${layer.getMultiLayerId()}_${layer.getProjection().getCode()}`;
-  });
-  let layersLenght = Object.keys(multiLayers).length;
-  for (let key in multiLayers) {
-    const filter = new Filter();
-    const _multilayer = multiLayers[key];
-    const layers = _multilayer;
-    const multilayer = multiLayers[key][0];
-    const provider = multilayer.getProvider('filter');
-    const layerCrs = multilayer.getProjection().getCode();
-    if (mapCrs !== layerCrs) {
-      if (bbox) {
-        const geometry = ol.geom.Polygon.fromExtent(filterGeometry);
-        filterGeometry = geometry.transform(mapCrs, layerCrs).getExtent();
-      } else {
-        filterGeometry = filterGeometry.clone().transform(mapCrs, layerCrs);
-      }
-    }
-    bbox && filter.setBBOX(filterGeometry) ||  filter.setGeometry(filterGeometry);
-    provider.query({
-      filter,
-      layers,
-      feature_count
-    }).then((response)=> {
-      queryResponses.push(response);
-    }).always(() => {
-      layersLenght -= 1;
-      if (layersLenght === 0)
-        d.resolve(queryResponses)
-    })
-  }
-  return d.promise();
-};
-
-proto.getQueryLayersPromisesByCoordinates = function(layerFilterObject, coordinates, querymultilayers=false) {
-  const d = $.Deferred();
-  const size = this.getMap().getSize();
-  const feature_count = this.project.getQueryFeatureCount();
-  const layers = this.getLayers(layerFilterObject) || [];
-  if (!layers.length)
-    return d.resolve([]);
-  const queryResponses = [];
-  const mapProjection = this.getProjection();
-  const resolution = this.getResolution();
-  if (querymultilayers) {
-    const multiLayers = _.groupBy(layers, function(layer) {
-      return layer.getMultiLayerId();
-    });
-    let layersLenght = Object.keys(multiLayers).length;
-    for (let key in multiLayers) {
-      const _multilayer = multiLayers[key];
-      const layers = _multilayer;
-      const multilayer = multiLayers[key][0];
-      const provider = multilayer.getProvider('query');
-      provider.query({
-        feature_count,
-        coordinates,
-        mapProjection,
-        resolution,
-        size,
-        layers
-      }).then((response)=> {
-        queryResponses.push(response);
-      }).always(() => {
-        layersLenght -= 1;
-        if (layersLenght === 0)
-          d.resolve(queryResponses)
-      })
-    }
-  } else {
-    let layersLenght = layers.length;
-    layers.forEach((layer) => {
-      layer.query({
-        feature_count,
-        coordinates,
-        mapProjection,
-        size,
-        resolution,
-      }).then((response) => {
-        queryResponses.push(response)
-      }).always(() => {
-        layersLenght -= 1;
-        if (layersLenght === 0)
-          d.resolve(queryResponses)
-      })
-    });
-  }
-  return d.promise();
-};
-
 //setup controls
 /*
   layout : {
@@ -571,9 +474,9 @@ proto.activeMapControl = function(controlName) {
   const control = mapControl.control;
   !control.isToggled() ? control.toggle() : null;
 };
+
 proto.setupControls = function() {
-  //this.state.mapcontrolsalignement = 'lv'
-  const baseLayers = this.getLayers({
+  const baseLayers = getMapLayersByFilter({
     BASELAYER: true
   });
   this.getMapLayers().forEach((mapLayer) => {
@@ -586,8 +489,11 @@ proto.setupControls = function() {
     });
     this.getMap().addControl(attributionControl);
   }
+
   if (this.config && this.config.mapcontrols) {
     const mapcontrols = this.config.mapcontrols;
+    const feature_count = this.project.getQueryFeatureCount();
+    const map = this.getMap();
     mapcontrols.forEach((controlType) => {
       let control;
       switch (controlType) {
@@ -682,7 +588,15 @@ proto.setupControls = function() {
               VISIBLE: true
             };
             const querymultilayers = this.project.isQueryMultiLayers(controlType);
-            let queryResultsPromise = this.getQueryLayersPromisesByCoordinates(layersFilterObject, coordinates, querymultilayers);
+            const layers = getMapLayersByFilter(layersFilterObject);
+            let queryResultsPromise = getQueryLayersPromisesByCoordinates(
+              layers,
+              {
+                map,
+                querymultilayers,
+                feature_count,
+                coordinates
+            });
             const queryResultsPanel = showQueryResults('');
             queryResultsPromise.then((responses) => {
                 const layersResults = responses;
@@ -706,11 +620,11 @@ proto.setupControls = function() {
           control.toggle(true);
           break;
         case 'querybypolygon':
-          const controlQuerableLayers = this.getLayers({
+          const controlQuerableLayers = getMapLayersByFilter({
             QUERYABLE: true,
             SELECTEDORALL: true
           });
-          const controlFiltrableLayers = this.getLayers({
+          const controlFiltrableLayers = getMapLayersByFilter({
             FILTERABLE: true,
             SELECTEDORALL: true
           });
@@ -733,7 +647,14 @@ proto.setupControls = function() {
                 VISIBLE: true
               };
               const queryResultsPanel = showQueryResults('');
-              let queryResulsPromise = this.getQueryLayersPromisesByCoordinates(layersFilterObject, coordinates);
+              const layers = getMapLayersByFilter(layersFilterObject);
+              let queryResulsPromise = getQueryLayersPromisesByCoordinates(
+                layers,
+                {
+                  map,
+                  feature_count,
+                  coordinates
+              });
               queryResulsPromise.then((responses) => {
                 let layersResults = responses;
                 let queriesPromise;
@@ -753,15 +674,19 @@ proto.setupControls = function() {
                     const querymultilayers = this.project.isQueryMultiLayers(controlType);
                     let filterGeometry = geometry;
                     if (querymultilayers) {
-                      queriesPromise = this.getQueryLayersPromisesByGeometry(layerFilterObject, {
-                        geometry,
-                        bbox:false,
-                        excludeLayers
-                      })
+                      const layers = getMapLayersByFilter(layerFilterObject).filter(layer => excludeLayers.indexOf(layer) === -1);
+                      queriesPromise = getQueryLayersPromisesByGeometry(layers,
+                        {
+                          geometry,
+                          bbox:false,
+                          feature_count,
+                          projection: this.getProjection()
+                        }
+                      )
                     } else {
                       const d = $.Deferred();
                       queriesPromise = d.promise();
-                      const layers = this.getLayers(layerFilterObject);
+                      const layers = getMapLayersByFilter(layerFilterObject);
                       if (layers.length === 0) d.resolve([]);
                       else {
                         const queryResponses = [];
@@ -822,7 +747,7 @@ proto.setupControls = function() {
           break;
         case 'querybbox':
           if (!isMobile.any && this.filterableLayersAvailable()) {
-            const controlLayers = this.getLayers({
+            const controlLayers = getMapLayersByFilter({
               SELECTEDORALL: true,
               FILTERABLE: true,
               VISIBLE: true
@@ -843,13 +768,16 @@ proto.setupControls = function() {
                   FILTERABLE: true,
                   VISIBLE: true
                 };
-                const layers = this.getLayers(layersFilterObject);
+                const layers = getMapLayersByFilter(layersFilterObject);
                 let queriesPromise;
                 const querymultilayers = this.project.isQueryMultiLayers(controlType);
                 if (querymultilayers) {
-                  queriesPromise = this.getQueryLayersPromisesByGeometry(layersFilterObject, {
+                  const layers = getMapLayersByFilter(layersFilterObject);
+                  queriesPromise = getQueryLayersPromisesByGeometry(layers, {
                     geometry: bbox,
-                    bbox: true
+                    bbox: true,
+                    feature_count,
+                    projection: this.getProjection()
                   })
                 } else {
                   const d = $.Deferred();
@@ -1110,22 +1038,8 @@ proto._setMapControlsInsideContainerLenght = function() {
   this._setMapControlsGrid(this.state.mapControl.length);
 };
 
-// get layers from layersstore
-proto.getLayers = function(filter) {
-  filter = filter || {};
-  const mapFilter = {
-    GEOLAYER: true
-  };
-  Object.assign(filter, mapFilter);
-  let layers = [];
-  MapLayersStoreRegistry.getQuerableLayersStores().forEach((layerStore) => {
-    layers = layerStore.getLayers(filter);
-  });
-  return layers;
-};
-
 proto.filterableLayersAvailable = function() {
-  const layers = this.getLayers({
+  const layers = getMapLayersByFilter({
     FILTERABLE: true,
     SELECTEDORALL: true
   });
@@ -1543,7 +1457,7 @@ proto.addLayerToMap = function(layer) {
 
 //SETUPA BASELAYERS
 proto._setupBaseLayers = function(){
-  const baseLayers = this.getLayers({
+  const baseLayers = getMapLayersByFilter({
     BASELAYER: true
   });
   if (!baseLayers.length){
@@ -1571,7 +1485,7 @@ proto._setMapProjectionToLayers = function(layers) {
 
 //SETUP VECTORLAYERS
 proto._setupVectorLayers = function() {
-  const layers = this.getLayers({
+  const layers = getMapLayersByFilter({
     VECTORLAYER: true
   });
   this._setMapProjectionToLayers(layers);
@@ -1594,7 +1508,7 @@ proto.createMapLayer = function(layer) {
 
 //SETUP MAPLAYERS
 proto._setupMapLayers = function() {
-  const layers = this.getLayers({
+  const layers = getMapLayersByFilter({
     BASELAYER: false,
     VECTORLAYER: false
   });
@@ -1960,7 +1874,7 @@ proto.setInnerGreyCoverBBox = function(options={}) {
 };
 
 // grey map precompose mapcompose
-proto.startDrawGreyCover = function() {
+proto.startDrawGreyCover = function(message) {
   // after rendering the layer, restore the canvas context
   const map = this.viewer.map;
   let x_min, x_max, y_min, y_max, rotation, scale;
@@ -2003,6 +1917,16 @@ proto.startDrawGreyCover = function() {
     }
     ctx.fillStyle = 'rgba(0, 5, 25, 0.40)';
     ctx.fill();
+    if (message) {
+      ctx.font = "bold 25px Arial";
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      const arrayMessages = message.split('\n');
+      for (let i = 0; i < arrayMessages.length; i++) {
+        ctx.fillText(arrayMessages[i], width/2, (height/2) + 30*i);
+      }
+      //ctx.fillText(message,width/2, height/2);
+    }
     ctx.restore();
   };
   this._greyListenerKey = map.on('postcompose', postcompose);

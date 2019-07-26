@@ -123,8 +123,8 @@ g3w.ol = {
     PickCoordinatesInteraction: require('g3w-ol3/src/interactions/pickcoordinatesinteraction'),
     DeleteFeatureInteraction: require('g3w-ol3/src/interactions/deletefeatureinteraction')
   },
-  controls: {
-  }
+  controls: {},
+  utils: require('g3w-ol3/src/utils/utils')
 };
 
 g3w.utils = {
