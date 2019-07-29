@@ -222,20 +222,14 @@ const utils = {
     }
   },
   //build debounce function
-  debounce: function(fnc, delay=500) {
-    let lastCall;
-    let lastCallTimer;
+  debounce(func, delay=500) {
+    let timeout;
     return function (...args) {
-      let previousCall = lastCall;
-      lastCall = Date.now();
-      if (previousCall && ((lastCall - previousCall) <= delay)) {
-        //clear previous function
-        clearTimeout(lastCallTimer);
-      }
-      lastCallTimer = setTimeout(() => {
-        fnc(...args);
+      clearTimeout(timeout);
+      timeout = setTimeout(()=>{
+        func(...args)
       }, delay);
-    }
+    };
   },
   XHR: {
     get({url, params={}}={}) {

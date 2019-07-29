@@ -6,7 +6,7 @@ const QueryControl = function(options){
   const _options = {
     name: "querylayer",
     tipLabel: "Query layer",
-    label: "\uea0f",
+    label: options.label || "\uea0f",
     interactionClass: PickCoordinatesInteraction
   };
   options = utils.merge(options, _options);
@@ -28,7 +28,7 @@ proto.setMap = function(map) {
       this.toggle(true);
     }
   };
-  
+
   this.on('toggled', (event)=> {
     const toggled = event.target.isToggled();
     toggled && map.on('singleclick', querySingleClickFnc) || map.un('singleclick', querySingleClickFnc);

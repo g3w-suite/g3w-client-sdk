@@ -309,6 +309,7 @@ module.exports = {
     }
     return d.promise();
   },
+
   getQueryLayersPromisesByGeometry(layers, options={}) {
     const d = $.Deferred();
     let filterGeometry = options.geometry;
@@ -353,6 +354,7 @@ module.exports = {
     }
     return d.promise();
   },
+
   getMapLayersByFilter(filter) {
     filter = filter || {};
     const mapFilter = {

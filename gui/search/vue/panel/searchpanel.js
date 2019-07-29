@@ -69,8 +69,8 @@ const SearchPanelComponent = Vue.extend({
       }
     },
     doSearch: function(event) {
-      event.preventDefault();
-      this.$options.service.run();
+     event.preventDefault();
+     this.$options.service.run();
     }
   }
 });

@@ -52,7 +52,6 @@ const proto = SearchService.prototype;
 
 
 proto._run = function() {
-  //const feature_count = this.project.getQueryFeatureCount();
   this.state.searching = true;
   const filter = this.fillFilterInputsWithValues();
   GUI.closeContent();
@@ -73,12 +72,13 @@ proto._run = function() {
         data: results
       };
       queryResultsPanel.setQueryResponse(results);
+      queryResultsPanel.onceafter('postRender', () => {
+        this.state.searching = false;
+      })
     })
     .fail((err) => {
       GUI.notify.error(t('server_error'));
       GUI.closeContent();
-    })
-    .always(() => {
       this.state.searching = false;
     })
 };

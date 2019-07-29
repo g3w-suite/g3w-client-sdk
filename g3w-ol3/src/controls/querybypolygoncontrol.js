@@ -7,7 +7,7 @@ const QueryByPolygonControl = function(options={}) {
   const _options = {
     name: "querybypolygon",
     tipLabel: "Query By Polygon",
-    label: "\ue903",
+    label: options.label || "\ue903",
     onselectlayer: true,
     interactionClass: PickCoordinatesInteraction,
     onhover: true

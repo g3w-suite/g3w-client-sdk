@@ -246,7 +246,9 @@ const vueComponentOptions = {
           });
         this.hasResults = true;
         this.$nextTick(() => {
-          this.$options.queryResultsService.postRender(this.$el);
+          requestAnimationFrame(()=>{
+            this.$options.queryResultsService.postRender(this.$el);
+          })
         })
       }
     }

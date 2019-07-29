@@ -86,7 +86,6 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
           reject(err);
         });
     }
-
   });
 };
 

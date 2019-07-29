@@ -57,30 +57,32 @@
         });
         $('#layer_attribute_table tbody tr').each((index, element) => {
           const feature = this.state.features[index];
-          if (this.state.hasGeometry)
-            $(element).on('click', function() {
-              if ($(this).hasClass( "selected" ))
-                $(this).removeClass( "selected" );
-              else {
-                $('#layer_attribute_table tbody tr').removeClass('selected');
-                $(this).addClass( "selected" )
-              }
-              self.zoomAndHighLightSelectedFeature(feature);
-            });
-          $(element).children().each((index, element)=> {
-            const header = this.state.headers[index];
-            const fieldClass = Vue.extend(Field);
-            const fieldInstance = new fieldClass({
-              propsData: {
-                state: {
-                  value: feature.attributes[header.name]
+          if (feature) {
+            if (this.state.hasGeometry)
+              $(element).on('click', function() {
+                if ($(this).hasClass( "selected" ))
+                  $(this).removeClass( "selected" );
+                else {
+                  $('#layer_attribute_table tbody tr').removeClass('selected');
+                  $(this).addClass( "selected" )
                 }
-              }
-            });
-            fieldInstance.$mount();
-            fieldsComponents.push(fieldInstance);
-            $(element).html(fieldInstance.$el);
-          })
+                self.zoomAndHighLightSelectedFeature(feature);
+              });
+            $(element).children().each((index, element)=> {
+              const header = this.state.headers[index];
+              const fieldClass = Vue.extend(Field);
+              const fieldInstance = new fieldClass({
+                propsData: {
+                  state: {
+                    value: feature.attributes[header.name]
+                  }
+                }
+              });
+              fieldInstance.$mount();
+              fieldsComponents.push(fieldInstance);
+              $(element).html(fieldInstance.$el);
+            })
+          }
         });
         setTimeout(()=> {
           this.reloadLayout()
@@ -119,7 +121,7 @@
                 .catch((error) => {
                   console.log(error)
                 })
-            }),
+            }, 800),
             "serverSide": true,
             "processing": true,
             "responsive": true,

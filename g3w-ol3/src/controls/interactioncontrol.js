@@ -2,7 +2,7 @@ const Control = require('./control');
 
 const InteractionControl = function(options = {}) {
   this._visible = options.visible === false ? false : true;
-  this._toggled = this._toggled || false;
+  this._toggled = options.toggled || false;
   this._interactionClass = options.interactionClass || null;
   this._interaction = null;
   this._autountoggle = options.autountoggle || false;
@@ -15,9 +15,7 @@ const InteractionControl = function(options = {}) {
   options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
   Control.call(this, options);
   // create an help message
-  if (this._help) {
-    this._createModalHelp();
-  }
+  this._help && this._createModalHelp();
 };
 
 ol.inherits(InteractionControl, Control);
@@ -127,12 +125,13 @@ proto.onSelectLayer = function() {
 };
 
 proto.setMap = function(map) {
+  Control.prototype.setMap.call(this, map);
   if (!this._interaction && this._interactionClass) {
     this._interaction = new this._interactionClass;
     map.addInteraction(this._interaction);
     this._interaction.setActive(false);
   }
-  Control.prototype.setMap.call(this,map);
+  this._toggled && setTimeout(()=> {this.toggle(true)});
 };
 
 proto._handleClick = function(e) {

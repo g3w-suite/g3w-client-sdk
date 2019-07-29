@@ -6,7 +6,7 @@ const QueryBBoxControl = function(options = {}){
   const _options = {
     name: "querybbox",
     tipLabel: "Query BBox layer",
-    label: "\ue902",
+    label: options.label || "\ue902",
     interactionClass: ol.interaction.DragBox,
     onhover: true
   };

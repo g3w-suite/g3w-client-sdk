@@ -114,6 +114,7 @@ proto.getLayersDict = function(options = {}) {
   const filterVectorLayer = options.VECTORLAYER;
   const filterHidden = options.HIDDEN;
   const filterDisabled = options.DISABLED;
+  const filterIds = options.IDS;
   if (_.isUndefined(filterQueryable)
     && _.isUndefined(filterFilterable)
     && _.isUndefined(filterEditable)
@@ -129,6 +130,7 @@ proto.getLayersDict = function(options = {}) {
     && _.isUndefined(filterBaseLayer)
     && _.isUndefined(filterVectorLayer)
     && _.isUndefined(filterPrintable)
+    && _.isUndefined(filterIds)
   ) {
     return this._layers;
   }
@@ -145,6 +147,11 @@ proto.getLayersDict = function(options = {}) {
       return layer.isSelected();
     });
     layers = layers.length ? layers : _layers;
+  }
+
+  if (filterIds) {
+    const ids = Array.isArray(filterIds) ? filterIds : [filterIds];
+    layers = layers.filter(layer => ids.indexOf(layer.getId()) !== -1)
   }
 
   if (typeof filterActive == 'boolean') {

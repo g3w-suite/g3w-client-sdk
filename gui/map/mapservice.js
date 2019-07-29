@@ -475,6 +475,17 @@ proto.activeMapControl = function(controlName) {
   !control.isToggled() ? control.toggle() : null;
 };
 
+proto.createMapControl = function(type, options={add=true, toggled=false, visible=true, options={}}={}) {
+  const id = options.id || type;
+  const control = ControlsFactory.create({
+    type,
+    toggled: options.toggled,
+    ...options.options
+  });
+  this.addControl(id, control, options.add, options.visible);
+  return control;
+};
+
 proto.setupControls = function() {
   const baseLayers = getMapLayersByFilter({
     BASELAYER: true
@@ -506,74 +517,74 @@ proto.setupControls = function() {
           this.addControl(controlType, control, false);
           break;
         case 'zoom':
-          control = ControlsFactory.create({
-            type: controlType,
-            zoomInLabel: "\ue98a",
-            zoomOutLabel: "\ue98b"
+          control = this.createMapControl(controlType, {
+            options: {
+              zoomInLabel: "\ue98a",
+              zoomOutLabel: "\ue98b"
+            }
           });
-          this.addControl(controlType,control);
           break;
         case 'zoombox':
           if (!isMobile.any) {
-            control = ControlsFactory.create({
-              type: controlType
-            });
+            control = this.createMapControl(controlType, {});
             control.on('zoomend', (e) => {
               this.viewer.fit(e.extent);
             });
-            this.addControl(controlType,control);
           }
           break;
         case 'zoomtoextent':
-          control = ControlsFactory.create({
-            type: controlType,
-            label: "\ue98c",
-            extent: this.project.state.initextent
+          control = this.createMapControl(controlType, {
+            options: {
+              label: "\ue98c",
+              extent: this.project.state.initextent
+            }
           });
-          this.addControl(controlType,control);
           break;
         case 'mouseposition':
           if (!isMobile.any) {
             const coordinateLabels = this.getProjection().getUnits() === 'm' ? ['X', 'Y'] : ['Lng', 'Lat'];
-            control = ControlsFactory.create({
-              type: controlType,
-              coordinateFormat: (coordinate) => {
-                return ol.coordinate.format(coordinate, `${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}`, 4);
-              },
-              projection: this.getCrs()
+            control = this.createMapControl(controlType, {
+              add: false,
+              options: {
+                coordinateFormat: (coordinate) => {
+                  return ol.coordinate.format(coordinate, `${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}`, 4);
+                },
+                projection: this.getCrs()
+              }
             });
-            this.addControl(controlType, control, false);
           }
           break;
         case 'screenshot':
           if (!isMobile.any) {
-            control = ControlsFactory.create({
-              type: controlType,
-              onclick: async () => {
-                try {
-                  const blobImage = await this.createMapImage();
-                  saveAs(blobImage, `map_${Date.now()}.png`);
-                } catch (e) {
-                  GUI.notify.error(t("info.server_error"));
+            control = this.createMapControl(controlType, {
+              options: {
+                onclick: async () => {
+                  try {
+                    const blobImage = await this.createMapImage();
+                    saveAs(blobImage, `map_${Date.now()}.png`);
+                  } catch (e) {
+                    GUI.notify.error(t("info.server_error"));
+                  }
+                  return true;
                 }
-                return true;
               }
             });
-            this.addControl(controlType, control);
           }
           break;
         case 'scale':
-          control = ControlsFactory.create({
-            type: controlType,
-            coordinateFormat: ol.coordinate.createStringXY(4),
-            projection: this.getCrs(),
-            isMobile: isMobile.any
+          control = this.createMapControl(controlType, {
+            add: false,
+            options: {
+              coordinateFormat: ol.coordinate.createStringXY(4),
+              projection: this.getCrs(),
+              isMobile: isMobile.any
+            }
           });
-          this.addControl(controlType, control, false);
           break;
         case 'query':
-          control = ControlsFactory.create({
-            type: controlType
+          control = this.createMapControl(controlType, {
+            add: true,
+            toggled: true
           });
           control.on('picked', throttle((e) => {
             const coordinates = e.coordinates;
@@ -615,9 +626,6 @@ proto.setupControls = function() {
                 GUI.closeContent();
               });
           }));
-          this.addControl(controlType,control);
-          //set active control by default
-          control.toggle(true);
           break;
         case 'querybypolygon':
           const controlQuerableLayers = getMapLayersByFilter({
@@ -629,10 +637,11 @@ proto.setupControls = function() {
             SELECTEDORALL: true
           });
           const controlLayers = [... new Set([...controlFiltrableLayers, ...controlQuerableLayers])];
-          control = ControlsFactory.create({
-            type: controlType,
-            layers: controlLayers,
-            help: t("sdk.mapcontrols.querybypolygon.help")
+          control = this.createMapControl(controlType, {
+            options: {
+              layers: controlLayers,
+              help: t("sdk.mapcontrols.querybypolygon.help")
+            }
           });
           if (control) {
             const showQueryResults = GUI.showContentFactory('query');
@@ -742,7 +751,6 @@ proto.setupControls = function() {
                 GUI.closeContent();
               })
             }));
-            this.addControl(controlType, control);
           }
           break;
         case 'querybbox':
@@ -752,10 +760,11 @@ proto.setupControls = function() {
               FILTERABLE: true,
               VISIBLE: true
             });
-            control = ControlsFactory.create({
-              type: controlType,
-              layers: controlLayers,
-              help: t("sdk.mapcontrols.querybybbox.help")
+            control = this.createMapControl(controlType, {
+              options: {
+                layers: controlLayers,
+                help: t("sdk.mapcontrols.querybybbox.help")
+              }
             });
             if (control) {
               control.on('bboxend', (e) => {
@@ -831,17 +840,13 @@ proto.setupControls = function() {
                     GUI.closeContent();
                   })
                 });
-              this.addControl(controlType, control);
             }
           }
           break;
         case 'streetview':
           // streetview
-          control = ControlsFactory.create({
-            type: controlType
-          });
+          control = this.createMapControl(controlType, {});
           control.setProjection(this.getProjection());
-          this.addControl(controlType, control);
           this.on('viewerset', () => {
             this.viewer.map.addLayer(control.getLayer());
           });
@@ -881,11 +886,12 @@ proto.setupControls = function() {
           }
           break;
         case 'scaleline':
-          control = ControlsFactory.create({
-            type: controlType,
-            position: 'br'
+          conntrol = this.createMapControl(controlType, {
+            add: false,
+            options: {
+              position: 'br'
+            }
           });
-          this.addControl(controlType,control, false);
           break;
         case 'overview':
           if (!isMobile.any) {
@@ -897,33 +903,36 @@ proto.setupControls = function() {
               ProjectsRegistry.getProject(overviewProjectGid)
               .then((project) =>{
                 const overViewMapLayers = this.getOverviewMapLayers(project);
-                control = ControlsFactory.create({
-                  type: controlType,
-                  position: 'bl',
-                  className: 'ol-overviewmap ol-custom-overviewmap',
-                  collapseLabel: $(`<span class="${GUI.getFontClass('arrow-left')}"></span>`)[0],
-                  label: $(`<span class="${GUI.getFontClass('arrow-right')}"></span>`)[0],
-                  collapsed: false,
-                  layers: overViewMapLayers,
-                  view: new ol.View({
-                    projection: this.getProjection()
-                  })
+                control = this.createMapControl(controlType, {
+                  add: false,
+                  options: {
+                    position: 'bl',
+                    className: 'ol-overviewmap ol-custom-overviewmap',
+                    collapseLabel: $(`<span class="${GUI.getFontClass('arrow-left')}"></span>`)[0],
+                    label: $(`<span class="${GUI.getFontClass('arrow-right')}"></span>`)[0],
+                    collapsed: false,
+                    layers: overViewMapLayers,
+                    view: new ol.View({
+                      projection: this.getProjection()
+                    })
+                  }
                 });
-                this.addControl(controlType,control, false);
               });
             }
           }
           break;
         case 'nominatim':
-          control = ControlsFactory.create({
-            type: controlType,
-            isMobile: isMobile.any,
-            bbox: this.project.state.initextent,
-            mapCrs: 'EPSG:'+this.project.state.crs,
-            placeholder: t("mapcontrols.nominatim.placeholder"),
-            noresults: t("mapcontrols.nominatim.noresults"),
-            notresponseserver: t("mapcontrols.nominatim.notresponseserver"),
-            fontIcon: GUI.getFontClass('search')
+          control = this.createMapControl(controlType, {
+            add: false,
+            options: {
+              isMobile: isMobile.any,
+              bbox: this.project.state.initextent,
+              mapCrs: 'EPSG:'+this.project.state.crs,
+              placeholder: t("mapcontrols.nominatim.placeholder"),
+              noresults: t("mapcontrols.nominatim.noresults"),
+              notresponseserver: t("mapcontrols.nominatim.notresponseserver"),
+              fontIcon: GUI.getFontClass('search')
+            }
           });
           control.on('addresschosen', (evt) => {
             const coordinate = evt.coordinate;
@@ -931,52 +940,44 @@ proto.setupControls = function() {
             this.highlightGeometry(geometry);
           });
 
-          this.addControl(controlType, control, false);
-
           $('#search_nominatim').click(debounce(() => {
             control.nominatim.query($('input.gcd-txt-input').val());
           }));
           $('.gcd-txt-result').perfectScrollbar();
           break;
         case 'geolocation':
-          control = ControlsFactory.create({
-            type: controlType
-          });
+          control = this.createMapControl(controlType);
           control.on('click', throttle((evt) => {
             this.showMarker(evt.coordinates);
           }));
           control.on('error', (e) => {
             GUI.notify.error(t("mapcontrols.geolocations.error"))
           });
-          this.addControl(controlType, control);
           break;
         case 'addlayers':
           if (!isMobile.any) {
-            control = ControlsFactory.create({
-              type: controlType
-            });
+            control = this.createMapControl(controlType, {});
             control.on('addlayer', () => {
               this.emit('addexternallayer');
             });
-            this.addControl(controlType, control);
           }
           break;
         case 'length':
           if (!isMobile.any) {
-            control = ControlsFactory.create({
-              type: controlType,
-              tipLabel: t('mapcontrols.length.tooltip')
+            control = this.createMapControl(controlType, {
+              options: {
+                tipLabel: t('mapcontrols.length.tooltip')
+              }
             });
-            this.addControl(controlType, control);
           }
           break;
         case 'area':
           if (!isMobile.any) {
-            control = ControlsFactory.create({
-              type: controlType,
-              tipLabel: t('mapcontrols.area.tooltip')
+            control = this.createMapControl(controlType, {
+              options: {
+                tipLabel: t('mapcontrols.area.tooltip')
+              }
             });
-            this.addControl(controlType, control);
           }
           break;
       }
@@ -1140,8 +1141,8 @@ proto._addControlToMapControls = function(control, visible=true) {
 proto.addControl = function(type, control, addToMapControls=true, visible=true) {
   this.viewer.map.addControl(control);
   this._mapControls.push({
-    type: type,
-    control: control,
+    type,
+    control,
     visible,
     mapcontrol: addToMapControls && visible
   });
@@ -1163,7 +1164,6 @@ proto.addControl = function(type, control, addToMapControls=true, visible=true) 
       height: $mapElement.height()
     })
   }
-
   ControlsRegistry.registerControl(type, control);
 };
 
@@ -1219,7 +1219,7 @@ proto.getMapControls = function() {
 
 proto.removeControl = function(type) {
   this._mapControls.forEach((controlObj, ctrlIdx) => {
-    if (type == controlObj.type) {
+    if (type === controlObj.type) {
       this._mapControls.splice(ctrlIdx,1);
       this.viewer.map.removeControl(controlObj.control);
       return false;
@@ -1414,7 +1414,7 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
 
     // REMOVE LAYER
     const removeLayerKey = layerStore.onafter('removeLayer',  (layer) => {
-      if (layer.getType() == 'vector') {
+      if (layer.getType() === 'vector') {
         const olLayer = layer.getOLLayer();
         this.viewer.map.removeLayer(olLayer);
       }
