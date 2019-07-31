@@ -482,7 +482,7 @@ proto.createMapControl = function(type, options={add=true, toggled=false, visibl
     toggled: options.toggled,
     ...options.options
   });
-  this.addControl(id, control, options.add, options.visible);
+  control && this.addControl(id, control, options.add, options.visible);
   return control;
 };
 

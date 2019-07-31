@@ -24,7 +24,7 @@ function LayerFactory() {
         LayerClass = ImageLayer;
         if (config.source && config.geometrytype) {
           if ([Layer.SourceTypes.POSTGIS, Layer.SourceTypes.SPATIALITE, Layer.SourceTypes.CSV, Layer.SourceTypes.OGR].indexOf(config.source.type) > -1) {
-            if (config.geometrytype && config.geometrytype == 'No geometry') {
+            if (config.geometrytype && config.geometrytype === 'No geometry') {
               // if no geometry retun Table Layer
               LayerClass = TableLayer;
             }
@@ -50,6 +50,7 @@ function LayerFactory() {
       case Layer.ServerTypes.BING:
       case Layer.ServerTypes.TMS:
       case Layer.ServerTypes.WMTS:
+      case Layer.ServerTypes.ARCGIS:  
         LayerClass = BaseLayers[serverType];
         break;
       case Layer.ServerTypes.G3WSUITE:

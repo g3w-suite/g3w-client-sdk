@@ -25,15 +25,29 @@ BaseLayers.BING.Road = new ol.layer.Tile({
 });
 
 BaseLayers.TMS =  {
-  get: function({visible=false, url=null, minZoom, maxZoom, attributions}={}) {
+  get: function({visible=false, url=null, source_type="xyz", minZoom, maxZoom, projection, attributions}={}) {
+    let source;
+    switch(source_type) {
+      case 'xyz':
+        source = new ol.source.XYZ({
+          url,
+          minZoom,
+          maxZoom,
+          attributions
+        });
+        break;
+      case 'arcgis':
+        source = new ol.source.TileArcGISRest({
+          url,
+          projection,
+          attributions
+        });
+        break;
+      default:
+    }
     return new ol.layer.Tile({
       visible,
-      source: new ol.source.XYZ({
-        url,
-        minZoom,
-        maxZoom,
-        attributions
-      }),
+      source,
       basemap: true
     })
   }
@@ -51,18 +65,11 @@ BaseLayers.WMTS = {
       matrixIds[i] = i.toString();
       resolutions[i] = size / Math.pow(2, i);
     }
+    url = 'https://hazards.fema.gov/gis/nfhl/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/16';
     return new ol.layer.Tile({
       opacity,
-      source: new ol.source.WMTS({
-        attributions,
-        url,
-        layer,
-        format,
-        tileGrid: new ol.tilegrid.WMTS({
-          origin: ol.extent.getTopLeft(projectionExtent),
-          resolutions: resolutions,
-          matrixIds: matrixIds
-        })
+      source: new ol.source.TileArcGISRest({
+        url
       })
     })
   }

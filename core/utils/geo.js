@@ -355,6 +355,18 @@ module.exports = {
     return d.promise();
   },
 
+  parseQueryLayersPromiseResponses(responses) {
+    const results = {
+      query: responses[0] ? responses[0].query: null,
+      data: []
+    };
+    responses.forEach((result) => {
+      if (result.data)
+        result.data.forEach(data => {results.data.push(data)});
+    });
+    return results;
+  },
+
   getMapLayersByFilter(filter) {
     filter = filter || {};
     const mapFilter = {
