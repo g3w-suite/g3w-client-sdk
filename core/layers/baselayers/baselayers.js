@@ -2,7 +2,7 @@ const BaseLayers = {
   'OSM': require('./osmlayer'),
   'Bing': require('./binglayer'),
   'TMS': require('./tmslayer'),
-  'ARCGIS': require('./arcgislayer'),
+  'ARCGISMAPSERVER': require('./arcgislayer'),
   'WMTS': require('./wmtslayer')
 };
 

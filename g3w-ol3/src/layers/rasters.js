@@ -19,6 +19,27 @@ RasterLayers.WMSLayer = function(layerObj,extraParams, method='GET'){
   return RasterLayers._WMSLayer(options);
 };
 
+RasterLayers.ImageArgisMapServer = function(options={ratio:1, format:''}){
+  return  new ol.layer.ImageLayer({
+    source: new ol.source.ImageArcGISRest({
+      ratio: options.ratio,
+      params: {
+        format: options.format,
+      },
+      url: options.url || 'https://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Specialty/ESRI_StateCityHighway_USA/MapServer'
+    })
+  })
+};
+
+RasterLayers.TiledArgisMapServer = function(options={}){
+  return  new ol.layer.TileLayer({
+    extent: options.extent,
+    source: new ol.source.TileArcGISRest({
+      url: options.url || 'https://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Specialty/ESRI_StateCityHighway_USA/MapServer'
+    })
+  })
+};
+
 RasterLayers._WMSLayer = function(options={}) {
   const layerObj = options.layerObj;
   const method = options.method || 'GET';

@@ -36,7 +36,7 @@ BaseLayers.TMS =  {
           attributions
         });
         break;
-      case 'arcgis':
+      case 'arcgismapserver':
         source = new ol.source.TileArcGISRest({
           url,
           projection,
