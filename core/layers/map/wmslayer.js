@@ -66,7 +66,7 @@ proto.toggleLayer = function(layer) {
   this._updateLayers();
 };
 
-proto.update = function(mapState = {}, extraParams) {
+proto.update = function(mapState={}, extraParams={}) {
   this._updateLayers(mapState, extraParams);
 };
 
@@ -83,7 +83,7 @@ proto.getQueryUrl = function() {
 };
 
 proto.getQueryableLayers = function() {
-  return _.filter(this.layers,function(layer){
+  return this.layers.filter((layer) => {
     return layer.isQueryable();
   });
 };
@@ -143,13 +143,14 @@ proto._updateLayers = function(mapState={}, extraParams={}) {
   this.checkLayersDisabled(mapState.resolution, mapUnits);
   const visibleLayers = this._getVisibleLayers(mapState) || [];
   if (visibleLayers.length > 0) {
+    const prefix = visibleLayers[0].isArcgisMapserver() ? 'show:' : '';
     let params = {
-      LAYERS: visibleLayers.map((layer) => {
+      LAYERS: `${prefix}${visibleLayers.map((layer) => {
         return layer.getWMSLayerName();
-      }).join(',')
+      }).join(',')}`
     };
     if (extraParams) {
-      params = _.assign(params,extraParams);
+      params = _.assign(params, extraParams);
     }
     this._olLayer.setVisible(true);
     this._olLayer.getSource().updateParams(params);

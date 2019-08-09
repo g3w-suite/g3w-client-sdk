@@ -4,7 +4,9 @@ const mixin = require('core/utils/utils').mixin;
 const Layer = require('core/layers/layer');
 const VectorLayer = require('./vectorlayer');
 const WMSLayer = require('./map/wmslayer');
+const ARCGISMAPSERVERLayer = require('./map/arcgismapserverlayer');
 const XYZLayer = require('./map/xyzlayer');
+const LegendService = require('./legend/legendservice');
 const GeoLayerMixin = require('./geolayermixin');
 
 function ImageLayer(config={}) {
@@ -73,9 +75,21 @@ proto.isExternalWMS = function() {
   return !!(this.config.source && this.config.source.external && this.config.source.url);
 };
 
+proto.isArcgisMapserver = function() {
+  return this.isExternalWMS() && this.config.source.type === 'arcgismapserver';
+};
+
 proto.getWMSLayerName = function() {
   let layerName = (!this.isExternalWMS() && this.isWmsUseLayerIds()) ? this.getId() : this.getName();
-  if (this.config.source && this.config.source.layers) {
+  if (this.config.source && (this.config.source.layers || this.config.source.layer)) {
+    layerName = this.config.source.layers || this.config.source.layer;
+  }
+  return layerName;
+};
+
+proto.getWMSInfoLayerName = function() {
+  let layerName = (!this.isExternalWMS() && this.isWmsUseLayerIds()) ? this.getId() : this.getName();
+  if (this.config.source && this.config.source.type === 'wms') {
     layerName = this.config.source.layers;
   }
   return layerName;
@@ -104,8 +118,8 @@ proto.getWmsUrl = function() {
 
 proto.getQueryUrl = function() {
   let url = base(this, 'getQueryUrl');
-  if (this.getServerType() === 'QGIS' && this.config.source && this.config.source.type === 'wms' && this.config.source.external) {
-    url+='SOURCE=wms';
+  if (this.getServerType() === 'QGIS' && this.config.source && this.config.source.external) {
+    url =`${url}SOURCE=${this.config.source.type}`;
   }
   return url;
 };
@@ -117,39 +131,10 @@ proto.getIconUrlFromLegend = function() {
 };
 
 proto.getLegendUrl = function(params={}) {
-  const {
-    color="white",
-    fontsize=10,
-    transparent=true,
-    boxspace,
-    layerspace,
-    layertitle=true,
-    layertitlespace,
-    symbolspace,
-    iconlabelspace,
-    symbolwidth,
-    symbolheight,
-    sld_version='1.1.0'
-  } = params;
-  const layer = this.getWMSLayerName();
-  let url = this.getWmsUrl();
-  const sep = (url.indexOf('?') > -1) ? '&' : '?';
-  return [`${url}${sep}SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=${sld_version}&WIDTH=300`,
-    `&FORMAT=image/png`,
-    `&TRANSPARENT=${transparent}`,
-    `&ITEMFONTCOLOR=${color}`,
-    `&LAYERFONTCOLOR=${color}`,
-    `&LAYERTITLE=${layertitle}`,
-    `&ITEMFONTSIZE=${fontsize}`,
-    `${boxspace ? '&BOXSPACE=' + boxspace: ''}`,
-    `${layerspace ? '&LAYERSPACE=' + layerspace: ''}`,
-    `${layertitlespace ? '&LAYERTITLESPACE=' + layertitlespace: ''}`,
-    `${symbolspace ? '&SYMBOLSPACE=' + symbolspace: ''}`,
-    `${iconlabelspace ? '&ICONLABELSPACE=' + iconlabelspace: ''}`,
-    `${symbolwidth ? '&SYMBOLWIDTH=' + symbolwidth : ''}`,
-    `${symbolheight ? '&SYMBOLHEIGHT=' + symbolheight : ''}`,
-    `&LAYER=${layer}`
-  ].join('');
+  return LegendService.get({
+    layer: this,
+    params
+  });
 };
 
 proto.getWFSLayerName = function() {
@@ -160,19 +145,26 @@ proto.getWFSLayerName = function() {
   return layerName;
 };
 
-
 proto.getWfsCapabilities = function() {
   return this.config.wfscapabilities || this.config.capabilities === 1 ;
 };
 
-proto.getMapLayer = function(options = {}, extraParams) {
+proto.getMapLayer = function(options={}, extraParams) {
   let mapLayer;
   const method = this.isExternalWMS() ? 'GET' : this.getOwsMethod();
   if (this.isCached()) {
     mapLayer = new XYZLayer(options, method);
   } else {
-    options.url = options.url || this.getWmsUrl();
-    mapLayer = new WMSLayer(options, extraParams, method);
+    if (this.config.source && this.config.source.type === 'arcgismapserver') {
+      options = {
+        ...options,
+        ...this.config.source,
+      };
+      mapLayer = new ARCGISMAPSERVERLayer(options, extraParams)
+    } else {
+      options.url = options.url || this.getWmsUrl();
+      mapLayer = new WMSLayer(options, extraParams, method);
+    }
   }
   return mapLayer;
 };

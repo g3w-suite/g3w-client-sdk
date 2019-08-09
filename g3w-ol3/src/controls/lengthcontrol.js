@@ -4,7 +4,7 @@ const MeasureControl = require('./measurecontrol');
 
 const LengthControl = function(options) {
   const _options = {
-    name: "Lunghezza",
+    name: "Length",
     label: "\ue908",
     interactionClass: LenghtIteraction
   };

@@ -87,6 +87,9 @@ const utils = {
   },
   getDPI() {
     return DOTS_PER_INCH;
+  },
+  getMetersFromDegree(degree) {
+    return degree * ol.proj.Units.METERS_PER_UNIT.degrees;
   }
 };
 

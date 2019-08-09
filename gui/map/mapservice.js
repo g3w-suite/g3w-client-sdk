@@ -55,7 +55,8 @@ function MapService(options={}) {
     mapControl: {
       grid: [],
       length: 0,
-      currentIndex: 0
+      currentIndex: 0,
+      update: true
     },
   };
 
@@ -385,7 +386,7 @@ proto.getVectorLayerFeaturesFromCoordinates = function(layerId, coordinates) {
   const map = this.getMap();
   const vectorLayer = this.getLayerById(layerId);
   if (Array.isArray(coordinates)) {
-    if (coordinates.length == 2) {
+    if (coordinates.length === 2) {
       const pixel = map.getPixelFromCoordinate(coordinates);
       map.forEachFeatureAtPixel(pixel, function (feature) {
         features.push(feature);
@@ -394,7 +395,7 @@ proto.getVectorLayerFeaturesFromCoordinates = function(layerId, coordinates) {
           return layer === vectorLayer;
           }
       });
-    } else if (coordinates.length == 4) {
+    } else if (coordinates.length === 4) {
       intersectGeom = ol.geom.Polygon.fromExtent(coordinates);
       switch (vectorLayer.constructor) {
         case VectorLayer:
@@ -485,6 +486,7 @@ proto.createMapControl = function(type, options={add=true, toggled=false, visibl
   control && this.addControl(id, control, options.add, options.visible);
   return control;
 };
+
 
 proto.setupControls = function() {
   const baseLayers = getMapLayersByFilter({
@@ -966,7 +968,11 @@ proto.setupControls = function() {
           if (!isMobile.any) {
             control = this.createMapControl(controlType, {
               options: {
-                tipLabel: t('mapcontrols.length.tooltip')
+                tipLabel: t('sdk.mapcontrols.measures.length.tooltip'),
+                interactionClassOptions: {
+                  projection: this.getProjection(),
+                  help: t('sdk.mapcontrols.measures.length.help')
+                }
               }
             });
           }
@@ -975,15 +981,19 @@ proto.setupControls = function() {
           if (!isMobile.any) {
             control = this.createMapControl(controlType, {
               options: {
-                tipLabel: t('mapcontrols.area.tooltip')
+                tipLabel: t('sdk.mapcontrols.measures.area.tooltip'),
+                interactionClassOptions: {
+                  projection: this.getProjection(),
+                  help: t('sdk.mapcontrols.measures.area.help')
+                }
               }
             });
           }
           break;
       }
     });
-    this._setMapControlsInsideContainerLenght();
-    this.state.mapcontrolready = true;
+    //this._setMapControlsInsideContainerLenght();
+    //this.state.mapcontrolready = true;
   }
 };
 
@@ -1036,6 +1046,7 @@ proto._setMapControlsInsideContainerLenght = function() {
   });
   // add 1 id odd number
   this.state.mapControl.length += this.state.mapControl.length% 2;
+  this.state.mapControl.grid = [];
   this._setMapControlsGrid(this.state.mapControl.length);
 };
 
@@ -1081,9 +1092,9 @@ proto.setMapControlsContainer = function(mapControlDom) {
   this.state.mapcontrolDOM = mapControlDom;
 };
 
-proto._updateMapControlsLayout = function({width, height}) {
+proto._updateMapControlsLayout = function({width, height}={}) {
   // update only when all control are ready
-  if (this.state.mapcontrolready) {
+  if (this.state.mapcontrolready && this.state.mapControl.update) {
     let changed = false;
     // count the mapcontrol insied g3w-map-control container
     this._mapControls.forEach((control) => {
@@ -1135,10 +1146,11 @@ proto._addControlToMapControls = function(control, visible=true) {
   const controlElement = control.element;
   if (!visible)
     control.element.style.display = "none";
-  $('.g3w-map-controls').append(controlElement)
+  $('.g3w-map-controls').append(controlElement);
 };
 
 proto.addControl = function(type, control, addToMapControls=true, visible=true) {
+  this.state.mapcontrolready = false;
   this.viewer.map.addControl(control);
   this._mapControls.push({
     type,
@@ -1165,6 +1177,8 @@ proto.addControl = function(type, control, addToMapControls=true, visible=true) 
     })
   }
   ControlsRegistry.registerControl(type, control);
+  this._setMapControlsInsideContainerLenght();
+  this.state.mapcontrolready = true;
 };
 
 proto.showControl = function(type) {
@@ -1323,6 +1337,7 @@ proto._setupViewer = function(width,height) {
       resolution
     }
   });
+  this.state.size = this.viewer.map.getSize();
   //set mapunit
   this.state.mapUnits = this.viewer.map.getView().getProjection().getUnits();
 
@@ -1352,6 +1367,7 @@ proto._setupViewer = function(width,height) {
   });
 
   this.viewer.map.addOverlay(this._marker);
+
 
   this.emit('ready');
 };
@@ -1808,7 +1824,8 @@ proto._updateMapView = function() {
   const bbox = this.viewer.getBBOX();
   const resolution = this.viewer.getResolution();
   const center = this.viewer.getCenter();
-  this.updateMapView(bbox, resolution, center);
+  const size = this.getMap().getSize();
+  this.updateMapView(bbox, resolution, center, size);
 };
 
 proto.getMapSize = function() {

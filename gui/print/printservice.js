@@ -5,8 +5,7 @@ const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const PrintService = require('core/print/printservice');
-const getScaleFromResolution = require('g3w-ol3/src/utils/utils').getScaleFromResolution;
-const getResolutionFromScale = require('g3w-ol3/src/utils/utils').getResolutionFromScale;
+const { getScaleFromResolution, getResolutionFromScale, getMetersFromDegree }  = require('g3w-ol3/src/utils/utils');
 const printConfig = require('./printconfig');
 const PrintPage = require('./vue/printpage');
 const scale = printConfig.scale;
@@ -152,15 +151,20 @@ function PrintComponentService() {
   this._calculateInternalPrintExtent = function() {
     const resolution = this._map.getView().getResolution();
     const scala = parseFloat(this.state.scala);
-    const w = this.state.width / 1000.0 * scala / resolution * ol.has.DEVICE_PIXEL_RATIO;
-    const h = this.state.height  / 1000.0 * scala / resolution * ol.has.DEVICE_PIXEL_RATIO;
-    const center = [this.state.size[0] * ol.has.DEVICE_PIXEL_RATIO / 2 , this.state.size[1] * ol.has.DEVICE_PIXEL_RATIO / 2];
+    let _wh;
+    if (this._mapService.getMapUnits() === 'm') {
+      _wh = (scala / resolution * ol.has.DEVICE_PIXEL_RATIO) / 1000;
+    } else {
 
+      _wh = (scala / getMetersFromDegree(resolution) * ol.has.DEVICE_PIXEL_RATIO) / 1000;
+    }
+    const w = this.state.width * _wh;
+    const h = this.state.height * _wh;
+    const center = [this.state.size[0] * ol.has.DEVICE_PIXEL_RATIO / 2 , this.state.size[1] * ol.has.DEVICE_PIXEL_RATIO / 2];
     const xmin = center[0] - (w / 2);
     const ymin = center[1] - (h / 2);
     const xmax = center[0] + (w / 2);
     const ymax = center[1] + (h / 2);
-
     this.state.printextent.lowerleft = this._map.getCoordinateFromPixel([xmin, ymax]) ? this._map.getCoordinateFromPixel([xmin, ymax]) : this.state.printextent.lowerleft;
     this.state.printextent.upperright = this._map.getCoordinateFromPixel([xmax, ymin]) ? this._map.getCoordinateFromPixel([xmax, ymin]) : this.state.printextent.upperright;
 
@@ -222,7 +226,7 @@ function PrintComponentService() {
 
   this._setCurrentScala = function(resolution) {
     Object.entries(this._scalesResolutions).forEach(([scala, res]) => {
-      if (res == resolution) {
+      if (res === resolution) {
         this.state.scala = scala;
         return false
       }
@@ -255,7 +259,7 @@ function PrintComponentService() {
 
   this._setMapInfo = function() {
     this.state.print[0].maps.forEach((map) => {
-      if (map.name == 'map0') {
+      if (map.name === 'map0') {
         this.state.map = map.name;
         this.state.width = map.w;
         this.state.height = map.h;
@@ -270,6 +274,7 @@ function PrintComponentService() {
       .then((mapComponent) => {
         requestAnimationFrame(() => {
           this._mapService = mapComponent.getService();
+          this._mapUnits = this._mapService.getMapUnits();
           this._mapService.getMap().once('postrender', (evt) => {
             this._map = evt.map;
             if (bool) {
@@ -280,7 +285,6 @@ function PrintComponentService() {
             } else {
               this._clearPrint();
             }
-            this._mapUnits = this._mapService.getMapUnits();
           });
           this._mapService.getMap().renderSync();
         })

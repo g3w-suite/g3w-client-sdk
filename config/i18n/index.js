@@ -6,7 +6,10 @@ export default {
           layer_not_searchable: "Il layer non è ricercabile"
         },
         print: {
-          no_layers: 'Nessun Layer visibile'
+          no_layers: 'Nessun Layer visibile',
+          scale: "Scala",
+          format: "Formato",
+          rotation: "Rotazione"
         },
         errors: {
           layers: {
@@ -94,6 +97,16 @@ export default {
                    <ul>
                     <li>Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li>
                    </ul>`
+          },
+          measures: {
+            length: {
+              tooltip: "Lunghezza",
+              help: "Clicca sulla mappa per continuare a disegnare la linea.<br>CANC se si vuole cancellare l\'ultimo vertice inserito",
+            },
+            area: {
+              tooltip: "Area",
+              help: "Click per continuare a disegnare il poligono.<br>CANC se si vuole cancellare l'ultimo vertice inserito"
+            }
           }
         },
         relations: {
@@ -143,7 +156,10 @@ export default {
           layer_not_searchable: "Layer not searchable"
         },
         print: {
-          no_layers: 'No Layer to print'
+          no_layers: 'No Layer to print',
+          scale: "Scale",
+          format: "Format",
+          rotation: "Rotation"
         },
         errors: {
           layers: {
@@ -231,6 +247,16 @@ export default {
                    <ul>
                     <li>Draw a square on map to query underlined layers on TOC</li>
                    </ul>`
+          },
+          measures: {
+            length: {
+              tooltip: "Length",
+              help: "Click on map to draw the line. Press <br>CANC if you want delete last vertex",
+            },
+            area: {
+              tooltip: "Area",
+              help: "Click to draw poligon.Press <br>CANC if you want delete last vertex"
+            }
           }
         },
         relations: {

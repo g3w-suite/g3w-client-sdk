@@ -1,6 +1,6 @@
 const Control = require('./control');
 
-const InteractionControl = function(options = {}) {
+const InteractionControl = function(options={}) {
   this._visible = options.visible === false ? false : true;
   this._toggled = options.toggled || false;
   this._interactionClass = options.interactionClass || null;
@@ -11,6 +11,7 @@ const InteractionControl = function(options = {}) {
   this._enabled = (options.enabled === false) ? false : true;
   this._onhover = options.onhover || false;
   this._help = options.help  || null;
+  this._interactionClassOptions = options.interactionClassOptions || {};
   this._modalHelp = this._help ? (options.modalHelp || toastr) : null;
   options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
   Control.call(this, options);
@@ -127,7 +128,7 @@ proto.onSelectLayer = function() {
 proto.setMap = function(map) {
   Control.prototype.setMap.call(this, map);
   if (!this._interaction && this._interactionClass) {
-    this._interaction = new this._interactionClass;
+    this._interaction = new this._interactionClass(this._interactionClassOptions);
     map.addInteraction(this._interaction);
     this._interaction.setActive(false);
   }

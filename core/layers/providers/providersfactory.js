@@ -50,6 +50,12 @@ const ProvidersForServerTypes = {
       filter: null,
       data: null,
       search: null
+    },
+    'arcgismapserver': {
+      query: Providers.wms,
+      filter: null,
+      data: null,
+      search: null
     }
   },
   'OGC': {

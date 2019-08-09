@@ -268,13 +268,9 @@ proto.getLayerById = function(layerId) {
 };
 
 proto.getLayerByName = function(name) {
-  let layer = null;
-  this._layers.forEach((_layer) => {
-    if (_layer.getName() == name){
-      layer = _layer;
-    }
+  return this._layers.find((layer) => {
+    return layer.getName() === name;
   });
-  return layer;
 };
 
 proto.getLayerAttributes = function(layerId){
@@ -408,7 +404,7 @@ proto.setLayersTree = function(layerstree, name) {
   let parentDisabled = false;
   const traverse = (obj) => {
     Object.entries(obj).forEach(([key, layer]) => {
-     //heck if lis layer and not a folder
+     //check if lis layer and not a folder
       if (layer.id !== undefined) {
         obj[key] = this.getLayerById(layer.id).getState();
         obj[key].groupdisabled = parentDisabled;
@@ -432,7 +428,7 @@ proto.setLayersTree = function(layerstree, name) {
 
 // used by from plugin (or external code) to build layerstree
 // layer groupNem is a ProjectName
-proto.createLayersTree = function(groupName, options = {}) {
+proto.createLayersTree = function(groupName, options={}) {
   const full = options.full || false;
   const _layerstree = options.layerstree || null;
   let layerstree = [];

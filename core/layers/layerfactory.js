@@ -50,7 +50,7 @@ function LayerFactory() {
       case Layer.ServerTypes.BING:
       case Layer.ServerTypes.TMS:
       case Layer.ServerTypes.WMTS:
-      case Layer.ServerTypes.ARCGIS:  
+      case Layer.ServerTypes.ARCGISMAPSERVER:
         LayerClass = BaseLayers[serverType];
         break;
       case Layer.ServerTypes.G3WSUITE:

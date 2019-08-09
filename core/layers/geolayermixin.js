@@ -70,16 +70,16 @@ proto.isPrintable = function({scale}={}) {
 };
 
 proto.setDisabled = function(resolution, mapUnits='m') {
+  const ProjectsRegistry = require('core/project/projectsregistry');
+  const QGISVERSION = ProjectsRegistry.getCurrentProject().getQgisVersion({
+    type: 'major'
+  });
   if (this.state.scalebasedvisibility) {
-    const ProjectsRegistry = require('core/project/projectsregistry');
-    const QGISVERSION = ProjectsRegistry.getCurrentProject().getQgisVersion({
-      type: 'major'
-    });
     const mapScale = getScaleFromResolution(resolution, mapUnits);
     this.state.disabled = !(mapScale >= this.state.maxscale && mapScale <= this.state.minscale);
     this.state.disabled = (QGISVERSION === 3 && this.state.minscale === 0) ? !(mapScale >= this.state.maxscale) : this.state.disabled;
   } else {
-    this.state.disabled = false
+    this.state.disabled = false;
   }
 };
 
@@ -110,7 +110,7 @@ proto.getCrs = function() {
 };
 
 proto.isCached = function() {
-  return this.config.cache_url && this.config.cache_url != '';
+  return this.config.cache_url && this.config.cache_url !== '';
 };
 
 proto.getCacheUrl = function() {

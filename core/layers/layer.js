@@ -536,7 +536,7 @@ Layer.ServerTypes = {
   QGIS: "QGIS",
   Mapserver: "Mapserver",
   Geoserver: "Geoserver",
-  ARCGIS: "ARCGIS",
+  ARCGISMAPSERVER: "ARCGISMAPSERVER",
   OSM: "OSM",
   BING: "Bing",
   LOCAL: "Local",

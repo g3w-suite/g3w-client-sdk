@@ -474,6 +474,9 @@ Vue.component('tristate-tree', {
     },
     isHighLight: function() {
       return this.highlightlayers && !this.isFolder && this.ishighligtable && this.layerstree.visible;
+    },
+    isDisabled() {
+      return (QGISVERSION === 3 && (!this.isFolder && !this.layerstree.checked)) || this.layerstree.disabled || this.layerstree.groupdisabled
     }
   },
   watch:{
@@ -653,15 +656,15 @@ Vue.component('layerslegend-items',{
   },
   methods: {
     getLegendUrl: function(layer, params={}) {
-      let _legendurl;
+      let legendurl;
       const catalogLayers = CatalogLayersStoresRegistry.getLayersStores();
       catalogLayers.forEach((layerStore) => {
         if (layerStore.getLayerById(layer.id)) {
-          _legendurl = layerStore.getLayerById(layer.id).getLegendUrl(params);
+          legendurl = layerStore.getLayerById(layer.id).getLegendUrl(params);
           return false
         }
       });
-      return _legendurl;
+      return legendurl;
     },
     getLegendSrc(_layers) {
       const urlMethodsLayersName = {
@@ -675,16 +678,20 @@ Vue.component('layerslegend-items',{
         const layer = layers[i];
         const urlLayersName = layer.external ? urlMethodsLayersName.GET : urlMethodsLayersName[layer.ows_method];
         const url = this.getLegendUrl(layer, this.legend);
-        const [prefix, layerName] = url.split('LAYER=');
-        if (!urlLayersName[prefix])
-          urlLayersName[prefix] = [];
-        urlLayersName[prefix].push(layerName)
+        if (layer.source && layer.source.type === 'arcgismapserver')
+          urlLayersName[url] = [];
+        else {
+          const [prefix, layerName] = url.split('LAYER=');
+          if (!urlLayersName[prefix])
+            urlLayersName[prefix] = [];
+          urlLayersName[prefix].push(layerName)
+        }
       }
       for (const method in urlMethodsLayersName) {
         const urlLayersName = urlMethodsLayersName[method];
         if (method === 'GET')
           for (const url in urlLayersName ) {
-            const legendUrl = `${url}&LAYER=${urlLayersName[url].join(',')}`;
+            const legendUrl = urlLayersName[url].length ? `${url}&LAYER=${urlLayersName[url].join(',')}`: url;
             this.legendurls.push({
               loading: true,
               url: legendUrl

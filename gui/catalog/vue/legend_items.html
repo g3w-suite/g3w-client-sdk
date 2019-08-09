@@ -1,5 +1,5 @@
 <div class="legend-item">
-  <figure v-for="legendurl in legendurls">
+  <figure v-for="legendurl in legendurls" :key="legendurl">
     <bar-loader :loading="legendurl.loading"></bar-loader>
     <img v-show="!legendurl.loading" :src="legendurl.url" @load="legendurl.loading = false">
     <span class="divider"></span>

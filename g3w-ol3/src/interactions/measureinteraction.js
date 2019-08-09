@@ -1,11 +1,13 @@
 // MeasureInteracion
 
-const MeasureIteraction = function(options) {
+const MeasureIteraction = function(options={}) {
   this._helpTooltip;
   this._measureTooltipElement;
   this._measureTooltip;
   this._featureGeometryChangelistener;
   this._poinOnMapMoveListener;
+  this._helpMsg = options.help;
+  this._projection = options.projection;
 
   const measureStyle = new ol.style.Style({
     fill: new ol.style.Fill({
@@ -28,14 +30,18 @@ const MeasureIteraction = function(options) {
   });
   const geometryType = options.geometryType || 'LineString';
   this._formatMeasure = null;
-  this._helpMsg = null;
   // handel keydown event - delete of last vertex
   this._keyDownEventHandler = null;
   switch (geometryType) {
     case 'LineString':
      this._formatMeasure = function(feature) {
+       let geometry = feature;
+       if (this._projection.getUnits() === 'degrees') {
+         geometry = feature.clone();
+         geometry.transform(this._projection.getCode(), 'EPSG:3857');
+       }
         let length;
-        length = Math.round(feature.getLength() * 100) / 100;
+        length = Math.round(geometry.getLength() * 100) / 100;
         let output;
         if (length > 1000) {
           output = (Math.round(length / 1000 * 1000) / 1000) +
@@ -46,11 +52,15 @@ const MeasureIteraction = function(options) {
         }
         return output;
       };
-      this._helpMsg = "Clicca sulla mappa per continuare a disegnare la linea.<br>CANC se si vuole cancellare l'ultimo vertice inserito";
       break;
     case 'Polygon':
       this._formatMeasure = function(feature) {
-        const area = feature.getArea(feature);
+        let geometry = feature;
+        if (this._projection.getUnits() === 'degrees') {
+          geometry = feature.clone();
+          geometry.transform(this._projection.getCode(), 'EPSG:3857');
+        }
+        const area = geometry.getArea();
         let output;
         if (area > 10000) {
           output = (Math.round(area / 1000000 * 100) / 100) +
@@ -61,7 +71,6 @@ const MeasureIteraction = function(options) {
         }
         return output;
       };
-      this._helpMsg = "Click per continuare a disegnare il poligono.<br>CANC se si vuole cancellare l'ultimo vertice inserito";
       break;
   }
   const source = new ol.source.Vector();
@@ -105,6 +114,10 @@ ol.inherits(MeasureIteraction, ol.interaction.Draw);
 
 
 const proto = MeasureIteraction.prototype;
+
+proto.setDrawMessage = function(message) {
+  this._helpMsg = message;
+};
 
 proto.clear = function() {
   this._layer.getSource().clear();

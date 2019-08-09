@@ -2,13 +2,12 @@
   class="tree-item"
   @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)"
   @click="select()"
-  :class="{selected: !isFolder || !isTable ? layerstree.selected : false, itemmarginbottom: !isFolder,  disabled: (layerstree.disabled || layerstree.groupdisabled)}">
+  :class="{selected: !isFolder || !isTable ? layerstree.selected : false, itemmarginbottom: !isFolder,  disabled: isDisabled}">
   <span v-if="isFolder"
     :class="[{bold : isFolder}, layerstree.expanded ? g3wtemplate.getFontClass('arrow-down') : g3wtemplate.getFontClass('arrow-right')]"
     @click="expandCollapse"
     class="root">
   </span>
-
   <span v-if="isFolder"
     @click.stop="toggle(true)"
     style="color: #ffffff"

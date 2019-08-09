@@ -25,7 +25,7 @@ inherit(WMSDataProvider, DataProvider);
 const proto = WMSDataProvider.prototype;
 
 proto._getRequestParameters = function({layers, feature_count, coordinates, resolution, size}) {
-  const layerNames = layers ? layers.map(layer => layer.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
+  const layerNames = layers ? layers.map(layer => layer.getWMSInfoLayerName()).join(',') : this._layer.getWMSInfoLayerName();
   const extent = geoutils.getExtentForViewAndSize(coordinates, resolution, 0, size);
   const x = Math.floor((coordinates[0] - extent[0]) / resolution);
   const y = Math.floor((extent[3] - coordinates[1]) / resolution);
@@ -64,7 +64,7 @@ proto._getRequestParameters = function({layers, feature_count, coordinates, reso
   return params;
 };
 
-proto.query = function(options = {}) {
+proto.query = function(options={}) {
   const d = $.Deferred();
   const size = options.size || GETFEATUREINFO_IMAGE_SIZE;
   const feature_count = options.feature_count || 10;
