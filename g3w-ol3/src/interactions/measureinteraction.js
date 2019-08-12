@@ -41,7 +41,7 @@ const MeasureIteraction = function(options={}) {
          geometry.transform(this._projection.getCode(), 'EPSG:3857');
        }
         let length;
-        length = Math.round(geometry.getLength() * 100) / 100;
+        length = Math.round(ol.Sphere.getLength(geometry) * 100) / 100;
         let output;
         if (length > 1000) {
           output = (Math.round(length / 1000 * 1000) / 1000) +
@@ -60,7 +60,7 @@ const MeasureIteraction = function(options={}) {
           geometry = feature.clone();
           geometry.transform(this._projection.getCode(), 'EPSG:3857');
         }
-        const area = geometry.getArea();
+        const area = ol.Sphere.getArea(geometry);
         let output;
         if (area > 10000) {
           output = (Math.round(area / 1000000 * 100) / 100) +
