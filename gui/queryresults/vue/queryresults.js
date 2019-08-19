@@ -245,12 +245,12 @@ const vueComponentOptions = {
             maxZoom: 8
           });
         this.hasResults = true;
-        this.$nextTick(() => {
-          requestAnimationFrame(()=>{
-            this.$options.queryResultsService.postRender(this.$el);
-          })
-        })
       }
+      this.$nextTick(() => {
+        requestAnimationFrame(() =>{
+          this.$options.queryResultsService.postRender(this.$el);
+        })
+      })
     }
   },
   beforeMount() {

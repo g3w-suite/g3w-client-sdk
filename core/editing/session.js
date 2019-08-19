@@ -159,7 +159,8 @@ proto.pushAdd = function(layerId, feature) {
   this.push({
     layerId: layerId,
     feature: newFeature.add()
-  })
+  });
+  return newFeature;
 };
 
 // delete temporary feature
@@ -167,7 +168,8 @@ proto.pushDelete = function(layerId, feature) {
   this.push({
     layerId: layerId,
     feature: feature.delete()
-  })
+  });
+  return feature;
 };
 
 // add temporary feature changes
@@ -255,7 +257,7 @@ proto._filterChanges = function() {
   };
   this._temporarychanges.forEach((temporarychange) => {
     const change = Array.isArray(temporarychange) ? temporarychange[0] : temporarychange;
-    if (change.layerId == id)
+    if (change.layerId === id)
       changes.own.push(change);
     else {
       if (!changes.dependencies[change.layerId])
@@ -341,7 +343,8 @@ proto._serializeCommit = function(itemsToCommit) {
            if (value.properties[key] === undefined && childs_properties[key])
              value.properties[key] = childs_properties[key]
           }
-          layer[item.getState()].push(value);
+          const action = item.isNew() ? 'add' : item.getState();
+          layer[action].push(value);
           break;
       }
     });

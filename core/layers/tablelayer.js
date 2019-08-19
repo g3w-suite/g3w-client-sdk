@@ -126,6 +126,7 @@ function TableLayer(config={}, options={}) {
         this.config.editing.pk = vector.pk;
         this.config.editing.fields = vector.fields;
         this.config.editing.format = vector.format;
+        this.config.editing.constraints = vector.constraints || {};
         this.config.editing.style = vector.style || {};
         this._setOtherConfigParameters(vector);
         if (vector.style) {
@@ -186,6 +187,10 @@ proto.getEditingStyle = function() {
 
 proto.setEditingStyle = function(style={}) {
   this.config.editing.style = style;
+};
+
+proto.getEditingConstrains = function() {
+  return this.config.editing.constraints;
 };
 
 proto.isFieldRequired = function(fieldName) {

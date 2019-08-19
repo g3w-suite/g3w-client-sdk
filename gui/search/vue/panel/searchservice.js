@@ -71,10 +71,10 @@ proto._run = function() {
       results = {
         data: results
       };
-      queryResultsPanel.setQueryResponse(results);
       queryResultsPanel.onceafter('postRender', () => {
         this.state.searching = false;
-      })
+      });
+      queryResultsPanel.setQueryResponse(results);
     })
     .fail((err) => {
       GUI.notify.error(t('server_error'));

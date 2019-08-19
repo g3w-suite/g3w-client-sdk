@@ -52,7 +52,7 @@ proto.getName = function() {
 
 // to extract gml from multiple (Tuscany region)
 proto.extractGML = function (response) {
-  if (response.substr(0,2) != '--')
+  if (response.substr(0,2) !== '--')
     return response;
   const gmlTag1 = new RegExp("<([^ ]*)FeatureCollection");
   const gmlTag2 = new RegExp("<([^ ]*)msGMLOutput");

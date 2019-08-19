@@ -21,7 +21,7 @@ const Projections = {
       return "EPSG:"+crs
     }
     crs = crs.replace(/[^\d\.\-]/g, "");
-    if (crs != '') {
+    if (crs !== '') {
       return "EPSG:"+parseInt(crs);
     }
   }

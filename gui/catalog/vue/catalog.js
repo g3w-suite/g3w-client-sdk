@@ -476,7 +476,7 @@ Vue.component('tristate-tree', {
       return this.highlightlayers && !this.isFolder && this.ishighligtable && this.layerstree.visible;
     },
     isDisabled() {
-      return (QGISVERSION === 3 && (!this.isFolder && !this.layerstree.checked)) || this.layerstree.disabled || this.layerstree.groupdisabled
+      return (QGISVERSION === 3 && (!this.isFolder && !this.isTable && !this.layerstree.checked)) || this.layerstree.disabled || this.layerstree.groupdisabled
     }
   },
   watch:{

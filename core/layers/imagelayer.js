@@ -71,6 +71,10 @@ proto.isWMS = function() {
   return ImageLayer.WMSServerTypes.indexOf(this.config.servertype) > -1;
 };
 
+proto.isLayerProjectionASMapProjection = function() {
+  return this.config.crs === this.config.map_crs;
+};
+
 proto.isExternalWMS = function() {
   return !!(this.config.source && this.config.source.external && this.config.source.url);
 };
@@ -79,9 +83,10 @@ proto.isArcgisMapserver = function() {
   return this.isExternalWMS() && this.config.source.type === 'arcgismapserver';
 };
 
-proto.getWMSLayerName = function() {
+proto.getWMSLayerName = function({type='map'}={}) {
+  const legendMapBoolean = type === 'map' ? this.isExternalWMS() && this.isLayerProjectionASMapProjection() : true;
   let layerName = (!this.isExternalWMS() && this.isWmsUseLayerIds()) ? this.getId() : this.getName();
-  if (this.config.source && (this.config.source.layers || this.config.source.layer)) {
+  if (legendMapBoolean && this.config.source && (this.config.source.layers || this.config.source.layer)) {
     layerName = this.config.source.layers || this.config.source.layer;
   }
   return layerName;
@@ -110,8 +115,10 @@ proto.getFullWmsUrl = function() {
   return this.isExternalWMS() || !metadata_wms_url ? this.getWmsUrl() : metadata_wms_url ;
 };
 
-proto.getWmsUrl = function() {
-  return (this.config.source && this.config.source.type === 'wms' && this.config.source.url) ?
+// values: map, legend
+proto.getWmsUrl = function({type='map'}={}) {
+  const legendMapBoolean = type === 'map' ? this.isExternalWMS() && this.isLayerProjectionASMapProjection() : true;
+  return (legendMapBoolean && this.config.source && this.config.source.type === 'wms' && this.config.source.url) ?
     this.config.source.url :
     this.config.wmsUrl;
 };
@@ -155,7 +162,7 @@ proto.getMapLayer = function(options={}, extraParams) {
   if (this.isCached()) {
     mapLayer = new XYZLayer(options, method);
   } else {
-    if (this.config.source && this.config.source.type === 'arcgismapserver') {
+    if (this.isExternalWMS() && this.config.source && this.config.source.type === 'arcgismapserver') {
       options = {
         ...options,
         ...this.config.source,

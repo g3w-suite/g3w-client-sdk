@@ -13,8 +13,10 @@ function WMSLegend({layer, params}) {
     symbolheight,
     sld_version='1.1.0'
   } = params;
-  const LAYER = layer.getWMSLayerName();
-  let url = layer.getWmsUrl();
+  const LAYER = layer.getWMSLayerName({
+    type: 'legend'
+  });
+  let url = layer.getWmsUrl({type: 'legend'});
   const sep = (url.indexOf('?') > -1) ? '&' : '?';
   return [`${url}${sep}SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=${sld_version}&WIDTH=300`,
     `&FORMAT=image/png`,
