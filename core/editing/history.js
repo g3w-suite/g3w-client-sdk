@@ -293,10 +293,10 @@ proto.getCurrentStateIndex = function() {
 
 // funzione che mi dice se ci sono cose da committare
 proto.canCommit = function() {
-  const checkComitItems = this.commit();
+  const checkCommitItems = this.commit();
   let canCommit = false;
-  for (let layerId in checkComitItems) {
-    const commitItem = checkComitItems[layerId];
+  for (let layerId in checkCommitItems) {
+    const commitItem = checkCommitItems[layerId];
     canCommit = canCommit || !!commitItem.length
   }
   this.state.commit = canCommit;
@@ -324,9 +324,7 @@ proto._getStatesToCommit = function() {
 
 //get all changes to send to server (mandare al server)
 proto.commit = function() {
-  let commitItems = {};
-  let feature;
-  let layerId;
+  const commitItems = {};
   const statesToCommit = this._getStatesToCommit();
   statesToCommit.forEach((state) => {
     state.items.forEach((item) => {
@@ -348,8 +346,8 @@ proto.commit = function() {
         }
       });
       if (add) {
-        feature = item.feature;
-        layerId = item.layerId;
+        const feature = item.feature;
+        const layerId = item.layerId;
         if (!(!feature.isNew() && feature.isAdded())) {
           if (!commitItems[layerId])
             commitItems[layerId] = [];
