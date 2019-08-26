@@ -159,16 +159,16 @@ const ApplicationService = function() {
     return d.promise();
   };
 
-  this.registerService = function(element, service) {
-    this._applicationServices[element] = service;
+  this.registerService = function(id, service) {
+    this._applicationServices[id] = service;
   };
 
-  this.unregisterService = function(element) {
-    delete this._applicationServices[element];
+  this.unregisterService = function(id) {
+    delete this._applicationServices[id];
   };
 
-  this.getService = function(element) {
-    return this._applicationServices[element];
+  this.getService = function(id) {
+    return this._applicationServices[id];
   };
 
   this.errorHandler = function(error) {
@@ -180,7 +180,7 @@ const ApplicationService = function() {
   };
 };
 
-inherit(ApplicationService,G3WObject);
+inherit(ApplicationService, G3WObject);
 
 
 module.exports = new ApplicationService;

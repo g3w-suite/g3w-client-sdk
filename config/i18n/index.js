@@ -146,6 +146,9 @@ export default {
               copied: "Copiato"
             }
           }
+        },
+        wps: {
+          list_process: "Lista dei processi"
         }
       }
     },
@@ -296,6 +299,9 @@ export default {
               copied: "Copied"
             }
           }
+        },
+        wps: {
+          list_process: "List of process"
         }
       }
     }

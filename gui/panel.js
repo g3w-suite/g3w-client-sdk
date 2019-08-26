@@ -1,5 +1,6 @@
 const inherit = require('core/utils/utils').inherit;
 const resolvedValue = require('core/utils/utils').resolve;
+const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 
 const Panel = function(options={}) {
@@ -11,7 +12,6 @@ const Panel = function(options={}) {
 inherit(Panel, G3WObject);
 
 const proto = Panel.prototype;
-
 
 proto.getId = function(){
   return this.id;
@@ -29,6 +29,10 @@ proto.setInternalPanel = function(internalPanel) {
   this.internalPanel = internalPanel;
 };
 
+proto.show = function() {
+  GUI.showPanel(this);
+};
+
 proto.mount = function(parent) {
   const panel = this.internalPanel;
   const iCinstance = panel.$mount();
@@ -41,7 +45,6 @@ proto.mount = function(parent) {
   });
   return resolvedValue(true);
 };
-
 
 proto.unmount = function() {
   const panel = this.internalPanel;

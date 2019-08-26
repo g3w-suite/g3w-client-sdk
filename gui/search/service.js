@@ -1,5 +1,4 @@
 const inherit = require('core/utils/utils').inherit;
-const GUI = require('gui/gui');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const G3WObject = require('core/g3wobject');
 const SearchPanel = require('gui/search/vue/panel/searchpanel');
@@ -26,7 +25,7 @@ proto.getTitle = function() {
 
 proto.showPanel = function(config={}) {
   const panel = new SearchPanel(config);
-  GUI.showPanel(panel);
+  panel.show();
   return panel;
 };
 

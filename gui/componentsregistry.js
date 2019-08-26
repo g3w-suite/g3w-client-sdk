@@ -13,6 +13,7 @@ function ComponentsRegistry() {
       this.emit('componentregistered', component);
     }
   };
+
   this.getComponent = function(id) {
     return this.components[id];
   };
@@ -20,7 +21,7 @@ function ComponentsRegistry() {
   this.getComponents = function() {
     return this.components;
   };
-  
+
   this.unregisterComponent = function(id) {
     const component = this.components[id];
     if (component) {
@@ -32,6 +33,6 @@ function ComponentsRegistry() {
   };
   base(this);
 }
-inherit(ComponentsRegistry,G3WObject);
+inherit(ComponentsRegistry, G3WObject);
 
 module.exports = new ComponentsRegistry;

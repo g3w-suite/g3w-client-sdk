@@ -58,13 +58,13 @@ function GUI() {
 
   /* spinner */
   this.showSpinner = function(options){};
-
   this.hideSpinner = function(id){};
-
+  /* end spinner */
 
   this.notify = noop;
   this.dialog = noop;
   this.isMobile = noop;
+
   //useful to registere setters
   base(this);
 }
