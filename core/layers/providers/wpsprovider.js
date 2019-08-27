@@ -46,10 +46,11 @@ proto._buildFromFromDescribeProcessResponse = function({Abstract, DataInputs, Pr
     return {
       id: output.Identifier.__text,
       label: output.Title.__text,
+      sublabel: output.ComplexOutput && output.ComplexOutput.Default && output.ComplexOutput.Default.Format || '',
       type: 'string',
       value: ''
     }
-  })
+  });
 
   return {
     abstract: Abstract.__text,
@@ -95,6 +96,7 @@ proto.describeProcess = async function({id, format='form'}) {
   const url = `${this._url}?${convertObjectToUrlParams(params)}`;
   const response = FAKERESPONSE['DescribeProcess'][id];
   const describeProcessJSON = this._XMLToJSON(response);
+  console.log(describeProcessJSON)
   const describeProcessResponse = describeProcessJSON.ProcessDescriptions && describeProcessJSON.ProcessDescriptions.ProcessDescription || {};
   const describeProcessForm = this._buildFromFromDescribeProcessResponse(describeProcessResponse);
   return describeProcessForm;

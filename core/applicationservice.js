@@ -17,6 +17,7 @@ Vue.use(GlobalDirective);
 
 //Manage Application
 const ApplicationService = function() {
+  let production = false;
   this.version = G3W_VERSION.indexOf("G3W_VERSION") === -1 ? G3W_VERSION  : "";
   this.ready = false;
   this.complete = false;
@@ -59,6 +60,7 @@ const ApplicationService = function() {
     }
     // if exist a global initiConfig (in production)
     if (window.initConfig) {
+      production = true;
       this._initConfig = window.initConfig;
       return d.resolve(window.initConfig);
       // case development need to ask to api
@@ -139,6 +141,10 @@ const ApplicationService = function() {
     const d = $.Deferred();
     //first time l'application service is not ready
     if (!this.ready) {
+      // LOAD DEVELOPMENT CONFIGURATION
+      if (!production){
+        require('../config/dev/index');
+      }
       $.when(
         // register project
         ProjectsRegistry.init(this._config),

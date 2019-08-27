@@ -29,16 +29,6 @@ function Project(config={}, options={}) {
   // for future implementation catalog tab actived
   config.catalog_tab = config._catalog_tab || 'layers'; // values : layers, baselayers, legend
   config.ows_method = config.ows_method || 'GET';
-  //WPS FAKE
-  config.tools = {
-    wps: [
-      {
-        name: 'WPS1',
-        url: 'http://sosmet.nerc-bas.ac.uk:8080/wpsmet/WebProcessingService'
-      }
-    ]
-  };
-  //
   this.state = config;
   // process layers
   this._processLayers();
