@@ -142,7 +142,7 @@ const ApplicationService = function() {
     //first time l'application service is not ready
     if (!this.ready) {
       // LOAD DEVELOPMENT CONFIGURATION
-      if (!production){
+      if (!production) {
         require('../config/dev/index');
       }
       $.when(

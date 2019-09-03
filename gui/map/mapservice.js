@@ -1402,7 +1402,6 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
   // check if already store a key of events
   if (!this._layersStoresEventKeys[layerStoreId]) {
     this._layersStoresEventKeys[layerStoreId] = [];
-
     //SETVISIBILITY EVENT
     const layerVisibleKey = layerStore.onafter('setLayersVisible',  (layersIds) => {
      layersIds.forEach((layerId) => {
@@ -1415,7 +1414,6 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
     this._layersStoresEventKeys[layerStoreId].push({
       setLayersVisible: layerVisibleKey
     });
-
     //ADD LAYER
     const addLayerKey = layerStore.onafter('addLayer', (layer) => {
       if (layer.getType() === 'vector') {
@@ -1423,7 +1421,6 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
         this.addLayerToMap(mapLayer);
       }
     });
-
     this._layersStoresEventKeys[layerStoreId].push({
       addLayer: addLayerKey
     });
