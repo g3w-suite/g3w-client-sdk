@@ -118,7 +118,7 @@ function MapService(options={}) {
   this._marker = null;
 
   this.setters = {
-    addHideMap: function({layers=[], mainview=false, switchable=false} = {}) {
+    addHideMap: function({ratio, layers=[], mainview=false, switchable=false} = {}) {
       const id = 'hidemap_'+ Date.now();
       const idMap = {
         id,
@@ -222,7 +222,7 @@ inherit(MapService, G3WObject);
 
 const proto = MapService.prototype;
 
-proto._addHideMap = function({layers=[], mainview=false} = {}) {
+proto._addHideMap = function({ratio, layers=[], mainview=false} = {}) {
   const idMap = this.state.hidemaps[this.state.hidemaps.length - 1 ];
   const view = this.getMap().getView();
   const view_options = {
@@ -236,6 +236,11 @@ proto._addHideMap = function({layers=[], mainview=false} = {}) {
   });
   // set Map
   idMap.map = viewer.getMap();
+  // in case of rate
+  if (ratio) {
+    const [width, height] = idMap.map.getSize();
+    idMap.map.setSize([width, width*ratio]);
+  }
 
   for (let i=0; i < layers.length; i++) {
     const layer = layers[i];
