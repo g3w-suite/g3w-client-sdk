@@ -678,7 +678,7 @@ Vue.component('layerslegend-items',{
         const layer = layers[i];
         const urlLayersName = layer.external ? urlMethodsLayersName.GET : urlMethodsLayersName[layer.ows_method];
         const url = this.getLegendUrl(layer, this.legend);
-        if (layer.source && layer.source.type === 'arcgismapserver')
+        if (layer.source && layer.source.external)
           urlLayersName[url] = [];
         else {
           const [prefix, layerName] = url.split('LAYER=');

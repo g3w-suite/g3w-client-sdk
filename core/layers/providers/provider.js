@@ -197,7 +197,7 @@ proto._handleWMSMultilayers = function({layer, response, projections} = {}) {
   if (FeatureCollection.featureMember) {
     const originalFeatureMember = Array.isArray(FeatureCollection.featureMember) ? FeatureCollection.featureMember : [FeatureCollection.featureMember];
     let layersNames = new Set();
-    FeatureCollection.featureMember.forEach((featureMember) => {
+    originalFeatureMember.forEach((featureMember) => {
       layersNames.add(Object.keys(featureMember)[0]);
     });
     for (let layerName of layersNames) {

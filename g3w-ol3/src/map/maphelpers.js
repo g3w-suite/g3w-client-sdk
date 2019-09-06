@@ -6,8 +6,7 @@ const MapHelpers = {
   }
 };
 
-const _Viewer = function(opts) {
-
+const _Viewer = function(opts={}) {
   const controls = ol.control.defaults({
     attribution: false,
     zoom: false

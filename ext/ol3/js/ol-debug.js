@@ -58098,7 +58098,6 @@ ol.Image.prototype.handleImageLoad_ = function() {
  * @api
  */
 ol.Image.prototype.load = function() {
-  console.log(this._image)
   if (this.state == ol.ImageState.IDLE || this.state == ol.ImageState.ERROR) {
     this.state = ol.ImageState.LOADING;
     this.changed();
