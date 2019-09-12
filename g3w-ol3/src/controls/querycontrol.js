@@ -2,7 +2,7 @@ const utils = require('../utils');
 const InteractionControl = require('./interactioncontrol');
 const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
 
-const QueryControl = function(options){
+const QueryControl = function(options={}){
   const _options = {
     name: "querylayer",
     tipLabel: "Query layer",
@@ -18,21 +18,22 @@ ol.inherits(QueryControl, InteractionControl);
 const proto = QueryControl.prototype;
 
 proto.setMap = function(map) {
-  InteractionControl.prototype.setMap.call(this, map);
+  let eventToggledKey;
   const querySingleClickFnc = (event) => {
     this.dispatchEvent({
       type: 'picked',
       coordinates: event.coordinate
     });
-    if(this._autountoggle) {
-      this.toggle(true);
-    }
+    this._autountoggle && this.toggle(true);
   };
-
-  this.on('toggled', (event)=> {
-    const toggled = event.target.isToggled();
-    toggled && map.on('singleclick', querySingleClickFnc) || map.un('singleclick', querySingleClickFnc);
-  })
+  if (map) {
+    eventToggledKey = this.on('toggled', (event) => {
+      const toggled = event.target.isToggled();
+      toggled && map.on('singleclick', querySingleClickFnc) || map.un('singleclick', querySingleClickFnc);
+    });
+  } else
+    ol.Observable.unByKey(eventToggledKey);
+  InteractionControl.prototype.setMap.call(this, map);
 };
 
 module.exports = QueryControl;

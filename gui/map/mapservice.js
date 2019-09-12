@@ -1239,8 +1239,10 @@ proto.getMapControls = function() {
 proto.removeControl = function(type) {
   this._mapControls.forEach((controlObj, ctrlIdx) => {
     if (type === controlObj.type) {
-      this._mapControls.splice(ctrlIdx,1);
-      this.viewer.map.removeControl(controlObj.control);
+      this._mapControls.splice(ctrlIdx, 1);
+      const control = controlObj.control;
+      this.viewer.map.removeControl(control);
+      control.hideControl && control.hideControl();
       return false;
     }
   })

@@ -53,7 +53,7 @@ function PluginsRegistry() {
       delete this._plugins[pluginName];
       scripts.each((index, scr) => {
         this._loadedPluginUrls.forEach((pluginUrl, idx) => {
-          if (scr.getAttribute('src') == pluginUrl && pluginUrl.indexOf(pluginName) != -1) {
+          if (scr.getAttribute('src') === pluginUrl && pluginUrl.indexOf(pluginName) !== -1) {
             scr.parentNode.removeChild( scr );
             this._loadedPluginUrls.splice(idx, 1);
             return false;

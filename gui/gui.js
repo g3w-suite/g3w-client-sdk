@@ -32,6 +32,9 @@ function GUI() {
   this.hideQueryResults = noop;
   this.showPanel = noop;
   this.hidePanel = noop;
+  this.reloadComponents = noop;
+  this.showUserMessage = noop;
+  this.hideUserMessage = noop;
   this.addComponent = function(component, placeholder) {};
   this.removeComponent = function(id) {};
   this.setComponent = function(component) {

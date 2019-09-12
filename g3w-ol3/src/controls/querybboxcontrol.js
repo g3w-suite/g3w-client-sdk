@@ -28,7 +28,7 @@ proto.setMap = function(map) {
   this._interaction.on('boxend',(e) => {
     const start_coordinate = this._startCoordinate;
     const end_coordinate = e.coordinate;
-    const extent = ol.extent.boundingExtent([start_coordinate,end_coordinate]);
+    const extent = ol.extent.boundingExtent([start_coordinate, end_coordinate]);
     this.dispatchEvent({
       type: 'bboxend',
       extent: extent

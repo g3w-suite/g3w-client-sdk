@@ -9,6 +9,7 @@ const PluginsRegistry = require('core/plugin/pluginsregistry');
 const ClipboardService = require('core/clipboardservice');
 const GlobalComponents = require('gui/vue/vue.globalcomponents');
 const GlobalDirective = require('gui/vue/vue.directives');
+const GUI = require('gui/gui');
 const G3W_VERSION = "{G3W_VERSION}";
 // install global components
 Vue.use(GlobalComponents);
@@ -184,6 +185,44 @@ const ApplicationService = function() {
   this.clearInitConfig = function() {
     window.initConfig = null;
   };
+
+  this.changeProject = function({gid}={}) {
+    const d = $.Deferred();
+    const mapUrl = ProjectsRegistry.getProjectUrl(gid);
+    // change url using history
+    history.replaceState(null, null, mapUrl);
+    //remove tools
+    this.obtainInitConfig()
+      .then((initConfig) => {
+        ProjectsRegistry.getProject(gid)
+          .then((project) => {
+            GUI.closeContent()
+              .then(() => {
+                // change current project project
+                ProjectsRegistry.setCurrentProject(project);
+                // remove all toos
+                GUI.getComponent('tools').getService().reload();
+                // reload metadati
+                GUI.getComponent('metadata').getService().reload();
+                // reload plugins
+                PluginsRegistry.reloadPlugins(initConfig, project);
+                // reload components
+                GUI.reloadComponents();
+                d.resolve();
+              })
+              .fail((err) => {
+                console.log(err);
+              })
+          })
+          .fail(() => {
+            d.reject();
+          });
+      })
+      .fail((err) => {
+        //TODO
+      });
+    return d.promise();
+  }
 };
 
 inherit(ApplicationService,G3WObject);

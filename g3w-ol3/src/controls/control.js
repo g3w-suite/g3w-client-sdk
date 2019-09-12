@@ -79,7 +79,7 @@ proto.showHide = function() {
   $(this.element).toggle();
 };
 
-//called when a control is added to map
+//called when a control is added ore removed to map (added: map is an ol.Map instance , removed map is null)
 proto.setMap = function(map) {
   if (map) {
     this.layout(map);
@@ -106,6 +106,7 @@ proto.hideControl = function() {
   });
   $(this.element).hide();
 };
+
 
 proto._postRender = function() {};
 

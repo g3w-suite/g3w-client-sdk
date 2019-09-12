@@ -29,6 +29,7 @@ var SelectInput = Vue.extend({
       const language = this.service.getLanguage();
       if (this.autocomplete) {
         this.select2 = selectElement.select2({
+          width: '100%',
           minimumInputLength: 1,
           language,
           ajax: {
