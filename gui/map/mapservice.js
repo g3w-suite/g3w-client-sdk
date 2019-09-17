@@ -374,14 +374,9 @@ proto.getLayerByName = function(name) {
 
 // return layer by id
 proto.getLayerById = function(id) {
-  let layer;
-  this.getMap().getLayers().getArray().find(function(lyr) {
-    if (lyr.get('id') === id) {
-      layer = lyr;
-      return true
-    }
-  });
-  return layer;
+  return this.getMap().getLayers().getArray().find((layer) => {
+    return  layer.get('id') === id
+  })
 };
 
 // method do get all feature from vector layer based on coordinates
@@ -1670,13 +1665,29 @@ proto.goToRes = function(coordinates, resolution){
   this.viewer.goToRes(coordinates,options);
 };
 
-proto.zoomToFeatures = function(features, options) {
+proto.zoomToFeatures = function(features, options={maxZoom:8, highlight: false}) {
   let extent;
+  let geometryType;
+  const geometryCoordinates = [];
+  const {highlight} = options;
   for (let i=0; i < features.length; i++) {
     const feature = features[i];
     const geometry = feature.getGeometry ? feature.getGeometry() : feature.geometry;
-    if (geometry)
-      extent = !extent ? geometry.getExtent() : ol.extent.extend(extent, geometry.getExtent())
+    if (geometry) {
+      if (highlight) {
+        geometryType = !geometryType ? geometry.getType() : geometryType;
+        geometryCoordinates.push(geometry.getCoordinates());
+      }
+      extent = !extent ? geometry.getExtent() : ol.extent.extend(extent, geometry.getExtent());
+    }
+  }
+  if (highlight) {
+    try {
+      options.highLightGeometry = new ol.geom[`Multi${geometryType}`]();
+      options.highLightGeometry.setCoordinates(geometryCoordinates);
+    } catch(e) {
+      console.log(e)
+    }
   }
   extent && this.zoomToExtent(extent, options);
 };
@@ -1688,6 +1699,7 @@ proto.zoomToExtent = function(extent, options={}) {
     size: map.getSize(),
     maxZoom
   });
+  options.highLightGeometry && this.highlightGeometry(options.highLightGeometry);
 };
 
 proto.goToBBox = function(bbox) {

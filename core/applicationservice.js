@@ -208,7 +208,7 @@ const ApplicationService = function() {
                 PluginsRegistry.reloadPlugins(initConfig, project);
                 // reload components
                 GUI.reloadComponents();
-                d.resolve();
+                d.resolve(project);
               })
               .fail((err) => {
                 console.log(err);
