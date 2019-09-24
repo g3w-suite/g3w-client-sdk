@@ -60,7 +60,7 @@ proto.setStyle = function(style) {
 };
 
 proto.isDisabled = function() {
-  return this.state.disabled
+  return this.state.disabled;
 };
 
 proto.isPrintable = function({scale}={}) {

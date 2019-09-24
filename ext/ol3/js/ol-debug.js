@@ -33243,7 +33243,6 @@ ol.control.OverviewMap.prototype.recenter_ = function() {
   var view = map.getView();
 
   var ovview = ovmap.getView();
-
   ovview.setCenter(view.getCenter());
 };
 

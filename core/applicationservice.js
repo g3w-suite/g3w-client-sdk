@@ -22,7 +22,6 @@ const ApplicationService = function() {
   this.version = G3W_VERSION.indexOf("G3W_VERSION") === -1 ? G3W_VERSION  : "";
   this.ready = false;
   this.complete = false;
-  this._acquirePostBoostrap = false;
   // store all services sidebar etc..
   this._applicationServices = {};
   this.config = {};
@@ -30,11 +29,8 @@ const ApplicationService = function() {
   this._initConfig = {};
   base(this);
   // init from server
-  this.init = function(config, acquirePostBoostrap) {
+  this.init = function(config={}) {
     this._config = config;
-    if (acquirePostBoostrap) {
-      this._acquirePostBoostrap = true;
-    }
     // run bbotstrap
     return this._bootstrap();
   };
@@ -52,7 +48,7 @@ const ApplicationService = function() {
     return ClipboardService;
   };
 
-  this.obtainInitConfig = function(initConfigUrl) {
+  this.obtainInitConfig = function(initConfigUrl, url) {
     const d = $.Deferred();
     if (!this._initConfigUrl) {
       this._initConfigUrl = initConfigUrl;
@@ -68,11 +64,12 @@ const ApplicationService = function() {
     } else {
       let projectPath;
       let queryTuples;
-      if (location.search) {
-        queryTuples = location.search.substring(1).split('&');
+      const locationsearch = url ? url.split('?')[1] : location.search ? location.search.substring(1) : null;
+      if (locationsearch) {
+        queryTuples = locationsearch.split('&');
         queryTuples.forEach((queryTuple) => {
           //check if exist project in url
-          if(queryTuple.indexOf("project") > -1) {
+          if( queryTuple.indexOf("project") > -1) {
             projectPath = queryTuple.split("=")[1];
           }
         });
@@ -80,10 +77,7 @@ const ApplicationService = function() {
         projectPath = location.pathname.split('/').splice(-4,3).join('/');
       }
       if (projectPath) {
-        let initUrl = this._initConfigUrl;
-        if (projectPath) {
-          initUrl =  '/' + initUrl + '/' + projectPath;
-        }
+        const initUrl =  `/${this._initConfigUrl}/${projectPath}`;
         // get configuration from server (return a promise)
         XHR.get({
           url: initUrl
@@ -118,13 +112,18 @@ const ApplicationService = function() {
   };
 
   // post boostratp
-  this.postBootstrap = function() {
+  this.postBootstrap = async function() {
     if (!this.complete) {
-      RouterService.init();
-      // once the projects are inizilized and also api service
-      // register  plugins
-      this._bootstrapPlugins();
-      this.complete = true;
+      try {
+        RouterService.init();
+        // once the projects are inizilized and also api service
+        // register  plugins
+        await this._bootstrapPlugins()
+      } catch(err) {
+      } finally {
+        this.complete = true;
+        this.emit('complete');
+      }
     }
   };
 
@@ -153,11 +152,7 @@ const ApplicationService = function() {
         ApiService.init(this._config)
       ).then(() => {
         this.emit('ready');
-        // emit  ready
-        if (!this._acquirePostBoostrap) {
-          this.postBootstrap();
-        }
-        this.initialized = true;
+        this.ready = this.initialized = true;
         d.resolve();
       }).fail((error) => {
         d.reject(error);
@@ -205,10 +200,15 @@ const ApplicationService = function() {
                 // reload metadati
                 GUI.getComponent('metadata').getService().reload();
                 // reload plugins
-                PluginsRegistry.reloadPlugins(initConfig, project);
-                // reload components
-                GUI.reloadComponents();
-                d.resolve(project);
+                PluginsRegistry.reloadPlugins(initConfig, project)
+                  .then(()=>{})
+                  .catch(()=>{})
+                  .finally(()=> {
+                  // reload components
+                  GUI.reloadComponents();
+                  d.resolve(project);
+                })
+
               })
               .fail((err) => {
                 console.log(err);

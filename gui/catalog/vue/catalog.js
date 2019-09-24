@@ -321,7 +321,7 @@ const vueComponentOptions = {
           } else if (node.geolayer) {
             if (node.checked)
               currentLayersIds.push(node.id);
-            node.groupdisabled = !parentChecked;
+            node.disabled = node.groupdisabled = !parentChecked;
           }
         };
         const parentLayers = [{

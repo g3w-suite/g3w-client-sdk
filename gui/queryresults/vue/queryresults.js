@@ -48,7 +48,9 @@ const vueComponentOptions = {
         const feature = layer.features[0];
         const boxid = this.getBoxId(layer, feature);
         this.layersFeaturesBoxes[boxid].collapsed = false;
-        this.showFeatureInfo(layer, boxid);
+        this.$options.queryResultsService.onceafter('postRender', () => {
+          this.showFeatureInfo(layer, boxid);
+        });
       }
       return one;
     },
@@ -74,14 +76,9 @@ const vueComponentOptions = {
       return this.fieldIs(type,layer,attributeName,attributeValue);
     },
     checkField: function(type, fieldname, attributes) {
-      let isType = false;
-      attributes.forEach((attribute) => {
-        if (attribute.name == fieldname) {
-          isType = attribute.type == type;
-        }
-      });
-
-      return isType;
+      return attributes.find((attribute) => {
+        return (attribute.name === fieldname) && (attribute.type === type);
+      }) ? true : false;
     },
     layerHasFeatures: function(layer) {
       if (layer.features) {
@@ -90,7 +87,9 @@ const vueComponentOptions = {
       return false;
     },
     zoomToLayerFeaturesExtent(layer) {
-      this.$options.queryResultsService.zoomToLayerFeaturesExtent(layer);
+      this.$options.queryResultsService.zoomToLayerFeaturesExtent(layer, {
+        highlight: true
+      });
     },
     layerHasActions: function(layer) {
       return this.state.layersactions[layer.id].length > 0;
@@ -139,7 +138,7 @@ const vueComponentOptions = {
       const actionsCellWidth = layer.hasgeometry ? headerActionsCellWidth : 0;
       const headerAttributeCellTotalWidth = 100 - headerExpandActionCellWidth - actionsCellWidth;
       const baseCellWidth = headerAttributeCellTotalWidth / maxSubsetLength;
-      if ((index == subsetLength-1) && diff>0) {
+      if ((index === subsetLength-1) && diff>0) {
         return baseCellWidth * (diff+1);
       }
       else {
@@ -181,13 +180,11 @@ const vueComponentOptions = {
       return collapsed;
     },
     showFeatureInfo(layer, boxid) {
-      this.$nextTick(() => {
-        this.$options.queryResultsService.emit('show-query-feature-info', {
-          layer,
-          tabs: this.hasFormStructure(layer),
-          show: !this.layersFeaturesBoxes[boxid].collapsed
-        });
-      })
+      this.$options.queryResultsService.emit('show-query-feature-info', {
+        layer,
+        tabs: this.hasFormStructure(layer),
+        show: !this.layersFeaturesBoxes[boxid].collapsed
+      });
     },
     getBoxId(layer, feature, relation_index) {
       let boxid;
@@ -201,8 +198,9 @@ const vueComponentOptions = {
     toggleFeatureBox: function(layer, feature, relation_index) {
       const boxid = this.getBoxId(layer, feature, relation_index);
       this.layersFeaturesBoxes[boxid].collapsed = !this.layersFeaturesBoxes[boxid].collapsed;
-      this.showFeatureInfo(layer, boxid);
-
+      requestAnimationFrame(() => {
+        this.showFeatureInfo(layer, boxid);
+      })
     },
     toggleFeatureBoxAndZoom: function(layer, feature, relation_index) {
       this.toggleFeatureBox(layer, feature, relation_index);
@@ -246,10 +244,8 @@ const vueComponentOptions = {
           });
         this.hasResults = true;
       }
-      this.$nextTick(() => {
-        requestAnimationFrame(() =>{
-          this.$options.queryResultsService.postRender(this.$el);
-        })
+      requestAnimationFrame(() => {
+        this.$options.queryResultsService.postRender(this.$el);
       })
     }
   },

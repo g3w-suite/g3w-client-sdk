@@ -1,7 +1,6 @@
-const OLControl = function(options){
+const OLControl = function(options={}) {
   this._control = null;
   this.positionCode = options.position || 'tl';
-
   switch (options.type) {
     case 'zoom':
       this._control = new ol.control.Zoom(options);
@@ -14,6 +13,7 @@ const OLControl = function(options){
       break;
     case 'overview':
       this._control = new ol.control.OverviewMap(options);
+      break;
   }
 
   $(this._control.element).addClass("ol-control-"+this.positionCode);

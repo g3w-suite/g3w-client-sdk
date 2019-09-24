@@ -380,7 +380,7 @@ proto.isDisabled = function() {
 };
 
 proto.isVisible = function() {
-  return this.state.visible && !this.isDisabled();
+  return !this.state.groupdisabled && this.state.checked && !this.isDisabled();
 };
 
 proto.setVisible = function(bool) {
