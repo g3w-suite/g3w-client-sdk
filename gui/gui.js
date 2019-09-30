@@ -34,7 +34,7 @@ function GUI() {
   this.hidePanel = noop;
   this.reloadComponents = noop;
   this.showUserMessage = noop;
-  this.hideUserMessage = noop;
+  this.closeUserMessage = noop;
   this.addComponent = function(component, placeholder) {};
   this.removeComponent = function(id) {};
   this.setComponent = function(component) {
