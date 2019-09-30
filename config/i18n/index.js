@@ -24,7 +24,7 @@ export default {
                 'description': "DESCRIZIONE",
                 'abstract': "ABSTRACT",
                 'keywords': 'PAROLE CHIAVE',
-                "fees": "TASSE",
+                "fees": "CANONI",
                 "accessconstraints": "LIMITI DI ACCESSO",
                 'contactinformation': "CONTATTI",
                 'subfields': {
