@@ -6,7 +6,7 @@ const G3WObject = require('core/g3wobject');
 const VUECOMPONENTSATTRIBUTES = ['methods', 'computed', 'data', 'components'];
 
 // Class Component (Base)
-const Component = function(options = {}) {
+const Component = function(options={}) {
   // internal VUE component
   this.internalComponent = null;
   this._components = [];
@@ -116,7 +116,7 @@ proto.popComponent = function() {
 
 proto.removeComponent = function(Component) {
   this._components.forEach((component, index) => {
-    if (component == Component) {
+    if (component === Component) {
       this.splice(index, 1);
       return false;
     }

@@ -2,10 +2,11 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const G3WObject = require('core/g3wobject');
 
-function ToolsService(){
+function ToolsService(options={}){
   this.config = null;
   this._actions = {};
   this.state = {
+    ...options,
     toolsGroups: [],
     loading: false
   };

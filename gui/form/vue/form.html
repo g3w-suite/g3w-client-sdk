@@ -5,7 +5,7 @@
     :headers="state.headers"
     @clickheader="switchComponent">
   </g3wformheader>
-  <div class="g3wform_body">
+  <div class="g3wform_body" >
     <keep-alive>
       <component
         @hook:activated="reloadLayout"
@@ -14,6 +14,7 @@
         :state="state"
         :is="state.component">
       </component>
+<!--      <skeleton v-else></skeleton>-->
     </keep-alive>
   </div>
   <g3w-form-footer :state="state"></g3w-form-footer>

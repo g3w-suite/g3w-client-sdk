@@ -117,6 +117,7 @@ export default {
           error_missing_father_field: "Il campo relazionato non esiste"
         },
         form: {
+          loading: 'Caricamento ...',
           inputs: {
             input_validation_mutually_exclusive: "Campo mutualmente esclusivo con ",
             input_validation_error: "Campo obbligatorio o tipo valore non corretto",
@@ -267,6 +268,7 @@ export default {
           error_missing_father_field: "Field is missing"
         },
         form: {
+          loading: 'Loading ...',
           inputs: {
             input_validation_mutually_exclusive: "Field mutually exclusive with ",
             input_validation_error: "Mandatory Field or wrong data type",

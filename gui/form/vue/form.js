@@ -14,7 +14,8 @@ const vueComponentObject = {
   template: null,
   data: function() {
     return {
-      state: {}
+      state: {},
+      switchcomponent: false
     }
   },
   components: {
@@ -30,6 +31,7 @@ const vueComponentObject = {
       });
     },
     switchComponent(index) {
+      this.switchcomponent = true;
       this.$options.service.setComponentByIndex(index);
     },
     changeInput: function(input) {
@@ -46,6 +48,15 @@ const vueComponentObject = {
       const footerHeight = $('.g3wform_footer').height() ? $('.g3wform_footer').height() + 50 : 50;
       $(this.$el).find(".g3wform_body").height(height - ($('.g3wform_header').height() +  footerHeight));
     },
+  },
+  updated() {
+    this.$nextTick(()=> {
+      if (this.switchcomponent) {
+        setTimeout(()=>{
+          this.switchcomponent = false;
+        }, 0)
+      }
+    })
   },
   created() {
     this.$options.service.getEventBus().$on('set-main-component', () => {
