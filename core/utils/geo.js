@@ -1,3 +1,4 @@
+const jsts = require('jsts');
 const Geometry = require('core/geometry/geometry');
 const Filter = require('core/layers/filter/filter');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
@@ -378,5 +379,37 @@ module.exports = {
       layers = layerStore.getLayers(filter);
     });
     return layers || [];
+  },
+  dissolve({features=[], clone=false}={}) {
+    const parser = new jsts.io.OL3Parser();
+    const featuresLength = features.length;
+    let dissolvedFeature;
+    switch (featuresLength) {
+      case 0:
+        dissolvedFeature = null;
+        break;
+      case 1:
+        dissolvedFeature = features[0];
+        break;
+      default:
+        const baseFeature = dissolvedFeature = clone ? features[0].clone() : features[0];
+        const baseFeatureGeometry = baseFeature.getGeometry();
+        const baseFeatureGeometryType = baseFeatureGeometry.getType();
+        let jstsdissolvedFeatureGeometry = parser.read(baseFeatureGeometry);
+        for (let i=1; i < featuresLength ; i++) {
+          const feature = features[i];
+          jstsdissolvedFeatureGeometry = jstsdissolvedFeatureGeometry.union(parser.read(feature.getGeometry()))
+        }
+        const dissolvedFeatureGeometry = parser.write(jstsdissolvedFeatureGeometry);
+        const dissolvedFeatureGeometryType = dissolvedFeatureGeometry.getType();
+        const dissolvedFeatuteGeometryCoordinates = dissolvedFeatureGeometryType === baseFeatureGeometryType ?
+          dissolvedFeatureGeometry.getCoordinates() :
+          baseFeatureGeometryType.indexOf('Multi') !== -1 && dissolvedFeatureGeometryType === baseFeatureGeometryType.replace('Multi', '') ? [dissolvedFeatureGeometry.getCoordinates()] : null;
+        if (dissolvedFeatuteGeometryCoordinates)
+          baseFeature.getGeometry().setCoordinates(dissolvedFeatuteGeometryCoordinates);
+        else
+          dissolvedFeature = null;
+    }
+    return dissolvedFeature;
   }
 };
