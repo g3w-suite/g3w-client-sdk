@@ -1,4 +1,3 @@
-const jsts = require('jsts');
 const Geometry = require('core/geometry/geometry');
 const Filter = require('core/layers/filter/filter');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');

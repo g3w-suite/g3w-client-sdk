@@ -82,18 +82,17 @@ const ApplicationService = function() {
         XHR.get({
           url: initUrl
         }).then((initConfig) => {
-            //initConfig conatin mai configuration
-            //group, mediaurl, staticurl, user
-            initConfig.staticurl = "../dist/"; // in development force  asset
-            initConfig.clienturl = "../dist/"; // in development force  asset
-            this._initConfig = initConfig;
-            // set initConfig
-            window.initConfig = initConfig;
-            d.resolve(initConfig);
-          })
-          .catch((error) => {
-            d.reject(error);
-          });
+          //initConfig conatin mai configuration
+          //group, mediaurl, staticurl, user
+          initConfig.staticurl = "../dist/"; // in development force  asset
+          initConfig.clienturl = "../dist/"; // in development force  asset
+          this._initConfig = initConfig;
+          // set initConfig
+          window.initConfig = initConfig;
+          d.resolve(initConfig);
+        }).catch((error) => {
+          d.reject(error);
+        });
       }
     }
     return d.promise();
