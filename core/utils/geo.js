@@ -380,7 +380,8 @@ module.exports = {
     });
     return layers || [];
   },
-  dissolve({features=[], clone=false}={}) {
+  
+  dissolve({features=[], index=0, clone=false}={}) {
     const parser = new jsts.io.OL3Parser();
     const featuresLength = features.length;
     let dissolvedFeature;
@@ -392,13 +393,15 @@ module.exports = {
         dissolvedFeature = features[0];
         break;
       default:
-        const baseFeature = dissolvedFeature = clone ? features[0].clone() : features[0];
+        const baseFeature = dissolvedFeature = clone ? features[index].clone() : features[index];
         const baseFeatureGeometry = baseFeature.getGeometry();
         const baseFeatureGeometryType = baseFeatureGeometry.getType();
         let jstsdissolvedFeatureGeometry = parser.read(baseFeatureGeometry);
-        for (let i=1; i < featuresLength ; i++) {
-          const feature = features[i];
-          jstsdissolvedFeatureGeometry = jstsdissolvedFeatureGeometry.union(parser.read(feature.getGeometry()))
+        for (let i=0; i < featuresLength ; i++) {
+          if (index !== i) {
+            const feature = features[i];
+            jstsdissolvedFeatureGeometry = jstsdissolvedFeatureGeometry.union(parser.read(feature.getGeometry()))
+          }
         }
         const dissolvedFeatureGeometry = parser.write(jstsdissolvedFeatureGeometry);
         const dissolvedFeatureGeometryType = dissolvedFeatureGeometry.getType();
