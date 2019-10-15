@@ -116,6 +116,11 @@ export default {
           list_of_relations_feature: 'Lista delle relazioni della feature',
           error_missing_father_field: "Il campo relazionato non esiste"
         },
+        workflow: {
+          steps: {
+            title: 'Passi'
+          }
+        },
         form: {
           loading: 'Caricamento ...',
           inputs: {
@@ -266,6 +271,11 @@ export default {
           back_to_relations: 'Back to relations',
           list_of_relations_feature: 'List of relations of feature',
           error_missing_father_field: "Field is missing"
+        },
+        workflow: {
+          steps: {
+            title: 'Steps'
+          }
         },
         form: {
           loading: 'Loading ...',

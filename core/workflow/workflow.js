@@ -1,10 +1,13 @@
 const resolve = require('core/utils/utils').resolve;
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils//utils').base;
+const t = require('core/i18n/i18n.service').t;
 const G3WObject = require('core/g3wobject');
 const Flow = require('./flow');
 const WorkflowsStack = require('./workflowsstack');
 const MESSAGES = require('./step').MESSAGES;
+const createUserMessageStepsFactory = require('gui/workflow/createUserMessageStepsFactory');
+const GUI = require('gui/gui');
 //Class to manage flow of steps
 function Workflow(options={}) {
   base(this);
@@ -20,6 +23,13 @@ function Workflow(options={}) {
   // stack workflowindex
   this._stackIndex = null;
   this._messages = MESSAGES;
+  this._userMessageSteps = this._steps.reduce((messagesSteps, step) => {
+    const usermessagesteps = step.getTask().getUserMessageSteps();
+    return usermessagesteps && {
+      ...messagesSteps,
+      ...usermessagesteps,
+    } || messagesSteps
+  },  {});
 }
 
 inherit(Workflow, G3WObject);
@@ -110,6 +120,7 @@ proto.getMessages = function() {
 
 proto.clearMessages = function() {
   this._messages.help = null;
+  this._isThereUserMessaggeSteps() && this.clearUserMessagesSteps();
 };
 
 proto.getLastStep = function() {
@@ -131,6 +142,10 @@ proto._stopChild = function() {
   return this._child ? this._child.stop(): resolve();
 };
 
+proto._isThereUserMessaggeSteps = function() {
+  return Object.keys(this._userMessageSteps).length;
+};
+
 // start workflow
 proto.start = function(options={}) {
   const d = $.Deferred();
@@ -143,11 +158,33 @@ proto.start = function(options={}) {
   this._stackIndex = WorkflowsStack.push(this);
   this._flow = options.flow || this._flow;
   this._steps = options.steps || this._steps;
+  const showUserMessage = this._isThereUserMessaggeSteps();
+  if (showUserMessage) {
+    const stepsComponent = createUserMessageStepsFactory({
+      steps: this._userMessageSteps
+    });
+    GUI.showUserMessage({
+      title: t('sdk.workflow.steps.title'),
+      type: 'tool',
+      position: 'left',
+      size: 'small',
+      hooks: {
+        body: stepsComponent
+      }
+    });
+  }
+  
   this._flow.start(this)
     .then((outputs) => {
-      d.resolve(outputs);
+      showUserMessage && setTimeout(()=>{
+        this.clearUserMessagesSteps();
+        d.resolve(outputs)
+      }, 500) || d.resolve(outputs);
     })
     .fail((error) => {
+      if (showUserMessage){
+       this.clearUserMessagesSteps();
+      }
       d.reject(error);
     });
 
@@ -178,6 +215,17 @@ proto.stop = function() {
         })
   });
   return d.promise();
+};
+
+proto.clearUserMessagesSteps = function(){
+  this._resetUserMessaggeStepsDone();
+  GUI.closeUserMessage();
+};
+
+proto._resetUserMessaggeStepsDone = function() {
+  Object.keys(this._userMessageSteps).forEach((type) => {
+    this._userMessageSteps[type].done = false;
+  })
 };
 
 module.exports = Workflow;
