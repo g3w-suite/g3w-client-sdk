@@ -159,6 +159,7 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
           }
           const dataTableObject = {
             pk: !!pkProperties,
+            pkField: response.pk,
             headers,
             features,
             title,
@@ -179,6 +180,7 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
         .done((response) => {
           const data = provider.digestFeaturesForLayers(response.data);
           const dataTableObject = {
+            pkField: response.pk,
             headers: data[0].attributes,
             features: data[0].features,
             title: this.getTitle()

@@ -37,17 +37,18 @@ module.exports = function({steps={}}={}) {
           {
             style: {
               fontWeight: !step.done && index === this.currentStep && 'bold' || null,
-              marginBottom: '5px'
+              marginBottom: '5px',
+              color: step.done && "green"
             }
           },
           [h('i', {
             style: {
-              marginRight: '5px'
+              marginRight: '5px',
             },
             class: {
               [GUI.getFontClass('arrow-right')]: state.current,
               [GUI.getFontClass('empty-circle')]: state.todo,
-              [GUI.getFontClass('check')]: state.done,
+              [GUI.getFontClass('success')]: state.done,
             }
           }), step.description])
       }))
