@@ -38,8 +38,11 @@ var SelectInput = Vue.extend({
           minimumInputLength: 1,
           language,
           ajax: {
+            delay: 250,
             transport: (params, success, failure) => {
               const search = params.data.term;
+              // hide previous result if present
+              $('.select2-results__option.loading-results').siblings().hide();
               this.resetValues();
               this.service.getData({
                 search
