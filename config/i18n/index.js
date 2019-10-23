@@ -13,7 +13,7 @@ export default {
         },
         errors: {
           layers: {
-            load: "ATTENZIONE: alcuni servizi WMS presenti nel progetto non sono attualmente disponibili e quindi non compaiono nell'attuale visualizzazione"
+            load: "Alcuni servizi WMS presenti nel progetto non sono attualmente disponibili e quindi non compaiono nell'attuale visualizzazione"
           }
         },
         metadata: {
@@ -169,7 +169,7 @@ export default {
         },
         errors: {
           layers: {
-            load: "WARNING: some WMS services are not available"
+            load: "Some WMS services are not available"
           }
         },
         metadata: {

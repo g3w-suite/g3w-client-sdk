@@ -1,6 +1,6 @@
-// oggetto base utilizzato per i mixins
 const InputMixins = require('gui/inputs/input');
 const getUniqueDomId = require('core/utils/utils').getUniqueDomId;
+const t = require('core/i18n/i18n.service').t;
 const Service = require('../service');
 const MediaField = require('gui/fields/fields').media_field;
 const GUI = require('gui/gui');
@@ -52,7 +52,7 @@ const MediaInput = Vue.extend({
         },
         fail: () => {
           $(this).siblings('.bootstrap-filestyle').find('input').val(field.value);
-          GUI.notify.error('Si è verificato un errore nel caricamento')
+          GUI.notify.error(t("info.server_error"));
         },
         always: () => {
           this.loading = false;
