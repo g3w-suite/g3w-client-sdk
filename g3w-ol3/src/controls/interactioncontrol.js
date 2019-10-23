@@ -1,4 +1,5 @@
 const Control = require('./control');
+const GUI = require('gui/gui');
 
 const InteractionControl = function(options={}) {
   this._visible = options.visible === false ? false : true;
@@ -11,8 +12,8 @@ const InteractionControl = function(options={}) {
   this._enabled = (options.enabled === false) ? false : true;
   this._onhover = options.onhover || false;
   this._help = options.help  || null;
+  this._helpButton = null;
   this._interactionClassOptions = options.interactionClassOptions || {};
-  this._modalHelp = this._help ? (options.modalHelp || toastr) : null;
   options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
   Control.call(this, options);
   // create an help message
@@ -33,35 +34,33 @@ proto.setVisible = function(bool) {
 
 //shwo help message
 proto._showModalHelp = function() {
-  const previousToastPositionClass = toastr.options.positionClass;
-  const contentDiv = $('#g3w-view-content');
-  if (this._modalHelp) {
-    toastr.options.positionClass = 'toast-top-center';
-    //if already present delete it
-    this._modalHelp.clear();
-    const helpElement = this._modalHelp.info(this._help);
-    if (contentDiv) {
-      const right = contentDiv.css('width');
-      $(helpElement).css('right', right);
-    }
-    toastr.options.positionClass = previousToastPositionClass;
-  }
+  GUI.showUserMessage({
+    type: 'info',
+    message: this._help,
+    position: 'left',
+    size: 'small',
+    autoclose: true
+  })
+};
+
+proto._closeModalHelp = function() {
+  GUI.closeUserMessage();
 };
 
 // create modal help
 proto._createModalHelp = function() {
   if (this._onhover) {
-    const helpButton = $('<span style="display:none" class="info_mapcontrol_button">i</span>');
-    $(this.element).prepend(helpButton);
-    //this._modalHelp.options.timeOut = 0;
-    helpButton.on('click', () => {
+    this._helpButton = $('<span style="display:none" class="info_mapcontrol_button">i</span>');
+    $(this.element).prepend(this._helpButton);
+    this._helpButton.on('click', (event) => {
+      event.stopPropagation();
       this._showModalHelp();
     });
-    $(this.element).on('mouseenter', () => {
-      helpButton.show();
+    $(this.element).hover(() => {
+      this._helpButton.show();
     });
-    $(this.element).on('mouseleave', () => {
-      helpButton.hide();
+    $(this.element).mouseleave(() => {
+      this._helpButton.hide();
     });
   }
 };
@@ -84,10 +83,11 @@ proto.toggle = function(toggle) {
   this._toggled = toggle;
   const controlButton = $(this.element).find('button').first();
   if (toggle) {
-    this._showModalHelp();
+    //this._help && this._showModalHelp();
     this._interaction && this._interaction.setActive(true);
     controlButton.addClass('g3w-ol-toggled');
   } else {
+    this._help && this._helpButton.hide();
     this._interaction && this._interaction.setActive(false);
     controlButton.removeClass('g3w-ol-toggled');
   }

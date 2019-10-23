@@ -124,7 +124,7 @@
             }, 800),
             "serverSide": true,
             "processing": true,
-            "responsive": true,
+            //"responsive": true,
             "deferLoading": this.state.allfeatures
           });
         } else {
@@ -134,7 +134,7 @@
             "scrollX": true,
             "scrollCollapse": true,
             "order": [ 0, 'asc' ],
-            "responsive": true,
+            //"responsive": true,
           });
         }
         if (this.isMobile()) {
