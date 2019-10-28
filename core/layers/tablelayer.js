@@ -208,12 +208,12 @@ proto.isFieldRequired = function(fieldName) {
 proto.applyCommitResponse = function(response={}) {
   const data = response;
   if (data && data.result) {
-    let feature;
     const ids = data.response.new;
     const lockids = data.response.new_lockids;
     ids.forEach((idobj) => {
-      feature = this._featuresStore.getFeatureById(idobj.clientid);
+      const feature = this._featuresStore.getFeatureById(idobj.clientid);
       feature.setId(idobj.id);
+      this._featuresStore.addLoadedIds(feature.getId());
     });
     this._featuresStore.addLockIds(lockids);
   }

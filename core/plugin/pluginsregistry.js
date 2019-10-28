@@ -18,18 +18,21 @@ function PluginsRegistry() {
   base(this);
 
   // initilize plugin
-  this.init = function(options) {
-    const d = $.Deferred();
+  this.init = function(options={}) {
     this.pluginsBaseUrl = options.pluginsBaseUrl;
     // plugin configurations
     this.pluginsConfigs = options.pluginsConfigs;
     // plugins that aren't in configuration server but in project
     this.otherPluginsConfig = options.otherPluginsConfig;
     this.setOtherPlugins();
-    Object.entries(this.pluginsConfigs).forEach(([name, pluginConfig]) => {
-      this._setup(name, pluginConfig);
+    return this._loadPlugins();
+  };
+
+  this._loadPlugins = function() {
+    const pluginLoadPromises = Object.entries(this.pluginsConfigs).map(([name, pluginConfig]) => {
+      return this._setup(name, pluginConfig);
     });
-    return d.promise();
+    return Promise.all(pluginLoadPromises)
   };
 
   this.setOtherPlugins = function() {
@@ -53,7 +56,7 @@ function PluginsRegistry() {
       delete this._plugins[pluginName];
       scripts.each((index, scr) => {
         this._loadedPluginUrls.forEach((pluginUrl, idx) => {
-          if (scr.getAttribute('src') == pluginUrl && pluginUrl.indexOf(pluginName) != -1) {
+          if (scr.getAttribute('src') === pluginUrl && pluginUrl.indexOf(pluginName) !== -1) {
             scr.parentNode.removeChild( scr );
             this._loadedPluginUrls.splice(idx, 1);
             return false;
@@ -65,9 +68,7 @@ function PluginsRegistry() {
     this.otherPluginsConfig = project.getState();
     this.setPluginsConfig(initConfig.group.plugins);
     this.setOtherPlugins();
-    Object.entries(this.pluginsConfigs).forEach(([pluginName, pluginConfig]) => {
-      this._setup(pluginName, pluginConfig);
-    });
+    return this._loadPlugins();
   };
 
   this.setPluginsConfig = function(config) {
@@ -80,15 +81,19 @@ function PluginsRegistry() {
 
   //load plugin script
   this._setup = function(name, pluginConfig) {
-    if (!_.isNull(pluginConfig)) {
-      const baseUrl = this.pluginsBaseUrl+name;
-      const scriptUrl = baseUrl + '/js/plugin.js?'+Date.now();
-      pluginConfig.baseUrl= this.pluginsBaseUrl;
-      this._loadScript(scriptUrl, name)
-        .ready(name, () => {
-          this._loadedPluginUrls.push(scriptUrl);
-        })
-    }
+    return new Promise((resolve, reject) => {
+      if (!_.isNull(pluginConfig)) {
+        const baseUrl = this.pluginsBaseUrl+name;
+        const scriptUrl = baseUrl + '/js/plugin.js?'+Date.now();
+        pluginConfig.baseUrl= this.pluginsBaseUrl;
+        this._loadScript(scriptUrl, name)
+          .ready(name, () => {
+            this._loadedPluginUrls.push(scriptUrl);
+            resolve()
+          })
+      } else resolve()
+    })
+
   };
 
   this.getPluginConfig = function(pluginName) {

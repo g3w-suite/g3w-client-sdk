@@ -127,16 +127,17 @@ g3w.ol = {
   utils: require('g3w-ol3/src/utils/utils')
 };
 
-g3w.utils = {
-
-};
+g3w.utils = {};
 
 g3w.config = config;
+
+g3w.test = {};
 
 module.exports = {
   core: g3w.core,
   gui: g3w.gui,
   ol: g3w.ol,
   utils: g3w.utils,
-  config: g3w.config
+  config: g3w.config,
+  test: g3w.test
 };

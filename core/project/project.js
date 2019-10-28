@@ -159,6 +159,10 @@ proto._buildLayersStore = function() {
   return layersStore;
 };
 
+proto.getLayerById = function(layerId) {
+  return this._layersStore.getLayerById(layerId);
+};
+
 proto.getLayers = function() {
   return [...this.state.layers, ...this.state.baselayers];
 };

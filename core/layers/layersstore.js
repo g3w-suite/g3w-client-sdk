@@ -21,7 +21,6 @@ function LayersStore(config={}) {
   };
   this._isQueryable = _.isBoolean(config.queryable) ? config.queryable : true;
   this._layers = this.config.layers || {};
-
   this.setters = {
     setLayersVisible: function (layersIds, visible, checked=true) {
       const layers = [];
@@ -154,81 +153,81 @@ proto.getLayersDict = function(options = {}) {
     layers = layers.filter(layer => ids.indexOf(layer.getId()) !== -1)
   }
 
-  if (typeof filterActive == 'boolean') {
+  if (typeof filterActive === 'boolean') {
     layers = layers.filter((layer) => {
-      return filterActive == !layer.isDisabled();
+      return filterActive === !layer.isDisabled();
     });
   }
 
-  if (typeof filterQueryable == 'boolean') {
+  if (typeof filterQueryable === 'boolean') {
     layers = layers.filter((layer) => {
-      return filterQueryable == layer.isQueryable();
+      return filterQueryable === layer.isQueryable();
     });
   }
 
-  if (typeof filterFilterable == 'boolean') {
+  if (typeof filterFilterable === 'boolean') {
     layers = layers.filter((layer) => {
-      return filterFilterable == layer.isFilterable();
+      return filterFilterable === layer.isFilterable();
     });
   }
 
-  if (typeof filterEditable == 'boolean') {
+  if (typeof filterEditable === 'boolean') {
     layers = layers.filter((layer) => {
-      return filterEditable == layer.isEditable();
+      return filterEditable === layer.isEditable();
     });
   }
 
-  if (typeof filterVisible == 'boolean') {
+  if (typeof filterVisible === 'boolean') {
     layers = layers.filter((layer) => {
       return filterVisible === layer.isVisible();
     });
   }
 
-  if (typeof filterCached == 'boolean') {
+  if (typeof filterCached === 'boolean') {
     layers = layers.filter((layer) => {
-      return filterCached == layer.isCached();
+      return filterCached === layer.isCached();
     });
   }
 
-  if (typeof filterSelected == 'boolean') {
+  if (typeof filterSelected === 'boolean') {
     layers = layers.filter((layer) => {
-      return filterSelected == layer.isSelected();
+      return filterSelected === layer.isSelected();
     });
   }
 
-  if (typeof filterBaseLayer == 'boolean') {
+  if (typeof filterBaseLayer === 'boolean') {
     layers = layers.filter((layer) => {
-      return filterBaseLayer == layer.isBaseLayer();
+      return filterBaseLayer === layer.isBaseLayer();
     });
   }
 
-  if (typeof filterGeoLayer == 'boolean') {
+  if (typeof filterGeoLayer === 'boolean') {
     layers = layers.filter((layer) => {
       return filterGeoLayer === layer.state.geolayer;
     });
   }
 
-  if (typeof filterVectorLayer == 'boolean') {
+  if (typeof filterVectorLayer === 'boolean') {
     layers = layers.filter((layer) => {
-      return filterVectorLayer == layer.isType('vector');
+      return filterVectorLayer === layer.isType('vector');
     });
   }
 
-  if (typeof filterHidden == 'boolean') {
+  if (typeof filterHidden === 'boolean') {
     layers = layers.filter((layer) => {
       return filterHidden == layer.isHidden();
     });
   }
 
-  if (typeof filterDisabled == 'boolean') {
+  if (typeof filterDisabled === 'boolean') {
     layers = layers.filter((layer) => {
-      return filterDisabled == layer.isDisabled();
+      return filterDisabled === layer.isDisabled();
     });
   }
 
-  if (typeof filterServerType == 'string' && filterServerType!='') {
+  if (typeof filterServerType === 'string' && filterServerType !=='') {
     layers = layers.filter((layer) => {
-      return filterServerType == layer.getServerType();
+      return filterServerType === layer.getServerType();
     });
   }
 

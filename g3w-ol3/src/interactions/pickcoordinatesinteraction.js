@@ -24,14 +24,13 @@ PickCoordinatesInteraction.handleDownEvent_ = function(event) {
   this._centerMap = event.map.getView().getCenter();
   // set timeout to avoid to block pan
   setTimeout(() => {
-    if (this._centerMap == event.map.getView().getCenter()) {
+    if (this._centerMap === event.map.getView().getCenter()) {
       PickCoordinatesInteraction.handleUpEvent_.call(this, event);
     }
   }, 300);
   // return false to avoid  start of drag event
   return false
 };
-
 
 PickCoordinatesInteraction.handleUpEvent_ = function(event) {
   this.dispatchEvent(

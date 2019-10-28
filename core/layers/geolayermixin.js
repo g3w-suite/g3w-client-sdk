@@ -1,5 +1,11 @@
 const Projections = require('g3w-ol3/src/projection/projections');
-const getScaleFromResolution = require('g3w-ol3/src/utils/utils').getScaleFromResolution;
+const { getScaleFromResolution } = require('g3w-ol3/src/utils/utils');
+const { sanitizeUrl } = require('core/utils/utils');
+
+const RESERVERDPARAMETRS = {
+  wms: ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS']
+};
+
 function GeoLayerMixin(config={}) {}
 
 const proto = GeoLayerMixin.prototype;
@@ -37,6 +43,15 @@ proto.setup = function(config) {
   } else if (config.attributions) {
     this.config.attributions = config.attributions;
   }
+  config.source && config.source.url && this._sanitizeSourceUrl()
+};
+
+proto._sanitizeSourceUrl = function(type='wms'){
+  const sanitizedUrl = sanitizeUrl({
+    url: this.config.source.url,
+    reserverParameters: RESERVERDPARAMETRS[type]
+  });
+  this.config.source.url = sanitizedUrl;
 };
 
 proto.setChecked = function(bool) {
@@ -60,7 +75,7 @@ proto.setStyle = function(style) {
 };
 
 proto.isDisabled = function() {
-  return this.state.disabled
+  return this.state.disabled;
 };
 
 proto.isPrintable = function({scale}={}) {

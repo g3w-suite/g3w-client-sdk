@@ -13,7 +13,7 @@ export default {
         },
         errors: {
           layers: {
-            load: "ATTENZIONE: alcuni servizi WMS presenti nel progetto non sono attualmente disponibili e quindi non compaiono nell'attuale visualizzazione"
+            load: "Alcuni servizi WMS presenti nel progetto non sono attualmente disponibili e quindi non compaiono nell'attuale visualizzazione"
           }
         },
         metadata: {
@@ -85,17 +85,17 @@ export default {
             }
           },
           querybypolygon: {
-            help: `<h4>Guida - Query By Polygon</h4>'
-                  <ul>
-                    <li>Seleziona uno strato poligonale in legenda.</li>
-                    <li>Assicurati che lo strato sia visibile in mappa.</li>
-                    <li>Clicca su una geometria dello strato selezionato.</li>
+            help: `<h4>Guida - Query By Polygon</h4>
+                  <ul style="padding-left: 10px;">
+                    <li style="font-size:0.8em;">Seleziona uno strato poligonale in legenda.</li>
+                    <li style="font-size:0.8em;">Assicurati che lo strato sia visibile in mappa.</li>
+                    <li style="font-size:0.8em;">Clicca su una geometria dello strato selezionato.</li>
                   </ul>`
           },
           querybybbox: {
             help: `<h4>Guida - Query BBox layer</h4>
-                   <ul>
-                    <li>Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li>
+                   <ul style="padding-left: 10px;">
+                    <li style="font-size:0.8em;">Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li>
                    </ul>`
           },
           measures: {
@@ -116,7 +116,13 @@ export default {
           list_of_relations_feature: 'Lista delle relazioni della feature',
           error_missing_father_field: "Il campo relazionato non esiste"
         },
+        workflow: {
+          steps: {
+            title: 'Passi'
+          }
+        },
         form: {
+          loading: 'Caricamento ...',
           inputs: {
             input_validation_mutually_exclusive: "Campo mutualmente esclusivo con ",
             input_validation_error: "Campo obbligatorio o tipo valore non corretto",
@@ -166,7 +172,7 @@ export default {
         },
         errors: {
           layers: {
-            load: "WARNING: some WMS services are not available"
+            load: "Some WMS services are not available"
           }
         },
         metadata: {
@@ -238,17 +244,17 @@ export default {
             }
           },
           querybypolygon: {
-            help: `<h4>Guide - Query By Polygon</h4>'
-                  <ul>
-                    <li>Select a polygon layer on TOC.</li>
-                    <li>Be sure that layer is visible.</li>
-                    <li>Click on a feature of selected layer.</li>
+            help: `<h4>Guide - Query By Polygon</h4>
+                  <ul style="padding-left: 10px;">
+                    <li style="font-size:0.8em;">Select a polygon layer on TOC.</li>
+                    <li style="font-size:0.8em;">Be sure that layer is visible.</li>
+                    <li style="font-size:0.8em;">Click on a feature of selected layer.</li>
                   </ul>`
           },
           querybybbox: {
             help: `<h4>Guide - Query BBox layer</h4>
-                   <ul>
-                    <li>Draw a square on map to query underlined layers on TOC</li>
+                   <ul style="padding-left: 10px;">
+                    <li style="font-size:0.8em;">Draw a square on map to query underlined layers on TOC</li>
                    </ul>`
           },
           measures: {
@@ -269,7 +275,13 @@ export default {
           list_of_relations_feature: 'List of relations of feature',
           error_missing_father_field: "Field is missing"
         },
+        workflow: {
+          steps: {
+            title: 'Steps'
+          }
+        },
         form: {
+          loading: 'Loading ...',
           inputs: {
             input_validation_mutually_exclusive: "Field mutually exclusive with ",
             input_validation_error: "Mandatory Field or wrong data type",

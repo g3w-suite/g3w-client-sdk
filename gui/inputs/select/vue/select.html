@@ -3,10 +3,9 @@
     <bar-loader loading="true"></bar-loader>
   </div>
   <select
+    style="width:100%;"
     slot="body"
-    style="width:100%"
     v-disabled="!isEditable() || loadingState === 'loading' || loadingState === 'error'"
-    :class="{'input-error-validation' : notvalid}"
     class="form-control" >
     <option :value="getValue(value.value)" v-for="value in state.input.options.values">{{ value.key }}</option>
   </select>

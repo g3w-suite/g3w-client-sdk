@@ -378,5 +378,40 @@ module.exports = {
       layers = layerStore.getLayers(filter);
     });
     return layers || [];
+  },
+  
+  dissolve({features=[], index=0, clone=false}={}) {
+    const parser = new jsts.io.OL3Parser();
+    const featuresLength = features.length;
+    let dissolvedFeature;
+    switch (featuresLength) {
+      case 0:
+        dissolvedFeature = null;
+        break;
+      case 1:
+        dissolvedFeature = features[0];
+        break;
+      default:
+        const baseFeature = dissolvedFeature = clone ? features[index].clone() : features[index];
+        const baseFeatureGeometry = baseFeature.getGeometry();
+        const baseFeatureGeometryType = baseFeatureGeometry.getType();
+        let jstsdissolvedFeatureGeometry = parser.read(baseFeatureGeometry);
+        for (let i=0; i < featuresLength ; i++) {
+          if (index !== i) {
+            const feature = features[i];
+            jstsdissolvedFeatureGeometry = jstsdissolvedFeatureGeometry.union(parser.read(feature.getGeometry()))
+          }
+        }
+        const dissolvedFeatureGeometry = parser.write(jstsdissolvedFeatureGeometry);
+        const dissolvedFeatureGeometryType = dissolvedFeatureGeometry.getType();
+        const dissolvedFeatuteGeometryCoordinates = dissolvedFeatureGeometryType === baseFeatureGeometryType ?
+          dissolvedFeatureGeometry.getCoordinates() :
+          baseFeatureGeometryType.indexOf('Multi') !== -1 && dissolvedFeatureGeometryType === baseFeatureGeometryType.replace('Multi', '') ? [dissolvedFeatureGeometry.getCoordinates()] : null;
+        if (dissolvedFeatuteGeometryCoordinates)
+          baseFeature.getGeometry().setCoordinates(dissolvedFeatuteGeometryCoordinates);
+        else
+          dissolvedFeature = null;
+    }
+    return dissolvedFeature;
   }
 };

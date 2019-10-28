@@ -50,6 +50,7 @@ function Layer(config={}) {
     openattributetable: this.canShowTable(),
     removable: config.removable || false,
     source: config.source,
+    infoformat: this.getInfoFormat(),
     geolayer: false
   };
 
@@ -158,6 +159,7 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
           }
           const dataTableObject = {
             pk: !!pkProperties,
+            pkField: response.pk,
             headers,
             features,
             title,
@@ -178,6 +180,7 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
         .done((response) => {
           const data = provider.digestFeaturesForLayers(response.data);
           const dataTableObject = {
+            pkField: response.pk,
             headers: data[0].attributes,
             features: data[0].features,
             title: this.getTitle()
@@ -343,12 +346,7 @@ proto.getOrigName = function() {
 };
 
 proto.getServerType = function() {
-  if (this.config.servertype && this.config.servertype !== '') {
-    return this.config.servertype;
-  }
-  else {
-    return ServerTypes.QGIS;
-  }
+  return (this.config.servertype && this.config.servertype !== '') ? this.config.servertype : ServerTypes.QGIS;
 };
 
 proto.getType = function() {
@@ -380,7 +378,7 @@ proto.isDisabled = function() {
 };
 
 proto.isVisible = function() {
-  return this.state.visible && !this.isDisabled();
+  return !this.state.groupdisabled && this.state.checked && !this.isDisabled();
 };
 
 proto.setVisible = function(bool) {
@@ -391,9 +389,7 @@ proto.setVisible = function(bool) {
 proto.isQueryable = function({onMap} = {onMap:false}) {
   let queryEnabled = false;
   const queryableForCababilities = !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.QUERYABLE));
-  if (!onMap) {
-    return queryableForCababilities;
-  }
+  if (!onMap) return queryableForCababilities;
   // if querable check if is visible or disabled
   if (queryableForCababilities) {
        queryEnabled = (this.isVisible() && !this.isDisabled());
@@ -435,13 +431,7 @@ proto.setQueryUrl = function(queryUrl) {
 };
 
 proto.getQueryLayerName = function() {
-  let queryLayerName;
-  if (this.config.infolayer && this.config.infolayer !== '') {
-    queryLayerName = this.config.infolayer;
-  } else {
-    queryLayerName = this.getName();
-  }
-  return queryLayerName;
+  return (this.config.infolayer && this.config.infolayer !== '') ? this.config.infolayer : this.getName();
 };
 
 proto.getQueryLayerOrigName = function() {
@@ -456,12 +446,7 @@ proto.getQueryLayerOrigName = function() {
 };
 
 proto.getInfoFormat = function(ogcService) {
-  if (this.config.infoformat && this.config.infoformat != '' && ogcService !='wfs') {
-    return this.config.infoformat;
-  }
-  else {
-    return 'application/vnd.ogc.gml';
-  }
+  return (this.config.infoformat && this.config.infoformat !== '' && ogcService !== 'wfs') ?  this.config.infoformat : 'application/vnd.ogc.gml';
 };
 
 proto.setInfoFormat = function(infoFormat) {
@@ -474,21 +459,19 @@ proto.getAttributes = function() {
 
 proto.changeAttribute = function(attribute, type, options) {
   for (const field of this.config.fields) {
-    if (field.name == attribute) {
+    if (field.name === attribute) {
       field.type = type;
       field.options = options;
+      break;
     }
   }
 };
 
 proto.getAttributeLabel = function(name) {
-  let label;
-  this.getAttributes().forEach((field) => {
-    if (field.name === name){
-      label = field.label;
-    }
+  const field = this.getAttributes().find((field) => {
+   return field.name === name;
   });
-  return label;
+  return field && field.label;
 };
 
 proto.getProvider = function(type) {

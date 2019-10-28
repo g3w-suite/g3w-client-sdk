@@ -4,7 +4,7 @@
       <div class="box-body">
         <label for="templates">Template</label>
         <select class="form-control" @change="onChangeTemplate" v-model="state.template" id="templates" placeholder="Seleziona il template">
-          <option v-for="print in state.print">{{ print.name }}</option>
+          <option v-for="print in state.print" :value="print.name">{{ print.name }}</option>
         </select>
         <label for="scala" v-t="'sdk.print.scale'"></label>
         <select class="form-control" @change="onChangeScale" v-model="state.scala" id="scala" placeholder="Seleziona la scala">

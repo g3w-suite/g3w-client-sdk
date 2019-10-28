@@ -32,9 +32,9 @@ const vueComponentOptions = {
       mapService.setMapControlsContainer($('.g3w-map-controls'));
     });
     // listen of after addHideMap
-    mapService.onafter('addHideMap', ({layers=[], mainview=false, switchable=false} = {}) => {
+    mapService.onafter('addHideMap', ({ratio, layers=[], mainview=false, switchable=false} = {}) => {
       this.$nextTick(() => {
-        mapService._addHideMap({layers, mainview, switchable});
+        mapService._addHideMap({ratio, layers, mainview, switchable});
       })
     })
   },

@@ -83,9 +83,13 @@ proto.isArcgisMapserver = function() {
   return this.isExternalWMS() && this.config.source.type === 'arcgismapserver';
 };
 
+proto._getBaseLayerName = function() {
+  return  (!this.isExternalWMS() || (this.isExternalWMS() && !this.isLayerProjectionASMapProjection())) && this.isWmsUseLayerIds() ? this.getId() : this.getName();
+};
+
 proto.getWMSLayerName = function({type='map'}={}) {
   const legendMapBoolean = type === 'map' ? this.isExternalWMS() && this.isLayerProjectionASMapProjection() : true;
-  let layerName = (!this.isExternalWMS() && this.isWmsUseLayerIds()) ? this.getId() : this.getName();
+  let layerName = this._getBaseLayerName();
   if (legendMapBoolean && this.config.source && (this.config.source.layers || this.config.source.layer)) {
     layerName = this.config.source.layers || this.config.source.layer;
   }
@@ -93,11 +97,7 @@ proto.getWMSLayerName = function({type='map'}={}) {
 };
 
 proto.getWMSInfoLayerName = function() {
-  let layerName = (!this.isExternalWMS() && this.isWmsUseLayerIds()) ? this.getId() : this.getName();
-  if (this.config.source && this.config.source.type === 'wms') {
-    layerName = this.config.source.layers;
-  }
-  return layerName;
+  return this._getBaseLayerName();
 };
 
 proto.getPrintLayerName = function() {
@@ -125,7 +125,7 @@ proto.getWmsUrl = function({type='map'}={}) {
 
 proto.getQueryUrl = function() {
   let url = base(this, 'getQueryUrl');
-  if (this.getServerType() === 'QGIS' && this.config.source && this.config.source.external) {
+  if (this.getServerType() === 'QGIS' && this.isExternalWMS() && this.isLayerProjectionASMapProjection()) {
     url =`${url}SOURCE=${this.config.source.type}`;
   }
   return url;

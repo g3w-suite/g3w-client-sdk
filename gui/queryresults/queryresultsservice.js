@@ -76,7 +76,7 @@ proto.setZoomToResults = function(bool=true) {
   this.state.zoomToResult = bool;
 };
 
-proto.zoomToLayerFeaturesExtent = function(layer, options) {
+proto.zoomToLayerFeaturesExtent = function(layer, options={}) {
   const mapService = ComponentsRegistry.getComponent('map').getService();
   const features = layer.features;
   mapService.zoomToFeatures(features, options);
@@ -277,7 +277,7 @@ proto.trigger = function(actionId, layer, feature) {
     if (layerActions) {
       let action;
       layerActions.forEach((layerAction) => {
-        if (layerAction.id == actionId) {
+        if (layerAction.id === actionId) {
           action = layerAction;
         }
       });
@@ -305,7 +305,7 @@ proto.triggerLayerAction = function(action,layer,feature) {
 };
 
 proto.registerVectorLayer = function(vectorLayer) {
-  if (this._vectorLayers.indexOf(vectorLayer) == -1) {
+  if (this._vectorLayers.indexOf(vectorLayer) === -1) {
     this._vectorLayers.push(vectorLayer);
   }
 };
@@ -389,18 +389,23 @@ proto._addComponent = function(component) {
 };
 
 //save layer result
-proto.saveLayerResult = function(layer) {
+proto.saveLayerResult = function(layer, alias=true) {
   try {
     //get headers
-    const headers = getAlphanumericPropertiesFromFeature(Object.keys(layer.features[0].attributes));
-    function convertToCSV(objArray) {
-      const array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+    const attributes = Object.keys(layer.features[0].attributes);
+    const properties = getAlphanumericPropertiesFromFeature(attributes);
+    const headers = !alias && properties || layer.attributes.map((attribute) => {
+      const index = properties.indexOf(attribute.name);
+      return layer.attributes[index].label;
+    });
+
+    function convertToCSV(items) {
       let str = '';
-      for (let i = 0; i < array.length; i++) {
-        var line = '';
-        for (let index in array[i]) {
-          if (line !== '') line += ',';
-          line += array[i][index];
+      for (let i = 0; i < items.length; i++) {
+        let line = '';
+        for (let index in items[i]) {
+          if (line !== '') line += ';';
+          line += items[i][index];
         }
         str += line + '\r\n';
       }
@@ -412,8 +417,7 @@ proto.saveLayerResult = function(layer) {
         items.unshift(headers);
       }
       // Convert Object to JSON
-      const jsonObject = JSON.stringify(items);
-      const csv = convertToCSV(jsonObject);
+      const csv = convertToCSV(items);
       const exportedFilenmae = `${layer.id}.csv`;
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       if (navigator.msSaveBlob) { // IE 10+
@@ -436,8 +440,9 @@ proto.saveLayerResult = function(layer) {
     const itemsFormatted = layer.features.map((feature) => {
       const attributes = feature.attributes;
       const item = {};
-      headers.forEach((header) => {
-        item[header] = attributes[header];
+      properties.forEach((property, index) => {
+        const key = !alias && property || headers[index];
+        item[key] = attributes[property];
       });
       return item;
     });
@@ -472,7 +477,8 @@ QueryResultsService.highlightGeometry = function(layer, feature) {
     const mapService = ComponentsRegistry.getComponent('map').getService();
     mapService.highlightGeometry(feature.geometry, {
       layerId: layer.id,
-      zoom: false
+      zoom: false,
+      duration: Infinity
     });
   }
 };

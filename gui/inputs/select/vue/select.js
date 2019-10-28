@@ -13,6 +13,12 @@ var SelectInput = Vue.extend({
     }
   },
   template: require('./select.html'),
+  watch: {
+    'state.input.options.values'(values) {
+     if (!this.autocomplete && !this.state.value && values.length)
+       this.changeSelect(values[0].value);
+    }
+  },
   created() {
     if (this.autocomplete && this.state.value) {
       this.service.getKeyByValue({
@@ -20,7 +26,7 @@ var SelectInput = Vue.extend({
       })
     }
     if (!this.state.value) {
-      this.state.value = this.state.input.options.values[0].value;
+      this.state.value = this.state.input.options.values.length ? this.state.input.options.values[0].value : null;
     }
   },
   mounted() {
@@ -32,8 +38,11 @@ var SelectInput = Vue.extend({
           minimumInputLength: 1,
           language,
           ajax: {
+            delay: 250,
             transport: (params, success, failure) => {
               const search = params.data.term;
+              // hide previous result if present
+              $('.select2-results__option.loading-results').siblings().hide();
               this.resetValues();
               this.service.getData({
                 search

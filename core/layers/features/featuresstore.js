@@ -6,7 +6,7 @@ const G3WObject = require('core/g3wobject');
 function FeaturesStore(options={}) {
   this._features = options.features || [];
   this._provider = options.provider || null;
-  this._loadedPks = []; // store loeckedids
+  this._loadedIds = []; // store loeckedids
   this._lockIds = []; // store locked features
   this.setters = {
     addFeatures: function(features) {
@@ -26,7 +26,7 @@ function FeaturesStore(options={}) {
     clear: function() {
       this._clearFeatures();
       this._lockIds = [];
-      this._loadedPks = [];
+      this._loadedIds = [];
     },
     getFeatures: function(options={}) {
       return this._getFeatures(options);
@@ -61,7 +61,7 @@ proto.unlock = function() {
 };
 
 // method get all features from server or attribute _features
-proto._getFeatures = function(options) {
+proto._getFeatures = function(options={}) {
   const d = $.Deferred();
   if (this._provider && options) {
     this._provider.getFeatures(options)
@@ -85,11 +85,8 @@ proto._filterFeaturesResponse = function(options={}) {
   const featurelocks = options.featurelocks || [];
   const featuresToAdd = features.filter((feature) => {
     const featureId = feature.getId();
-    const added = this._loadedPks.find((pkId) =>{
-      return pkId === featureId
-    }) || false;
-    if (!added)
-      this._loadedPks.push(featureId);
+    const added = this._loadedIds.indexOf(featureId) !== -1;
+    if (!added) this._loadedIds.push(featureId);
     return !added
   });
   this._filterLockIds(featurelocks);
@@ -105,6 +102,10 @@ proto._filterLockIds = function(featurelocks) {
     return _lockIds.indexOf(featurelock.featureid) === -1;
   });
   this._lockIds = [...this._lockIds, ...toAddLockId];
+};
+
+proto.addLoadedIds = function(pk) {
+  this._loadedIds.push(pk);
 };
 
 proto.getLockIds = function() {

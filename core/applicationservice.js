@@ -9,6 +9,7 @@ const PluginsRegistry = require('core/plugin/pluginsregistry');
 const ClipboardService = require('core/clipboardservice');
 const GlobalComponents = require('gui/vue/vue.globalcomponents');
 const GlobalDirective = require('gui/vue/vue.directives');
+const GUI = require('gui/gui');
 const G3W_VERSION = "{G3W_VERSION}";
 // install global components
 Vue.use(GlobalComponents);
@@ -21,7 +22,6 @@ const ApplicationService = function() {
   this.version = G3W_VERSION.indexOf("G3W_VERSION") === -1 ? G3W_VERSION  : "";
   this.ready = false;
   this.complete = false;
-  this._acquirePostBoostrap = false;
   // store all services sidebar etc..
   this._applicationServices = {};
   this.config = {};
@@ -29,11 +29,8 @@ const ApplicationService = function() {
   this._initConfig = {};
   base(this);
   // init from server
-  this.init = function(config, acquirePostBoostrap) {
+  this.init = function(config={}) {
     this._config = config;
-    if (acquirePostBoostrap) {
-      this._acquirePostBoostrap = true;
-    }
     // run bbotstrap
     return this._bootstrap();
   };
@@ -51,7 +48,7 @@ const ApplicationService = function() {
     return ClipboardService;
   };
 
-  this.obtainInitConfig = function(initConfigUrl) {
+  this.obtainInitConfig = function(initConfigUrl, url) {
     const d = $.Deferred();
     if (!this._initConfigUrl) {
       this._initConfigUrl = initConfigUrl;
@@ -67,11 +64,12 @@ const ApplicationService = function() {
     } else {
       let projectPath;
       let queryTuples;
-      if (location.search) {
-        queryTuples = location.search.substring(1).split('&');
+      const locationsearch = url ? url.split('?')[1] : location.search ? location.search.substring(1) : null;
+      if (locationsearch) {
+        queryTuples = locationsearch.split('&');
         queryTuples.forEach((queryTuple) => {
           //check if exist project in url
-          if(queryTuple.indexOf("project") > -1) {
+          if( queryTuple.indexOf("project") > -1) {
             projectPath = queryTuple.split("=")[1];
           }
         });
@@ -79,26 +77,22 @@ const ApplicationService = function() {
         projectPath = location.pathname.split('/').splice(-4,3).join('/');
       }
       if (projectPath) {
-        let initUrl = this._initConfigUrl;
-        if (projectPath) {
-          initUrl =  '/' + initUrl + '/' + projectPath;
-        }
+        const initUrl =  `/${this._initConfigUrl}/${projectPath}`;
         // get configuration from server (return a promise)
         XHR.get({
           url: initUrl
         }).then((initConfig) => {
-            //initConfig conatin mai configuration
-            //group, mediaurl, staticurl, user
-            initConfig.staticurl = "../dist/"; // in development force  asset
-            initConfig.clienturl = "../dist/"; // in development force  asset
-            this._initConfig = initConfig;
-            // set initConfig
-            window.initConfig = initConfig;
-            d.resolve(initConfig);
-          })
-          .catch((error) => {
-            d.reject(error);
-          });
+          //initConfig conatin mai configuration
+          //group, mediaurl, staticurl, user
+          initConfig.staticurl = "../dist/"; // in development force  asset
+          initConfig.clienturl = "../dist/"; // in development force  asset
+          this._initConfig = initConfig;
+          // set initConfig
+          window.initConfig = initConfig;
+          d.resolve(initConfig);
+        }).catch((error) => {
+          d.reject(error);
+        });
       }
     }
     return d.promise();
@@ -117,13 +111,18 @@ const ApplicationService = function() {
   };
 
   // post boostratp
-  this.postBootstrap = function() {
+  this.postBootstrap = async function() {
     if (!this.complete) {
-      RouterService.init();
-      // once the projects are inizilized and also api service
-      // register  plugins
-      this._bootstrapPlugins();
-      this.complete = true;
+      try {
+        RouterService.init();
+        // once the projects are inizilized and also api service
+        // register  plugins
+        await this._bootstrapPlugins()
+      } catch(err) {
+      } finally {
+        this.complete = true;
+        this.emit('complete');
+      }
     }
   };
 
@@ -142,7 +141,7 @@ const ApplicationService = function() {
     //first time l'application service is not ready
     if (!this.ready) {
       // LOAD DEVELOPMENT CONFIGURATION
-      if (!production){
+      if (!production) {
         require('../config/dev/index');
       }
       $.when(
@@ -152,11 +151,7 @@ const ApplicationService = function() {
         ApiService.init(this._config)
       ).then(() => {
         this.emit('ready');
-        // emit  ready
-        if (!this._acquirePostBoostrap) {
-          this.postBootstrap();
-        }
-        this.initialized = true;
+        this.ready = this.initialized = true;
         d.resolve();
       }).fail((error) => {
         d.reject(error);
@@ -165,16 +160,16 @@ const ApplicationService = function() {
     return d.promise();
   };
 
-  this.registerService = function(id, service) {
-    this._applicationServices[id] = service;
+  this.registerService = function(element, service) {
+    this._applicationServices[element] = service;
   };
 
-  this.unregisterService = function(id) {
-    delete this._applicationServices[id];
+  this.unregisterService = function(element) {
+    delete this._applicationServices[element];
   };
 
-  this.getService = function(id) {
-    return this._applicationServices[id];
+  this.getService = function(element) {
+    return this._applicationServices[element];
   };
 
   this.errorHandler = function(error) {
@@ -184,9 +179,52 @@ const ApplicationService = function() {
   this.clearInitConfig = function() {
     window.initConfig = null;
   };
+
+  this.changeProject = function({gid}={}) {
+    const d = $.Deferred();
+    const mapUrl = ProjectsRegistry.getProjectUrl(gid);
+    // change url using history
+    history.replaceState(null, null, mapUrl);
+    //remove tools
+    this.obtainInitConfig()
+      .then((initConfig) => {
+        ProjectsRegistry.getProject(gid)
+          .then((project) => {
+            GUI.closeContent()
+              .then(() => {
+                // change current project project
+                ProjectsRegistry.setCurrentProject(project);
+                // remove all toos
+                GUI.getComponent('tools').getService().reload();
+                // reload metadati
+                GUI.getComponent('metadata').getService().reload();
+                // reload plugins
+                PluginsRegistry.reloadPlugins(initConfig, project)
+                  .then(()=>{})
+                  .catch(()=>{})
+                  .finally(()=> {
+                  // reload components
+                  GUI.reloadComponents();
+                  d.resolve(project);
+                })
+
+              })
+              .fail((err) => {
+                console.log(err);
+              })
+          })
+          .fail(() => {
+            d.reject();
+          });
+      })
+      .fail((err) => {
+        //TODO
+      });
+    return d.promise();
+  }
 };
 
-inherit(ApplicationService, G3WObject);
+inherit(ApplicationService,G3WObject);
 
 
 module.exports = new ApplicationService;

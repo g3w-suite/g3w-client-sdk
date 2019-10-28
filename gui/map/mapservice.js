@@ -118,7 +118,7 @@ function MapService(options={}) {
   this._marker = null;
 
   this.setters = {
-    addHideMap: function({layers=[], mainview=false, switchable=false} = {}) {
+    addHideMap: function({ratio, layers=[], mainview=false, switchable=false} = {}) {
       const id = 'hidemap_'+ Date.now();
       const idMap = {
         id,
@@ -222,7 +222,7 @@ inherit(MapService, G3WObject);
 
 const proto = MapService.prototype;
 
-proto._addHideMap = function({layers=[], mainview=false} = {}) {
+proto._addHideMap = function({ratio, layers=[], mainview=false} = {}) {
   const idMap = this.state.hidemaps[this.state.hidemaps.length - 1 ];
   const view = this.getMap().getView();
   const view_options = {
@@ -236,6 +236,11 @@ proto._addHideMap = function({layers=[], mainview=false} = {}) {
   });
   // set Map
   idMap.map = viewer.getMap();
+  // in case of rate
+  if (ratio) {
+    const [width, height] = idMap.map.getSize();
+    idMap.map.setSize([width, width*ratio]);
+  }
 
   for (let i=0; i < layers.length; i++) {
     const layer = layers[i];
@@ -369,14 +374,9 @@ proto.getLayerByName = function(name) {
 
 // return layer by id
 proto.getLayerById = function(id) {
-  let layer;
-  this.getMap().getLayers().getArray().find(function(lyr) {
-    if (lyr.get('id') === id) {
-      layer = lyr;
-      return true
-    }
-  });
-  return layer;
+  return this.getMap().getLayers().getArray().find((layer) => {
+    return  layer.get('id') === id
+  })
 };
 
 // method do get all feature from vector layer based on coordinates
@@ -402,7 +402,7 @@ proto.getVectorLayerFeaturesFromCoordinates = function(layerId, coordinates) {
           features = vectorLayer.getIntersectedFeatures(intersectGeom);
           break;
         case ol.layer.Vector:
-          _.forEach(vectorLayer.getSource().getFeatures(), function(feature) {
+          vectorLayer.getSource().getFeatures().forEach((feature) => {
             if (intersectGeom.intersectsExtent(feature.getGeometry().getExtent())) {
               features.push(feature);
               }
@@ -417,7 +417,7 @@ proto.getVectorLayerFeaturesFromCoordinates = function(layerId, coordinates) {
         features = vectorLayer.getIntersectedFeatures(intersectGeom);
         break;
       case ol.layer.Vector:
-        _.forEach(vectorLayer.getSource().getFeatures(), function(feature) {
+        vectorLayer.getSource().getFeatures().forEach((feature) => {
           if (intersectGeom.intersectsExtent(feature.getGeometry().getExtent())) {
             features.push(feature);
           }
@@ -903,8 +903,23 @@ proto.setupControls = function() {
             const overviewProjectGid = this.config.overviewproject.gid;
             if (overviewProjectGid) {
               ProjectsRegistry.getProject(overviewProjectGid)
-              .then((project) =>{
+              .then((project) => {
                 const overViewMapLayers = this.getOverviewMapLayers(project);
+                const viewOptions = this._calculateViewOptions({
+                  width: 200, // at monent hardocded
+                  height: 150,
+                  project
+                });
+                const view = new ol.View(viewOptions);
+                const mainView = this.getMap().getView();
+                view.on('change:center', function(){
+                  const currentCenter = this.getCenter();
+                  const center = mainView.constrainCenter(currentCenter);
+                  if (center[0] !== currentCenter[0] || center[1] !== currentCenter[1]) {
+                    view.setCenter(center);
+                  }
+
+                });
                 control = this.createMapControl(controlType, {
                   add: false,
                   options: {
@@ -914,9 +929,7 @@ proto.setupControls = function() {
                     label: $(`<span class="${GUI.getFontClass('arrow-right')}"></span>`)[0],
                     collapsed: false,
                     layers: overViewMapLayers,
-                    view: new ol.View({
-                      projection: this.getProjection()
-                    })
+                    view
                   }
                 });
               });
@@ -1234,8 +1247,10 @@ proto.getMapControls = function() {
 proto.removeControl = function(type) {
   this._mapControls.forEach((controlObj, ctrlIdx) => {
     if (type === controlObj.type) {
-      this._mapControls.splice(ctrlIdx,1);
-      this.viewer.map.removeControl(controlObj.control);
+      this._mapControls.splice(ctrlIdx, 1);
+      const control = controlObj.control;
+      this.viewer.map.removeControl(control);
+      control.hideControl && control.hideControl();
       return false;
     }
   })
@@ -1299,8 +1314,7 @@ proto.getProjectLayer = function(layerId) {
 };
 
 proto._resetView = function() {
-  const width = this.viewer.map.getSize()[0];
-  const height = this.viewer.map.getSize()[1];
+  const [width, height] = this.viewer.map.getSize();
   const extent = this.project.state.extent;
   const maxxRes = ol.extent.getWidth(extent) / width;
   const minyRes = ol.extent.getHeight(extent) / height;
@@ -1315,11 +1329,10 @@ proto._resetView = function() {
   this.viewer.map.setView(view);
 };
 
-// set view based on project config
-proto._setupViewer = function(width,height) {
+proto._calculateViewOptions = function({project, width, height}) {
   const projection = this.getProjection();
-  const initextent = this.project.state.initextent;
-  const extent = this.project.state.extent;
+  const initextent = project.state.initextent;
+  const extent = project.state.extent;
   const maxxRes = ol.extent.getWidth(extent) / width;
   const minyRes = ol.extent.getHeight(extent) / height;
   const maxResolution = Math.max(maxxRes,minyRes);
@@ -1327,16 +1340,26 @@ proto._setupViewer = function(width,height) {
   const inityRes = ol.extent.getHeight(initextent) / height;
   let resolution = Math.max(initxRes,inityRes);
   const center = ol.extent.getCenter(initextent);
+  return {
+    projection,
+    center,
+    extent,
+    maxResolution,
+    resolution
+  }
+};
+
+// set view based on project config
+proto._setupViewer = function(width, height) {
   this.viewer = ol3helpers.createViewer({
     id: this.target,
-    view: {
-      projection,
-      center,
-      extent,
-      maxResolution,
-      resolution
-    }
+    view: this._calculateViewOptions({
+      width,
+      height,
+      project: this.project
+    })
   });
+
   this.state.size = this.viewer.map.getSize();
   //set mapunit
   this.state.mapUnits = this.viewer.map.getView().getProjection().getUnits();
@@ -1402,7 +1425,6 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
   // check if already store a key of events
   if (!this._layersStoresEventKeys[layerStoreId]) {
     this._layersStoresEventKeys[layerStoreId] = [];
-
     //SETVISIBILITY EVENT
     const layerVisibleKey = layerStore.onafter('setLayersVisible',  (layersIds) => {
      layersIds.forEach((layerId) => {
@@ -1415,7 +1437,6 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
     this._layersStoresEventKeys[layerStoreId].push({
       setLayersVisible: layerVisibleKey
     });
-
     //ADD LAYER
     const addLayerKey = layerStore.onafter('addLayer', (layer) => {
       if (layer.getType() === 'vector') {
@@ -1423,7 +1444,6 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
         this.addLayerToMap(mapLayer);
       }
     });
-
     this._layersStoresEventKeys[layerStoreId].push({
       addLayer: addLayerKey
     });
@@ -1663,16 +1683,34 @@ proto.goToRes = function(coordinates, resolution){
   const options = {
     resolution
   };
-  this.viewer.goToRes(coordinates,options);
+  this.viewer.goToRes(coordinates, options);
 };
 
-proto.zoomToFeatures = function(features, options) {
+proto.zoomToFeatures = function(features, options={maxZoom:8, highlight: false}) {
   let extent;
+  let geometryType;
+  const geometryCoordinates = [];
+  const {highlight} = options;
   for (let i=0; i < features.length; i++) {
     const feature = features[i];
     const geometry = feature.getGeometry ? feature.getGeometry() : feature.geometry;
-    if (geometry)
-      extent = !extent ? geometry.getExtent() : ol.extent.extend(extent, geometry.getExtent())
+    if (geometry) {
+      extent = !extent ? geometry.getExtent() : ol.extent.extend(extent, geometry.getExtent());
+      if (highlight) {
+        geometryType = geometryType || geometry.getType();
+        const coordinates = geometry.getCoordinates();
+        geometryCoordinates.push(geometryType.includes('Multi') && coordinates.length ? coordinates[0]: coordinates);
+      }
+    }
+  }
+  if (highlight) {
+    try {
+      const olClassGeomType = geometryType.includes('Multi') ? geometryType : `Multi${geometryType}`;
+      options.highLightGeometry = new ol.geom[olClassGeomType]();
+      options.highLightGeometry.setCoordinates(geometryCoordinates);
+    } catch(e) {
+      console.log(e)
+    }
   }
   extent && this.zoomToExtent(extent, options);
 };
@@ -1683,6 +1721,9 @@ proto.zoomToExtent = function(extent, options={}) {
   map.getView().fit(extent, {
     size: map.getSize(),
     maxZoom
+  });
+  options.highLightGeometry && this.highlightGeometry(options.highLightGeometry, {
+    zoom: false
   });
 };
 
@@ -1738,7 +1779,7 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
   if (zoom) {
     const goToResolution = getResolutionFromScale(2000, this.getMapUnits());
     if (geometryType === 'Point' || (geometryType === 'MultiPoint' && geometry.getPoints().length === 1)) {
-      const coordinates = geometryType == 'Point' ? geometry.getCoordinates() : geometry.getPoint(0).getCoordinates();
+      const coordinates = geometryType === 'Point' ? geometry.getCoordinates() : geometry.getPoint(0).getCoordinates();
       this.goToRes(coordinates, goToResolution);
     } else {
       options.minResolution = goToResolution;
@@ -1771,19 +1812,21 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
       };
       hide(callback);
     } else if (duration) {
-      animatingHighlight = true;
-      setTimeout(() => {
-        highlightLayer.getSource().clear();
-        if (customStyle)
-          highlightLayer.setStyle(defaultStyle);
-        animatingHighlight = false;
-      }, duration)
+      if (duration !== Infinity) {
+        animatingHighlight = true;
+        setTimeout(() => {
+          highlightLayer.getSource().clear();
+          if (customStyle)
+            highlightLayer.setStyle(defaultStyle);
+          animatingHighlight = false;
+        }, duration)
+      }
     }
   }
 };
 
 proto.clearHighlightGeometry = function() {
-  if (highlightLayer && ! animatingHighlight) {
+  if (highlightLayer && !animatingHighlight) {
     highlightLayer.getSource().clear();
   }
 };

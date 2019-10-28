@@ -29,7 +29,7 @@ ol.inherits(PickFeatureInteraction, ol.interaction.Pointer);
 
 PickFeatureInteraction.handleDownEvent_ = function(event) {
   this.pickedFeature_ = this.featuresAtPixel_(event.pixel, event.map);
-  return true;
+  return this.pickedFeature_;
 };
 
 PickFeatureInteraction.handleUpEvent_ = function(event) {

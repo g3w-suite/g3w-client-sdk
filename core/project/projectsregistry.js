@@ -195,8 +195,24 @@ proto._setProjectRelations = function(projectConfig) {
 
 proto.getProjectConfigByGid = function(gid) {
   return this._pendingProjects.find((projectConfig) => {
-    return projectConfig.gid == gid;
+    return projectConfig.gid === gid;
   })
+};
+
+proto.getProjectUrl = function(gid) {
+  const projectConfig = this.getProjectConfigByGid(gid);
+  const projecId = projectConfig.gid.split(':')[1];
+  const type = projectConfig.type;
+  const currentUrl = window.location.href;
+  const paths = currentUrl.split('/');
+  if (!paths[ paths.length-1 ]) {
+    paths[ paths.length-2 ] = projecId;
+    paths[ paths.length-3 ] = type;
+  } else {
+    paths[ paths.length-1 ] = projecId;
+    paths[ paths.length-2 ] = type;
+  }
+  return paths.join('/');
 };
 
 // method to call server to get project configuration

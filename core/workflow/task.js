@@ -2,9 +2,11 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils//utils').base;
 const G3WObject = require('core/g3wobject');
 
-function Task(options) {
+function Task(options={}) {
   base(this, options);
-  this.state = {};
+  this.state = {
+    usermessagesteps: {}
+  };
 }
 
 inherit(Task, G3WObject);
@@ -29,6 +31,19 @@ proto.run = function() {
 
 proto.setRoot = function(task) {
   this.state.root = task;
+};
+
+proto.getUserMessageSteps = function() {
+  return this.state.usermessagesteps;
+};
+
+proto.setUserMessageSteps = function(steps={}) {
+  this.state.usermessagesteps = steps;
+};
+
+proto.setUserMessageStepDone = function(type) {
+  if (type)
+    this.state.usermessagesteps[type].done = true;
 };
 
 module.exports = Task;

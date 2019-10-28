@@ -166,14 +166,12 @@ proto.addComponent = function(component) {
 };
 
 proto.replaceComponent = function({index, component}={}) {
-  this.state.components[index] = component;
+  this.state.components.splice(index, 1, component);
 };
 
 proto.disableComponent = function({index, disabled}) {
-  if (disabled)
-    this.state.disabledcomponents.push(index);
-  else
-    this.state.disabledcomponents = this.state.disabledcomponents.filter(disabledIndex => disabledIndex !== index);
+  if (disabled) this.state.disabledcomponents.push(index);
+  else this.state.disabledcomponents = this.state.disabledcomponents.filter(disabledIndex => disabledIndex !== index);
 };
 
 proto.setComponentByIndex = function(index) {

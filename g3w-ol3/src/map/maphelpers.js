@@ -6,8 +6,7 @@ const MapHelpers = {
   }
 };
 
-const _Viewer = function(opts) {
-
+const _Viewer = function(opts={}) {
   const controls = ol.control.defaults({
     attribution: false,
     zoom: false
@@ -146,7 +145,6 @@ _Viewer.prototype.fit = function(geometry, options={}){
   }
   options.constrainResolution = options.constrainResolution === undefined && true ||  options.constrainResolution;
   options.size = this.map.getSize();
-
   view.fit(geometry, options);
 };
 

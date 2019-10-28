@@ -18,7 +18,7 @@ const InternalComponent = Vue.extend({
 
 function ToolsComponent(options={}) {
   base(this, options);
-  this._service = new ToolsService();
+  this._service = new ToolsService(options);
   this.title = "tools";
   this.state.visible = this._service.state.toolsGroups.length > 0;
 
@@ -40,9 +40,8 @@ function ToolsComponent(options={}) {
   this.internalComponent.state = this._service.state;
 
   this._setOpen = function(bool) {
-    if (bool) {
-      GUI.closeContent();
-    }
+    this.internalComponent.state.open = bool;
+    bool && GUI.closeContent();
   }
 }
 

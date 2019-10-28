@@ -3,9 +3,11 @@ const base = require('core/utils/utils').base;
 const ProjectRegistry = require('core/project/projectsregistry');
 const G3WObject = require('core/g3wobject');
 
-function Service() {
+function ToolsService(options={}){
   this.config = null;
+  this._actions = {};
   this.state = {
+    ...options,
     toolsGroups: [],
     loading: false
   };
@@ -28,7 +30,7 @@ function Service() {
     this.removeTools();
   };
 
-  this._addTool = function(tool, {position: order, title: name}) {
+  this._addTool = function(tool, {position : order, title: name}) {
     let group = this._addToolGroup(order, name);
     group.tools.push(tool);
   };
@@ -60,8 +62,8 @@ function Service() {
   };
 
   this._addToolGroup = function(order, name) {
-    let group = this.state.toolsGroups.find((group) => {
-      return group.name === name;
+    let group = this.state.toolsGroups.find((_group) => {
+      return _group.name === name
     });
     if (!group) {
       group = {

@@ -44,8 +44,8 @@ ol.inherits(QueryByPolygonControl, InteractionControl);
 const proto = QueryByPolygonControl.prototype;
 
 proto.setMap = function(map) {
-  InteractionControl.prototype.setMap.call(this,map);
-  this._interaction.on('picked',(e) => {
+  InteractionControl.prototype.setMap.call(this, map);
+  this._interaction.on('picked', (e) => {
     this.dispatchEvent({
       type: 'picked',
       coordinates: e.coordinate
