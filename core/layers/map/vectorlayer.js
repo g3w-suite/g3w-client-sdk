@@ -1,11 +1,12 @@
 const inherit = require('core/utils/utils').inherit;
 const createOlLayer = require('core/utils/geo').createOlLayer;
 const createLayerStyle = require('core/utils/geo').createLayerStyle;
+const GUI = require('gui/gui');
+
 const G3WObject = require('core/g3wobject');
 
 function VectorLayer(options = {}) {
-  const ApplicationService = require('core/applicationservice');
-  this.mapService = ApplicationService.getService('map');
+  this.mapService = GUI.getComponent('map').getService();
   this.geometrytype = options.geometrytype || null;
   this.type = options.type || null;
   this.crs = options.crs  || null;
@@ -22,7 +23,7 @@ function VectorLayer(options = {}) {
   this._olLayer = null;
 }
 
-inherit(VectorLayer, G3WObject);
+inherit(VectorLayer,G3WObject);
 
 module.exports = VectorLayer;
 

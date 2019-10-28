@@ -84,17 +84,17 @@ function ToolsService(options={}){
     const _tools = tools[toolName].map((tool) => {
       return {
         name: tool.name,
-        action: Service.ACTIONS[toolName].bind(null, tool)
+        action: ToolsService.ACTIONS[toolName].bind(null, tool)
       }
     });
     this.addTools(_tools, {position: 0, title: groupName})
   }
 }
 
-inherit(Service, G3WObject);
+inherit(ToolsService, G3WObject);
 
-Service.ACTIONS = {
+ToolsService.ACTIONS = {
   wps: require('./actions/wps')
 };
 
-module.exports = Service;
+module.exports = ToolsService;
