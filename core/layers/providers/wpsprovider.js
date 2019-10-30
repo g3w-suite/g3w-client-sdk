@@ -42,7 +42,6 @@ proto._buildFromFromDescribeProcessResponse = function({Abstract, DataInputs, Pr
   });
 
   outputs = outputs.map((output)=> {
-    console.log(output)
     return {
       id: output.Identifier.__text,
       label: output.Title.__text,
@@ -72,9 +71,10 @@ proto.getCapabilities = async function() {
   const params = this._getRequestParameters('GetCapabilities', {});
   const url = `${this._url}?${convertObjectToUrlParams(params)}`;
   try {
-    //const response = await XHR.get({url});
+    const response = await XHR.get({url});
   } catch(err) {
-    return
+    console.log(err)
+    //return
   }
   const response = FAKERESPONSE['GetCapabilities'];
   const getCapabilitiesResponseJSON = this._XMLToJSON(response);
@@ -96,7 +96,6 @@ proto.describeProcess = async function({id, format='form'}) {
   const url = `${this._url}?${convertObjectToUrlParams(params)}`;
   const response = FAKERESPONSE['DescribeProcess'][id];
   const describeProcessJSON = this._XMLToJSON(response);
-  console.log(describeProcessJSON)
   const describeProcessResponse = describeProcessJSON.ProcessDescriptions && describeProcessJSON.ProcessDescriptions.ProcessDescription || {};
   const describeProcessForm = this._buildFromFromDescribeProcessResponse(describeProcessResponse);
   return describeProcessForm;
