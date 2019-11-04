@@ -9,7 +9,7 @@ function PluginsRegistry() {
   this._loadedPluginUrls = [];
   this.setters = {
     //setters to register plugin
-    registerPlugin: function(plugin) {
+    registerPlugin(plugin) {
       if (!this._plugins[plugin.name]) {
         this._plugins[plugin.name] = plugin;
       }

@@ -958,7 +958,6 @@ proto.setupControls = function() {
           $('#search_nominatim').click(debounce(() => {
             control.nominatim.query($('input.gcd-txt-input').val());
           }));
-          $('.gcd-txt-result').perfectScrollbar();
           break;
         case 'geolocation':
           control = this.createMapControl(controlType);
