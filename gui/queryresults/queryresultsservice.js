@@ -75,7 +75,7 @@ proto.setZoomToResults = function(bool=true) {
   this.state.zoomToResult = bool;
 };
 
-proto.zoomToLayerFeaturesExtent = function(layer, options) {
+proto.zoomToLayerFeaturesExtent = function(layer, options={}) {
   const mapService = ComponentsRegistry.getComponent('map').getService();
   const features = layer.features;
   mapService.zoomToFeatures(features, options);

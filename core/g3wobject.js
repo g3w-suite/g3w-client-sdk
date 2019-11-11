@@ -7,6 +7,7 @@ const throttle = require('core/utils/utils').throttle;
  * Base object to handle a setter and its listeners.
  * @constructor
  */
+
 const G3WObject = function() {
   //check if setters property is set. Register the chain of events
   if (this.setters) {
@@ -36,23 +37,29 @@ proto.onafter = function(setter, listener, priority){
   return this._onsetter('after', setter, listener, false, priority);
 };
 
-// un listener può registrarsi in modo da essere eseguito PRIMA dell'esecuzione del metodo setter. Può ritornare true/false per
-// votare a favore o meno dell'esecuzione del setter. Se non ritorna nulla o undefined, non viene considerato votante
+proto.onceafter = function(setter, listener, priority){
+  return this._onsetter('after', setter, listener, false, priority, true);
+};
+
 /**
- * Inserisce un listener prima che venga eseguito il setter. Se ritorna false il setter non viene eseguito
- * @param {string} setter - Il nome del metodo su cui si cuole registrare una funzione listener
- * @param {function} listener - Una funzione listener, a cui viene passato una funzione "next" come ultimo parametro, da usare nel caso di listener asincroni
- * @param {number} priority - Priorità di esecuzione: valore minore viene eseuito prima
+ * Listern before cal sesster
+ * @param {string} setter - Method name setter
+ * @param {function} listener - function to call
+ * @param {number} priority - Priority
  */
 proto.onbefore = function(setter, listener, priority) {
   return this._onsetter('before', setter, listener, false, priority);
 };
 
+// once before
+proto.oncebefore = function(setter, listener, priority){
+  return this._onsetter('before', setter, listener, false, priority, true);
+};
+
 /**
- * Inserisce un listener prima che venga eseguito il setter. Al listener viene passato una funzione "next" come ultimo parametro, da chiamare con parametro true/false per far proseguire o meno il setter
- * @param {string} setter - Il nome del metodo su cui si cuole registrare una funzione listener
- * @param {function} listener - Una funzione listener, a cui
- * @param {number} priority - Priorità di esecuzione: valore minore viene eseuito prima
+ * @param {string} setter - Method name setter
+ * @param {function} listener - function to call
+ * @param {number} priority - Priority
  */
 proto.onbeforeasync = function(setter, listener, priority) {
   return this._onsetter('before', setter, listener, true, priority);
@@ -68,13 +75,12 @@ proto.un = function(setter, key) {
   });
 };
 
-// funzione che si occupa di settare le funzioni legate al setter in base alla tipologia
-// di evento se prima o dopo
+// base function to handle onafter or before listeners
 /*
   when=before|after,
   type=sync|async
 */
-proto._onsetter = function(when, setter, listener, async, priority=0) {
+proto._onsetter = function(when, setter, listener, async, priority=0, once=false) {
   const settersListeners = this.settersListeners[when];
   const listenerKey = `${Math.floor(Math.random()*1000000) + Date.now()}`;
   const settersListeneres = settersListeners[setter];
@@ -82,7 +88,8 @@ proto._onsetter = function(when, setter, listener, async, priority=0) {
     key: listenerKey,
     fnc: listener,
     async,
-    priority
+    priority,
+    once
   });
   // reader array based on priority
   settersListeners[setter] = _.sortBy(settersListeneres, function(setterListener) {
@@ -102,10 +109,9 @@ proto._setupListenersChain = function(setters) {
     const setterOption = setters[setter];
     let setterFnc = noop;
     let setterFallback = noop;
-    // verifico che il valore della chiave setter sia una funzione
-    if (_.isFunction(setterOption)){
+    if (_.isFunction(setterOption))
       setterFnc = setterOption
-    } else {
+    else {
       setterFnc = setterOption.fnc;
       setterFallback = setterOption.fallback || noop; // method called in case of error
     }
@@ -121,12 +127,17 @@ proto._setupListenersChain = function(setters) {
       const callSetter = () => {
         // run setter function
         returnVal = setterFnc.apply(this, args);
-        // e risolvo la promessa (eventualmente utilizzata da chi ha invocato il setter)
+        // resolve promise
         deferred.resolve(returnVal);
         //call all subscribed methods afet setter
+        const onceListeners = [];
         const afterListeners = this.settersListeners.after[setter];
-        afterListeners.forEach((listener) => {
+        afterListeners.forEach((listener, index) => {
+          listener.once && onceListeners.push(index);
           listener.fnc.apply(this, args);
+        });
+        onceListeners.forEach((index) => {
+          this.settersListeners.after[setter].splice(index, 1);
         })
       };
       //  abort function
@@ -157,21 +168,23 @@ proto._setupListenersChain = function(setters) {
             this.emitEvent(`set:${setter}`,args);
           }
         } else if (cont) {
-          const listenerFnc = beforeListeners[counter].fnc;
+          const listenerObj = beforeListeners[counter];
+          const currentCounter = counter;
           // if is async functtion
           if (beforeListeners[counter].async) {
             //add function next to argument of listnerFunction
             args.push(next);
             // update counter
             counter += 1;
-            listenerFnc.apply(this, args)
+            listenerObj.fnc.apply(this, args)
           } else {
             // return or undefine or a boolen to tell if ok(true) can conitnue or not (false)
-            const bool = listenerFnc.apply(this, args);
+            const bool = listenerObj.fnc.apply(this, args);
             //update counter
             counter += 1;
             next(bool);
           }
+          listenerObj.once && beforeListeners.splice(currentCounter, 1);
         }
       };
       // run next to start to run all the subscribers and setrer its self

@@ -45,7 +45,9 @@ const vueComponentOptions = {
         const feature = layer.features[0];
         const boxid = this.getBoxId(layer, feature);
         this.layersFeaturesBoxes[boxid].collapsed = false;
-        this.showFeatureInfo(layer, boxid);
+        this.$options.queryResultsService.onceafter('postRender', () => {
+          this.showFeatureInfo(layer, boxid);
+        });
       }
       return one;
     },
@@ -178,13 +180,11 @@ const vueComponentOptions = {
       return collapsed;
     },
     showFeatureInfo(layer, boxid) {
-      this.$nextTick(() => {
-        this.$options.queryResultsService.emit('show-query-feature-info', {
-          layer,
-          tabs: this.hasFormStructure(layer),
-          show: !this.layersFeaturesBoxes[boxid].collapsed
-        });
-      })
+      this.$options.queryResultsService.emit('show-query-feature-info', {
+        layer,
+        tabs: this.hasFormStructure(layer),
+        show: !this.layersFeaturesBoxes[boxid].collapsed
+      });
     },
     getBoxId(layer, feature, relation_index) {
       let boxid;
@@ -198,8 +198,9 @@ const vueComponentOptions = {
     toggleFeatureBox: function(layer, feature, relation_index) {
       const boxid = this.getBoxId(layer, feature, relation_index);
       this.layersFeaturesBoxes[boxid].collapsed = !this.layersFeaturesBoxes[boxid].collapsed;
-      this.showFeatureInfo(layer, boxid);
-
+      requestAnimationFrame(() => {
+        this.showFeatureInfo(layer, boxid);
+      })
     },
     toggleFeatureBoxAndZoom: function(layer, feature, relation_index) {
       this.toggleFeatureBox(layer, feature, relation_index);
@@ -242,10 +243,10 @@ const vueComponentOptions = {
             maxZoom: 8
           });
         this.hasResults = true;
-        this.$nextTick(() => {
-          this.$options.queryResultsService.postRender(this.$el);
-        })
       }
+      requestAnimationFrame(() => {
+        this.$options.queryResultsService.postRender(this.$el);
+      })
     }
   },
   beforeMount() {
