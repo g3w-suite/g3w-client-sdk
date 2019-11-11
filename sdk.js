@@ -4,6 +4,7 @@ import config from './config';
 g3w.core = {
   G3WObject: require('core/g3wobject'),
   utils: require('core/utils/utils'),
+  geoutils: require('core/utils/geo'),
   ApplicationService: require('core/applicationservice'),
   ApiService: require('core/apiservice'),
   Router: require('core/router'),
@@ -122,13 +123,11 @@ g3w.ol = {
     PickCoordinatesInteraction: require('g3w-ol3/src/interactions/pickcoordinatesinteraction'),
     DeleteFeatureInteraction: require('g3w-ol3/src/interactions/deletefeatureinteraction')
   },
-  controls: {
-  }
+  controls: {},
+  utils: require('g3w-ol3/src/utils/utils')
 };
 
-g3w.utils = {
-
-};
+g3w.utils = {};
 
 g3w.config = config;
 
