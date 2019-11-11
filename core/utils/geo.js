@@ -128,6 +128,7 @@ module.exports = {
     };
     reader.readAsArrayBuffer(url);
   },
+
   createLayerStyle: function(styleObj) {
     let style;
     const styles = {};
@@ -159,6 +160,7 @@ module.exports = {
     }
     return style
   },
+
   createOlLayer: function(options = {}) {
     const id = options.id;
     const geometryType = options.geometryType;
