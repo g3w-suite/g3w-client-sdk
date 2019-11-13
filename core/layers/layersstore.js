@@ -35,7 +35,7 @@ function LayersStore(config={}) {
     setLayerSelected: function(layerId, selected) {
       const layers = this.getLayers();
       layers.forEach((layer) => {
-        layer.state.selected = ((layerId == layer.getId()) && selected) || false;
+        layer.state.selected = ((layerId === layer.getId()) && selected) || false;
       })
     },
     addLayers: function(layers) {
@@ -358,13 +358,9 @@ proto.toggleLayer = function(layerId, visible, mutually_exclusive) {
   const layer = this.getLayerById(layerId);
   const checked = layer.isChecked();
   visible = visible !== null ? checked : !checked;
-  if (mutually_exclusive) {
-    this._mutuallyExclude(layerId)
-  }
-  if (layer.isDisabled())
-    layer.setVisible(false);
-  else
-    this.setLayersVisible([layerId], visible);
+  mutually_exclusive &&  this._mutuallyExclude(layerId);
+  if (layer.isDisabled()) layer.setVisible(false);
+  else this.setLayersVisible([layerId], visible);
   layer.setChecked(!checked);
   return layer;
 };

@@ -76,7 +76,7 @@ proto.layout = function(map) {
 
   function deleteLastCustomScale() {
     select2.find('option').each((index, option) => {
-      if (self.scales.indexOf(1*option.value) == -1) {
+      if (self.scales.indexOf(1*option.value) === -1) {
         $(option).remove()
       }
     });
@@ -109,9 +109,15 @@ proto.layout = function(map) {
       selectedOnClick = false;
     }
   });
-
-  map.getView().on('change:resolution', () => {
-    isMapResolutionChanged = !selectedOnClick;
+  const setChangeResolutionHandler = () =>{
+    map.getView().on('change:resolution', () => {
+      isMapResolutionChanged = !selectedOnClick;
+    });
+  };
+  setChangeResolutionHandler();
+  
+  map.on('change:view', () => {
+    setChangeResolutionHandler();
   });
 
   select2.on('select2:select', function (e) {
@@ -148,7 +154,7 @@ proto._createControl = function() {
     const option = document.createElement('option');
     option.value = scale;
     option.text = `1:${scale}`;
-    option.selected = index == 0  ? true : false;
+    option.selected = index === 0  ? true : false;
     optgroup.appendChild(option);
   });
   select.appendChild(optgroup);

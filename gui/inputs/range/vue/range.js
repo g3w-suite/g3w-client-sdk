@@ -5,14 +5,14 @@ var Service = require('../service');
 var RangeInput = Vue.extend({
   mixins: [Input],
   template: require('./range.html'),
-  data: function() {
+  data(){
     const options = this.state.input.options.values[0];
     const min = 1*options.min;
     const max = 1*options.max;
     const step = 1*options.Step;
     return {
-      max: max,
-      min: min,
+      max,
+      min,
       step: step,
       service: new Service({
         state: this.state
@@ -26,7 +26,9 @@ var RangeInput = Vue.extend({
       this.change();
     }
   },
-  created() {}
+  created() {
+    this.state.info = `(min: ${this.min} - max: ${this.max})`
+  }
 });
 
 module.exports = RangeInput;

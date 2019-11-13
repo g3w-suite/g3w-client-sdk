@@ -138,7 +138,7 @@ proto.checkLayersDisabled = function(resolution, mapUnits) {
 
 //update Layers
 proto._updateLayers = function(mapState={}, extraParams={}) {
-  //checsk disabled layers
+  //check disabled layers
   const {mapUnits} = mapState;
   this.checkLayersDisabled(mapState.resolution, mapUnits);
   const visibleLayers = this._getVisibleLayers(mapState) || [];
@@ -149,14 +149,10 @@ proto._updateLayers = function(mapState={}, extraParams={}) {
         return layer.getWMSLayerName();
       }).join(',')}`
     };
-    if (extraParams) {
-      params = _.assign(params, extraParams);
-    }
+    if (extraParams) params = _.assign(params, extraParams);
     this._olLayer.setVisible(true);
     this._olLayer.getSource().updateParams(params);
-  } else
-    this._olLayer.setVisible(false);
-
+  } else this._olLayer.setVisible(false);
 };
 
 module.exports = WMSLayer;

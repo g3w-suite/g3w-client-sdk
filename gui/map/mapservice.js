@@ -100,18 +100,22 @@ function MapService(options={}) {
     this._decrementLoaders();
   };
 
-  if(!_.isNil(options.project)) {
-    this.project = options.project;
-  } else {
+  if (options.project) this.project = options.project;
+  else {
     this.project = ProjectsRegistry.getCurrentProject();
     //on after setting current project
-    ProjectsRegistry.onafter('setCurrentProject',(project) => {
+    ProjectsRegistry.onafter('setCurrentProject', (project) => {
       this.removeLayers();
       this._removeListeners();
       this.project = project;
-      this._resetView();
-      //call a function to setup alla layers of maps
-      this._setupLayers()
+      this.getMap().once('change:size', () => {
+        this._resetView();
+        this._setupMapLayers();
+        this._setupVectorLayers();
+        this.viewer.map.getView().on("change:resolution", (evt) => {
+          this._updateMapView();
+        });
+      });
     })
   }
   this._setupListeners();
@@ -150,8 +154,12 @@ function MapService(options={}) {
       this.state.bbox = this.viewer.getBBOX();
       this.state.resolution = this.viewer.getResolution();
       this.state.center = this.viewer.getCenter();
-      this._setupLayers();
+      this._setupAllLayers();
       this.setupControls();
+      // set change resolution
+      this.viewer.map.getView().on("change:resolution", (evt) => {
+        this._updateMapView();
+      });
       this.emit('viewerset');
     },
     controlClick: function(active) {
@@ -1118,15 +1126,14 @@ proto._updateMapControlsLayout = function({width, height}={}) {
       let mapControslHeight = this.state.mapControl.grid[this.state.mapControl.currentIndex].columns * this.state.mapcontrolSizes.minWidth;
       // get bottom controls
       const bottomMapControls =  $(`.ol-control-b${this.getMapControlsAlignement()[0]}`);
-      const bottomMapControlTop = bottomMapControls.length ? $(bottomMapControls[bottomMapControls.length - 1]).position().top: mapControslHeight;
+      const bottomMapControlTop = bottomMapControls.length ? $(bottomMapControls[bottomMapControls.length - 1]).position().top: height;
       const freeSpace = bottomMapControlTop > 0 ? bottomMapControlTop - mapControslHeight : height - mapControslHeight;
       if (freeSpace < 10) {
         if (isMobile.any) {
           this.setMapControlsAlignement('rh');
           return;
-        } else {
+        } else
           this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === this.state.mapControl.grid.length - 1 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex +1;
-        }
         changed = true;
       } else {
         // check if there enought space to expand mapcontrols
@@ -1173,14 +1180,11 @@ proto.addControl = function(type, control, addToMapControls=true, visible=true) 
   control.on('controlclick', (active) => {
     this.controlClick(active);
   });
-
   $(control.element).find('button').tooltip({
     placement: 'bottom',
     trigger : 'hover'
   });
-
-  if (addToMapControls)
-    this._addControlToMapControls(control, visible);
+  if (addToMapControls) this._addControlToMapControls(control, visible);
   else {
     const $mapElement = $(`#${this.getMap().getTarget()}`);
     this._updateMapControlsLayout({
@@ -1319,7 +1323,7 @@ proto._resetView = function() {
   const minyRes = ol.extent.getHeight(extent) / height;
   const maxResolution = Math.max(maxxRes,minyRes) > this.viewer.map.getView().getMaxResolution() ? Math.max(maxxRes,minyRes): this.viewer.map.getView().getMaxResolution();
   const view = new ol.View({
-    extent: extent,
+    extent,
     projection: this.viewer.map.getView().getProjection(),
     center: this.viewer.map.getView().getCenter(),
     resolution: this.viewer.map.getView().getResolution(),
@@ -1389,8 +1393,6 @@ proto._setupViewer = function(width, height) {
   });
 
   this.viewer.map.addOverlay(this._marker);
-
-
   this.emit('ready');
 };
 
@@ -1399,7 +1401,6 @@ proto.getMapUnits = function() {
 };
 
 proto._removeListeners = function() {
-
   if (this._setBaseLayerListenerKey) {
     this.project.un('setBaseLayer',this._setBaseLayerListenerKey);
   }
@@ -1429,8 +1430,7 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
      layersIds.forEach((layerId) => {
         const layer = layerStore.getLayerById(layerId);
         const mapLayer = this.getMapLayerForLayer(layer);
-        if (mapLayer)
-          this.updateMapLayer(mapLayer)
+        mapLayer && this.updateMapLayer(mapLayer)
       });
     });
     this._layersStoresEventKeys[layerStoreId].push({
@@ -1468,29 +1468,13 @@ proto._setupListeners = function() {
 };
 
 // SETUP ALL LAYERS
-proto._setupLayers = function() {
+proto._setupAllLayers = function() {
   this._setupBaseLayers();
-  const mapLayers = this._setupMapLayers();
-  this.addMapLayers(mapLayers);
-  this.updateMapLayers();
+  this._setupMapLayers();
   this._setupVectorLayers();
-  // on change resolution call update of each mapLayers
-  this.viewer.map.getView().on("change:resolution", (evt) => {
-    this._updateMapView();
-  });
 };
 
-proto.removeLayers = function() {
-  this.viewer.removeLayers();
-};
-
-proto.addLayerToMap = function(layer) {
-  const olLayer = layer.getOLLayer();
-  if (olLayer)
-    this.getMap().addLayer(olLayer);
-};
-
-//SETUPA BASELAYERS
+//SETUP BASELAYERS
 proto._setupBaseLayers = function(){
   const baseLayers = getMapLayersByFilter({
     BASELAYER: true
@@ -1509,36 +1493,6 @@ proto._setupBaseLayers = function(){
     baseMapLayer.update(this.state, this.layersExtraParams);
     this.addLayerToMap(baseMapLayer)
   });
-};
-
-proto._setMapProjectionToLayers = function(layers) {
-  // setup mapProjection on ech layers
-  layers.forEach((layer) => {
-    layer.setMapProjection(this.getProjection())
-  });
-};
-
-//SETUP VECTORLAYERS
-proto._setupVectorLayers = function() {
-  const layers = getMapLayersByFilter({
-    VECTORLAYER: true
-  });
-  this._setMapProjectionToLayers(layers);
-  layers.forEach((layer) => {
-    const mapVectorLayer = layer.getMapLayer();
-    this.addLayerToMap(mapVectorLayer)
-  })
-};
-
-proto.createMapLayer = function(layer) {
-  layer.setMapProjection(this.getProjection());
-  const multilayerId = 'layer_'+layer.getMultiLayerId();
-  const mapLayer = layer.getMapLayer({
-    id: multilayerId,
-    projection: this.getProjection()
-  }, this.layersExtraParams);
-  mapLayer.addLayer(layer);
- return mapLayer;
 };
 
 //SETUP MAPLAYERS
@@ -1567,9 +1521,9 @@ proto._setupMapLayers = function() {
       mapLayers.push(mapLayer)
     } else {
       mapLayer = layer.getMapLayer({
-            id: multilayerId,
-            projection: this.getProjection()
-          }, this.layersExtraParams);
+        id: multilayerId,
+        projection: this.getProjection()
+      }, this.layersExtraParams);
       this.registerMapLayerListeners(mapLayer);
       layers.reverse().forEach((sub_layer) => {
         mapLayer.addLayer(sub_layer);
@@ -1577,7 +1531,54 @@ proto._setupMapLayers = function() {
       mapLayers.push(mapLayer)
     }
   });
+  this.addMapLayers(mapLayers);
+  this.updateMapLayers();
   return mapLayers;
+};
+
+//SETUP VECTORLAYERS
+proto._setupVectorLayers = function() {
+  const layers = getMapLayersByFilter({
+    VECTORLAYER: true
+  });
+  this._setMapProjectionToLayers(layers);
+  layers.forEach((layer) => {
+    const mapVectorLayer = layer.getMapLayer();
+    this.addLayerToMap(mapVectorLayer)
+  })
+};
+
+proto.removeLayers = function() {
+  this._removeMapLayers();
+  //this.viewer.removeLayers();
+};
+
+proto.removeAllLayers = function(){
+  this.viewer.removeLayers();
+};
+
+proto.addLayerToMap = function(layer) {
+  const olLayer = layer.getOLLayer();
+  if (olLayer)
+    this.getMap().addLayer(olLayer);
+};
+
+proto._setMapProjectionToLayers = function(layers) {
+  // setup mapProjection on ech layers
+  layers.forEach((layer) => {
+    layer.setMapProjection(this.getProjection())
+  });
+};
+
+proto.createMapLayer = function(layer) {
+  layer.setMapProjection(this.getProjection());
+  const multilayerId = 'layer_'+layer.getMultiLayerId();
+  const mapLayer = layer.getMapLayer({
+    id: multilayerId,
+    projection: this.getProjection()
+  }, this.layersExtraParams);
+  mapLayer.addLayer(layer);
+ return mapLayer;
 };
 
 proto.getOverviewMapLayers = function(project) {
@@ -1610,10 +1611,7 @@ proto.getOverviewMapLayers = function(project) {
 };
 
 proto.updateMapLayer = function(mapLayer, options={force: false}) {
-  if (!options.force)
-    mapLayer.update(this.state, this.getResolution());
-  else
-    mapLayer.update(this.state, {"time": Date.now()})
+  !options.force ? mapLayer.update(this.state, this.getResolution()) : mapLayer.update(this.state, {"time": Date.now()})
 };
 
 // run update function on ech mapLayer
@@ -1637,9 +1635,9 @@ proto.registerMapLayerListeners = function(mapLayer) {
 
 // unregister listeners of mapLayers creation
 proto.unregisterMapLayerListeners = function(mapLayer) {
-  mapLayer.un('loadstart', this._incrementLoaders );
-  mapLayer.un('loadend', this._decrementLoaders );
-  mapLayer.on('loaderror', this._mapLayerLoadError);
+  mapLayer.off('loadstart', this._incrementLoaders );
+  mapLayer.off('loadend', this._decrementLoaders );
+  mapLayer.off('loaderror', this._mapLayerLoadError);
 };
 
 proto.setTarget = function(elId) {
@@ -1917,19 +1915,14 @@ proto.setInnerGreyCoverBBox = function(options={}) {
     this._drawShadow.inner[2] = x_max;
     this._drawShadow.inner[3] = y_max;
   }
-  if (_.isNil(scale)) {
-    this._drawShadow.scale = this._drawShadow.scale || 1;
-  } else {
-    this._drawShadow.scale = scale;
-  }
-  if (_.isNil(rotation)) {
-    this._drawShadow.rotation = this._drawShadow.rotation || 0;
-  } else {
-    this._drawShadow.rotation = rotation;
-  }
-  if (this._drawShadow.outer) {
-    map.render();
-  }
+  if (_.isNil(scale)) this._drawShadow.scale = this._drawShadow.scale || 1;
+  else this._drawShadow.scale = scale;
+
+  if (_.isNil(rotation)) this._drawShadow.rotation = this._drawShadow.rotation || 0;
+  else this._drawShadow.rotation = rotation;
+
+  this._drawShadow.outer &&  map.render();
+
 };
 
 // grey map precompose mapcompose

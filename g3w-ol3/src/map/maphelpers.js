@@ -190,7 +190,7 @@ _Viewer.prototype.getActiveLayers = function(){
   const activelayers = [];
   this.map.getLayers().forEach((layer) => {
     const props = layer.getProperties();
-    if (props.basemap != true && props.visible){
+    if (props.basemap !== true && props.visible){
        activelayers.push(layer);
     }
   });

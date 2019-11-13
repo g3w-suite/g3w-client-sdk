@@ -88,8 +88,18 @@ proto.getErrorMessage = function(input) {
     return `${t("sdk.form.inputs.input_validation_min_field")} (${input.validate.min_field})`;
   else if (!input.validate.unique && input.validate.exclude_values)
     return `${t("sdk.form.inputs.input_validation_exclude_values")}`;
-  else if (input.validate.required)
-    return `${t("sdk.form.inputs.input_validation_error")} ( ${t("sdk.form.inputs." + input.type)} )`;
+  else if (input.validate.required) {
+    let message = `${t("sdk.form.inputs.input_validation_error")} ( ${t("sdk.form.inputs." + input.type)} )`;
+    if (input.input.type === "range") {
+      message = `${message}
+                 <div>
+                  <b>${this.state.info}</b>
+                 </div>         
+      `
+    }
+    return  message;
+  }
+
 };
 
 proto.isEditable = function() {

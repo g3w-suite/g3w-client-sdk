@@ -42,10 +42,9 @@ function ProjectsRegistry() {
     qgis_version: null
   };
 
-
   // (lazy loading)
-  this._pendingProjects = [];
-  this._projects = {};
+  this._groupProjects = [];
+  this._projectConfigs = {};
 
   base(this);
 }
@@ -54,7 +53,8 @@ inherit(ProjectsRegistry, G3WObject);
 
 const proto = ProjectsRegistry.prototype;
 
-proto.init = function(config) {
+//Inizialize configuration for all project belong to group
+proto.init = function(config={}) {
   const d = $.Deferred();
   //check if already initialized
   if (!this.initialized) {
@@ -97,13 +97,13 @@ proto.setupState = function() {
   const overViewProject = (this.config.overviewproject && this.config.overviewproject.gid) ? this.config.overviewproject : null;
   this.config.projects.forEach((project) => {
     this.state.qgis_version = project.qgis_version || this.state.qgis_version;
-    project.baselayers = _.cloneDeep(this.config.baselayers);
+    project.baselayers = this.config.baselayers;
     project.minscale = this.config.minscale;
     project.maxscale = this.config.maxscale;
     project.crs = this.config.crs;
     project.proj4 = this.config.proj4;
     project.overviewprojectgid = overViewProject;
-    this._pendingProjects.push(project);
+    this._groupProjects.push(project);
   });
 };
 
@@ -111,27 +111,19 @@ proto.getProjectType = function() {
   return this.projectType;
 };
 
-proto.getPendingProjects = function() {
-  return this._pendingProjects;
-};
-
 proto.getProjects = function() {
-  return this._pendingProjects;
+  return this._groupProjects;
 };
 
 proto.clearProjects = function() {
-  this._pendingProjects = [];
+  this._groupProjects = [];
 };
 
 proto.getListableProjects = function() {
   const currentProjectId = this.getCurrentProject().getId();
   return _.sortBy(this.getProjects().filter((project) => {
-    if (!_.isNil(project.listable)) {
-      return project.listable;
-    }
-    if (project.id === currentProjectId || (project.overviewprojectgid && project.gid === project.overviewprojectgid.gid)) {
-      return false
-    }
+    if (!_.isNil(project.listable)) return project.listable;
+    if (project.id === currentProjectId || (project.overviewprojectgid && project.gid === project.overviewprojectgid.gid)) return false
     return project;
   }), 'title')
 };
@@ -142,20 +134,16 @@ proto.getCurrentProject = function() {
 
 proto.getProject = function(projectGid) {
   const d = $.Deferred();
-  let pendingProject;
-  let project = null;
-  this._pendingProjects.find((_pendingProject) => {
-    if (_pendingProject.gid === projectGid) {
-      pendingProject = _pendingProject;
-      project = this._projects[projectGid];
-      return true;
-    }
+  const pendingProject = this._groupProjects.find((project) => {
+    return project.gid === projectGid;
   });
   if (!pendingProject) {
     d.reject("Project doesn't exist");
     return d.promise();
   }
-  if (project) {
+  const projectConfig = this._projectConfigs[projectGid];
+  if (projectConfig) {
+    const project = new Project(projectConfig);
     d.resolve(project);
   } else {
     this._getProjectFullConfig(pendingProject)
@@ -164,10 +152,10 @@ proto.getProject = function(projectGid) {
         projectConfig.WMSUrl = this.config.getWmsUrl(projectConfig);
         // setupu project relations
         projectConfig.relations = this._setProjectRelations(projectConfig);
+        this._projectConfigs[projectConfig.gid] = projectConfig;
         // instance of Project
         const project = new Project(projectConfig);
         // add to project
-        this._projects[projectConfig.gid] = project;
         d.resolve(project);
       })
       .fail((error) => {
@@ -194,8 +182,8 @@ proto._setProjectRelations = function(projectConfig) {
 };
 
 proto.getProjectConfigByGid = function(gid) {
-  return this._pendingProjects.find((projectConfig) => {
-    return projectConfig.gid === gid;
+  return this._groupProjects.find((project) => {
+    return project.gid === gid;
   })
 };
 
@@ -228,6 +216,5 @@ proto._getProjectFullConfig = function(projectBaseConfig) {
     });
   return d.promise();
 };
-
 
 module.exports = new ProjectsRegistry();

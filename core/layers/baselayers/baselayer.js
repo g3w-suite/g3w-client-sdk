@@ -67,7 +67,7 @@ proto._updateLayer = function(mapState, extraParams) {
 };
 
 proto.setVisible = function(bool) {
-  this._olLayer.setVisible(bool)
+  this.getOLLayer().setVisible(bool)
 };
 
 proto.getMapLayer = function() {
