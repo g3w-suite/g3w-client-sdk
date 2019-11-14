@@ -245,9 +245,7 @@ const vueComponentOptions = {
           if (!node.groupdisabled) {
             let layer = CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayer(node.id, null, parent_mutually_exclusive);
             mapService.emit('cataloglayertoggled', layer);
-          } else {
-            CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayer(node.id, false, parent_mutually_exclusive)
-          }
+          } else CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayer(node.id, false, parent_mutually_exclusive)
         }
       }
     });
@@ -532,11 +530,8 @@ Vue.component('tristate-tree', {
           CatalogEventHub.$emit('treenodestoogled', this.storeid, this.layerstree.nodes, this.isFolderChecked, this.parent_mutually_exclusive);
         }
       } else {
-        if (QGISVERSION === 2)
-          CatalogEventHub.$emit('treenodetoogled', this.storeid, this.layerstree, this.parent_mutually_exclusive);
-        else {
-          CatalogEventHub.$emit('treenodetoogled', this.storeid, this.layerstree, this.parent_mutually_exclusive);
-        }
+        if (QGISVERSION === 2) CatalogEventHub.$emit('treenodetoogled', this.storeid, this.layerstree, this.parent_mutually_exclusive);
+        else CatalogEventHub.$emit('treenodetoogled', this.storeid, this.layerstree, this.parent_mutually_exclusive);
       }
     },
     expandCollapse: function() {

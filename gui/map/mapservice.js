@@ -1411,7 +1411,7 @@ proto._removeEventsKeysToLayersStore = function(layerStore) {
   const layerStoreId = layerStore.getId();
   if (this._layersStoresEventKeys[layerStoreId]) {
     this._layersStoresEventKeys[layerStoreId].forEach((eventObj) => {
-      _.forEach(eventObj, function(eventKey, event) {
+      _.forEach(eventObj, (eventKey, event) => {
         layerStore.un(event, eventKey);
       })
     });
@@ -1423,42 +1423,39 @@ proto._removeEventsKeysToLayersStore = function(layerStore) {
 proto._setUpEventsKeysToLayersStore = function(layerStore) {
   const layerStoreId = layerStore.getId();
   // check if already store a key of events
-  if (!this._layersStoresEventKeys[layerStoreId]) {
-    this._layersStoresEventKeys[layerStoreId] = [];
-    //SETVISIBILITY EVENT
-    const layerVisibleKey = layerStore.onafter('setLayersVisible',  (layersIds) => {
-     layersIds.forEach((layerId) => {
-        const layer = layerStore.getLayerById(layerId);
-        const mapLayer = this.getMapLayerForLayer(layer);
-        mapLayer && this.updateMapLayer(mapLayer)
-      });
+  this._layersStoresEventKeys[layerStoreId] = [];
+  //SETVISIBILITY EVENT
+  const layerVisibleKey = layerStore.onafter('setLayersVisible',  (layersIds) => {
+    layersIds.forEach((layerId) => {
+      const layer = layerStore.getLayerById(layerId);
+      const mapLayer = this.getMapLayerForLayer(layer);
+      mapLayer && this.updateMapLayer(mapLayer)
     });
-    this._layersStoresEventKeys[layerStoreId].push({
-      setLayersVisible: layerVisibleKey
-    });
-    //ADD LAYER
-    const addLayerKey = layerStore.onafter('addLayer', (layer) => {
-      if (layer.getType() === 'vector') {
-        const mapLayer = layer.getMapLayer();
-        this.addLayerToMap(mapLayer);
-      }
-    });
-    this._layersStoresEventKeys[layerStoreId].push({
-      addLayer: addLayerKey
-    });
+  });
+  this._layersStoresEventKeys[layerStoreId].push({
+    setLayersVisible: layerVisibleKey
+  });
+  //ADD LAYER
+  const addLayerKey = layerStore.onafter('addLayer', (layer) => {
+    if (layer.getType() === 'vector') {
+      const mapLayer = layer.getMapLayer();
+      this.addLayerToMap(mapLayer);
+    }
+  });
+  this._layersStoresEventKeys[layerStoreId].push({
+    addLayer: addLayerKey
+  });
+  // REMOVE LAYER
+  const removeLayerKey = layerStore.onafter('removeLayer',  (layer) => {
+    if (layer.getType() === 'vector') {
+      const olLayer = layer.getOLLayer();
+      this.viewer.map.removeLayer(olLayer);
+    }
+  });
 
-    // REMOVE LAYER
-    const removeLayerKey = layerStore.onafter('removeLayer',  (layer) => {
-      if (layer.getType() === 'vector') {
-        const olLayer = layer.getOLLayer();
-        this.viewer.map.removeLayer(olLayer);
-      }
-    });
-
-    this._layersStoresEventKeys[layerStoreId].push({
-      removeLayer: removeLayerKey
-    });
-  }
+  this._layersStoresEventKeys[layerStoreId].push({
+    removeLayer: removeLayerKey
+  });
 };
 
 proto._setupListeners = function() {
