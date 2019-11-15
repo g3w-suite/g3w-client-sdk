@@ -72,10 +72,10 @@ proto.validate = function() {
     this.state.validate.empty = true;
     this.state.value = null;
     this.state.validate.unique = true;
-    this.state.validate.valid = !this.state.validate.required;
+    // check if require or check validation
+    this.state.validate.valid = this.state.validate.required ? false : this._validator.validate(this.state.value);
   }
-  if (!this.state.validate.valid)
-    this.state.validate.message = this.getErrorMessage(this.state);
+  if (!this.state.validate.valid) this.state.validate.message = this.getErrorMessage(this.state);
   return this.state.validate.valid;
 };
 
