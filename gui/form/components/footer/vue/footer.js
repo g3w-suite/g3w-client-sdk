@@ -2,6 +2,12 @@ const FooterTemplate = require('./footer.html');
 const FooterFormComponent = Vue.extend({
   template: FooterTemplate,
   props: ['state'],
+  data() {
+    return {
+      id:"footer",
+      active: true
+    }
+  },
   methods: {
     exec: function(cbk) {
       cbk instanceof Function ? cbk(this.state.fields): (function() { return this.state.fields})();
@@ -18,12 +24,6 @@ const FooterFormComponent = Vue.extend({
         if (this.isValid() && this.active)
           $(this.$el).find('button').click();
       }
-    }
-  },
-  data() {
-    return {
-      id:"footer",
-      active: true
     }
   },
   activated(){

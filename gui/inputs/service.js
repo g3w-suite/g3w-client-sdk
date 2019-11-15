@@ -8,7 +8,7 @@ function Service(options = {}) {
   // type of input
   const type = this.state.type;
   const validatorOptions = (options.validatorOptions || this.state.input.options) || {};
-  // useful for the validator to validate imput
+  // useful for the validator to validate input
   this._validator = Validators.get(type, validatorOptions);
 }
 
@@ -90,7 +90,7 @@ proto.getErrorMessage = function(input) {
     return `${t("sdk.form.inputs.input_validation_exclude_values")}`;
   else if (input.validate.required) {
     let message = `${t("sdk.form.inputs.input_validation_error")} ( ${t("sdk.form.inputs." + input.type)} )`;
-    if (input.input.type === "range") {
+    if (this.state.info) {
       message = `${message}
                  <div>
                   <b>${this.state.info}</b>
@@ -98,8 +98,9 @@ proto.getErrorMessage = function(input) {
       `
     }
     return  message;
+  } else {
+    return this.state.info;
   }
-
 };
 
 proto.isEditable = function() {

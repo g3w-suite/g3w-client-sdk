@@ -8,6 +8,7 @@ const Validators = {
     string: require('./validator'),
     radio: require('./radio'),
     default: require('./validator'),
+    range: require('./range')
   },
 
   get(type, options={}) {
