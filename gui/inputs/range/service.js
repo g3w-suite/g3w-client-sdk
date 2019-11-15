@@ -7,8 +7,8 @@ function RangeService(options={}) {
   base(this, options);
   const {min, max} = options.state.input.options.values[0];
   const validator = new ValidatorClass({
-    min,
-    max
+    min: 1*min,
+    max: 1*max
   });
   this.setValidator(validator);
 }
