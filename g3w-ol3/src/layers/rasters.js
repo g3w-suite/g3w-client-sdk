@@ -19,6 +19,14 @@ RasterLayers.WMSLayer = function(layerObj,extraParams, method='GET'){
   return RasterLayers._WMSLayer(options);
 };
 
+RasterLayers.WMTSLayer = function(layerObj, extraParams){
+ const optionsFromCapabilities = ol.source.WMTS.optionsFromCapabilities;
+ return new ol.layer.Tile({
+    opacity: 1,
+    source: new ol.source.WMTS(options)
+  })
+};
+
 RasterLayers.ImageArgisMapServer = function(options={}){
   return  new ol.layer.Image({
     source: new ol.source.ImageArcGISRest({
