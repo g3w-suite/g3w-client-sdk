@@ -29,7 +29,7 @@ export default {
                 'contactinformation': "CONTATTI",
                 'subfields': {
                   'contactinformation': {
-                    'contactelectronicmailaddress': "E-mail",
+                    'contactelectronicmailaddress': "E-Mail",
                     'personprimary': 'Riferimenti',
                     'contactvoicetelephone': 'Telefono',
                     'contactorganization': 'Organizzazione',
