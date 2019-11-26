@@ -3,7 +3,7 @@ const base = require('core/utils/utils').base;
 const MapLayer = require('./maplayer');
 const RasterLayers = require('g3w-ol3/src/layers/rasters');
 
-function WMSLayer(options={}, extraParams={}, method='GET') {
+function WMSTLayer(options={}, extraParams={}, method='GET') {
   this.LAYERTYPE = {
     LAYER: 'layer',
     MULTILAYER: 'multilayer'
@@ -16,9 +16,9 @@ function WMSLayer(options={}, extraParams={}, method='GET') {
   base(this,options);
 }
 
-inherit(WMSLayer, MapLayer);
+inherit(WMSTLayer, MapLayer);
 
-const proto = WMSLayer.prototype;
+const proto = WMSTLayer.prototype;
 
 proto.getOLLayer = function(withLayers) {
   if (!this._olLayer)
@@ -94,31 +94,24 @@ proto._getVisibleLayers = function() {
   });
 };
 
-proto._makeOlLayer = function(withLayers) {
+proto._makeOlLayer = function() {
   const wmsConfig = {
     url: this.config.url,
     id: this.config.id,
     projection: this.config.projection
   };
-  if (withLayers) {
-    wmsConfig.layers = this.layers.map((layer) => {
-      return layer.getWMSLayerName();
-    });
-  }
-  const representativeLayer = this.layers[0];
-  if (representativeLayer) {
-    wmsConfig.url = representativeLayer.getWmsUrl();
-  }
-  const olLayer = new RasterLayers.WMSLayer(wmsConfig, this.extraParams, this._method);
 
-  olLayer.getSource().on('imageloadstart', () => {
+
+  const olLayer = new RasterLayers.WMSTLayer(wmsConfig, this.extraParams, this._method);
+
+  olLayer.getSource().on('tileloadstart', () => {
     this.emit("loadstart");
   });
-  olLayer.getSource().on('imageloadend', () => {
+  olLayer.getSource().on('tileloadend', () => {
     this.emit("loadend");
   });
 
-  olLayer.getSource().on('imageloaderror', ()=> {
+  olLayer.getSource().on('tileloaderror', ()=> {
     this.emit("loaderror");
   });
   return olLayer
@@ -155,4 +148,4 @@ proto._updateLayers = function(mapState={}, extraParams={}) {
   } else this._olLayer.setVisible(false);
 };
 
-module.exports = WMSLayer;
+module.exports = WMSTLayer;

@@ -8,7 +8,7 @@ function Service(options = {}) {
   // type of input
   const type = this.state.type;
   const validatorOptions = (options.validatorOptions || this.state.input.options) || {};
-  // useful for the validator to validate imput
+  // useful for the validator to validate input
   this._validator = Validators.get(type, validatorOptions);
 }
 
@@ -72,10 +72,10 @@ proto.validate = function() {
     this.state.validate.empty = true;
     this.state.value = null;
     this.state.validate.unique = true;
-    this.state.validate.valid = !this.state.validate.required;
+    // check if require or check validation
+    this.state.validate.valid = this.state.validate.required ? false : this._validator.validate(this.state.value);
   }
-  if (!this.state.validate.valid)
-    this.state.validate.message = this.getErrorMessage(this.state);
+  if (!this.state.validate.valid) this.state.validate.message = this.getErrorMessage(this.state);
   return this.state.validate.valid;
 };
 
@@ -88,8 +88,19 @@ proto.getErrorMessage = function(input) {
     return `${t("sdk.form.inputs.input_validation_min_field")} (${input.validate.min_field})`;
   else if (!input.validate.unique && input.validate.exclude_values)
     return `${t("sdk.form.inputs.input_validation_exclude_values")}`;
-  else if (input.validate.required)
-    return `${t("sdk.form.inputs.input_validation_error")} ( ${t("sdk.form.inputs." + input.type)} )`;
+  else if (input.validate.required) {
+    let message = `${t("sdk.form.inputs.input_validation_error")} ( ${t("sdk.form.inputs." + input.type)} )`;
+    if (this.state.info) {
+      message = `${message}
+                 <div>
+                  <b>${this.state.info}</b>
+                 </div>         
+      `
+    }
+    return  message;
+  } else {
+    return this.state.info;
+  }
 };
 
 proto.isEditable = function() {

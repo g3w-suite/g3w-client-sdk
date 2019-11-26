@@ -13,7 +13,7 @@ export default {
         },
         errors: {
           layers: {
-            load: "Alcuni servizi WMS presenti nel progetto non sono attualmente disponibili e quindi non compaiono nell'attuale visualizzazione"
+            load: "Alcuni layers presenti nel progetto non sono attualmente disponibili e quindi non compaiono nell'attuale visualizzazione"
           }
         },
         metadata: {
@@ -26,13 +26,13 @@ export default {
                 'name': 'NOME',
                 'description': "DESCRIZIONE",
                 'abstract': "ABSTRACT",
-                'keywords': 'PAROLE CHIAVE',
-                "fees": "TASSE",
-                "accessconstraints": "LIMITI DI ACCESSO",
+                'keywords': 'LISTA DELLE PAROLE CHIAVE',
+                "fees": "CANONI",
+                "accessconstraints": "VINCOLI DI ACCESSO",
                 'contactinformation': "CONTATTI",
                 'subfields': {
                   'contactinformation': {
-                    'contactelectronicmailaddress': "Email",
+                    'contactelectronicmailaddress': "E-mail",
                     'personprimary': 'Riferimenti',
                     'contactvoicetelephone': 'Telefono',
                     'contactorganization': 'Organizzazione',
@@ -172,7 +172,7 @@ export default {
         },
         errors: {
           layers: {
-            load: "Some WMS services are not available"
+            load: "Some layers are not available"
           }
         },
         metadata: {

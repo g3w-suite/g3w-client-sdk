@@ -190,6 +190,7 @@ const ApplicationService = function() {
       .then((initConfig) => {
         ProjectsRegistry.getProject(gid)
           .then((project) => {
+            GUI.closeUserMessage();
             GUI.closeContent()
               .then(() => {
                 // change current project project

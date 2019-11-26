@@ -14,11 +14,12 @@ let QGISVERSION;
 
 const vueComponentOptions = {
   template: require('./catalog.html'),
-  data: function() {
+  data() {
     return {
       state: null,
       legend: this.$options.legend,
       showlegend: false,
+      currentBaseLayer: null,
       copywmsurltooltip: t('sdk.catalog.menu.wms.copy'),
       // to show context menu right click
       layerMenu: {
@@ -52,7 +53,7 @@ const vueComponentOptions = {
     'click-outside-layer-menu': {
       bind: function (el, binding, vnode) {
         this.event = function (event) {
-          if(!(el == event.target || el.contains(event.target))) {
+          if(!(el === event.target || el.contains(event.target))) {
             vnode.context[binding.expression](event);
           }
         };
@@ -78,7 +79,7 @@ const vueComponentOptions = {
       return this.project.state.baselayers;
     },
     hasBaseLayers: function(){
-      return this.project.state.baselayers.length>0;
+      return this.project.state.baselayers.length > 0;
     },
     hasLayers: function() {
       let layerstresslength = 0;
@@ -89,16 +90,6 @@ const vueComponentOptions = {
     },
     activeTab() {
       return this.project.state.catalog_tab || 'layers';
-    },
-    hasBaseLayersVisible: function() {
-      let visible = false;
-      this.baselayers.find((baselayer) => {
-        if (baselayer.visible) {
-          visible = true;
-          return true;
-        }
-      });
-      return visible;
     }
   },
   methods: {
@@ -106,6 +97,7 @@ const vueComponentOptions = {
       this.showlegend = bool;
     },
     setBaseLayer: function(id) {
+      this.currentBaseLayer = id;
       this.project.setBaseLayer(id);
     },
     getSrcBaseLayerImage(baseLayer) {
@@ -253,9 +245,7 @@ const vueComponentOptions = {
           if (!node.groupdisabled) {
             let layer = CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayer(node.id, null, parent_mutually_exclusive);
             mapService.emit('cataloglayertoggled', layer);
-          } else {
-            CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayer(node.id, false, parent_mutually_exclusive)
-          }
+          } else CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayer(node.id, false, parent_mutually_exclusive)
         }
       }
     });
@@ -379,6 +369,9 @@ const vueComponentOptions = {
         })
       }
     });
+  },
+  beforeMount(){
+    this.currentBaseLayer = this.project.state.initbaselayer;
   }
 };
 
@@ -537,11 +530,8 @@ Vue.component('tristate-tree', {
           CatalogEventHub.$emit('treenodestoogled', this.storeid, this.layerstree.nodes, this.isFolderChecked, this.parent_mutually_exclusive);
         }
       } else {
-        if (QGISVERSION === 2)
-          CatalogEventHub.$emit('treenodetoogled', this.storeid, this.layerstree, this.parent_mutually_exclusive);
-        else {
-          CatalogEventHub.$emit('treenodetoogled', this.storeid, this.layerstree, this.parent_mutually_exclusive);
-        }
+        if (QGISVERSION === 2) CatalogEventHub.$emit('treenodetoogled', this.storeid, this.layerstree, this.parent_mutually_exclusive);
+        else CatalogEventHub.$emit('treenodetoogled', this.storeid, this.layerstree, this.parent_mutually_exclusive);
       }
     },
     expandCollapse: function() {
@@ -761,14 +751,11 @@ function CatalogComponent(options={}) {
   };
   if (this.mapComponentId) {
     const map = GUI.getComponent(this.mapComponentId);
-    if (!map) {
-      ComponentsRegistry.on('componentregistered', (component) => {
+    !map && ComponentsRegistry.on('componentregistered', (component) => {
         if (component.getId() === this.mapComponentId) {
           listenToMapVisibility(component);
         }
-      })
-    } else
-      listenToMapVisibility(map)
+      }) || listenToMapVisibility(map);
   }
 }
 

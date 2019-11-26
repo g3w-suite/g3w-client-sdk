@@ -18,7 +18,8 @@
         :placeholder="state.input.label">
     </slot>
     <slot name="message">
-      <p v-if="notvalid" class="error-input-message">{{ state.validate.message }}</p>
+      <p v-if="notvalid" class="error-input-message" v-html="state.validate.message"></p>
+      <p v-else-if="state.info" v-html="state.info"></p>
     </slot>
   </div>
 </div>

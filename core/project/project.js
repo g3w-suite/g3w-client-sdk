@@ -45,7 +45,6 @@ function Project(config={}, options={}) {
       })
     }
   };
-
   base(this);
 }
 

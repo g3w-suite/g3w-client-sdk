@@ -6,27 +6,22 @@ const C3XYLine = {
       type: Boolean,
       default: true
     },
-    components: {
-      type: Array,
-      default: []
-    },
-    config: {
-      type: Object,
-      default: {
-        data: {
-          columns: [
-            ['x'],
-            ['y']
-          ]
-        }
-      }
-    },
+
   },
   data() {
     return {
       id: `graphline${id}`,
       selectitems: [],
       data: [],
+      components: [],
+      config: {
+        data: {
+          columns: [
+            ['x'],
+            ['y']
+          ]
+        }
+      },
       size: {
         width: 0,
         height: 0
@@ -34,6 +29,17 @@ const C3XYLine = {
     }
   },
   methods: {
+    addComponent(component) {
+      this.components.push(component);
+    },
+    addComponents(components=[]){
+      components.forEach((component)=>{
+        this.addComponent(component);
+      })
+    },
+    setConfig(config={}){
+      this.config = config;
+    },
     setDataOffset(offset, render=false) {
       const data = this.getData();
       for (let i =0; i < data.length; i++) {

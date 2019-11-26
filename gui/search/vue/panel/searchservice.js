@@ -223,13 +223,10 @@ proto._checkInputDependencies = function(forminput) {
   const dependency = this.state.dependencies.find((_dependency) => {
     return _dependency.observer === dependance;
   });
-  if (!dependency) {
-    this.state.dependencies.push({
+  !dependency && this.state.dependencies.push({
       observer: dependance,
       subscribers: [forminput]
-    })
-  } else
-    dependency.subscribers.push(forminput)
+    }) || dependency.subscribers.push(forminput)
 };
 
 proto.fillInputsFormFromFilter = function({filter}) {

@@ -38,17 +38,16 @@
           <layers-group :layersgroup="layersgroup"></layers-group>
         </ul>
       </div>
-      <div id="baselayers" class="tab-pane baselayers" v-if="hasBaseLayers" role="tabpanel"  :class="{ active: activeTab === 'baselayers' || !hasLayers }">
-        <div id="baselayers-content">
-          <div class="baselayer" v-if="!baselayer.fixed" v-for="baselayer in baselayers">
-            <img :src="getSrcBaseLayerImage(baselayer)" @click.stop="setBaseLayer(baselayer.id)" class="img-responsive img-thumbnail" :style="{opacity: baselayer.visible ? 1 : 0.5}" >
-            <div class="baselayer-name">{{ baselayer.title }}</div>
-          </div>
-          <div class="baselayer" @click.stop="setBaseLayer(null)">
-            <img :src="getSrcBaseLayerImage(null)" class="img-responsive img-thumbnail" :style="{opacity: !hasBaseLayersVisible ? 1 : 0.5}">
-            <div class="baselayer-name" v-t="'nobaselayer'"></div>
-          </div>
-        </div>
+      <div class="tab-pane baselayers nano-content" v-if="hasBaseLayers" role="tabpanel"  :class="{ active: activeTab === 'baselayers' || !hasLayers }" id="baselayers">
+        <ul>
+          <li v-if="!baselayer.fixed" v-for="baselayer in baselayers" :key="baselayer.title">
+            <img :src="getSrcBaseLayerImage(baselayer)" @click.stop="setBaseLayer(baselayer.id)" class="img-responsive img-thumbnail" :style="{opacity: currentBaseLayer === baselayer.id ? 1 : 0.5}" >
+            <div class="text-center">{{ baselayer.title }}</div>
+          <li @click.stop="setBaseLayer(null)">
+            <img :src="getSrcBaseLayerImage(null)" class="img-responsive img-thumbnail" :style="{opacity: currentBaseLayer === null ? 1 : 0.5}">
+            <div class="text-center" v-t="'nobaselayer'"></div>
+          </li>
+        </ul>
       </div>
       <layerslegend @showlegend="showLegend" :legend="legend" :active="activeTab === 'legend'" v-for="_layerstree in state.layerstrees" :layerstree="_layerstree" :key="_layerstree.id"></layerslegend>
     </div>
