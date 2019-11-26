@@ -111,7 +111,6 @@ proto.reset = function() {
   this.clearState();
 };
 
-
 proto._digestFeaturesForLayers = function(featuresForLayers) {
   let id = 0;
   featuresForLayers = featuresForLayers || [];
@@ -122,16 +121,19 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     layerId;
   const _handleFeatureFoLayer = (featuresForLayer) => {
     let formStructure;
+    let extractRelations = false;
     const layer = featuresForLayer.layer;
     if (layer instanceof Layer) {
+      extractRelations = true;
       layerAttributes = layer.getAttributes();
       layerRelationsAttributes = [];
       layerTitle = layer.getTitle();
       layerId = layer.getId();
       if (layer.hasFormStructure()) {
-        const structure = layer.getEditorFormStructure();
-        const fieldsoutofstructure = layer.getFieldsOutOfFormStructure();
-        if (this._relations) {
+        const structure = layer.getEditorFormStructure({
+          all:true
+        });
+        if (this._relations && this._relations.length) {
           const getRelationFieldsFromFormStructure = (node) => {
             if (!node.nodes) {
               node.name ? node.relation = true : null;
@@ -148,7 +150,6 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
         let fields = layer.getFields();
         formStructure = {
           structure,
-          fieldsoutofstructure,
           fields
         }
       }
@@ -180,9 +181,28 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       error: ''
     };
 
+    const relationNames = [];
+    if (extractRelations)
+      for (const id in this._relations) {
+        if (layerId ===  id) {
+          this._relations[id].forEach((relation) =>{
+            if (relation.type === 'ONE') {
+              const name = relation.name.replace(/\s/g, "_");
+              relationNames.push(name)
+            }
+          })
+        }
+      }
     if (featuresForLayer.features && featuresForLayer.features.length) {
-      layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0].getProperties());
+      layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0].getProperties(), relationNames);
+
       layerObj.attributes.forEach((attribute) => {
+        if (formStructure) {
+          const relationField = formStructure.fields.find((field)=>{
+            return field.name === attribute.name;
+          });
+          !relationField && formStructure.fields.push(attribute);
+        }
         if (attribute.type === 'image') {
           layerObj.hasImageField = true;
         }
@@ -190,9 +210,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       featuresForLayer.features.forEach((feature) => {
         const fid = feature.getId() ? feature.getId() : id;
         const geometry = feature.getGeometry();
-        if (geometry) {
-          layerObj.hasgeometry = true
-        }
+        if (geometry) layerObj.hasgeometry = true;
         const featureObj = {
           id: fid,
           attributes: feature.getProperties(),
@@ -204,9 +222,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       });
       layers.push(layerObj);
     }
-    else if (featuresForLayer.error){
-      layerObj.error = featuresForLayer.error;
-    }
+    else if (featuresForLayer.error) layerObj.error = featuresForLayer.error;
   };
   featuresForLayers.forEach((featuresForLayer) => {
     if (!Array.isArray(featuresForLayer))
@@ -219,13 +235,22 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
   return layers;
 };
 
-proto._parseAttributes = function(layerAttributes, featureAttributes) {
+proto._parseAttributes = function(layerAttributes, featureAttributes, relationNames) {
   let featureAttributesNames = Object.keys(featureAttributes);
   featureAttributesNames = getAlphanumericPropertiesFromFeature(featureAttributesNames);
   if (layerAttributes && layerAttributes.length) {
-    return layerAttributes.filter((attribute) => {
+    const attributes = layerAttributes.filter((attribute) => {
       return featureAttributesNames.indexOf(attribute.name) > -1;
-    })
+    });
+    let relationAttributes = [];
+    relationNames.forEach((relationName) =>{
+      relationAttributes = featureAttributesNames.filter((attributeName) =>{
+        return attributeName.indexOf(relationName) !== -1;
+      }).map((name) => {
+        return {name, label: name}
+      })
+    });
+    return [...attributes, ...relationAttributes];
   } else {
     return featureAttributesNames.map((featureAttributesName) => {
       return {
@@ -238,30 +263,27 @@ proto._parseAttributes = function(layerAttributes, featureAttributes) {
 
 proto.setActionsForLayers = function(layers) {
   layers.forEach((layer) => {
-    if (!this.state.layersactions[layer.id]) {
-      this.state.layersactions[layer.id] = [];
-    }
-    if (layer.hasgeometry) {
+    if (!this.state.layersactions[layer.id]) this.state.layersactions[layer.id] = [];
+    //in case of geometry
+    if (layer.hasgeometry)
       this.state.layersactions[layer.id].push({
         id: 'gotogeometry',
         class: GUI.getFontClass('marker'),
         hint: t('sdk.mapcontrols.query.actions.show_map.hint'),
         cbk: QueryResultsService.goToGeometry
-      })
-    }
+      });
+    // in case of relations
     if (this._relations) {
-      Object.entries(this._relations).forEach(([id, relations]) => {
-        if (layer.id === id) {
-          this.state.layersactions[layer.id].push({
-            id: 'show-query-relations',
-            class: GUI.getFontClass('relation'),
-            hint: 'Visualizza Relazioni',
-            cbk: QueryResultsService.showQueryRelations,
-            relations: relations
-          });
-          return false;
-        }
-      })
+      const relations = this._relations[layer.id] && this._relations[layer.id].filter((relation) =>{
+        return relation.type === 'MANY';
+      });
+      relations && relations.length && this.state.layersactions[layer.id].push({
+        id: 'show-query-relations',
+        class: GUI.getFontClass('relation'),
+        hint: 'Visualizza Relazioni',
+        cbk: QueryResultsService.showQueryRelations,
+        relations
+      });
     }
   });
   this.addActionsForLayers(this.state.layersactions);

@@ -5,14 +5,19 @@ const XHR = require('core/utils/utils').XHR;
 const G3WObject = require('core/g3wobject');
 const Filter = require('core/layers/filter/filter');
 const ProviderFactory = require('core/layers/providers/providersfactory');
+const Relations = require('core/relations/relations');
 
 // Base Class of all Layer
 function Layer(config={}) {
+  // create relations
+  this._relations = null;
   const ProjectsRegistry = require('core/project/projectsregistry');
   ProjectsRegistry.onafter('setCurrentProject', (project) => {
     const qgisVersion = project.getQgisVersion({
       type: 'major'
     });
+    const projectRelations = project.getRelations();
+    this._createRelations(projectRelations);
     const projectType = project.getType();
     const projectId = project.getId();
     const suffixUrl = `${projectType}/${projectId}/${config.id}/`;
@@ -272,8 +277,8 @@ proto.getConfig = function() {
   return this.config;
 };
 
-proto.getEditorFormStructure = function() {
-  return this.config.editor_form_structure ? this.config.editor_form_structure.filter((structure) => {
+proto.getEditorFormStructure = function({all=false}={}) {
+  return this.config.editor_form_structure && !all ? this.config.editor_form_structure.filter((structure) => {
     return !structure.field_name;
   }) : this.config.editor_form_structure;
 };
@@ -503,6 +508,90 @@ proto.canShowTable = function() {
   return false
 };
 
+
+//RELATIONS
+proto.getRelationsByType = function({type=null}={}){
+  return this._relations.getRelations({type});
+};
+
+// retunr relations of layer
+proto.getRelations = function({type=null}={}) {
+  return this._relations
+};
+
+proto.getRelationAttributes = function(relationName) {
+  let fields = [];
+  this._relations.forEach((relation) => {
+    if (relation.name === relationName) {
+      fields = relation.fields;
+      return false
+    }
+  });
+  return fields;
+};
+
+proto.getRelationsAttributes = function() {
+  const fields = {};
+  this.state.relations.forEach((relation) => {
+    fields[relation.name] = relation.fields;
+  });
+  return fields;
+};
+
+proto.isChild = function() {
+  if (!this.getRelations())
+    return false;
+  return this._relations.isChild(this.getId());
+};
+
+proto.isFather = function() {
+  if (!this.getRelations())
+    return false;
+  return this._relations.isFather(this.getId());
+};
+
+proto.getChildren = function() {
+  if (!this.isFather())
+    return [];
+  return this._relations.getChildren(this.getId());
+};
+
+proto.getFathers = function() {
+  if (!this.isChild())
+    return [];
+  return this._relations.getFathers(this.getId());
+};
+
+proto.hasChildren = function() {
+  if (!this.hasRelations())
+    return false;
+  return this._relations.hasChildren(this.getId());
+};
+
+proto.hasFathers = function() {
+  if (!this.hasRelations())
+    return false;
+  return this._relations.hasFathers(this.getId());
+};
+
+proto.hasRelations = function() {
+  return !!this._relations;
+};
+
+proto._createRelations = function(projectRelations) {
+  const relations = [];
+  const layerId = this.getId();
+  projectRelations.forEach((relation) => {
+    if ([relation.referencedLayer, relation.referencingLayer].indexOf(layerId) != -1)
+      relations.push(relation);
+  });
+  if (!!relations.length) {
+    this._relations = new Relations({
+      relations: relations
+    });
+  }
+  return relations;
+};
 
 /// LAYER PROPERTIES
 

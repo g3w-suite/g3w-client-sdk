@@ -52,20 +52,22 @@
                       </tr>
                       <tr v-if="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" class="featurebox-body">
                         <td :colspan="attributesSubsetLength(layer.attributes)+(state.layersactions[layer.id].length + 1)">
-                          <tabs :fields="getQueryFields(layer, feature)" :tabs="layer.formStructure.structure"></tabs>
-                          <table v-if="layer.formStructure.fieldsoutofstructure.length" class="fieldsoutofstructure">
-                            <tbody>
-                            <tr v-for="attribute in attributesOutFormStructure(layer)">
-                              <td class="attr-label">{{ attribute.label }}</td>
-                              <td class="attr-value" :attribute="attribute.name">
-                                <span v-if="is('simple',layer,attribute.name,feature.attributes[attribute.name])" v-html="feature.attributes[attribute.name]"></span>
-                                <g3w-image v-else-if="is('photo',layer,attribute.name,feature.attributes[attribute.name])"  :value="feature.attributes[attribute.name]"></g3w-image>
-                                <g3w-image v-else-if="checkField('image', attribute.label, layer.attributes)"  :value="attribute.value"></g3w-image>
-                                <g3w-link v-else-if="is('link',layer,attribute.name,feature.attributes[attribute.name])" :state="{value: feature.attributes[attribute.name]}"></g3w-link>
-                              </td>
-                            </tr>
-                            </tbody>
-                          </table>
+                          <template v-for="item in getItemsFromStructure(layer)">
+                            <table v-if="item.type === 'field'" class="fieldsoutofstructure">
+                              <tbody>
+                              <tr>
+                                <td class="attr-label">{{ item.item.label }}</td>
+                                <td class="attr-value" :attribute="item.item.name">
+                                  <span v-if="is('simple',layer,item.item.name,feature.attributes[item.item.name])" v-html="feature.attributes[item.item.name]"></span>
+                                  <g3w-image v-else-if="is('photo',layer,attribute.name,feature.attributes[item.item.name])"  :value="feature.attributes[item.item.name]"></g3w-image>
+                                  <g3w-image v-else-if="checkField('image', item.item.label, layer.attributes)"  :value="item.item.value"></g3w-image>
+                                  <g3w-link v-else-if="is('link',layer, item.item.name,feature.attributes[item.item.name])" :state="{value: feature.attributes[item.item.name]}"></g3w-link>
+                                </td>
+                              </tr>
+                              </tbody>
+                            </table>
+                            <tabs v-else-if="item.type === 'tab'" :fields="getQueryFields(layer, feature)" :tabs="item.item"></tabs>
+                          </template>
                         </td>
                       </tr>
                     </template>
