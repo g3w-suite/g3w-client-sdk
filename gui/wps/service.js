@@ -1,6 +1,8 @@
 const inherit = require('core/utils/utils').inherit;
 const G3WObject = require('core/g3wobject');
+const GUI = require('gui/gui');
 const WPSProvider = require('core/layers/providers/wpsprovider');
+const readFeaturesFromData = require('core/utils/geo').readFeaturesFromData;
 
 function WPSService(options={}) {
   this._provider = new WPSProvider(options);
@@ -29,6 +31,7 @@ function WPSService(options={}) {
           const processform = await this.describeProcess(id);
           this.state.currentindex = 0;
         } catch (err) {
+          console.log(err)
         } finally {
           this.state.loading = false;
         }
@@ -57,7 +60,6 @@ proto.describeProcess = async function(id) {
       form = this.state.process[index].form = await this._provider.describeProcess({
         id, format: 'form'
       });
-      console.log(form)
     } catch(err) {
       this.state.error = true;
     } finally {
@@ -66,6 +68,23 @@ proto.describeProcess = async function(id) {
   }
   this.state.currentindex = index;
   return form;
+};
+
+proto.run = async function({inputs=[], id}={}){
+  this.state.loading = true;
+  const mapService = GUI.getComponent('map').getService();
+  const map = mapService.getMap();
+  const features = await this._provider.execute({
+    inputs,
+    id
+  });
+  const source = new ol.source.Vector();
+  source.addFeatures(features);
+  const layer = new ol.layer.Vector({
+    source
+  });
+  map.addLayer(layer);
+  this.state.loading = false;
 };
 
 proto.clear = function() {

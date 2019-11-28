@@ -32,6 +32,8 @@ function ToolsService(options={}){
 
   this._addTool = function(tool, {position : order, title: name}) {
     let group = this._addToolGroup(order, name);
+    if (tool.action === undefined && tool.type)
+      tool.action = ToolsService.ACTIONS[tool.type].bind(null, tool.options);
     group.tools.push(tool);
   };
 

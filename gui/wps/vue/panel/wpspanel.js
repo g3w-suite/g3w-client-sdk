@@ -1,5 +1,6 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
+const GUI = require('gui/gui');
 const Panel = require('gui/panel');
 const Service = require('gui/wps/service');
 
@@ -8,7 +9,8 @@ const WpsPanelComponent = Vue.extend({
   components:{},
   data() {
     return {
-      state: this.$options.service.state
+      state: this.$options.service.state,
+      selectedProcess: null
     }
   },
   computed: {
@@ -22,6 +24,16 @@ const WpsPanelComponent = Vue.extend({
   methods: {
     run: function(event) {
      event.preventDefault();
+     this.state.loading = true;
+     this.$options.service.run({
+       inputs: this.currentProcessForm.inputs,
+       id: this.selectedProcess
+     });
+    }
+  },
+  watch: {
+    'state.process'(process) {
+      this.selectedProcess = process[0].id;
     }
   },
   mounted() {
@@ -29,6 +41,7 @@ const WpsPanelComponent = Vue.extend({
       this.select2 = $('#wps_processes').select2();
       this.select2.on('select2:select', (evt) => {
         const id = evt.params.data.id;
+        this.selectedProcess = id;
         this.$options.service.describeProcess(id)
       })
     })

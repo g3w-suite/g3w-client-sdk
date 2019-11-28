@@ -3,17 +3,6 @@ const base = require('core/utils/utils').base;
 const {XHR, convertObjectToUrlParams} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
-const FAKERESPONSE = {
-  GetCapabilities: require('../../../test/data/providers/wps/getCapabilities.xml'),
-  DescribeProcess: {
-    'org.n52.wps.server.r.metMonthlyMeans': require('../../../test/data/providers/wps/org.n52.wps.server.r.metMonthlyMeans.xml'),
-    'org.n52.wps.server.r.upperAirMonthlyMeans':require('../../../test/data/providers/wps/org.n52.wps.server.r.upperAirMonthlyMeans.xml')
-  },
-  Execute: {
-
-  }
-};
-
 function WPSProvider(options = {}) {
   base(this, options);
   this._name = 'wps';
@@ -26,25 +15,38 @@ inherit(WPSProvider, G3WObject);
 const proto = WPSProvider.prototype;
 
 proto._XMLToJSON = function(response) {
-  return this._parser.xml_str2json(response);
+  return this._parser.xml2json(response);
+};
+
+proto._createProcessInputType = function(input) {
+  const typeValue = {
+    type: null,
+    value: null
+  };
+  if (input.ComplexData) {
+    typeValue.type = input.ComplexData.Default.Format.MimeType
+  } else if (input.LiteralData) {
+    typeValue.type = input.LiteralData.DataType.toString()
+  }
+  return typeValue;
 };
 
 proto._buildFromFromDescribeProcessResponse = function({Abstract, DataInputs, ProcessOutputs}={}) {
-  let inputs = DataInputs.Input || [];
-  let outputs =  ProcessOutputs.Output || [];
+  let inputs = DataInputs.Input  && (Array.isArray(DataInputs.Input) && DataInputs.Input || [DataInputs.Input])  || [];
+  let outputs =  ProcessOutputs.Output && (Array.isArray(ProcessOutputs.Output) && ProcessOutputs.Output || [ProcessOutputs.Output])  || [];
   inputs = inputs.map((input) => {
+    const inputType = this._createProcessInputType(input);
     return {
-      id: input.Identifier.__text,
-      label: input.Title.__text,
-      type: input.LiteralData.DataType['_ows:reference'].split('xs:')[1],
-      value: input.LiteralData.DefaultValue
+      id: input.Identifier.toString(),
+      label: input.Title.toString(),
+      ...inputType
     }
   });
 
   outputs = outputs.map((output)=> {
     return {
-      id: output.Identifier.__text,
-      label: output.Title.__text,
+      id: output.Identifier.toString(),
+      label: output.Title.toString(),
       sublabel: output.ComplexOutput && output.ComplexOutput.Default && output.ComplexOutput.Default.Format || '',
       type: 'string',
       value: ''
@@ -52,13 +54,13 @@ proto._buildFromFromDescribeProcessResponse = function({Abstract, DataInputs, Pr
   });
 
   return {
-    abstract: Abstract.__text,
+    abstract: Abstract.toString(),
     inputs,
     outputs
   }
 };
 
-proto._getRequestParameters = function(REQUEST, {params={}}) {
+proto._getRequestParameters = function(REQUEST, params={}) {
   return {
     SERVICE: 'WPS',
     VERSION: '1.0.0',
@@ -70,22 +72,18 @@ proto._getRequestParameters = function(REQUEST, {params={}}) {
 proto.getCapabilities = async function() {
   const params = this._getRequestParameters('GetCapabilities', {});
   const url = `${this._url}?${convertObjectToUrlParams(params)}`;
+  const process = [];
   try {
     const response = await XHR.get({url});
-  } catch(err) {
-    console.log(err)
-    //return
-  }
-  const response = FAKERESPONSE['GetCapabilities'];
-  const getCapabilitiesResponseJSON = this._XMLToJSON(response);
-  const processResponse = getCapabilitiesResponseJSON.Capabilities && getCapabilitiesResponseJSON.Capabilities.ProcessOfferings && getCapabilitiesResponseJSON.Capabilities.ProcessOfferings.Process || [];
-  const process = [];
-  processResponse.splice(0,2).forEach((theprocess) => {
-    process.push({
-      id: id = theprocess.Identifier.__text,
-      name: theprocess.Title.__text
-    })
-  });
+    const getCapabilitiesResponseJSON = this._XMLToJSON(response);
+    const processResponse = getCapabilitiesResponseJSON.Capabilities && getCapabilitiesResponseJSON.Capabilities.ProcessOfferings && getCapabilitiesResponseJSON.Capabilities.ProcessOfferings.Process || [];
+    processResponse.forEach((theprocess) => {
+      process.push({
+        id: id = theprocess.Identifier.toString(),
+        name: theprocess.Title.toString()
+      });
+    });
+  } catch(err) {}
   return process;
 };
 
@@ -94,15 +92,36 @@ proto.describeProcess = async function({id, format='form'}) {
     Identifier: id
   });
   const url = `${this._url}?${convertObjectToUrlParams(params)}`;
-  const response = FAKERESPONSE['DescribeProcess'][id];
+  const response  = await XHR.get({url});
   const describeProcessJSON = this._XMLToJSON(response);
   const describeProcessResponse = describeProcessJSON.ProcessDescriptions && describeProcessJSON.ProcessDescriptions.ProcessDescription || {};
   const describeProcessForm = this._buildFromFromDescribeProcessResponse(describeProcessResponse);
   return describeProcessForm;
 };
 
-proto.execute = async function() {
-  const response = await XHR.post(this._url, {});
+proto.execute = async function({inputs=[], id } ={}) {
+  const params = this._getRequestParameters('Execute', {
+    IDENTIFIER: id,
+  });
+  params.DataInputs = inputs.map((input) =>{
+    return `${input.id}=${input.value}`;
+  }).join(';');
+  const url = `${this._url}?${convertObjectToUrlParams(params)}`;
+  const response = await XHR.get({url});
+  return this._handleOutputProcessResponse(response);
+};
+
+proto._handleOutputProcessResponse = function(response) {
+  const output = this._XMLToJSON(response);
+  const FeatureCollection = output.ExecuteResponse.ProcessOutputs.Output.Data.ComplexData.FeatureCollection;
+  if (FeatureCollection.featureMember)
+    FeatureCollection.featureMember = Array.isArray(FeatureCollection.featureMember) ? FeatureCollection.featureMember : [FeatureCollection.featureMember];
+  const layerFeatureCollectionXML = this._parser.json2xml_str({
+    FeatureCollection
+  });
+  const parser = new ol.format.WMSGetFeatureInfo();
+  const features = parser.readFeatures(layerFeatureCollectionXML);
+  return features;
 };
 
 proto.getStatus = function(jobId) {

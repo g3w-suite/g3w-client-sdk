@@ -35,6 +35,7 @@ function GUI() {
   this.reloadComponents = noop;
   this.showUserMessage = noop;
   this.closeUserMessage = noop;
+  this.showModalDialog = noop;
   this.addComponent = function(component, placeholder) {};
   this.removeComponent = function(id) {};
   this.setComponent = function(component) {
