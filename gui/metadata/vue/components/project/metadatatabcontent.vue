@@ -1,17 +1,18 @@
 <template>
   <div>
     <div class="col-sm-3 metadata-label">{{ data.label }} </div>
-    <div v-if="fieldName == 'keywords'" class="col-sm-9 value">
+    <div v-if="fieldName === 'keywords'" class="col-sm-9 value">
       {{ arrayToString }}
     </div>
-    <div v-else-if="fieldName == 'wms_url'" class="col-sm-9 value" style="margin-top:0">
+    <div v-else-if="fieldName === 'wms_url'" class="col-sm-9 value" style="margin-top:0">
       <span>{{ data.value }}</span>
     </div>
     <div v-else-if="!isArrayorObject(data.value)" class="col-sm-9 value" style="margin-top:0">
-      <span v-html="data.value"></span>
+      <a :href="data.value" target="_blank" v-if="isLink(data.value)">{{ data.value }}</a>
+      <span v-else v-html="data.value"></span>
     </div>
     <div v-else class="col-sm-9 value" style="margin-top:0">
-      <div v-for="(value, key) in data.value">
+      <div v-for="(value, key) in data.value" :key="key">
         <span>{{ value }}</span>
       </div>
     </div>
@@ -19,8 +20,10 @@
 </template>
 
 <script>
+  import MetadataMixin from '../metadatamixin';
   export default {
     name: "metadatatabcontent",
+    mixins: [MetadataMixin],
     props: {
       data: {},
       fieldName: {}
@@ -34,6 +37,9 @@
       isArrayorObject(value) {
         return Array.isArray(value) || typeof value === 'object';
       }
+    },
+    created() {
+      this.data.value = this.setNewLine(this.data.value);
     }
   }
 </script>

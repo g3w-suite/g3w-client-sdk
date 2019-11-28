@@ -2,25 +2,31 @@
   <div>
     <div class="col-sm-3 metadata-label">{{ data.label }}</div>
     <div class="col-sm-9 value" style="margin-top:0">
-      <div v-for="(value, key) in data.value">
+      <div v-for="(value, key) in data.value" :key="key">
         <div class="row">
           <div class="col-sm-3 metadata-contact-label">
             <i class="contact-icon" :class="iconsClass[key]" aria-hidden="true"></i>
             <span v-t="'sdk.metadata.groups.general.fields.subfields.contactinformation.' + key"></span>
           </div>
           <div class="col-sm-9">
-            <template v-if="key === 'personprimary'" >
-              <div v-for="(subvalue, key) in value">
-                <span v-t="'sdk.metadata.groups.general.fields.subfields.contactinformation.' + key" class="metadata-contact-label"></span>
-                <span>{{ subvalue }}</span>
+            <template v-if="key === 'personprimary'">
+              <div v-for="(subvalue, key) in value" :key="key">
+                <div class="col-sm-3">
+                  <span v-t="'sdk.metadata.groups.general.fields.subfields.contactinformation.' + key" class="metadata-contact-label"></span>
+                </div>
+                <div class="col-sm-9">
+                  <a :href="subvalue" target="_blank" v-if="isLink(subvalue)">{{ subvalue }}</a>
+                  <span v-else v-html="sanitizeValue(subvalue)"></span>
+                </div>
               </div>
             </template>
-            <div v-else>
+            <div v-else class="col-sm-12">
               <template v-if="key === 'contactelectronicmailaddress'">
-                <a :href="'mailto:' + sanitizeValue(value)">{{sanitizeValue(value)}}</a>
+                <a :href="'mailto:' + sanitizeValue(value)">{{ sanitizeValue(value)}} </a>
               </template>
               <template v-else>
-                {{ sanitizeValue(value) }}
+                <a :href="subvalue" target="_blank" v-if="isLink(value)">{{ value }}</a>
+                <span v-else v-html="sanitizeValue(value)"></span>
               </template>
             </div>
           </div>
@@ -31,8 +37,10 @@
 </template>
 
 <script>
+  import MetadataMixin from '../metadatamixin';
   export default {
     name: "metadatacontatcs",
+    mixins: [MetadataMixin],
     props: {
       data: {}
     },
@@ -54,12 +62,9 @@
             value = value.length ? value : '';
           }
         }
-        return value;
-      },
-      geti18n(key) {
-
+        return this.setNewLine(value);
       }
-    }
+    },
   }
 </script>
 

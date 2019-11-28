@@ -22,17 +22,17 @@ export default {
                 'title': 'TITOLO',
                 'name': 'NOME',
                 'description': "DESCRIZIONE",
-                'abstract': "ABSTRACT",
+                'abstract': "RIASSUNTO",
                 'keywords': 'LISTA DELLE PAROLE CHIAVE',
                 "fees": "CANONI",
-                "accessconstraints": "VINCOLI DI ACCESSO",
+                "accessconstraints": "RESTRIZIONI D'USO",
                 'contactinformation': "CONTATTI",
                 'subfields': {
                   'contactinformation': {
                     'contactelectronicmailaddress': "E-Mail",
                     'personprimary': 'Riferimenti',
                     'contactvoicetelephone': 'Telefono',
-                    'contactorganization': 'Organizzazione',
+                    'contactorganization': 'Struttura Responsabile',
                     'contactposition': 'Posizione',
                     'contactperson': 'Persona'
                   }

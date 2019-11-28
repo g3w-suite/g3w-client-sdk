@@ -108,7 +108,6 @@
 
 <script>
   import MetadataMixin from '../metadatamixin';
-
   export default {
     name: "layer",
     mixins: [MetadataMixin],

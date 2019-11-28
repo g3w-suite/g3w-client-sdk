@@ -7,7 +7,7 @@ const ProjectMetadataComponent = require('./vue/components/project/project');
 const METADATAGROUPS = {
   general: [
     'title',
-    'name',
+    //'name', commented no appear in general
     'description',
     'abstract',
     'keywords',
@@ -43,12 +43,22 @@ proto._buildProjectGroupMetadata = function() {
   const project = ProjectsRegistry.getCurrentProject().getState();
   this.state.name = project.title;
   const groups = {};
+  // it use to remove
+  const removeFieldWithNullUndefinedValue = field => {
+    !Array.isArray(field) && Object.keys(field).forEach(key => {
+      if (field[key] && typeof field[key] === "object") removeFieldWithNullUndefinedValue(field[key]); // recurse
+      else if (!field[key] || field[key] === 'None') delete field[key]; // delete
+    });
+  };
   Object.entries(METADATAGROUPS).forEach(([groupName, value]) => {
     groups[groupName] = {};
     value.forEach((field) => {
       const fieldValue = project.metadata && project.metadata[field] ? project.metadata[field] : project[field];
-      if (!!fieldValue) {
-        groups[groupName][field] = {
+      // check id value and is not 'None'
+      if (!!fieldValue  && fieldValue !== 'None' && fieldValue !== 'none') {
+        if (groupName === 'general')
+          removeFieldWithNullUndefinedValue(fieldValue);
+          groups[groupName][field] = {
           label: t(['sdk','metadata','groups', groupName, 'fields', field].join('.')), // get traslation here
           value: fieldValue
         }

@@ -9,9 +9,6 @@ const InternalComponent = Vue.extend({
     return {
       state: null
     }
-  },
-  mounted: function() {
-    this.$nextTick(() => {});
   }
 });
 

@@ -35,7 +35,7 @@
         <div class="col-sm-9 metadata-body tab-content">
             <div id="general" class="tab-pane fade in active nano-content">
               <template>
-                <div v-for="(data, key) in state.groups.general" class="row h_100 row-info">
+                <div v-for="(data, key) in state.groups.general" class="row h_100 row-info" :key="key">
                   <component :data="data" :fieldName="key" :is="setComponent(key)"></component>
                 </div>
               </template>
@@ -43,7 +43,7 @@
             <div id="spatial" class="tab-pane fade">
               <div class="container-fluid">
                 <template>
-                  <div v-for="(data, key) in state.groups.spatial" class="row row-info">
+                  <div v-for="(data, key) in state.groups.spatial"  class="row row-info" :key="key">
                     <component :data="data" :fieldName="key" :is="setComponent(key)"></component>
                   </div>
                 </template>
@@ -100,10 +100,6 @@
         }
         return component;
       }
-    },
-    mounted() {
-      this.$nextTick(() => {
-      })
     }
   }
 </script>

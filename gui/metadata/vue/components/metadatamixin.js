@@ -1,3 +1,7 @@
+const LinkPattern = /^(http(s)?:\/\/)/g;
+const isString = (value) => {
+  return typeof value === 'string'
+};
 export default {
   methods: {
     findAttributeFormMetadataAttribute(name) {
@@ -5,6 +9,16 @@ export default {
     },
     findMetadataAttribute(name) {
       return this.state[name] !== undefined;
+    },
+    isLink(value) {
+      return isString(value) && value.match(LinkPattern);
+    },
+    setNewLine(value) {
+      const split = isString(value) && value.split('|') || [];
+      if (split.length > 1) {
+        value = split.join('<br>')
+      }
+      return value;
     }
   }
 }
