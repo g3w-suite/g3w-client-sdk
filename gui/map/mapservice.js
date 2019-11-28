@@ -1697,7 +1697,7 @@ proto.zoomToFeatures = function(features, options={maxZoom:8, highlight: false})
       }
     }
   }
-  if (highlight) {
+  if (highlight && extent) {
     try {
       const olClassGeomType = geometryType.includes('Multi') ? geometryType : `Multi${geometryType}`;
       options.highLightGeometry = new ol.geom[olClassGeomType]();
