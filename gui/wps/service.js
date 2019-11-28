@@ -73,7 +73,6 @@ proto.describeProcess = async function(id) {
 proto.run = async function({inputs=[], id}={}){
   this.state.loading = true;
   const mapService = GUI.getComponent('map').getService();
-  const map = mapService.getMap();
   const features = await this._provider.execute({
     inputs,
     id
@@ -81,9 +80,9 @@ proto.run = async function({inputs=[], id}={}){
   const source = new ol.source.Vector();
   source.addFeatures(features);
   const layer = new ol.layer.Vector({
-    source
+    source, name: 'Pippo'
   });
-  map.addLayer(layer);
+  mapService.addExternalLayer(layer);
   this.state.loading = false;
 };
 

@@ -53,8 +53,7 @@ const WpsPanelComponent = Vue.extend({
 
 function WPSpanel(options={}) {
   const service = new Service(options);
-  const Panel = WpsPanelComponent;
-  const internalPanel = new Panel({
+  const internalPanel = new WpsPanelComponent({
     service
   });
   this.setInternalPanel(internalPanel);

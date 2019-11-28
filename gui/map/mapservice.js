@@ -370,12 +370,9 @@ proto.showMarker = function(coordinates, duration) {
 
 // return layer by name
 proto.getLayerByName = function(name) {
-  let layer = null;
-  this.getMap().getLayers().getArray().find((lyr) => {
-    if (lyr.get('name') === name) {
-      layer = lyr;
-      return true
-    }
+  const layer = this.getMap().getLayers().getArray().find((lyr) => {
+    const layerName = lyr.get('name');
+    return layerName && layerName === name;
   });
   return layer;
 };
@@ -2003,30 +2000,69 @@ proto.removeExternalLayer = function(name) {
 };
 
 proto.addExternalLayer = function(externalLayer) {
-  let format,
-    features,
-    vectorSource,
-    vectorLayer,
-    extent;
-  const {name, crs, data, color, type} = externalLayer;
+  let vectorLayer,
+    name,
+    data,
+    color,
+    type;
   const map = this.viewer.map;
   const catalogService = GUI.getComponent('catalog').getService();
   const QueryResultService = GUI.getComponent('queryresults').getService();
+  if (externalLayer instanceof ol.layer.Vector) {
+    vectorLayer = externalLayer;
+    name = vectorLayer.get('name');
+    externalLayer = {
+      name
+    };
+  } else {
+    name = externalLayer.name;
+    type = externalLayer.type;
+    crs = externalLayer.crs;
+    data = externalLayer.data;
+    color = externalLayer.color;
+  }
   const layer = this.getLayerByName(name);
   const loadExternalLayer = (format, data, epsg=crs) => {
-    features = format.readFeatures(data, {
+    const features = format.readFeatures(data, {
       dataProjection: epsg,
       featureProjection: this.getEpsg()
     });
-    vectorSource = new ol.source.Vector({
+    const vectorSource = new ol.source.Vector({
       features: features
     });
-    vectorLayer = new ol.layer.Vector({
+    const vectorLayer = new ol.layer.Vector({
       source: vectorSource,
       name: name
     });
     vectorLayer.setStyle(this.setExternalLayerStyle(color));
-    extent = vectorLayer.getSource().getExtent();
+    return vectorLayer;
+  };
+  if (!layer) {
+    let format;
+    switch (type) {
+      case 'geojson':
+        format = new ol.format.GeoJSON();
+        vectorLayer = loadExternalLayer(format, data);
+        break;
+      case 'kml':
+        format = new ol.format.KML({
+          extractStyles: false
+        });
+        vectorLayer = loadExternalLayer(format, data);
+        break;
+      case 'zip':
+        shpToGeojson({
+          url: data,
+          encoding: 'big5',
+          EPSG: crs
+        }, (geojson) => {
+          const data = JSON.stringify(geojson);
+          format = new ol.format.GeoJSON({});
+          vectorLayer = loadExternalLayer(format, data, "EPSG:4326");
+        });
+        break;
+    }
+    const extent = vectorLayer.getSource().getExtent();
     externalLayer.bbox = {
       minx: extent[0],
       miny: extent[1],
@@ -2037,32 +2073,7 @@ proto.addExternalLayer = function(externalLayer) {
     map.addLayer(vectorLayer);
     QueryResultService.registerVectorLayer(vectorLayer);
     catalogService.addExternalLayer(externalLayer);
-    map.getView().fit(vectorSource.getExtent());
-  };
-  if (!layer) {
-    switch (type) {
-      case 'geojson':
-        format = new ol.format.GeoJSON();
-        loadExternalLayer(format, data);
-        break;
-      case 'kml':
-        format = new ol.format.KML({
-          extractStyles: false
-        });
-        loadExternalLayer(format, data);
-        break;
-      case 'zip':
-        shpToGeojson({
-          url: data,
-          encoding: 'big5',
-          EPSG: crs
-        }, (geojson) => {
-          const data = JSON.stringify(geojson);
-          format = new ol.format.GeoJSON({});
-          loadExternalLayer(format, data, "EPSG:4326");
-        });
-        break;
-    }
+    map.getView().fit(extent);
   } else {
     GUI.notify.info(t("layer_is_added"));
   }
