@@ -234,9 +234,31 @@ proto._getHandledResponsesFromResponse = function({response, layers, projections
     for (let i = 0; i < layers.length; i++) {
       const layer = layers[i];
       const layerName = id ? layer.getId() : `layer${i}`;
+      const featureMemberArrayAndPrefix = {
+        features: null,
+        __prefix: null
+      };
       jsonresponse.FeatureCollection.featureMember = originalFeatureMember.filter((feature) => {
-        return feature[layerName]
+        const featureMember = feature[layerName];
+         if (featureMember) {
+           if (Array.isArray(featureMember)){
+             featureMemberArrayAndPrefix.features = featureMember;
+             featureMemberArrayAndPrefix.__prefix = feature.__prefix;
+             return false;
+           }
+           return true;
+         }
       });
+      if (featureMemberArrayAndPrefix.features) {
+        const prefix = featureMemberArrayAndPrefix.__prefix;
+        featureMemberArrayAndPrefix.features.forEach((feature) => {
+          //for Each element have to add and object contain layerName and information, and __prefix
+          jsonresponse.FeatureCollection.featureMember.push({
+            [layerName]: feature,
+            __prefix: prefix
+          })
+        });
+      }
       const handledResponse = this._parseLayerFeatureCollection({
         jsonresponse,
         layer,
@@ -363,8 +385,7 @@ proto._parseLayerFeatureCollection = function({jsonresponse, layer, projections}
           feature.setGeometry(geometry.transform(projections.layer.getCode(), projections.map.getCode()))
         })
       }
-      if (invertedAxis)
-        features = this._reverseFeaturesCoordinates(features)
+      if (invertedAxis) features = this._reverseFeaturesCoordinates(features)
     }
   }
   return [{

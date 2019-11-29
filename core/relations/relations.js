@@ -4,9 +4,8 @@ const G3WObject = require('core/g3wobject');
 const Relation = require('./relation');
 
 // class Relations
-function Relations(options) {
-  options = options || {};
-  const relations = options.relations;
+function Relations(options={}) {
+  const {relations} = options;
   //store relations
   this._relations = {};
   this._length = relations ? relations.length: 0;
