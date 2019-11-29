@@ -15,7 +15,6 @@ function CatalogService() {
   this.setters = {};
 
   this.addExternalLayer = function(layer) {
-    console.log(layer)
     layer.removable = true;
     this.state.externallayers.push(layer);
   };

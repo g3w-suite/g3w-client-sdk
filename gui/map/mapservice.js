@@ -2012,7 +2012,12 @@ proto.addExternalLayer = function(externalLayer) {
     vectorLayer = externalLayer;
     name = vectorLayer.get('name');
     externalLayer = {
-      name
+      name,
+      title: name,
+      removable: true,
+      external: true,
+      visible: true
+
     };
   } else {
     name = externalLayer.name;

@@ -83,7 +83,7 @@ const vueComponentOptions = {
     },
     hasLayers: function() {
       let layerstresslength = 0;
-      _.forEach(this.state.layerstrees, function(layerstree) {
+      this.state.layerstrees.forEach((layerstree) => {
         layerstresslength+=layerstree.tree.length;
       });
       return this.state.externallayers.length > 0 || layerstresslength >0 || this.state.layersgroups.length > 0 ;
