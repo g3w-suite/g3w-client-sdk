@@ -111,6 +111,7 @@ proto.reset = function() {
   this.clearState();
 };
 
+
 proto._digestFeaturesForLayers = function(featuresForLayers) {
   let id = 0;
   featuresForLayers = featuresForLayers || [];
@@ -195,7 +196,6 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       }
     if (featuresForLayer.features && featuresForLayer.features.length) {
       layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0].getProperties(), relationNames);
-
       layerObj.attributes.forEach((attribute) => {
         if (formStructure) {
           const relationField = formStructure.fields.find((field)=>{
