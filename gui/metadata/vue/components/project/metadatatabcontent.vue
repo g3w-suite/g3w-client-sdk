@@ -5,7 +5,8 @@
       {{ arrayToString }}
     </div>
     <div v-else-if="fieldName === 'wms_url'" class="col-sm-9 value" style="margin-top:0">
-      <span>{{ data.value }}</span>
+      <a :href="data.value" target="_blank" v-if="isLink(data.value)">{{ data.value }}</a>
+      <span v-else v-html="data.value"></span>
     </div>
     <div v-else-if="!isArrayorObject(data.value)" class="col-sm-9 value" style="margin-top:0">
       <a :href="data.value" target="_blank" v-if="isLink(data.value)">{{ data.value }}</a>

@@ -55,7 +55,7 @@ proto._buildProjectGroupMetadata = function() {
     value.forEach((field) => {
       const fieldValue = project.metadata && project.metadata[field] ? project.metadata[field] : project[field];
       // check id value and is not 'None'
-      if (!!fieldValue  && fieldValue !== 'None' && fieldValue !== 'none') {
+      if (!!fieldValue  && fieldValue !== 'None' && fieldValue !== 'none' && fieldValue !=='conditions unknown') {
         if (groupName === 'general')
           removeFieldWithNullUndefinedValue(fieldValue);
           groups[groupName][field] = {
