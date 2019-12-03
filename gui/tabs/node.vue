@@ -151,17 +151,13 @@
       },
       getNodes(row) {
         const startIndex = (row - 1) * this.columnNumber;
-        const nodes = this.filterNodes.slice(startIndex, this.columnNumber + startIndex);
-        return nodes;
+        return this.filterNodes.slice(startIndex, this.columnNumber + startIndex);
       },
       getNode(row, column) {
-        const node = this.getNodes(row)[column - 1];
-        return node;
+        return this.getNodes(row)[column - 1];
       },
       getField(node) {
-        if (node.relation) {
-          return node;
-        }
+        if (node.relation) return node;
         const field = this.fields.find((field) => {
           return field.name === node.field_name;
         });
@@ -171,13 +167,9 @@
         return node.groupbox || node.nodes ? 'group' : node.relation ? 'relation': 'field';
       },
       getComponent(field) {
-        if (field.relation) {
-          return
-        } else if (field.query) {
-          return field.input.type;
-        } else {
-          return 'g3w-input';
-        }
+        if (field.relation) return;
+        else if (field.query) return field.input.type;
+        else return 'g3w-input';
       }
     },
     created() {}

@@ -64,8 +64,19 @@ proto.getLength = function() {
   return this._length
 };
 
-proto.getRelations = function() {
-  return this._relations;
+proto.getRelations = function({type=null}={}) {
+  if (!type)
+    return this._relations;
+  else {
+    if (['ONE','MANY'].indexOf(type) !== -1) {
+      const relations = {};
+      for (const name in this._relations) {
+        const relation = this._relations[name];
+        if (relation.getType() === type) relations[name] = relation;
+      }
+      return relations;
+    } else return {};
+  }
 };
 
 // array of relation

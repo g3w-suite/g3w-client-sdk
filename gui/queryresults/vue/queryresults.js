@@ -158,25 +158,26 @@ const vueComponentOptions = {
     relationsAttributesSubsetLength: function(elements) {
       return this.relationsAttributesSubset(elements).length;
     },
-    attributesOutFormStructure(layer) {
-      const fieldNames = layer.formStructure.fieldsoutofstructure.map((field) => {
-        return field.field_name;
-      });
-      return layer.attributes.filter((attribute) => {
-        return fieldNames.indexOf(attribute.name) > -1;
+    getItemsFromStructure(layer) {
+      return layer.formStructure.structure.map((item) => {
+        return this.isAttributeOrTab(layer, item);
+      })
+    },
+    isAttributeOrTab(layer, item){
+      const isField = item.field_name !== undefined;
+        return {
+        type: isField && 'field' || 'tab',
+        item: isField && this.getLayerAttributeFromStructureItem(layer, item.field_name) || [item]
+      };
+    },
+    getLayerAttributeFromStructureItem(layer, field_name) {
+      return layer.attributes.find((attribute) => {
+        return attribute.name === field_name;
       })
     },
     collapsedFeatureBox: function(layer, feature, relation_index) {
-      let collapsed = true;
-      let boxid;
-      if (!_.isNil(relation_index)) {
-        boxid = layer.id + '_' + feature.id+ '_' + relation_index;
-      } else {
-        boxid = layer.id + '_' + feature.id;
-      }
-      if (this.layersFeaturesBoxes[boxid]) {
-        collapsed = this.layersFeaturesBoxes[boxid].collapsed;
-      }
+      const boxid = !_.isNil(relation_index) ? layer.id + '_' + feature.id+ '_' + relation_index : layer.id + '_' + feature.id;
+      const collapsed = this.layersFeaturesBoxes[boxid] ? this.layersFeaturesBoxes[boxid].collapsed : true;
       return collapsed;
     },
     showFeatureInfo(layer, boxid) {
