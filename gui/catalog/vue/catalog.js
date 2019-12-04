@@ -645,6 +645,13 @@ Vue.component('layerslegend-items',{
     }
   },
   methods: {
+    setError(legendurl){
+      legendurl.error = true;
+      legendurl.loading = false;
+    },
+    urlLoaded(legendurl){
+      legendurl.loading = false;
+    },
     getLegendUrl: function(layer, params={}) {
       let legendurl;
       const catalogLayers = CatalogLayersStoresRegistry.getLayersStores();
@@ -684,7 +691,8 @@ Vue.component('layerslegend-items',{
             const legendUrl = urlLayersName[url].length ? `${url}&LAYER=${urlLayersName[url].join(',')}`: url;
             this.legendurls.push({
               loading: true,
-              url: legendUrl
+              url: legendUrl,
+              error: false
             });
           }
         else {
@@ -704,7 +712,8 @@ Vue.component('layerslegend-items',{
             xhr.responseType = 'blob';
             const legendUrlObject = {
               loading: true,
-              url: null
+              url: null,
+              error: false
             };
             self.legendurls.push(legendUrlObject);
             xhr.onload = function() {
