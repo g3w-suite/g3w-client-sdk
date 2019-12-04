@@ -675,7 +675,7 @@ Vue.component('layerslegend-items',{
         const layer = layers[i];
         const urlLayersName = (layer.source && layer.source.url) || layer.external ? urlMethodsLayersName.GET : urlMethodsLayersName[layer.ows_method];
         const url = this.getLegendUrl(layer, this.legend);
-        if (layer.source && layer.source.external)
+        if (layer.source && layer.source.url)
           urlLayersName[url] = [];
         else {
           const [prefix, layerName] = url.split('LAYER=');
