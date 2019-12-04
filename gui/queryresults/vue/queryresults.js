@@ -147,25 +147,33 @@ const vueComponentOptions = {
     },
     featureBoxColspan: function(layer) {
       let colspan = this.attributesSubsetLength(layer.attributes);
-      if (layer.expandable) {
-        colspan += 1;
-      }
-      if (layer.hasgeometry) {
-        colspan += 1;
-      }
+      if (layer.expandable) colspan += 1;
+      if (layer.hasgeometry) colspan += 1;
       return colspan;
     },
     relationsAttributesSubsetLength: function(elements) {
       return this.relationsAttributesSubset(elements).length;
     },
     getItemsFromStructure(layer) {
-      return layer.formStructure.structure.map((item) => {
-        return this.isAttributeOrTab(layer, item);
-      })
+      let prevtabitems = [];
+      const newstructure = [];
+      layer.formStructure.structure.forEach((item) => {
+        const _item = this.isAttributeOrTab(layer, item);
+        if (_item.type === 'field') {
+          newstructure.push(_item);
+          prevtabitems = [];
+        } else {
+          if (!prevtabitems.length) {
+            newstructure.push(_item);
+            prevtabitems = _item.item;
+          } else prevtabitems.push(_item.item[0]);
+        }
+      });
+      return newstructure;
     },
-    isAttributeOrTab(layer, item){
+    isAttributeOrTab(layer, item,) {
       const isField = item.field_name !== undefined;
-        return {
+      return  {
         type: isField && 'field' || 'tab',
         item: isField && this.getLayerAttributeFromStructureItem(layer, item.field_name) || [item]
       };
