@@ -107,7 +107,10 @@ function PluginsRegistry() {
   this.getPlugin = function(pluginName) {
     return this._plugins[pluginName];
   };
-
+  
+  this.isTherePlugin = function(pluginName){
+    return this.pluginsConfigs[pluginName];
+  }
 }
 
 inherit(PluginsRegistry,G3WObject);
