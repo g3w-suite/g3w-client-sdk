@@ -5,7 +5,8 @@ const INCHES_PER_UNIT = {
   degrees: 4374754
 };
 
-const DOTS_PER_INCH = ol.has.DEVICE_PIXEL_RATIO * 96; //DPI96
+//const DOTS_PER_INCH = ol.has.DEVICE_PIXEL_RATIO * 96; //DPI96
+const DOTS_PER_INCH = 96; //DPI96
 
 const utils = {
   getExtentForViewAndSize: function(center, resolution, rotation, size) {
