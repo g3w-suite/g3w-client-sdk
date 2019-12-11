@@ -27,6 +27,11 @@ const ApplicationService = function() {
   this.config = {};
   this._initConfigUrl = null;
   this._initConfig = {};
+  this.setters = {
+    changeProject({gid}={}){
+      return this._changeProject({gid})
+    }
+  };
   base(this);
   // init from server
   this.init = function(config={}) {
@@ -180,7 +185,7 @@ const ApplicationService = function() {
     window.initConfig = null;
   };
 
-  this.changeProject = function({gid}={}) {
+  this._changeProject = function({gid}={}) {
     const d = $.Deferred();
     const mapUrl = ProjectsRegistry.getProjectUrl(gid);
     // change url using history

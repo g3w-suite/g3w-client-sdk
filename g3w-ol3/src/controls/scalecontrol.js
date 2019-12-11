@@ -28,7 +28,7 @@ proto.changelayout = function(map) {
     map,
     position,
     element,
-    isMobile: this.isMobile
+    //isMobile: this.isMobile
   });
 };
 
@@ -115,7 +115,7 @@ proto.layout = function(map) {
     });
   };
   setChangeResolutionHandler();
-  
+
   map.on('change:view', () => {
     setChangeResolutionHandler();
   });

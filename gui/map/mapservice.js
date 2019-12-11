@@ -1300,14 +1300,10 @@ proto.getBaseLayers = function() {
 };
 
 proto.getMapLayerForLayer = function(layer) {
-  let mapLayer = null;
   const multilayerId = 'layer_'+layer.getMultiLayerId();
   const mapLayers = this.getMapLayers();
-  mapLayers.find((_mapLayer) => {
-    if (_mapLayer.getId() === multilayerId) {
-      mapLayer = _mapLayer;
-      return true;
-    }
+  const mapLayer = mapLayers.find((mapLayer) => {
+    return mapLayer.getId() === multilayerId
   });
   return mapLayer;
 };
