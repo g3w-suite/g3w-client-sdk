@@ -139,7 +139,17 @@ proto.addToolGroup = function({hook="tools", position:order, title:group} = {}) 
   service.addToolGroup(order, group);
 };
 
+proto.removeToolGroup = function({hook, group}={}){
+  const {title} = group;
+  const service = this.getHookService(hook);
+  service.removeToolGroup(title);
+};
+
 proto.addTools = function({hook="tools", action, html, icon, name, loading=false, disabled=false} = {}, groupTools) {
+  if (!action) {
+    this.removeToolGroup({hook, group:groupTools});
+    return [];
+  }
   this._hook = hook;
   const service = this._services[hook];
   const configs = this.config.configs || [this.config];

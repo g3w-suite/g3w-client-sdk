@@ -1,7 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const merge = require('core/utils/utils').merge;
-const base = require('core/utils/utils').base;
-const noop = require('core/utils/utils').noop;
+const {inherit, merge, noop, base, capitalize_first_letter} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const VUECOMPONENTSATTRIBUTES = ['methods', 'computed', 'data', 'components'];
 
@@ -135,12 +132,17 @@ proto.getInternalComponent = function() {
   return this.internalComponent;
 };
 
-proto.setInternalComponent = function(internalComponent) {
+proto.setInternalComponent = function(internalComponent, options={}) {
   if (!internalComponent && this.internalComponentClass)
     this.internalComponent = new this.internalComponentClass;
-  else
-    this.internalComponent = internalComponent;
-
+  else this.internalComponent = internalComponent;
+  const {events=[]} = options;
+  events.forEach((event)=> {
+    const {name, handler} = event;
+    this.internalComponent.$on(name, (data) => {
+      handler && handler(data) || this[`set${capitalize_first_letter(name)}`](data)
+    })
+  })
 };
 
 proto.createVueComponent = function (vueObjOptions) {
