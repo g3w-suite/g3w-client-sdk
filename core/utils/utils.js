@@ -225,6 +225,9 @@ const utils = {
     };
     image.src = src;
   },
+  capitalize_first_letter(string){
+    return `${string[0].toUpperCase()}${string.slice(1)}`;
+  },
   Base64: Base64,
   // build throttle function
   throttle: function(fnc, delay=500) {

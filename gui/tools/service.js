@@ -9,6 +9,7 @@ function ToolsService(options={}){
   this.state = {
     ...options,
     toolsGroups: [],
+    visible: false,
     loading: false
   };
   this.setters = {
@@ -20,6 +21,9 @@ function ToolsService(options={}){
     },
     addToolGroup(order, name) {
       return this._addToolGroup(order, name);
+    },
+    removeToolGroup(name){
+      return this._removeToolGroup(name);
     },
     removeTools() {
       return this._removeTools();
@@ -61,6 +65,12 @@ function ToolsService(options={}){
 
   this.getState = function() {
     return this.state;
+  };
+
+  this._removeToolGroup = function(name) {
+    this.state.toolsGroups = this.state.toolsGroups.filter(group =>{
+      return group.name !== name;
+    });
   };
 
   this._addToolGroup = function(order, name) {

@@ -11,6 +11,13 @@ const InternalComponent = Vue.extend({
       state: null
     }
   },
+  watch: {
+    'state.toolsGroups': {
+      handler(groups) {
+        this.$emit('visible', groups.length > 0);
+      }
+    }
+  },
   components: {
     G3wTool
   }
@@ -20,26 +27,17 @@ function ToolsComponent(options={}) {
   base(this, options);
   this._service = new ToolsService(options);
   this.title = "tools";
-  this.state.visible = this._service.state.toolsGroups.length > 0;
 
-  this._service.onafter('addTools', () => {
-    this.state.visible = this._service.state.toolsGroups.length > 0;
-  });
-
-  this._service.onafter('addToolGroup', () => {
-    this.state.visible = this._service.state.toolsGroups.length > 0;
-  });
-
-  this._service.onafter('removeTools', () => {
-    this.state.visible = this._service.state.toolsGroups.length > 0;
-
-  });
-  this.internalComponent = new InternalComponent({
+  const internalComponent = new InternalComponent({
     toolsService: this._service
   });
-  this.internalComponent.state = this._service.state;
 
-  this._setOpen = function(bool) {
+  internalComponent.state = this._service.state;
+  this.setInternalComponent(internalComponent, {
+    events: [{name: 'visible'}]
+  });
+
+  this._setOpen = function(bool=false) {
     this.internalComponent.state.open = bool;
     bool && GUI.closeContent();
   }
