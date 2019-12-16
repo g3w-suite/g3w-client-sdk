@@ -2,7 +2,7 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const G3WObject = require('core/g3wobject');
 
-function ToolsService(options={}){
+function Service(options={}){
   this.config = null;
   this._actions = {};
   this.state = {
@@ -87,6 +87,6 @@ function ToolsService(options={}){
   base(this);
 }
 
-inherit(ToolsService, G3WObject);
+inherit(Service, G3WObject);
 
-module.exports = ToolsService;
+module.exports = Service;

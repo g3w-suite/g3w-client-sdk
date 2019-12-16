@@ -2,7 +2,7 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const GUI = require('gui/gui');
 const Component = require('gui/vue/component');
-const ToolsService = require('gui/tools/toolsservice');
+const ToolsService = require('gui/tools/service');
 import G3wTool from './tool.vue';
 const InternalComponent = Vue.extend({
   template: require('./tools.html'),
