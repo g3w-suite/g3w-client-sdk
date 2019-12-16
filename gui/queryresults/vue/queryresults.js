@@ -147,36 +147,45 @@ const vueComponentOptions = {
     },
     featureBoxColspan: function(layer) {
       let colspan = this.attributesSubsetLength(layer.attributes);
-      if (layer.expandable) {
-        colspan += 1;
-      }
-      if (layer.hasgeometry) {
-        colspan += 1;
-      }
+      if (layer.expandable) colspan += 1;
+      if (layer.hasgeometry) colspan += 1;
       return colspan;
     },
     relationsAttributesSubsetLength: function(elements) {
       return this.relationsAttributesSubset(elements).length;
     },
-    attributesOutFormStructure(layer) {
-      const fieldNames = layer.formStructure.fieldsoutofstructure.map((field) => {
-        return field.field_name;
+    getItemsFromStructure(layer) {
+      let prevtabitems = [];
+      const newstructure = [];
+      layer.formStructure.structure.forEach((item) => {
+        const _item = this.isAttributeOrTab(layer, item);
+        if (_item.type === 'field') {
+          newstructure.push(_item);
+          prevtabitems = [];
+        } else {
+          if (!prevtabitems.length) {
+            newstructure.push(_item);
+            prevtabitems = _item.item;
+          } else prevtabitems.push(_item.item[0]);
+        }
       });
-      return layer.attributes.filter((attribute) => {
-        return fieldNames.indexOf(attribute.name) > -1;
+      return newstructure;
+    },
+    isAttributeOrTab(layer, item,) {
+      const isField = item.field_name !== undefined;
+      return  {
+        type: isField && 'field' || 'tab',
+        item: isField && this.getLayerAttributeFromStructureItem(layer, item.field_name) || [item]
+      };
+    },
+    getLayerAttributeFromStructureItem(layer, field_name) {
+      return layer.attributes.find((attribute) => {
+        return attribute.name === field_name;
       })
     },
     collapsedFeatureBox: function(layer, feature, relation_index) {
-      let collapsed = true;
-      let boxid;
-      if (!_.isNil(relation_index)) {
-        boxid = layer.id + '_' + feature.id+ '_' + relation_index;
-      } else {
-        boxid = layer.id + '_' + feature.id;
-      }
-      if (this.layersFeaturesBoxes[boxid]) {
-        collapsed = this.layersFeaturesBoxes[boxid].collapsed;
-      }
+      const boxid = !_.isNil(relation_index) ? layer.id + '_' + feature.id+ '_' + relation_index : layer.id + '_' + feature.id;
+      const collapsed = this.layersFeaturesBoxes[boxid] ? this.layersFeaturesBoxes[boxid].collapsed : true;
       return collapsed;
     },
     showFeatureInfo(layer, boxid) {

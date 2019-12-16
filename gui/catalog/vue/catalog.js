@@ -645,6 +645,13 @@ Vue.component('layerslegend-items',{
     }
   },
   methods: {
+    setError(legendurl){
+      legendurl.error = true;
+      legendurl.loading = false;
+    },
+    urlLoaded(legendurl){
+      legendurl.loading = false;
+    },
     getLegendUrl: function(layer, params={}) {
       let legendurl;
       const catalogLayers = CatalogLayersStoresRegistry.getLayersStores();
@@ -666,9 +673,9 @@ Vue.component('layerslegend-items',{
       const layers = _layers.reverse();
       for (let i=0; i< layers.length; i++) {
         const layer = layers[i];
-        const urlLayersName = layer.external ? urlMethodsLayersName.GET : urlMethodsLayersName[layer.ows_method];
+        const urlLayersName = (layer.source && layer.source.url) || layer.external ? urlMethodsLayersName.GET : urlMethodsLayersName[layer.ows_method];
         const url = this.getLegendUrl(layer, this.legend);
-        if (layer.source && layer.source.external)
+        if (layer.source && layer.source.url)
           urlLayersName[url] = [];
         else {
           const [prefix, layerName] = url.split('LAYER=');
@@ -684,7 +691,8 @@ Vue.component('layerslegend-items',{
             const legendUrl = urlLayersName[url].length ? `${url}&LAYER=${urlLayersName[url].join(',')}`: url;
             this.legendurls.push({
               loading: true,
-              url: legendUrl
+              url: legendUrl,
+              error: false
             });
           }
         else {
@@ -704,7 +712,8 @@ Vue.component('layerslegend-items',{
             xhr.responseType = 'blob';
             const legendUrlObject = {
               loading: true,
-              url: null
+              url: null,
+              error: false
             };
             self.legendurls.push(legendUrlObject);
             xhr.onload = function() {

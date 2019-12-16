@@ -110,20 +110,18 @@ proto.getDependencyPlugins = function(pluginsName = []) {
 
 // method to get plugin dependency
 proto.getDependencyPlugin = function(pluginName) {
+  if (!PluginsRegistry.isTherePlugin(pluginName))  return Promise.reject({error:'no plugin'});
   return new Promise((resolve, reject) => {
     const plugin = PluginsRegistry.getPlugin(pluginName);
-    if (plugin) {
-      plugin.isReady().then(() => {
-        resolve(plugin.getApi())
-      })
-    } else {
-      PluginsRegistry.onafter('registerPlugin', (plugin) => {
-        if (plugin.name === pluginName)
+    plugin && plugin.isReady().then(() => {
+          resolve(plugin.getApi())
+        })
+    || PluginsRegistry.onafter('registerPlugin', (plugin) => {
+        (plugin.name === pluginName) &&
           plugin.isReady().then(() => {
             resolve(plugin.getApi())
           })
-      })
-    }
+      });
   })
 };
 

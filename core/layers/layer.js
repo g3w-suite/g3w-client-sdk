@@ -272,8 +272,8 @@ proto.getConfig = function() {
   return this.config;
 };
 
-proto.getEditorFormStructure = function() {
-  return this.config.editor_form_structure ? this.config.editor_form_structure.filter((structure) => {
+proto.getEditorFormStructure = function({all=false}={}) {
+  return this.config.editor_form_structure && !all ? this.config.editor_form_structure.filter((structure) => {
     return !structure.field_name;
   }) : this.config.editor_form_structure;
 };

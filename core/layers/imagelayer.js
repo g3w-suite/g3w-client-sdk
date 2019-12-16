@@ -84,13 +84,14 @@ proto.isArcgisMapserver = function() {
 };
 
 proto._getBaseLayerName = function() {
-  return  (!this.isExternalWMS() || (this.isExternalWMS() && !this.isLayerProjectionASMapProjection())) && this.isWmsUseLayerIds() ? this.getId() : this.getName();
+  const baseLayerName = (!this.isExternalWMS() || (this.isExternalWMS() && !this.isLayerProjectionASMapProjection())) && this.isWmsUseLayerIds() ? this.getId() : this.getName();
+  return baseLayerName
 };
 
 proto.getWMSLayerName = function({type='map'}={}) {
   const legendMapBoolean = type === 'map' ? this.isExternalWMS() && this.isLayerProjectionASMapProjection() : true;
   let layerName = this._getBaseLayerName();
-  if (legendMapBoolean && this.config.source && (this.config.source.layers || this.config.source.layer)) {
+  if (legendMapBoolean && this.config.source && (type === 'legend' ||this.config.source.external) && (this.config.source.layers || this.config.source.layer)) {
     layerName = this.config.source.layers || this.config.source.layer;
   }
   return layerName;
@@ -118,7 +119,11 @@ proto.getFullWmsUrl = function() {
 // values: map, legend
 proto.getWmsUrl = function({type='map'}={}) {
   const legendMapBoolean = type === 'map' ? this.isExternalWMS() && this.isLayerProjectionASMapProjection() : true;
-  return (legendMapBoolean && this.config.source && this.config.source.type === 'wms' && this.config.source.url) ?
+  return (legendMapBoolean &&
+      this.config.source &&
+      (type === 'legend' || this.config.source.external) &&
+      this.config.source.type === 'wms' &&
+      this.config.source.url) ?
     this.config.source.url :
     this.config.wmsUrl;
 };
