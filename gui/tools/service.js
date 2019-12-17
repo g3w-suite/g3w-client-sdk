@@ -3,7 +3,7 @@ const base = require('core/utils/utils').base;
 const ProjectRegistry = require('core/project/projectsregistry');
 const G3WObject = require('core/g3wobject');
 
-function ToolsService(options={}){
+function Service(options={}){
   this.config = null;
   this._actions = {};
   this.state = {
@@ -103,10 +103,10 @@ function ToolsService(options={}){
   }
 }
 
-inherit(ToolsService, G3WObject);
+inherit(Service, G3WObject);
 
 ToolsService.ACTIONS = {
   wps: require('./actions/wps')
 };
 
-module.exports = ToolsService;
+module.exports = Service;

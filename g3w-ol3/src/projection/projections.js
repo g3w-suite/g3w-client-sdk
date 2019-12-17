@@ -23,8 +23,10 @@ const Projections = {
 
 Projections.get("EPSG:3045", "+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
 Projections.get("EPSG:6708", "+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
+Projections.get("EPSG:32632", "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs");
 Projections.get("EPSG:32633", "+proj=utm +zone=33 +ellps=WGS84 +datum=WGS84 +units=m +no_defs");
 Projections.get("EPSG:25833", "+proj=utm +zone=33 +ellps=GRS80 +units=m +no_defs");
+Projections.get("EPSG:23032", "+proj=utm +zone=32 +ellps=intl +units=m +no_defs ");
 Projections.get("EPSG:23033", "+proj=utm +zone=33 +ellps=intl +units=m +no_defs");
 
 module.exports = Projections;

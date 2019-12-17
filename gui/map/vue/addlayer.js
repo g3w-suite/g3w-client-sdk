@@ -5,9 +5,11 @@ const EPSG = [
   "EPSG:3857",
   "EPSG:4326",
   "EPSG:6708",
+  "EPSG:23032",
   "EPSG:23033",
   "EPSG:25833",
-  "EPSG:32633"
+  "EPSG:32632",
+  "EPSG:32633",
 ];
 
 //Vue color componet
