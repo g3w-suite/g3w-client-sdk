@@ -19,14 +19,21 @@ proto._XMLToJSON = function(response) {
 };
 
 proto._createProcessInputType = function(input) {
+  console.log(input)
   const typeValue = {
     type: null,
-    value: null
+    value: null,
+    options: {}
   };
   if (input.ComplexData) {
-    typeValue.type = input.ComplexData.Default.Format.MimeType
+    typeValue.type = 'file';
+    typeValue.options.mimetype = input.ComplexData.Default.Format.MimeType;
   } else if (input.LiteralData) {
     typeValue.type = input.LiteralData.DataType.toString()
+  } else if (input.BoundingBoxData) {
+    typeValue.type = 'bbox';
+    typeValue.value = input.BoundingBoxData.Default.CRS;
+    typeValue.options.epsg = input.BoundingBoxData.Supported.CRS || [input.BoundingBoxData.Default.CRS]
   }
   return typeValue;
 };
@@ -36,6 +43,7 @@ proto._buildFromFromDescribeProcessResponse = function({Abstract, DataInputs, Pr
   let outputs =  ProcessOutputs.Output && (Array.isArray(ProcessOutputs.Output) && ProcessOutputs.Output || [ProcessOutputs.Output])  || [];
   inputs = inputs.map((input) => {
     const inputType = this._createProcessInputType(input);
+    console.log(inputType)
     return {
       id: input.Identifier.toString(),
       label: input.Title.toString(),
@@ -113,15 +121,32 @@ proto.execute = async function({inputs=[], id } ={}) {
 
 proto._handleOutputProcessResponse = function(response) {
   const output = this._XMLToJSON(response);
-  const FeatureCollection = output.ExecuteResponse.ProcessOutputs.Output.Data.ComplexData.FeatureCollection;
-  if (FeatureCollection.featureMember)
-    FeatureCollection.featureMember = Array.isArray(FeatureCollection.featureMember) ? FeatureCollection.featureMember : [FeatureCollection.featureMember];
-  const layerFeatureCollectionXML = this._parser.json2xml_str({
-    FeatureCollection
-  });
-  const parser = new ol.format.WMSGetFeatureInfo();
-  const features = parser.readFeatures(layerFeatureCollectionXML);
-  return features;
+  const response_ = {
+    status: 'ok',
+    data: null,
+    type: null
+  };
+  if (output.ExecuteResponse.Status.ProcessFailed) {
+    response_.status = 'error';
+    response_.data = output.ExecuteResponse.Status.ProcessFailed.ExceptionReport.Exception.ExceptionText.toString()
+  } else {
+    if (output.ExecuteResponse.ProcessOutputs.Output.Data.ComplexData) {
+      const FeatureCollection = output.ExecuteResponse.ProcessOutputs.Output.Data.ComplexData.FeatureCollection;
+      if (FeatureCollection.featureMember)
+        FeatureCollection.featureMember = Array.isArray(FeatureCollection.featureMember) ? FeatureCollection.featureMember : [FeatureCollection.featureMember];
+      const layerFeatureCollectionXML = this._parser.json2xml_str({
+        FeatureCollection
+      });
+      const parser = new ol.format.WMSGetFeatureInfo();
+      const features = parser.readFeatures(layerFeatureCollectionXML);
+      response.type = 'vector';
+      response.data = features;
+    } else if (output.ExecuteResponse.ProcessOutputs.Output.Data.LiteralData) {
+      response_.type = output.ExecuteResponse.ProcessOutputs.Output.Data.LiteralData._dataType;
+      response_.data = output.ExecuteResponse.ProcessOutputs.Output.Data.LiteralData.toString();
+    }
+  }
+  return response_;
 };
 
 proto.getStatus = function(jobId) {

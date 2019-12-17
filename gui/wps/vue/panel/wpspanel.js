@@ -1,6 +1,5 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
-const GUI = require('gui/gui');
 const Panel = require('gui/panel');
 const Service = require('gui/wps/service');
 

@@ -3,7 +3,6 @@ const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
 const WPSProvider = require('core/layers/providers/wpsprovider');
 const readFeaturesFromData = require('core/utils/geo').readFeaturesFromData;
-
 function WPSService(options={}) {
   this._provider = new WPSProvider(options);
   this.state = {
@@ -73,16 +72,36 @@ proto.describeProcess = async function(id) {
 proto.run = async function({inputs=[], id}={}){
   this.state.loading = true;
   const mapService = GUI.getComponent('map').getService();
-  const features = await this._provider.execute({
+  const response = await this._provider.execute({
     inputs,
     id
   });
-  const source = new ol.source.Vector();
-  source.addFeatures(features);
-  const layer = new ol.layer.Vector({
-    source, name: 'Pippo'
-  });
-  mapService.addExternalLayer(layer);
+  if (response.status === 'ok') {
+    const {type, data} = response;
+    switch(type) {
+      case 'vector':
+        const source = new ol.source.Vector();
+        source.addFeatures(data);
+        const layer = new ol.layer.Vector({
+          source,
+          name: 'Pippo'
+        });
+        mapService.addExternalLayer(layer);
+        break;
+      case 'string':
+        alert(data);
+        break;
+      default:
+        console.log(data)
+    }
+  } else {
+    GUI.showUserMessage({
+      type: 'alert',
+      message: response.data,
+      autoclose: true
+    })
+  }
+
   this.state.loading = false;
 };
 

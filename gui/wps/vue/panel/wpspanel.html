@@ -16,7 +16,11 @@
           <p style="margin-bottom: 3px; margin-top: 3px;">[ {{ input.id }} ]</p>
           <label :for="input.id">{{ input.label }}</label>
           <input class="form-control" :id="input.id" v-if="input.type ==='string'" v-model="input.value">
-          <input class="form-control" :id="input.id" type="number" v-else-if="input.type ==='integer'" v-model="input.value">
+          <input class="form-control" :id="input.id" type="number" v-else-if="input.type ==='float'" v-model="input.value">
+          <input type="file" :id="input.id" name="file" v-else-if="input.type ==='file'" :accept="input.options.mimetype" v-model="input.value">
+          <select :id="input.id" v-else-if="input.type ==='bbox'" style="width:100%">
+            <option v-for="epsg in input.options.epsg" :value="epsg" :key="epsg">{{ epsg }}</option>
+          </select>
         </template>
       </div >
       <div class="processoutputdata" class="sidebar-divider">

@@ -37,7 +37,7 @@ function Service(options={}){
   this._addTool = function(tool, {position : order, title: name}) {
     let group = this._addToolGroup(order, name);
     if (tool.action === undefined && tool.type)
-      tool.action = ToolsService.ACTIONS[tool.type].bind(null, tool.options);
+      tool.action = Service.ACTIONS[tool.type].bind(null, tool.options);
     group.tools.push(tool);
   };
 
@@ -105,7 +105,7 @@ function Service(options={}){
 
 inherit(Service, G3WObject);
 
-ToolsService.ACTIONS = {
+Service.ACTIONS = {
   wps: require('./actions/wps')
 };
 
