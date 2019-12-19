@@ -267,7 +267,7 @@ const utils = {
         }
       })
     },
-    post({url, data, formdata = false} = {}) {
+    post({url, data, formdata = false, contentType} = {}) {
       return new Promise((resolve, reject) => {
         if (formdata) {
           const formdata = new FormData();
@@ -283,6 +283,19 @@ const utils = {
           }).then((response) => {
               resolve(response)
             })
+            .fail((error) => {
+              reject(error);
+            })
+        } else if (contentType) {
+          $.ajax({
+            type: 'POST',
+            url,
+            data,
+            processData: false,
+            contentType: contentType || false
+          }).then((response) => {
+            resolve(response)
+          })
             .fail((error) => {
               reject(error);
             })

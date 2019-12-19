@@ -41,11 +41,18 @@ const WpsPanelComponent = Vue.extend({
       this.select2.on('select2:select', (evt) => {
         const id = evt.params.data.id;
         this.selectedProcess = id;
-        this.$options.service.describeProcess(id)
+        this.$options.service.describeProcess(id);
       })
     })
   },
+  updated() {
+    this.inputSelect && this.inputSelect.select2('destroy');
+    this.$nextTick(()=> {
+      this.inputSelect = $('#g3w-wps-form .inputdata select').select2();
+    })
+  },
   beforeDestroy() {
+    this.inputSelect && this.inputSelect.select2('destroy');
     this.select2.select2('destroy');
   }
 });

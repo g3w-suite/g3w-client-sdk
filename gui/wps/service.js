@@ -49,6 +49,7 @@ proto.getCapabilities = async function(){
 };
 
 proto.describeProcess = async function(id) {
+  GUI.closeUserMessage();
   this.state.loading = true;
   const index = this.state.process.findIndex(process => process.id === id);
   let form = this.state.process[index].form;
@@ -89,7 +90,10 @@ proto.run = async function({inputs=[], id}={}){
         mapService.addExternalLayer(layer);
         break;
       case 'string':
-        alert(data);
+        GUI.showUserMessage({
+          type: 'info',
+          message: data
+        });
         break;
       default:
         console.log(data)
@@ -98,7 +102,7 @@ proto.run = async function({inputs=[], id}={}){
     GUI.showUserMessage({
       type: 'alert',
       message: response.data,
-      autoclose: true
+      //autoclose: true
     })
   }
 
@@ -106,7 +110,7 @@ proto.run = async function({inputs=[], id}={}){
 };
 
 proto.clear = function() {
-
+  GUI.closeUserMessage();
 };
 
 
