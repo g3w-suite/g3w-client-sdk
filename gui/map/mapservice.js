@@ -122,6 +122,9 @@ function MapService(options={}) {
   this._marker = null;
 
   this.setters = {
+    setupControls(){
+      return this._setupControls()
+    },
     addHideMap: function({ratio, layers=[], mainview=false, switchable=false} = {}) {
       const id = 'hidemap_'+ Date.now();
       const idMap = {
@@ -493,7 +496,7 @@ proto.createMapControl = function(type, options={add=true, toggled=false, visibl
 };
 
 
-proto.setupControls = function() {
+proto._setupControls = function() {
   const baseLayers = getMapLayersByFilter({
     BASELAYER: true
   });
@@ -593,7 +596,7 @@ proto.setupControls = function() {
             add: true,
             toggled: true
           });
-          control.on('picked', throttle((e) => {
+          const eventKey = control.on('picked', throttle((e) => {
             const coordinates = e.coordinates;
             this.getMap().getView().setCenter(coordinates);
             // show marker
@@ -633,6 +636,10 @@ proto.setupControls = function() {
                 GUI.closeContent();
               });
           }));
+          control.setEventKey({
+            eventType: 'picked',
+            eventKey
+          });
           break;
         case 'querybypolygon':
           const controlQuerableLayers = getMapLayersByFilter({
@@ -652,7 +659,7 @@ proto.setupControls = function() {
           });
           if (control) {
             const showQueryResults = GUI.showContentFactory('query');
-            control.on('picked', throttle((e) => {
+            const eventKey = control.on('picked', throttle((e) => {
               let results = {};
               let geometry;
               const coordinates = e.coordinates;
@@ -758,6 +765,10 @@ proto.setupControls = function() {
                 GUI.closeContent();
               })
             }));
+            control.setEventKey({
+              eventType: 'picked',
+              eventKey
+            });
           }
           break;
         case 'querybbox':
@@ -774,7 +785,7 @@ proto.setupControls = function() {
               }
             });
             if (control) {
-              control.on('bboxend', (e) => {
+              const eventKey = control.on('bboxend', (e) => {
                 let bbox = e.extent;
                 let filterBBox = bbox;
                 const center = ol.extent.getCenter(bbox);
@@ -847,6 +858,10 @@ proto.setupControls = function() {
                     GUI.closeContent();
                   })
                 });
+              control.setEventKey({
+                eventType: 'bboxend',
+                eventKey
+              });
             }
           }
           break;
@@ -1011,6 +1026,7 @@ proto.setupControls = function() {
     });
     //this._setMapControlsInsideContainerLenght();
     //this.state.mapcontrolready = true;
+    return this.getMapControls()
   }
 };
 
@@ -1163,6 +1179,11 @@ proto._addControlToMapControls = function(control, visible=true) {
   if (!visible)
     control.element.style.display = "none";
   $('.g3w-map-controls').append(controlElement);
+};
+
+proto.getMapControlByType = function({type}={}) {
+  const mapControl = this._mapControls.find(mapControl => type === mapControl.type);
+  return mapControl && mapControl.control;
 };
 
 proto.addControl = function(type, control, addToMapControls=true, visible=true) {

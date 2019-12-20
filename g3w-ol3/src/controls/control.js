@@ -3,6 +3,7 @@ const Control = function(options) {
   const name = options.name || "?";
   this.name = name.split(' ').join('-').toLowerCase();
   this.id = this.name+'_'+(Math.floor(Math.random() * 1000000));
+  this.eventKeys = {}; // store eventKey and original havenHandler
   /*
     tl: top-left
     tr: top-right
@@ -27,6 +28,25 @@ const Control = function(options) {
 ol.inherits(Control, ol.control.Control);
 
 const proto = Control.prototype;
+
+proto.setEventKey = function({eventType, eventKey}){
+  this.eventKeys[eventType] = {
+    eventKey,
+    originalHandler: eventKey.linstener
+  };
+};
+
+proto.resetOriginalHandlerEvent = function(eventType){
+  const eventKey = this.eventKeys[eventType].eventKey;
+  eventKey && ol.Observable.unByKey(eventKey);
+  this.eventKeys[eventType].eventKey = this.on(eventType, this.eventKeys[eventType].originalHandler);
+};
+
+proto.overwriteEventHandler = function({eventType, handler}) {
+  const eventKey = this.eventKeys[eventType].eventKey;
+  eventKey && ol.Observable.unByKey(eventKey);
+  this.eventKeys[eventType].eventKey = this.on(eventType, handler);
+};
 
 proto.getPosition = function(positionCode) {
   positionCode = positionCode || this.positionCode;

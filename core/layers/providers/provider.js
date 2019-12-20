@@ -146,7 +146,7 @@ proto.handleQueryResponseFromServerSingleLayer = function(layer, response, proje
 proto.handleQueryResponseFromServer = function(response, projections, layers, wms=true) {
   layers = layers ? layers : [this._layer];
   const layer = layers[0];
-  if (layer.getType() === "table" || !layer.isExternalWMS()) {
+  if (layer.getType() === "table" || !layer.isExternalWMS() || !layer.isLayerProjectionASMapProjection()) {
     response =  this._handleXMLStringResponseBeforeConvertToJSON({
       layers,
       response,
@@ -219,7 +219,35 @@ proto._handleWMSMultilayers = function({layer, response, projections} = {}) {
   return handledResponses;
 };
 
+proto._groupFeaturesByFields = function(features) {
+  return _.groupBy(features, (feature) => {
+    return Object.keys(feature);
+  });
+};
+
+proto._handleWMSMultiLayersResponseFromQGISSERVER = function({groupFeatures, prefix, handledResponses, jsonresponse, layer, projections} = {}){
+  // is a multilayers. Each feature has different fields
+  Object.keys(groupFeatures).forEach((key, index) => {
+    const features = groupFeatures[key];
+    jsonresponse.FeatureCollection.featureMember = {
+      [`layer${index}`]: features,
+      __prefix: prefix
+    };
+    const handledResponse = this._parseLayerFeatureCollection({
+      jsonresponse,
+      layer,
+      projections
+    });
+    if (handledResponse) {
+      const response = handledResponse[0];
+      response.layer = layer;
+      handledResponses.push(response);
+    }
+  });
+};
+
 proto._getHandledResponsesFromResponse = function({response, layers, projections, id=false}) {
+  let multilayers = false;
   const x2js = new X2JS();
   const jsonresponse =  x2js.xml_str2json(response);
   // in case of parser return null
@@ -251,20 +279,38 @@ proto._getHandledResponsesFromResponse = function({response, layers, projections
       });
       if (featureMemberArrayAndPrefix.features) {
         const prefix = featureMemberArrayAndPrefix.__prefix;
-        featureMemberArrayAndPrefix.features.forEach((feature) => {
-          //for Each element have to add and object contain layerName and information, and __prefix
-          jsonresponse.FeatureCollection.featureMember.push({
-            [layerName]: feature,
-            __prefix: prefix
+        // check if features have the same fields. If not group the featues with the same fields
+        const groupFeatures = this._groupFeaturesByFields(featureMemberArrayAndPrefix.features);
+        //check if features have different fields (multilayers)
+        if (Object.keys(groupFeatures).length > 1) {
+          // is a multilayers. Each feature has different fields
+          multilayers = true;
+          this._handleWMSMultiLayersResponseFromQGISSERVER({
+            groupFeatures,
+            prefix,
+            handledResponses,
+            jsonresponse,
+            layer,
+            projections
           })
-        });
+        } else {
+          featureMemberArrayAndPrefix.features.forEach((feature) => {
+            //for Each element have to add and object contain layerName and information, and __prefix
+            jsonresponse.FeatureCollection.featureMember.push({
+              [layerName]: feature,
+              __prefix: prefix
+            })
+          });
+        }
       }
-      const handledResponse = this._parseLayerFeatureCollection({
-        jsonresponse,
-        layer,
-        projections
-      });
-      handledResponse && handledResponses.push(handledResponse[0]);
+      if (!multilayers) {
+        const handledResponse = this._parseLayerFeatureCollection({
+          jsonresponse,
+          layer,
+          projections
+        });
+        handledResponse && handledResponses.push(handledResponse[0]);
+      }
     }
   }
   return handledResponses;
