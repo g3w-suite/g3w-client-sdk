@@ -146,7 +146,7 @@ proto.handleQueryResponseFromServerSingleLayer = function(layer, response, proje
 proto.handleQueryResponseFromServer = function(response, projections, layers, wms=true) {
   layers = layers ? layers : [this._layer];
   const layer = layers[0];
-  if (layer.getType() === "table" || !layer.isExternalWMS()) {
+  if (layer.getType() === "table" || !layer.isExternalWMS() || !layer.isLayerProjectionASMapProjection()) {
     response =  this._handleXMLStringResponseBeforeConvertToJSON({
       layers,
       response,
@@ -204,31 +204,15 @@ proto._handleWMSMultilayers = function({layer, response, projections} = {}) {
       jsonresponse.FeatureCollection.featureMember = originalFeatureMember.filter((feature) => {
         return feature[layerName]
       });
-      const prefix = jsonresponse.FeatureCollection.featureMember[0].__prefix;
-      const features = Array.isArray(jsonresponse.FeatureCollection.featureMember[0][layerName]) ? jsonresponse.FeatureCollection.featureMember[0][layerName] : [jsonresponse.FeatureCollection.featureMember[0][layerName]]
-      const groupFeatures = this._groupFeaturesByFields(features);
-      //check if features have different fields (multilayers)
-      if (Object.keys(groupFeatures).length > 1) {
-        // is a multilayers. Each feature has different fields
-        this._handleWMSMultiLayersResponseFromQGISSERVER({
-          groupFeatures,
-          prefix,
-          handledResponses,
-          jsonresponse,
-          layer,
-          projections
-        })
-      } else {
-        const handledResponse = this._parseLayerFeatureCollection({
-          jsonresponse,
-          layer,
-          projections
-        });
-        if (handledResponse) {
-          const response = handledResponse[0];
-          response.layer = layerName;
-          handledResponses.push(response);
-        }
+      const handledResponse = this._parseLayerFeatureCollection({
+        jsonresponse,
+        layer,
+        projections
+      });
+      if (handledResponse) {
+        const response = handledResponse[0];
+        response.layer = layerName;
+        handledResponses.push(response);
       }
     }
   }
