@@ -17,10 +17,25 @@ const WpsPanelComponent = Vue.extend({
       return this.state.loading || this.state.running;
     },
     currentProcessForm() {
-      return this.state.currentindex > -1 ? this.state.process[this.state.currentindex].form : {};
+      return this.state.currentindex > -1 ? this.state.processes[this.state.currentindex].form : {};
     }
   },
   methods: {
+    openInputFile(id) {
+      document.getElementById(id).click();
+    },
+    loadFile({input, event}={}){
+      var reader = new FileReader();
+      const file = event.target.files[0];
+      reader.readAsText(file, "UTF-8");
+      reader.onload = function (evt) {
+        input.value = evt.target.result.replace('<?xml version="1.0" encoding="utf-8" ?>','<![CDATA[');
+        input.value = input.value.concat(']]>');
+      };
+      reader.onerror = function (evt) {
+        console.log(evt);
+      };
+    },
     run: function(event) {
      event.preventDefault();
      this.state.loading = true;
@@ -31,9 +46,12 @@ const WpsPanelComponent = Vue.extend({
     }
   },
   watch: {
-    'state.process'(process) {
-      this.selectedProcess = process[0].id;
+    'state.processes'(processes) {
+      this.selectedProcess = processes[0].identifier;
     }
+  },
+  created() {
+    this._bbox = {};
   },
   mounted() {
     this.$nextTick(() => {

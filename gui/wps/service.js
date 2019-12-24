@@ -12,21 +12,21 @@ function WPSService(options={}) {
     loading: true,
     title: options.name,
     error: false,
-    process: []
+    processes: []
   };
   this.getCapabilities()
-    .then((process)=> {
-      process.forEach((theprocess) => {
-        this.state.process.push(theprocess);
+    .then((processes)=> {
+      processes.forEach((process) => {
+        this.state.processes.push(process);
       })
     })
     .catch((error) => {
       this.state.error = true;
     })
     .finally(async() => {
-      if (this.state.process.length && !this.state.currentProcess) {
+      if (this.state.processes.length && !this.state.currentProcess) {
         try {
-          const id = this.state.process[0].id;
+          const id = this.state.processes[0].identifier;
           const processform = await this.describeProcess(id);
           this.state.currentindex = 0;
         } catch (err) {
@@ -51,13 +51,13 @@ proto.getCapabilities = async function(){
 proto.describeProcess = async function(id) {
   GUI.closeUserMessage();
   this.state.loading = true;
-  const index = this.state.process.findIndex(process => process.id === id);
-  let form = this.state.process[index].form;
+  const index = this.state.processes.findIndex(process => process.identifier === id);
+  let form = this.state.processes[index].form;
   if (form)
     this.state.loading = false;
   else {
     try {
-      form = this.state.process[index].form = await this._provider.describeProcess({
+      form = this.state.processes[index].form = await this._provider.describeProcess({
         id, format: 'form'
       });
     } catch(err) {

@@ -310,6 +310,13 @@ const utils = {
         }
       })
     },
+    htmlescape(string){
+      string = string.replace("&", "&amp;");
+      string = string.replace("<", "&lt;");
+      string = string.replace(">", "&gt;");
+      string = string.replace('"', "&quot;");
+      return string;
+    },
     fileDownload({url, data, httpMethod="POST"} = {}) {
       return new Promise((resolve, reject) => {
         $.fileDownload(url, {

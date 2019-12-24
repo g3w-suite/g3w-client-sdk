@@ -6,9 +6,11 @@
       <div id="processes" class="sidebar-divider">
         <h4><b v-t="'sdk.wps.list_process'"></b></h4>
         <select id="wps_processes" style="width: 100%; font-weight: bold">
-          <option v-for="theprocess in state.process" :value="theprocess.id" :key="theprocess.id">{{ theprocess.name }}</option>
+          <option v-for="process in state.processes" :value="process.identifier" :key="process.identifier">
+            {{ process.title }}
+          </option>
         </select>
-        <div class="abstract">{{ currentProcessForm.abstract }}</div>
+        <div class="abstract" style="padding: 3px;">{{ currentProcessForm.abstract }}</div>
       </div>
       <div class="inputdata sidebar-divider" style="padding:3px; ">
         <h4 style="font-weight: bold">Inputs</h4>
@@ -17,10 +19,24 @@
           <label :for="input.id">{{ input.label }}</label>
           <input class="form-control" :id="input.id" v-if="input.type ==='string'" v-model="input.value">
           <input class="form-control" :id="input.id" type="number" v-else-if="input.type ==='float'" v-model="input.value">
-          <input type="file" :id="input.id" name="file" v-else-if="input.type ==='file'" :accept="input.options.mimetype" v-model="input.value">
-          <select :id="input.id" v-else-if="input.type ==='bbox'" style="width:100%">
-            <option v-for="epsg in input.options.epsg" :value="epsg" :key="epsg">{{ epsg }}</option>
-          </select>
+          <div v-else-if="input.type ==='file'" @click="openInputFile(input.id)" class="g3w_input_button skin-background-color" style="width:100%; cursor: pointer; text-align: center">
+            <i :class="g3wtemplate.getFontClass('file-upload')" class="fa-2x" style="padding: 3px;">
+              <input style="display: none" type="file" :id="input.id" name="file"  :accept="input.options.mimetype" @change="loadFile({input, event:$event})">
+            </i>
+          </div>
+          <template v-else-if="input.type ==='bbox'">
+            <select :id="input.id"  style="width:100%">
+              <option v-for="epsg in input.options.epsg" :value="epsg" :key="epsg">{{ epsg }}</option>
+            </select>
+            <label :for="`bbox_${input.id}`">BBOX [LLX LLY UPX URY]</label>
+            <div :id="`bbox_${input.id}`" style="display: flex; width: 100%">
+              <input class="form-control" type="number" v-model='input.value.llx'>
+              <input class="form-control" type="number" v-model='input.value.lly'>
+              <input class="form-control" type="number" v-model='input.value.upx'>
+              <input class="form-control" type="number" v-model='input.value.upy'>
+            </div>
+
+          </template>
         </template>
       </div >
       <div class="processoutputdata" class="sidebar-divider">
@@ -29,6 +45,8 @@
           <p style="margin-bottom: 3px; margin-top: 3px;">[ {{ output.id }} ]</p>
           <label>{{ output.label}}</label>
           <p style="margin-bottom: 3px">{{ output.sublabel }}</p>
+          <p style="margin-bottom: 3px">{{ output.type }}</p>
+
         </template>
       </div>
       <button class="run_button btn btn-block pull-right skin-background-color" @click.stop="run" :disabled="disabled">Run</button>
