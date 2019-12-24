@@ -110,7 +110,7 @@ proto.describeProcess = function({id, format='form'}) {
 };
 
 proto._createInputsForExcute = function(inputs=[]){
-  return inputs.map((input, index) => {
+  return inputs.map(input => {
     let executeInput;
     const inputGenerator = new InputGenerator();
     const type = input.type;
@@ -126,6 +126,7 @@ proto._createInputsForExcute = function(inputs=[]){
      */
     switch(type) {
       case 'string':
+      case 'float':
         executeInput = inputGenerator.createLiteralDataInput_wps_1_0_and_2_0(input.id, undefined, undefined, input.value);
         break;
       case 'file':
