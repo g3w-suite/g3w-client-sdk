@@ -38,13 +38,13 @@
           <layers-group :layersgroup="layersgroup"></layers-group>
         </ul>
       </div>
-      <div class="tab-pane baselayers nano-content" v-if="hasBaseLayers" role="tabpanel"  :class="{ active: activeTab === 'baselayers' || !hasLayers }" id="baselayers">
-        <ul>
+      <div class="tab-pane baselayers" v-if="hasBaseLayers" role="tabpanel"  :class="{ active: activeTab === 'baselayers' || !hasLayers }" id="baselayers">
+        <ul id="baselayers-content">
           <li v-if="!baselayer.fixed" v-for="baselayer in baselayers" :key="baselayer.title">
-            <img :src="getSrcBaseLayerImage(baselayer)" @click.stop="setBaseLayer(baselayer.id)" class="img-responsive img-thumbnail" :style="{opacity: currentBaseLayer === baselayer.id ? 1 : 0.5}" >
+            <img :src="getSrcBaseLayerImage(baselayer)" @click.stop="setBaseLayer(baselayer.id)" class="img-responsive img-thumbnail baselayer" :style="{opacity: currentBaseLayer === baselayer.id ? 1 : 0.5}" >
             <div class="text-center">{{ baselayer.title }}</div>
           <li @click.stop="setBaseLayer(null)">
-            <img :src="getSrcBaseLayerImage(null)" class="img-responsive img-thumbnail" :style="{opacity: currentBaseLayer === null ? 1 : 0.5}">
+            <img :src="getSrcBaseLayerImage(null)" class="img-responsive img-thumbnail baselayer" :style="{opacity: currentBaseLayer === null ? 1 : 0.5}">
             <div class="text-center" v-t="'nobaselayer'"></div>
           </li>
         </ul>
