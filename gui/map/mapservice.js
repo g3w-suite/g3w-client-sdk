@@ -316,7 +316,12 @@ proto.getProject = function() {
 };
 
 proto.getMap = function() {
-  return this.viewer.map;
+  try {
+    return this.viewer.map;
+  } catch(err) {
+    console.log(err);
+    console.log(arguments.callee.caller);
+  }
 };
 
 proto.getMapCanvas = function(map) {

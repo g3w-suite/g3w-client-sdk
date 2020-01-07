@@ -23,8 +23,8 @@ proto.getValue = function() {
 };
 
 proto.setValue = function(value) {
-  this.state.value = (value !== null && value !== undefined) ? value :
-    Array.isArray(this.state.input.options) ? this.state.input.options[0].default: this.state.input.options.default;
+  if (value === null || value === undefined) 
+    this.state.value = Array.isArray(this.state.input.options) ? this.state.input.options[0].default: this.state.input.options.default
 };
 
 proto.addValueToValues = function(value) {
