@@ -95,7 +95,12 @@ proto.createExpressionFromFilter = function(filterObject, layername) {
               const field = input[operator];
               for (const name in field) {
                 const value = field[name];
-                if ((value !== null && value !== undefined) && !(Number.isNaN(value) || !value.toString().trim())) {
+                if (operator === 'IN') {
+                  const _value = Array.isArray(value) ? value : [value];
+                  const filterValue = `( ${_value.join(',').replace(/,/g, ' , ')} )`;
+                  const  filterElement = `"${name}" ${filterOp} ${filterValue}`;
+                  filterElements.push(filterElement)
+                } else if ((value !== null && value !== undefined) && !(Number.isNaN(value) || !value.toString().trim())) {
                   const singolequote = typeof value !== 'number' ? value.split("'") : [];
                   if (singolequote.length > 1) {
                     const _filterElements = [];
@@ -124,7 +129,6 @@ proto.createExpressionFromFilter = function(filterObject, layername) {
     }
     return rootFilter;
   }
-
   const filter = createSingleFilter(filterObject);
   if (filter)
     this._expression = `${layername}:${filter}`;
@@ -133,6 +137,7 @@ proto.createExpressionFromFilter = function(filterObject, layername) {
 
 // map object between operator
 Expression.OPERATORS = {
+  IN: 'IN',
   eq: '=',
   gt: '>',
   gte: '>=',
