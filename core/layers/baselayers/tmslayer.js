@@ -19,7 +19,8 @@ proto._makeOlLayer = function() {
     url,
     minZoom,
     maxZoom,
-    attributions
+    attributions,
+    projection: `EPSG:${this.config.crs}`
   });
   return olLayer
 };

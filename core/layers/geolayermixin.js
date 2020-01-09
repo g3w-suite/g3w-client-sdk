@@ -10,7 +10,7 @@ function GeoLayerMixin(config={}) {}
 
 const proto = GeoLayerMixin.prototype;
 
-proto.setup = function(config) {
+proto.setup = function(config={}) {
   const ProjectsRegistry = require('core/project/projectsregistry');
   ProjectsRegistry.onceafter('setCurrentProject', (project) => {
     this.config.map_crs = 1*project.getProjection().getCode().split('EPSG:')[1];

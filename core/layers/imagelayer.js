@@ -75,6 +75,10 @@ proto.isLayerProjectionASMapProjection = function() {
   return this.config.crs === this.config.map_crs;
 };
 
+proto.getCrs = function() {
+  return this.config.crs;
+};
+
 proto.isExternalWMS = function() {
   return !!(this.config.source && this.config.source.external && this.config.source.url);
 };

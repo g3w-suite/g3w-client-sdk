@@ -33,7 +33,8 @@ BaseLayers.TMS =  {
           url,
           minZoom,
           maxZoom,
-          attributions
+          attributions,
+          projection
         });
         break;
       case 'arcgismapserver':

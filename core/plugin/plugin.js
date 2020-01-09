@@ -145,7 +145,7 @@ proto.removeToolGroup = function({hook, group}={}){
   service.removeToolGroup(title);
 };
 
-proto.addTools = function({hook="tools", action, html, icon, name, loading=false, disabled=false} = {}, groupTools) {
+proto.addTools = function({hook="tools", action, html, icon, name, loading=false, disabled=false, state={type:null, message:null}} = {}, groupTools) {
   if (!action) {
     this.removeToolGroup({hook, group:groupTools});
     return [];
@@ -160,11 +160,17 @@ proto.addTools = function({hook="tools", action, html, icon, name, loading=false
       html,
       loading,
       disabled,
-      action: action.bind(this, config)
+      action: action.bind(this, config),
+      state
     }
   });
   service.addTools(tools, groupTools);
   return tools;
+};
+
+proto.setToolState = function({id, state={type:null, message: null}}={}){
+  const service = this._services[this._hook];
+  service.setToolState({id, state});
 };
 
 proto.removeTools = function() {
