@@ -2,6 +2,7 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const geoutils = require('g3w-ol3/src/utils/utils');
 const G3WObject = require('core/g3wobject');
+const WORD_NUMERIC_XML_TAG_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_';
 
 function Provider(options = {}) {
   this._isReady = false;
@@ -186,6 +187,17 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
 
 proto._handleWMSMultilayers = function({layer, response, projections} = {}) {
   const x2js = new X2JS();
+  const arrayQGS = [...response.matchAll(/<qgs:(\w+) fid=/g)];
+  const alreadySubstitute = [];
+  arrayQGS.forEach(element => {
+    const fid = element[1];
+    if (alreadySubstitute.indexOf(fid) === -1) {
+      alreadySubstitute.push(fid);
+      const startfid = +fid[0];
+      if (Number.isInteger(startfid))
+        response = response.replace(new RegExp(`${fid}`, "g"), `${WORD_NUMERIC_XML_TAG_ESCAPE}${fid}`);
+    }
+  });
   const jsonresponse =  x2js.xml_str2json(response);
   // in case of parser return null
   if (!jsonresponse) return [{
@@ -211,7 +223,7 @@ proto._handleWMSMultilayers = function({layer, response, projections} = {}) {
       });
       if (handledResponse) {
         const response = handledResponse[0];
-        response.layer = layerName;
+        response.layer = layerName.replace(WORD_NUMERIC_XML_TAG_ESCAPE,'');
         handledResponses.push(response);
       }
     }
