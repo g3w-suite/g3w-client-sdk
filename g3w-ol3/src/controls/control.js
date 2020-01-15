@@ -1,6 +1,6 @@
 const layout = require('./utils').layout;
 const Control = function(options) {
-  const name = options.name || "?";
+  const name = options.name || "";
   this.name = name.split(' ').join('-').toLowerCase();
   this.id = this.name+'_'+(Math.floor(Math.random() * 1000000));
   this.eventKeys = {}; // store eventKey and original havenHandler
@@ -16,8 +16,8 @@ const Control = function(options) {
     const className = "ol-"+this.name.split(' ').join('-').toLowerCase();
     const customClass = options.customClass;
     const tipLabel = options.tipLabel || this.name;
-    const label = options.label || "?";
-    options.element = $('<div class="'+className+' ol-unselectable ol-control"><button type="button" title="'+tipLabel+'">'+label+'</button></div>')[0];
+    const label = options.label || '';
+    options.element = $(`<div class="${className} ol-unselectable ol-control"><button type="button" title="${tipLabel}">${label}<i class="${customClass}"></i></button></div>`)[0];
   }
   const buttonClickHandler = options.buttonClickHandler || Control.prototype._handleClick.bind(this);
   $(options.element).on('click',buttonClickHandler);
