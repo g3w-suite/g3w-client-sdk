@@ -14,6 +14,7 @@ const Control = function(options) {
   this.priority = options.priority || 0;
   if (!options.element) {
     const className = "ol-"+this.name.split(' ').join('-').toLowerCase();
+    const customClass = options.customClass;
     const tipLabel = options.tipLabel || this.name;
     const label = options.label || "?";
     options.element = $('<div class="'+className+' ol-unselectable ol-control"><button type="button" title="'+tipLabel+'">'+label+'</button></div>')[0];

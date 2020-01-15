@@ -1,5 +1,6 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
+const ApplicationService = require('core/applicationservice');
 const G3WObject = require('core/g3wobject');
 
 function PluginService(options={}) {
@@ -18,6 +19,10 @@ function PluginService(options={}) {
 inherit(PluginService, G3WObject);
 
 const proto = PluginService.prototype;
+
+proto.isIframe = function() {
+  return ApplicationService.isIframe();
+};
 
 proto.getConfig = function() {
   return this.config;
