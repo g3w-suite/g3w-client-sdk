@@ -109,6 +109,10 @@ proto.getShp = function() {
   })
 };
 
+proto.getSourceType = function() {
+  return this.config.source ? this.config.source.type : null;
+};
+
 proto.isGeoLayer = function() {
   return this.state.geolayer;
 };

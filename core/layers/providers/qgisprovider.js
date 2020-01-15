@@ -43,14 +43,14 @@ proto.query = function(options={}) {
     this._projections.layer = this._layer.getProjection();
     this._projections.map = this._layer.getMapProjection() || this._projections.layer;
   }
-  const crs = isVector ? this._projections.map.getCode() : null;
+  const crs = isVector ? this._layer.getSourceType() === 'spatialite' ? `EPSG:${this._layer.getCrs()}` : this._projections.map.getCode() : null;
   const queryUrl = options.queryUrl || this._queryUrl;
   const layers = options.layers;
   const {I,J} = options;
   const layerNames = layers ? layers.map(layer => layer.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
   if (filter) {
     // check if geomemtry filter. If not i have to remove projection layer
-    if (filter.getType() !== 'geometry')
+    if (filter.getType() !== 'geometry' && this._layer.getSourceType() !== 'spatialite')
       this._projections.layer = null;
     const url = queryUrl ;
     const params = {

@@ -163,10 +163,16 @@ proto.addTools = function({hook="tools", action, html, icon, name, type, options
       disabled,
       options,
       action: action && action.bind(this, config)
+      state
     }
   });
   service.addTools(tools, groupTools);
   return tools;
+};
+
+proto.setToolState = function({id, state={type:null, message: null}}={}){
+  const service = this._services[this._hook];
+  service.setToolState({id, state});
 };
 
 proto.removeTools = function() {

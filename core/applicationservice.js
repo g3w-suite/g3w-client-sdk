@@ -21,6 +21,7 @@ const ApplicationService = function() {
   let production = false;
   this.version = G3W_VERSION.indexOf("G3W_VERSION") === -1 ? G3W_VERSION  : "";
   this.ready = false;
+  this.iframe = window.top !== window.self;
   this.complete = false;
   // store all services sidebar etc..
   this._applicationServices = {};
@@ -38,6 +39,11 @@ const ApplicationService = function() {
     this._config = config;
     // run bbotstrap
     return this._bootstrap();
+  };
+
+  //check if is in Iframe
+  this.isIframe = function() {
+    return this.iframe;
   };
 
   // get config

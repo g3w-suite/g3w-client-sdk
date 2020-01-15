@@ -14,6 +14,10 @@ function Service(options={}){
   };
   this.setters = {
     addTool(tool, groupName) {
+      tool.state = tool.state ? tool.state : {
+        type: null,
+        message: null
+      };
       return this._addTool(tool, groupName);
     },
     addTools(tools, groupName) {
@@ -86,6 +90,18 @@ function Service(options={}){
     }
     return group;
   };
+
+  this.setToolState = function({id, state={type:null, message: null}}={}){
+    this.state.toolsGroups.find(toolGroup => {
+      const tool = toolGroup.tools.find(tool => tool.name === id);
+      if (tool) {
+        tool.state.type = state.type;
+        tool.state.message = state.message;
+        return true;
+      }
+    })
+  };
+
   base(this);
 
   const project = ProjectRegistry.getCurrentProject();

@@ -20,14 +20,9 @@ var SelectInput = Vue.extend({
     }
   },
   created() {
-    if (this.autocomplete && this.state.value) {
-      this.service.getKeyByValue({
-        search: this.state.value
-      })
-    }
-    if (!this.state.value) {
+    this.autocomplete && this.state.value && this.service.getKeyByValue({search: this.state.value});
+    if (!this.state.value)
       this.state.value = this.state.input.options.values.length ? this.state.input.options.values[0].value : null;
-    }
   },
   mounted() {
     this.$nextTick(() => {

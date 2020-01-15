@@ -11,7 +11,7 @@
         {{ tool.name }}
       </label>
     </div>
-    <div v-else class="tool" @click="!disabled ? fireAction(tool) : null" :class="{tool_disabled: disabled}">
+    <div v-else class="tool" @click="!disabled ? fireAction(tool) : null" :class="{tool_disabled: disabled}" style="position:relative">
       <bar-loader :loading="tool.loading"></bar-loader>
       <i :class="g3wtemplate.getFontClass(icon)"></i>
       <span v-if="tool.html" >
@@ -19,11 +19,26 @@
         {{ tool.html.text || tool.name}}
       </span>
       <span v-else>{{ tool.name }}</span>
+      <span @click.stop="showToolStateMessage" :style="{color: toolstatecolor}" v-if="tool.state.type" style="cursor: pointer; vertical-align: center; position:absolute; right: 0; top: 0; padding: 5px">
+        <i :class="g3wtemplate.getFontClass(tool.state.type)"></i>
+      </span>
     </div>
   </div>
 </template>
 
 <script>
+  const GUI = require('gui/gui');
+  const TOOLSTATE = {
+    alert: {
+      color: 'red'
+    },
+    info: {
+      color: 'blue'
+    },
+    warning: {
+      color: 'orange'
+    }
+  };
   export default {
     name: "g3w-tool",
     props: {
@@ -37,7 +52,13 @@
     methods: {
       fireAction(tool) {
         this.tool.action(tool);
-      }
+      },
+      showToolStateMessage(){
+        GUI.showModalDialog({
+          title: this.tool.state.type.toUpperCase(),
+          message: this.tool.state.message
+        })
+      },
     },
     computed: {
       disabled() {
@@ -45,6 +66,9 @@
       },
       icon() {
         return this.tool.icon || 'caret-right'
+      },
+      toolstatecolor() {
+        return TOOLSTATE[this.tool.state.type].color;
       }
     }
   }
