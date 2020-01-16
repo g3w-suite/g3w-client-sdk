@@ -6,6 +6,7 @@ const BaseInput = {
   template: require('./baseinput.html'),
   computed: {
     notvalid() {
+      if (this.state.validate.valid === false) this.service.getErrorMessage(this.state);
       return this.state.validate.valid === false;
     }
   },

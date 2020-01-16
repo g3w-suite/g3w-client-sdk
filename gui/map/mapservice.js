@@ -499,10 +499,9 @@ proto.createMapControl = function(type, options={add=true, toggled=false, visibl
     toggled: options.toggled,
     ...options.options
   });
-  control && this.addControl(id, control, options.add, options.visible);
+  control && this.addControl(id, type, control, options.add, options.visible);
   return control;
 };
-
 
 proto._setupControls = function() {
   const baseLayers = getMapLayersByFilter({
@@ -1194,10 +1193,11 @@ proto.getMapControlByType = function({type}={}) {
   return mapControl && mapControl.control;
 };
 
-proto.addControl = function(type, control, addToMapControls=true, visible=true) {
+proto.addControl = function(id, type, control, addToMapControls=true, visible=true) {
   this.state.mapcontrolready = false;
   this.viewer.map.addControl(control);
   this._mapControls.push({
+    id,
     type,
     control,
     visible,
@@ -1271,6 +1271,18 @@ proto._layoutControls = function() {
 
 proto.getMapControls = function() {
   return this._mapControls;
+};
+
+proto.removeControlById = function(id) {
+  this._mapControls.forEach((controlObj, ctrlIdx) => {
+    if (id === controlObj.id) {
+      this._mapControls.splice(ctrlIdx, 1);
+      const control = controlObj.control;
+      this.viewer.map.removeControl(control);
+      control.hideControl && control.hideControl();
+      return false;
+    }
+  })
 };
 
 proto.removeControl = function(type) {

@@ -24,6 +24,8 @@ const RangeInput = Vue.extend({
     }
   },
   created() {
+    console.log('ciao')
+    this.service.setValue(this.state.value);
     this.state.info = `(min: ${this.min} - max: ${this.max})`
   }
 });

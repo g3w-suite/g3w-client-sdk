@@ -51,6 +51,10 @@ inherit(Project, G3WObject);
 
 const proto = Project.prototype;
 
+proto.getAliasUrl = function() {
+  return this.state.aliasUrl;
+};
+
 proto.getActiveCatalogTab = function() {
   return this.state.catalog_tab;
 };
