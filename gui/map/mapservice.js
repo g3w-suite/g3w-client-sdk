@@ -108,14 +108,16 @@ function MapService(options={}) {
       this.removeLayers();
       this._removeListeners();
       this.project = project;
-      this.getMap().once('change:size', () => {
+      const changeProjectCallBack = () => {
         this._resetView();
         this._setupMapLayers();
         this._setupVectorLayers();
         this.viewer.map.getView().on("change:resolution", (evt) => {
           this._updateMapView();
         });
-      });
+      };
+      ApplicationService.isIframe() && changeProjectCallBack();
+      this.getMap().once('change:size', changeProjectCallBack);
     })
   }
   this._setupListeners();
