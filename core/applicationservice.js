@@ -28,6 +28,8 @@ const ApplicationService = function() {
   this.config = {};
   this._initConfigUrl = null;
   this._initConfig = {};
+  this._groupId = null;
+  this._gid = null;
   this.setters = {
     changeProject({gid}={}){
       return this._changeProject({gid})
@@ -37,6 +39,7 @@ const ApplicationService = function() {
   // init from server
   this.init = function(config={}) {
     this._config = config;
+    this._groupId = this._config.group.name.replace(/\s+/g, '-').toLowerCase();
     // run bbotstrap
     return this._bootstrap();
   };
@@ -50,10 +53,12 @@ const ApplicationService = function() {
   this.getConfig = function() {
     return this._config;
   };
+
   // router service
   this.getRouterService = function() {
     return RouterService;
   };
+
   // clipboard service
   this.getClipboardService = function() {
     return ClipboardService;
@@ -61,11 +66,10 @@ const ApplicationService = function() {
 
   this.obtainInitConfig = function(initConfigUrl, url) {
     const d = $.Deferred();
-    if (!this._initConfigUrl) {
-      this._initConfigUrl = initConfigUrl;
-    } else {
-      this.clearInitConfig();
-    }
+    const currentProject = ProjectsRegistry.getCurrentProject();
+    const aliasUrl =  currentProject && currentProject.getAliasUrl();
+    if (!this._initConfigUrl) this._initConfigUrl = initConfigUrl;
+    else this.clearInitConfig();
     // if exist a global initiConfig (in production)
     if (window.initConfig) {
       production = true;
@@ -85,7 +89,11 @@ const ApplicationService = function() {
           }
         });
       } else {
-        projectPath = location.pathname.split('/').splice(-4,3).join('/');
+        if (!aliasUrl) projectPath = location.pathname.split('/').splice(-4,3).join('/');
+        else {
+          const type_id = this._gid.split(':').join('/');
+          projectPath = `${this._groupId}/${type_id}`;
+        }
       }
       if (projectPath) {
         const initUrl =  `/${this._initConfigUrl}/${projectPath}`;
@@ -152,9 +160,7 @@ const ApplicationService = function() {
     //first time l'application service is not ready
     if (!this.ready) {
       // LOAD DEVELOPMENT CONFIGURATION
-      if (!production) {
-        require('../config/dev/index');
-      }
+      if (!production) require('../config/dev/index');
       $.when(
         // register project
         ProjectsRegistry.init(this._config),
@@ -193,9 +199,12 @@ const ApplicationService = function() {
 
   this._changeProject = function({gid}={}) {
     const d = $.Deferred();
+    this._gid = gid;
+    const aliasUrl = ProjectsRegistry.getProjectAliasUrl(gid);
     const mapUrl = ProjectsRegistry.getProjectUrl(gid);
     // change url using history
-    history.replaceState(null, null, mapUrl);
+    if (production && aliasUrl) history.replaceState(null, null, aliasUrl);
+    else history.replaceState(null, null, mapUrl);
     //remove tools
     this.obtainInitConfig()
       .then((initConfig) => {

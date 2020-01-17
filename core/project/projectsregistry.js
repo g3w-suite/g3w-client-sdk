@@ -97,6 +97,7 @@ proto.setupState = function() {
   const overViewProject = (this.config.overviewproject && this.config.overviewproject.gid) ? this.config.overviewproject : null;
   this.config.projects.forEach((project) => {
     this.state.qgis_version = project.qgis_version || this.state.qgis_version;
+    project.aliasUrl = project.url || null;
     project.baselayers = this.config.baselayers;
     project.minscale = this.config.minscale;
     project.maxscale = this.config.maxscale;
@@ -105,6 +106,17 @@ proto.setupState = function() {
     project.overviewprojectgid = overViewProject;
     this._groupProjects.push(project);
   });
+};
+
+proto.getProjectAliasUrl = function(gid) {
+  const project = this.config.projects.find(project => project.gid === gid);
+  return project.aliasUrl;
+};
+
+proto.setProjectAliasUrl = function({gid, url}) {
+  const project = this.config.projects.find(project => project.gid === gid);
+  if (project)
+    project.aliasUrl = url;
 };
 
 proto.getProjectType = function() {

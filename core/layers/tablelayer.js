@@ -486,6 +486,15 @@ proto.getFieldsWithValues = function(obj, options={}) {
         field.input.options.loading = options.loading;
         field.input.options.values = options.values;
       }
+      // for editing purpose
+      if (field.validate === undefined)
+        field.validate = {};
+      field.validate.valid = false;
+      field.validate.unique = true;
+      field.validate.required = field.validate.required === undefined ? false : field.validate.required;
+      field.validate.empty = field.validate.required;
+      field.validate.message = null;
+      // end editng purpose
     });
   }
   return fields;
