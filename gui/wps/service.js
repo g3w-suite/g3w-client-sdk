@@ -3,8 +3,12 @@ const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
 const WPSProvider = require('core/layers/providers/wpsprovider');
 const readFeaturesFromData = require('core/utils/geo').readFeaturesFromData;
+const PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
 function WPSService(options={}) {
+  this._mapService = GUI.getComponent('map').getService();
   this._provider = new WPSProvider(options);
+  this._pickcoordinatesinteraction = new PickCoordinatesInteraction();
+  this._mapService.getMap().addInteraction(this._pickcoordinatesinteraction);
   this.state = {
     currentindex: -1,
     result: null,
@@ -43,6 +47,21 @@ function WPSService(options={}) {
 inherit(WPSService, G3WObject);
 
 const proto = WPSService.prototype;
+
+proto.activePickCoordinateInteraction = function() {
+  this._mapService.deactiveMapControls();
+  this._pickcoordinatesinteraction.setActive(true);
+  return new Promise((resolve, reject) => {
+    this._pickcoordinatesinteraction.on('picked', (evt)=> {
+      const {coordinate} = evt;
+      resolve(coordinate)
+    })
+  })
+};
+
+proto.deactivePickCoordinateInteraction = function() {
+  this._pickcoordinatesinteraction.setActive(false);
+};
 
 proto.getCapabilities = async function(){
   return this._provider.getCapabilities();
@@ -102,7 +121,6 @@ proto.run = async function({inputs=[], id}={}){
     GUI.showUserMessage({
       type: 'alert',
       message: response.data,
-      //autoclose: true
     })
   }
 
@@ -111,6 +129,9 @@ proto.run = async function({inputs=[], id}={}){
 
 proto.clear = function() {
   GUI.closeUserMessage();
+  this._pickcoordinatesinteraction.setActive(false);
+  this._mapService.getMap().removeInteraction(this._pickcoordinatesinteraction);
+  this._pickcoordinatesinteraction = null;
 };
 
 

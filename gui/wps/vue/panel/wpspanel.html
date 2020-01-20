@@ -14,12 +14,14 @@
       </div>
       <div class="inputdata sidebar-divider" style="padding:3px; ">
         <h4 style="font-weight: bold">Inputs</h4>
-        <template v-for="input in currentProcessForm.inputs" :key="input.id">
+        <template v-for="input in currentInputs" :key="input.id">
           <p style="margin-bottom: 3px; margin-top: 3px;">[ {{ input.id }} ]</p>
           <label :for="input.id">{{ input.label }}</label>
-          <input class="form-control" :id="input.id" v-if="input.type ==='string'" v-model="input.value">
-          <input class="form-control" :id="input.id" type="number" v-else-if="input.type ==='float'" v-model="input.value">
-          <div v-else-if="input.type ==='file'" @click="openInputFile(input.id)" class="g3w_input_button skin-background-color" style="width:100%; cursor: pointer; text-align: center">
+          <input :type="input.type ==='float' ? 'number' : ''" class="form-control" :id="input.id" v-model="input.value" min="0">
+          <div v-if="showPickCoordinate && input.id === pickcoordinateinputs[0]" style="margin-top: 5px; margin-bottom: 5px; text-align: center">
+            <button @click.prevent="pickCoordinate" class="btn btn-info btn-circle"><i :class="g3wtemplate.getFontClass('marker')"></i></button>
+          </div>
+          <div v-if="input.type ==='file'" @click="openInputFile(input.id)" class="g3w_input_button skin-background-color" style="width:100%; cursor: pointer; text-align: center">
             <i :class="g3wtemplate.getFontClass('file-upload')" class="fa-2x" style="padding: 3px;">
               <input style="display: none" type="file" :id="input.id" name="file"  :accept="input.options.mimetype" @change="loadFile({input, event:$event})">
             </i>

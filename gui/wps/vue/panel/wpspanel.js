@@ -6,10 +6,17 @@ const Service = require('gui/wps/service');
 const WpsPanelComponent = Vue.extend({
   template: require('./wpspanel.html'),
   components:{},
+  props: {
+    pickcoordinateinputs: {
+      type: Array,
+      default: ['InputX', 'InputY']
+    }
+  },
   data() {
     return {
       state: this.$options.service.state,
-      selectedProcess: null
+      selectedProcess: null,
+      currentInputs: []
     }
   },
   computed: {
@@ -17,10 +24,28 @@ const WpsPanelComponent = Vue.extend({
       return this.state.loading || this.state.running;
     },
     currentProcessForm() {
-      return this.state.currentindex > -1 ? this.state.processes[this.state.currentindex].form : {};
-    }
+      const currentForm = this.state.currentindex > -1 ? this.state.processes[this.state.currentindex].form : {};
+      this.currentInputs = currentForm.inputs || [];
+      return currentForm;
+    },
+    showPickCoordinate() {
+      const inputIds = this.currentProcessForm.inputs.map( input => input.id);
+      const find = this.pickcoordinateinputs.reduce((accumulator, id) => {
+        return accumulator - (!!inputIds.find(inputId => inputId === id)*1);
+      }, 2);
+      if (find > 0) this.$options.service.deactivePickCoordinateInteraction();
+      return !find;
+    },
   },
   methods: {
+    pickCoordinate() {
+      this.$options.service.activePickCoordinateInteraction().then((coordinate) => {
+        this.currentProcessForm.inputs.forEach(input => {
+          if (input.id === this.pickcoordinateinputs[0]) input.value = coordinate[0];
+          if (input.id === this.pickcoordinateinputs[1]) input.value = coordinate[1];
+        })
+      })
+    },
     openInputFile(id) {
       document.getElementById(id).click();
     },
