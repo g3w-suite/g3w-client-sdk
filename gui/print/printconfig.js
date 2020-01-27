@@ -24,6 +24,10 @@ const scale = [
     label:'1:10.000'
   },
   {
+    value:20000,
+    label:'1:20.000'
+  },
+  {
     value:25000,
     label:'1:25.000'
   },

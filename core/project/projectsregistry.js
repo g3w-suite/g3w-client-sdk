@@ -113,10 +113,9 @@ proto.getProjectAliasUrl = function(gid) {
   return project.aliasUrl;
 };
 
-proto.setProjectAliasUrl = function({gid, url}) {
+proto.setProjectAliasUrl = function({gid, url, host}) {
   const project = this.config.projects.find(project => project.gid === gid);
-  if (project)
-    project.aliasUrl = url;
+  if (project) project.aliasUrl = project && `${host? host : ''}${url}`;
 };
 
 proto.getProjectType = function() {

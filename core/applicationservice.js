@@ -31,8 +31,8 @@ const ApplicationService = function() {
   this._groupId = null;
   this._gid = null;
   this.setters = {
-    changeProject({gid}={}){
-      return this._changeProject({gid})
+    changeProject({gid, host}={}){
+      return this._changeProject({gid, host})
     }
   };
   base(this);
@@ -64,10 +64,8 @@ const ApplicationService = function() {
     return ClipboardService;
   };
 
-  this.obtainInitConfig = function(initConfigUrl, url) {
+  this.obtainInitConfig = function({initConfigUrl, url, host}={}) {
     const d = $.Deferred();
-    const currentProject = ProjectsRegistry.getCurrentProject();
-    const aliasUrl =  currentProject && currentProject.getAliasUrl();
     if (!this._initConfigUrl) this._initConfigUrl = initConfigUrl;
     else this.clearInitConfig();
     // if exist a global initiConfig (in production)
@@ -89,14 +87,11 @@ const ApplicationService = function() {
           }
         });
       } else {
-        if (!aliasUrl) projectPath = location.pathname.split('/').splice(-4,3).join('/');
-        else {
-          const type_id = this._gid.split(':').join('/');
-          projectPath = `${this._groupId}/${type_id}`;
-        }
+        const type_id = this._gid.split(':').join('/');
+        projectPath = `${this._groupId}/${type_id}`;
       }
       if (projectPath) {
-        const initUrl =  `/${this._initConfigUrl}/${projectPath}`;
+        const initUrl =  `${host || ''}/${this._initConfigUrl}/${projectPath}`;
         // get configuration from server (return a promise)
         XHR.get({
           url: initUrl
@@ -197,17 +192,17 @@ const ApplicationService = function() {
     window.initConfig = null;
   };
 
-  this._changeProject = function({gid}={}) {
+  this._changeProject = function({gid, host}={}) {
     const d = $.Deferred();
     this._gid = gid;
     const aliasUrl = ProjectsRegistry.getProjectAliasUrl(gid);
     const mapUrl = ProjectsRegistry.getProjectUrl(gid);
     // change url using history
-    if (production && aliasUrl) history.replaceState(null, null, aliasUrl);
-    else history.replaceState(null, null, mapUrl);
+    (production && aliasUrl) && history.replaceState(null, null, aliasUrl) || history.replaceState(null, null, mapUrl);
     //remove tools
-    this.obtainInitConfig()
-      .then((initConfig) => {
+    this.obtainInitConfig({
+      host
+    }).then((initConfig) => {
         ProjectsRegistry.getProject(gid)
           .then((project) => {
             GUI.closeUserMessage();

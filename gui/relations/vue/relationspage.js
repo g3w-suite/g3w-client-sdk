@@ -7,7 +7,6 @@ const Service = require('../relationsservice');
 const Field = require('gui/fields/g3w-field.vue');
 const RelationPageEventBus = new Vue();
 
-
 /* List of relations */
 const relationsComponent = {
   template: require('./relations.html'),
@@ -112,7 +111,6 @@ const relationComponent = {
           "scrollY": tableHeight / 2 +  "px",
           "scrollCollapse": true,
           "scrollX": true,
-          "responsive": true,
           "order": [ 0, 'asc' ]
         } )
       }
