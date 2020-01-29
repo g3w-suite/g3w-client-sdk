@@ -50,6 +50,20 @@ proto.initEvents = function(events=[]) {
   }
 };
 
+proto.registerWindowEvent = function({evt, cb}={}) {
+  ApplicationService.registerWindowEvent({
+    evt,
+    cb
+  })
+};
+
+proto.unregisterWindowEvent = function({evt, cb}) {
+  ApplicationService.unregisterWindowEvent({
+    evt,
+    cb
+  })
+};
+
 proto.subscribeEvent = function({name, once=false, owner, listener}) {
   this._pluginEvents[name] = this._pluginEvents[name] ? this._pluginEvents[name] : {};
   this._pluginEvents[name][owner] = listener;

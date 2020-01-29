@@ -172,6 +172,14 @@ const ApplicationService = function() {
     return d.promise();
   };
 
+  this.registerWindowEvent = function({evt, cb} ={}) {
+    window.addEventListener(evt, cb);
+  };
+
+  this.unregisterWindowEvent = function({evt, cb}={}){
+    window.removeEventListener(evt, cb)
+  };
+
   this.registerService = function(element, service) {
     this._applicationServices[element] = service;
   };
