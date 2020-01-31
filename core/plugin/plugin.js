@@ -11,7 +11,9 @@ const Plugin = function() {
   this.config = null;
   this.service = null;
   this.dependencies = [];
-  this._api = null;
+  this._api = {
+    getConfig: () => this.config
+  };
   this._hook = null;
   this._ready; // property that describe that plugin i ready
   this._services = {
@@ -29,7 +31,8 @@ proto.getApi = function() {
   return this._api;
 };
 
-proto.setApi = function(api) {
+proto.setApi = function(api={}) {
+  api.getConfig = this._api.getConfig;
   this._api = api;
 };
 
