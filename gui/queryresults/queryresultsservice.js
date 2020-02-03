@@ -111,7 +111,6 @@ proto.reset = function() {
   this.clearState();
 };
 
-
 proto._digestFeaturesForLayers = function(featuresForLayers) {
   let id = 0;
   featuresForLayers = featuresForLayers || [];
@@ -195,7 +194,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
         }
       }
     if (featuresForLayer.features && featuresForLayer.features.length) {
-      layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0].getProperties(), relationNames);
+      layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0], relationNames);
       layerObj.attributes.forEach((attribute) => {
         if (formStructure) {
           const relationField = formStructure.fields.find((field)=>{
@@ -235,7 +234,8 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
   return layers;
 };
 
-proto._parseAttributes = function(layerAttributes, featureAttributes, relationNames) {
+proto._parseAttributes = function(layerAttributes, feature, relationNames) {
+  const featureAttributes = feature.getProperties();
   let featureAttributesNames = Object.keys(featureAttributes);
   featureAttributesNames = getAlphanumericPropertiesFromFeature(featureAttributesNames);
   if (layerAttributes && layerAttributes.length) {
@@ -244,10 +244,17 @@ proto._parseAttributes = function(layerAttributes, featureAttributes, relationNa
     });
     let relationAttributes = [];
     relationNames.forEach((relationName) =>{
-      relationAttributes = featureAttributesNames.filter((attributeName) =>{
+      relationAttributes = featureAttributesNames.filter((attributeName) => {
         return attributeName.indexOf(relationName) !== -1;
       }).map((name) => {
-        return {name, label: name}
+        const suffix = name.split(relationName)[1];
+        const fieldName = `${relationName.replace(/_/g, ' ')}${suffix}`;
+        feature.set(fieldName, feature.get(name));
+        feature.unset(name);
+        return {
+          name: fieldName,
+          label: fieldName
+        }
       })
     });
     return [...attributes, ...relationAttributes];
