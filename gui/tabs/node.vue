@@ -161,18 +161,22 @@
         const field = this.fields.find((field) => {
           return field.name === node.field_name;
         });
+        field.label = field.label || node.alias;
         return field;
       },
       getNodeType(node) {
-        return node.groupbox || node.nodes ? 'group' : node.relation ? 'relation': 'field';
+        const type = node.groupbox || node.nodes ? 'group' : node.relation ? 'relation': 'field';
+        if (type === 'field' && (node.alias === undefined || node.alias === '')) {
+          node.alias = node.field_name;
+        }
+        return type;
       },
       getComponent(field) {
         if (field.relation) return;
         else if (field.query) return field.input.type;
         else return 'g3w-input';
       }
-    },
-    created() {}
+    }
   }
 </script>
 

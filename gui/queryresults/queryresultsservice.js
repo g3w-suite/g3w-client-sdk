@@ -252,8 +252,7 @@ proto._parseAttributes = function(layerAttributes, feature, relationNames) {
         feature.set(fieldName, feature.get(name));
         feature.unset(name);
         return {
-          name: fieldName,
-          label: fieldName
+          name: fieldName
         }
       })
     });
