@@ -8,7 +8,7 @@ const MeasureIteraction = function(options={}) {
   this._poinOnMapMoveListener;
   this._helpMsg = options.help;
   this._projection = options.projection;
-
+  const useSphereMethods = ['EPSG:3857', 'EPSG:4326'].indexOf(this._projection.getCode()) !== -1;
   const measureStyle = new ol.style.Style({
     fill: new ol.style.Fill({
       color: 'rgba(255, 255, 255, 0.2)'
@@ -35,20 +35,18 @@ const MeasureIteraction = function(options={}) {
   switch (geometryType) {
     case 'LineString':
      this._formatMeasure = function(feature) {
+       let length;
        let geometry = feature;
        if (this._projection.getUnits() === 'degrees') {
          geometry = feature.clone();
          geometry.transform(this._projection.getCode(), 'EPSG:3857');
        }
-        let length;
-        length = Math.round(ol.Sphere.getLength(geometry) * 100) / 100;
-        let output;
-        if (length > 1000) {
-          output = (Math.round(length / 1000 * 1000) / 1000) +
-            ' ' + 'km';
+       length = Math.round(useSphereMethods ? ol.Sphere.getLength(geometry) : geometry.getLength() * 100) / 100;
+       let output;
+       if (length > 1000) {
+         output = (Math.round(length / 1000 * 1000) / 1000) + ' ' + 'km';
         } else {
-          output = (Math.round(length * 100) / 100) +
-            ' ' + 'm';
+          output = (Math.round(length * 100) / 100) + ' ' + 'm';
         }
         return output;
       };
@@ -60,7 +58,7 @@ const MeasureIteraction = function(options={}) {
           geometry = feature.clone();
           geometry.transform(this._projection.getCode(), 'EPSG:3857');
         }
-        const area = ol.Sphere.getArea(geometry);
+        const area = useSphereMethods ? ol.Sphere.getArea(geometry): geometry.getArea();
         let output;
         if (area > 10000) {
           output = (Math.round(area / 1000000 * 100) / 100) +

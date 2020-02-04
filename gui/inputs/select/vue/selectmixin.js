@@ -20,9 +20,10 @@ var selectMixin = {
     }
   },
   watch:{
-    notvalid(value){
+    notvalid(value) {
       this.$nextTick(()=> {
-        value ? this.select2.data('select2').$container.addClass("input-error-validation") : this.select2.data('select2').$container.removeClass("input-error-validation")
+        if (this.select2)
+          value ? this.select2.data('select2').$container.addClass("input-error-validation") : this.select2.data('select2').$container.removeClass("input-error-validation")
       })
     }
   },

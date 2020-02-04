@@ -9,7 +9,7 @@ const PickFeatureEvent = function(type, coordinate, layer, feature) {
   this.layer = layer;
 };
 
-const PickFeatureInteraction = function(options) {
+const PickFeatureInteraction = function(options={}) {
   ol.interaction.Pointer.call(this, {
     handleDownEvent: PickFeatureInteraction.handleDownEvent_,
     handleUpEvent: PickFeatureInteraction.handleUpEvent_,
