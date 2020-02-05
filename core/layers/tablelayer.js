@@ -117,11 +117,11 @@ function TableLayer(config={}, options={}) {
   // get configuration from server if is editable
   if (this.isEditable()) {
     this.getEditingConfig()
-      .then(({vector}={}) => {
+      .then(({vector, constraints}={}) => {
         this.config.editing.pk = vector.pk;
         this.config.editing.fields = vector.fields;
         this.config.editing.format = vector.format;
-        this.config.editing.constraints = vector.constraints || {};
+        this.config.editing.constraints = constraints || {};
         this.config.editing.style = vector.style || {};
         this._setOtherConfigParameters(vector);
         if (vector.style) {
