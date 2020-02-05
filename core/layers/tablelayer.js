@@ -84,20 +84,15 @@ function TableLayer(config={}, options={}) {
   this._color = null;
   const currentProject = options.project || ProjectsRegistry.getCurrentProject();
   // set urls
-  const projectType = currentProject.getType();
-  const projectId = currentProject.getId();
-  const vectorUrl = initConfig.vectorurl;
-  const suffixUrl = `${projectType}/${projectId}/${config.id}/`;
+  this.projectId = currentProject.getId();
+  this.layerId = config.id;
+  this.projectType = options.project_type || currentProject.getType();
+  this.vectorUrl = options.vectorurl || initConfig.vectorurl;
   // add urls
   config.urls = config.urls || {};
-  Object.assign(config.urls || {}, {
-    editing: `${vectorUrl}editing/${suffixUrl}` ,
-    commit: `${vectorUrl}commit/${suffixUrl}` ,
-    config: `${vectorUrl}config/${suffixUrl}`,
-    unlock: `${vectorUrl}unlock/${suffixUrl}`,
-    widget: {
-      unique: `${vectorUrl}widget/unique/data/${suffixUrl}`
-    }
+  //add editing urls
+  this.setEditingUrls({
+    urls: config.urls
   });
   // add editing configurations
   config.editing = {
@@ -163,6 +158,14 @@ proto.cloneFeatures = function() {
   return this._featuresStore.clone();
 };
 
+proto.setVectorUrl = function(url) {
+  this.vectorUrl = url;
+};
+
+proto.setProjectType = function(projectType) {
+  this.projectType = projectType;
+};
+
 proto._setColor = function(color) {
   this._color = color;
 };
@@ -176,9 +179,24 @@ proto.readFeatures = function() {
 };
 
 // return layer for editing
-proto.getLayerForEditing = function() {
+proto.getLayerForEditing = function({vectorurl, project_type}={}) {
+  vectorurl && this.setVectorUrl(vectorurl);
+  project_type && this.setProjectType(project_type);
+  this.setEditingUrl();
   // if the original layer is a vector layer return itself
   return this;
+};
+
+proto.setEditingUrls = function({urls}={}) {
+  const suffixUrl = `${this.projectType}/${this.projectId}/${this.layerId}/`;
+  urls = urls || this.config.urls;
+  urls.editing = `${this.vectorUrl}editing/${suffixUrl}`;
+  urls.commit = `${this.vectorUrl}commit/${suffixUrl}`;
+  urls.config = `${this.vectorUrl}config/${suffixUrl}`;
+  urls.unlock = `${this.vectorUrl}unlock/${suffixUrl}`;
+  urls.widget = {
+    unique: `${this.vectorUrl}widget/unique/data/${suffixUrl}`
+  }
 };
 
 proto.getEditingStyle = function() {

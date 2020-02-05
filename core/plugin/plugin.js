@@ -15,7 +15,9 @@ const Plugin = function() {
     getConfig: () => this.config
   };
   this._hook = null;
-  this._ready; // property that describe that plugin i ready
+  this._states = {
+    Ready: false,
+  };
   this._services = {
     'search': GUI.getComponent('search').getService(),
     'tools': GUI.getComponent('tools').getService()
@@ -25,6 +27,14 @@ const Plugin = function() {
 inherit(Plugin,G3WObject);
 
 const proto = Plugin.prototype;
+
+proto.setDependencies = function(dependencies) {
+  this.dependencies = dependencies;
+};
+
+proto.addDependency = function(dependency) {
+  this.dependencies.push(dependency);
+};
 
 //API Plugin
 proto.getApi = function() {
@@ -37,16 +47,17 @@ proto.setApi = function(api={}) {
 };
 
 proto.setReady = function(bool) {
-  this._ready = bool;
+  this._states.Ready = bool;
   this.emit('set-ready', bool)
 };
 
 proto.isReady = function() {
   return new Promise((resolve, reject) => {
-    if (this._ready !== undefined) {
-      this._ready && resolve() || reject()
+    if (this._states.Ready) {
+      this._states.Ready && resolve() || reject()
     } else {
       this.once('set-ready', (bool) => {
+        this._states.Ready = bool;
         bool && resolve() || reject()
       })
     }
@@ -103,7 +114,7 @@ proto.registerPlugin = function(projectId) {
 proto.setupGui = function() {};
 
 // method to get dependencies plugin
-proto.getDependencyPlugins = function(pluginsName = []) {
+proto.getDependencyPlugins = function(pluginsName = this.dependencies) {
   const pluginPromises = [];
   pluginsName.forEach((pluginName) => {
     pluginPromises.push(this.getDependencyPlugin(pluginName))

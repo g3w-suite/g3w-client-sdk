@@ -51,10 +51,13 @@ mixin(ImageLayer, GeoLayerMixin);
 
 const proto = ImageLayer.prototype;
 
-proto.getLayerForEditing = function({force=false}={}) {
+proto.getLayerForEditing = function({force=false, vectorurl, project_type}={}) {
   if (this.isEditable() || force) {
     //return istance of vectorlayer
-    const editingLayer = new VectorLayer(this.config);
+    const editingLayer = new VectorLayer(this.config, {
+      vectorurl,
+      project_type
+    });
     // set editing layer
     this.setEditingLayer(editingLayer);
     return editingLayer;
