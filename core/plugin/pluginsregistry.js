@@ -11,9 +11,7 @@ function PluginsRegistry() {
   this.setters = {
     //setters to register plugin
     registerPlugin(plugin) {
-      if (!this._plugins[plugin.name]) {
-        this._plugins[plugin.name] = plugin;
-      }
+      if (!this._plugins[plugin.name]) this._plugins[plugin.name] = plugin;
     }
   };
   base(this);
@@ -117,7 +115,7 @@ function PluginsRegistry() {
   this.getPlugin = function(pluginName) {
     return this._plugins[pluginName];
   };
-  
+
   this.isTherePlugin = function(pluginName){
     return this.pluginsConfigs[pluginName];
   }
