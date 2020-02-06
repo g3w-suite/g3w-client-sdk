@@ -1,6 +1,7 @@
 const base = require('core/utils/utils').base;
 const inherit = require('core/utils/utils').inherit;
 const G3WObject = require('core/g3wobject');
+const OTHERPLUGINS = ['law'];
 
 function PluginsRegistry() {
   this.config = null;
@@ -10,9 +11,7 @@ function PluginsRegistry() {
   this.setters = {
     //setters to register plugin
     registerPlugin(plugin) {
-      if (!this._plugins[plugin.name]) {
-        this._plugins[plugin.name] = plugin;
-      }
+      if (!this._plugins[plugin.name]) this._plugins[plugin.name] = plugin;
     }
   };
   base(this);
@@ -25,6 +24,7 @@ function PluginsRegistry() {
     // plugins that aren't in configuration server but in project
     this.otherPluginsConfig = options.otherPluginsConfig;
     this.setOtherPlugins();
+    this.setDependencyPluginConfig();
     return this._loadPlugins();
   };
 
@@ -35,14 +35,22 @@ function PluginsRegistry() {
     return Promise.all(pluginLoadPromises)
   };
 
-  this.setOtherPlugins = function() {
-    if (this.otherPluginsConfig && this.otherPluginsConfig.law && this.otherPluginsConfig.law.length) {
-      // law plugin
-      this.pluginsConfigs['law'] = this.otherPluginsConfig.law;
-      this.pluginsConfigs['law'].gid = this.otherPluginsConfig.gid;
-    } else {
-      delete this.pluginsConfigs['law'];
+  this.setDependencyPluginConfig = function(){
+    for (pluginName in this.pluginsConfigs){
+      const dependecyPluginConfig = this.pluginsConfigs[pluginName].plugins;
+      dependecyPluginConfig && Object.keys(dependecyPluginConfig).forEach((pluginName) =>{
+        this.pluginsConfigs[pluginName] = {...this.pluginsConfigs[pluginName], ...dependecyPluginConfig[pluginName]}
+      })
     }
+  };
+
+  this.setOtherPlugins = function() {
+    const law = OTHERPLUGINS[0];
+    if (this.otherPluginsConfig && this.otherPluginsConfig[law] && this.otherPluginsConfig[law].length) {
+      // law plugin
+      this.pluginsConfigs[law] = this.otherPluginsConfig[law];
+      this.pluginsConfigs[law].gid = this.otherPluginsConfig.gid;
+    } else delete this.pluginsConfigs[law];
   };
 
   // reaload plugin in case of change map
@@ -107,7 +115,7 @@ function PluginsRegistry() {
   this.getPlugin = function(pluginName) {
     return this._plugins[pluginName];
   };
-  
+
   this.isTherePlugin = function(pluginName){
     return this.pluginsConfigs[pluginName];
   }

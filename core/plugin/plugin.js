@@ -15,7 +15,7 @@ const Plugin = function() {
     getConfig: () => this.config
   };
   this._hook = null;
-  this._ready; // property that describe that plugin i ready
+  this._ready = false;
   this._services = {
     'search': GUI.getComponent('search').getService(),
     'tools': GUI.getComponent('tools').getService()
@@ -25,6 +25,14 @@ const Plugin = function() {
 inherit(Plugin,G3WObject);
 
 const proto = Plugin.prototype;
+
+proto.setDependencies = function(dependencies) {
+  this.dependencies = dependencies;
+};
+
+proto.addDependency = function(dependency) {
+  this.dependencies.push(dependency);
+};
 
 //API Plugin
 proto.getApi = function() {
@@ -43,13 +51,12 @@ proto.setReady = function(bool) {
 
 proto.isReady = function() {
   return new Promise((resolve, reject) => {
-    if (this._ready !== undefined) {
-      this._ready && resolve() || reject()
-    } else {
+    if (this._ready) resolve();
+    else
       this.once('set-ready', (bool) => {
-        bool && resolve() || reject()
+        this._ready = bool;
+        resolve();
       })
-    }
   })
 };
 
@@ -93,37 +100,32 @@ proto.getProject = function() {
 
 //register the plugin if compatible
 proto.registerPlugin = function(projectId) {
-  if (this.isCurrentProjectCompatible(projectId)) {
-    PluginsRegistry.registerPlugin(this);
-    return true;
-  }
-  return false;
+  const iscompatible = this.isCurrentProjectCompatible(projectId);
+  iscompatible && PluginsRegistry.registerPlugin(this);
+  return iscompatible;
 };
 
 proto.setupGui = function() {};
 
 // method to get dependencies plugin
-proto.getDependencyPlugins = function(pluginsName = []) {
-  const pluginPromises = [];
-  pluginsName.forEach((pluginName) => {
-    pluginPromises.push(this.getDependencyPlugin(pluginName))
+proto.getDependencyPlugins = function(pluginsName) {
+  pluginsName = pluginsName || this.dependencies;
+  const pluginPromises = pluginsName.map((pluginName) => {
+    return this.getDependencyPlugin(pluginName)
   });
   return Promise.all(pluginPromises)
 };
 
 // method to get plugin dependency
 proto.getDependencyPlugin = function(pluginName) {
-  if (!PluginsRegistry.isTherePlugin(pluginName))  return Promise.reject({error:'no plugin'});
+  if (!PluginsRegistry.isTherePlugin(pluginName)) return Promise.reject({error:'no plugin'});
   return new Promise((resolve, reject) => {
     const plugin = PluginsRegistry.getPlugin(pluginName);
     plugin && plugin.isReady().then(() => {
           resolve(plugin.getApi())
         })
-    || PluginsRegistry.onafter('registerPlugin', (plugin) => {
-        (plugin.name === pluginName) &&
-          plugin.isReady().then(() => {
-            resolve(plugin.getApi())
-          })
+    || PluginsRegistry.onafter('registerPlugin',(plugin) => {
+        (plugin.name === pluginName) && plugin.isReady().then(() => {resolve(plugin.getApi())})
       });
   })
 };
