@@ -23,10 +23,12 @@ proto.getValue = function() {
 };
 
 proto.setValue = function(value) {
-  if (value === null || value === undefined)
-    this.state.value = Array.isArray(this.state.input.options) ?
-      this.state.input.options[0].default: Array.isArray(this.state.input.options.values)
-        ? this.state.input.options.values[0].default : this.state.input.options.default;
+  if (value === null || value === undefined) {
+    this.state.value = Array.isArray(this.state.input.options) ? this.state.input.options[0].default
+      : Array.isArray(this.state.input.options.values) && this.state.input.options.values.length ? this.state.input.options.values[0]
+        : this.state.input.options.default;
+  }
+
 };
 
 proto.addValueToValues = function(value) {
