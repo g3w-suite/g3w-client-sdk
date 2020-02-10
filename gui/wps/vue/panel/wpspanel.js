@@ -6,12 +6,6 @@ const Service = require('gui/wps/service');
 const WpsPanelComponent = Vue.extend({
   template: require('./wpspanel.html'),
   components:{},
-  props: {
-    pickcoordinateinputs: {
-      type: Array,
-      default: ['InputX', 'InputY']
-    }
-  },
   data() {
     return {
       state: this.$options.service.state,
@@ -76,6 +70,7 @@ const WpsPanelComponent = Vue.extend({
     }
   },
   created() {
+    this.pickcoordinateinputs = this.$options.service.getPickCoordinatesIdentifier();
     this._bbox = {};
   },
   mounted() {
@@ -95,6 +90,7 @@ const WpsPanelComponent = Vue.extend({
     })
   },
   beforeDestroy() {
+    this.pickcoordinateinputs = null;
     this.inputSelect && this.inputSelect.select2('destroy');
     this.select2.select2('destroy');
   }

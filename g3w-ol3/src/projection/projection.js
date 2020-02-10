@@ -27,7 +27,7 @@ proto.getAxisOrientation = function() {
 };
 
 proto.isInvertedAxisOrientation = function() {
-  return this._axisOrientation == 'neu';
+  return this._axisOrientation === 'neu';
 };
 
 proto.getOlProjection = function() {};

@@ -5,7 +5,6 @@ const G3WObject = require('core/g3wobject');
 
 function Service(options={}){
   this.config = null;
-  this._actions = {};
   this.state = {
     ...options,
     toolsGroups: [],

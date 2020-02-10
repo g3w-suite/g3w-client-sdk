@@ -2,13 +2,13 @@ const inherit = require('core/utils/utils').inherit;
 const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
 const WPSProvider = require('core/layers/providers/wpsprovider');
-const readFeaturesFromData = require('core/utils/geo').readFeaturesFromData;
 const PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
 function WPSService(options={}) {
   this._mapService = GUI.getComponent('map').getService();
   this._provider = new WPSProvider(options);
   this._pickcoordinatesinteraction = new PickCoordinatesInteraction();
   this._mapService.getMap().addInteraction(this._pickcoordinatesinteraction);
+  this._pickCoordinatesIdentifier = options.pickCoordinatesIdentifier || ['InputX', 'InputY'];
   this.state = {
     currentindex: -1,
     result: null,
@@ -16,7 +16,7 @@ function WPSService(options={}) {
     loading: true,
     title: options.name,
     error: false,
-    processes: []
+    processes: [],
   };
   this.getCapabilities()
     .then((processes)=> {
@@ -47,6 +47,14 @@ function WPSService(options={}) {
 inherit(WPSService, G3WObject);
 
 const proto = WPSService.prototype;
+
+proto.getPickCoordinatesIdentifier = function() {
+  return this._pickCoordinatesIdentifier;
+};
+
+proto.setPickCoordinatesIdentifier = function(identifiers= ['InputX', 'InputY']) {
+  this._pickCoordinatesIdentifier = identifiers
+};
 
 proto.activePickCoordinateInteraction = function() {
   this._mapService.deactiveMapControls();
@@ -132,6 +140,7 @@ proto.clear = function() {
   this._pickcoordinatesinteraction.setActive(false);
   this._mapService.getMap().removeInteraction(this._pickcoordinatesinteraction);
   this._pickcoordinatesinteraction = null;
+  this._pickCoordinatesIdentifier = null;
 };
 
 
