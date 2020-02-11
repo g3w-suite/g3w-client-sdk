@@ -2,6 +2,7 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const Panel = require('gui/panel');
 const Service = require('gui/wps/service');
+const t = require('core/i18n/i18n.service').t;
 
 const WpsPanelComponent = Vue.extend({
   template: require('./wpspanel.html'),
@@ -70,6 +71,7 @@ const WpsPanelComponent = Vue.extend({
     }
   },
   created() {
+    this.pickcoordinates_tooltip = t('sdk.wps.tooltip');
     this.pickcoordinateinputs = this.$options.service.getPickCoordinatesIdentifier();
     this._bbox = {};
   },
@@ -80,12 +82,14 @@ const WpsPanelComponent = Vue.extend({
         const id = evt.params.data.id;
         this.selectedProcess = id;
         this.$options.service.describeProcess(id);
-      })
+      });
+      $('#pickcoordinates[data-toggle="tooltip"]').tooltip();
     })
   },
   updated() {
     this.inputSelect && this.inputSelect.select2('destroy');
     this.$nextTick(()=> {
+      $('#pickcoordinates[data-toggle="tooltip"]').tooltip();
       this.inputSelect = $('#g3w-wps-form .inputdata select').select2();
     })
   },

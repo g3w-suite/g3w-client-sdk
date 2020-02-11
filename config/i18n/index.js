@@ -154,7 +154,8 @@ export default {
           }
         },
         wps: {
-          list_process: "Lista dei processi"
+          list_process: "Lista dei processi",
+          tooltip: 'Clicca sulla mappa'
         }
       }
     },
@@ -313,7 +314,8 @@ export default {
           }
         },
         wps: {
-          list_process: "List of process"
+          list_process: "List of process",
+          tooltip: 'Click on map'
         }
       }
     }
