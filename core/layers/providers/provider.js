@@ -73,9 +73,9 @@ proto.handleQueryResponseFromServerSingleLayer = function(layer, response, proje
   let layerFeatures;
   switch (layer.getInfoFormat()) {
     case 'json':
-      parser = this._parseLayerGeoJSON;
-      data = response.vector.data;
-\      const features = parser.call(this, data, projections);
+      const parser = this._parseLayerGeoJSON;
+      const data = response.vector.data;
+      const features = parser.call(this, data, projections);
       layerFeatures = [{
         layer,
         features
