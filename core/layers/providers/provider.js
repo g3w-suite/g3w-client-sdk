@@ -71,9 +71,10 @@ proto.extractGML = function (response) {
 proto.handleQueryResponseFromServerSingleLayer = function(layer, response, projections, wms=true) {
   let layerName = layer.getName();
   let layerFeatures;
+  let parser;
   switch (layer.getInfoFormat()) {
     case 'json':
-      const parser = this._parseLayerGeoJSON;
+      parser = this._parseLayerGeoJSON;
       const data = response.vector.data;
       const features = parser.call(this, data, projections);
       layerFeatures = [{
