@@ -75,7 +75,7 @@ proto.handleQueryResponseFromServerSingleLayer = function(layer, response, proje
     case 'json':
       parser = this._parseLayerGeoJSON;
       data = response.vector.data;
-      const features = parser.call(this, data, ogcservice);
+\      const features = parser.call(this, data, projections);
       layerFeatures = [{
         layer,
         features
@@ -147,42 +147,62 @@ proto.handleQueryResponseFromServerSingleLayer = function(layer, response, proje
 proto.handleQueryResponseFromServer = function(response, projections, layers, wms=true) {
   layers = layers ? layers : [this._layer];
   const layer = layers[0];
-  if (layer.getType() === "table" || !layer.isExternalWMS() || !layer.isLayerProjectionASMapProjection()) {
-    response =  this._handleXMLStringResponseBeforeConvertToJSON({
-      layers,
-      response,
-      wms
-    });
-    return this._getHandledResponsesFromResponse({
-      response,
-      layers,
-      projections
-      //id: false //used in case of layer id .. but for now is set to false in case of layerid starting with number
-    });
-  } else {
-    //case of
-    if ( /msGMLOutput/.test(response)) {
-      return layers.map((layer) => {
-        const layers = layer.getQueryLayerOrigName();
-        const parser = new ol.format.WMSGetFeatureInfo({
-          layers
-        });
-        const features = parser.readFeatures(response);
-        return {
-          layer,
-          features
-        }
-      })
-    } else {
-      return layers.map((layer) => {
-        return this._handleWMSMultilayers({
-          layer,
+  const infoFormat = layer.getInfoFormat();
+  switch(infoFormat) {
+    case 'json':
+      return this._parseGeoJsonResponse({
+        layer,
+        response,
+        projections
+      });
+      break;
+    default:
+      if (layer.getType() === "table" || !layer.isExternalWMS() || !layer.isLayerProjectionASMapProjection()) {
+        response =  this._handleXMLStringResponseBeforeConvertToJSON({
+          layers,
           response,
+          wms
+        });
+        return this._getHandledResponsesFromResponse({
+          response,
+          layers,
           projections
-        })
-      })
-    }
+          //id: false //used in case of layer id .. but for now is set to false in case of layerid starting with number
+        });
+      } else {
+        //case of
+        if ( /msGMLOutput/.test(response)) {
+          return layers.map((layer) => {
+            const layers = layer.getQueryLayerOrigName();
+            const parser = new ol.format.WMSGetFeatureInfo({
+              layers
+            });
+            const features = parser.readFeatures(response);
+            return {
+              layer,
+              features
+            }
+          })
+        } else {
+          return layers.map((layer) => {
+            return this._handleWMSMultilayers({
+              layer,
+              response,
+              projections
+            })
+          })
+        }
+      }
   }
+};
+
+proto._parseGeoJsonResponse = function({layer, response, projections}={}) {
+  const data = response.vector && response.vector.data;
+  const features = data && this._parseLayerGeoJSON(data, projections) || [];
+  return [{
+    layer,
+    features
+  }]
 };
 
 proto._handleWMSMultilayers = function({layer, response, projections} = {}) {
@@ -428,11 +448,7 @@ proto._parseAttributes = function(layerAttributes, featureAttributes) {
   }
 };
 
-proto._parseLayerFeatureCollection = function({jsonresponse, layer, projections}) {
-  const x2js = new X2JS();
-  let layerFeatureCollectionXML = x2js.json2xml_str(jsonresponse);
-  const parser = new ol.format.WMSGetFeatureInfo();
-  let features = parser.readFeatures(layerFeatureCollectionXML);
+proto._tranformFeatures = function(features, projections) {
   if (features.length) {
     if(!!features[0].getGeometry()) {
       const mainProjection = projections.layer ? projections.layer : projections.map;
@@ -446,6 +462,15 @@ proto._parseLayerFeatureCollection = function({jsonresponse, layer, projections}
       if (invertedAxis) features = this._reverseFeaturesCoordinates(features)
     }
   }
+  return features;
+};
+
+proto._parseLayerFeatureCollection = function({jsonresponse, layer, projections}) {
+  const x2js = new X2JS();
+  let layerFeatureCollectionXML = x2js.json2xml_str(jsonresponse);
+  const parser = new ol.format.WMSGetFeatureInfo();
+  let features = parser.readFeatures(layerFeatureCollectionXML);
+  features = this._tranformFeatures(features, projections);
   return [{
     layer,
     features
@@ -468,9 +493,10 @@ proto._parseLayermsGMLOutput = function(data) {
   return parser.readFeatures(data);
 };
 
-proto._parseLayerGeoJSON = function(data) {
+proto._parseLayerGeoJSON = function(data, projections) {
+  const defaultDataProjection = projections.layer || projections.map;
   const geojson = new ol.format.GeoJSON({
-    defaultDataProjection: this.crs,
+    defaultDataProjection,
     geometryName: "geometry"
   });
   return geojson.readFeatures(data);

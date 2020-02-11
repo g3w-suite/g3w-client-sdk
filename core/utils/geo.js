@@ -265,8 +265,16 @@ module.exports = {
     const mapProjection = map.getView().getProjection();
     const resolution = map.getView().getResolution();
     if (querymultilayers) {
-      const multiLayers = _.groupBy(layers, function(layer) {
-        return layer.getMultiLayerId();
+      // const multiLayers = _.groupBy(layers, function(layer) {
+      //   return layer.getMultiLayerId();
+      // });
+      const multiLayers = {};
+      layers.forEach(layer => {
+        const key = `${layer.getInfoFormat()}:${layer.getInfoUrl()}:${layer.getMultiLayerId()}`;
+        if (multiLayers[key])
+          multiLayers[key].push(layer);
+        else
+          multiLayers[key] = [layer];
       });
       let layersLenght = Object.keys(multiLayers).length;
       for (let key in multiLayers) {
@@ -379,7 +387,7 @@ module.exports = {
     });
     return layers || [];
   },
-  
+
   dissolve({features=[], index=0, clone=false}={}) {
     const parser = new jsts.io.OL3Parser();
     const featuresLength = features.length;
