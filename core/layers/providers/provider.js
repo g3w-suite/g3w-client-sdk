@@ -24,11 +24,11 @@ proto.setLayer = function(layer) {
 };
 
 proto.getFeatures = function() {
-  console.log('da sovrascrivere')
+  console.log('overwriteby single provider')
 };
 
-proto.query = function(options) {
-  console.log('metodo da sovrascrivere')
+proto.query = function() {
+  console.log('overwriteby single provider')
 };
 
 proto.setReady = function(bool) {
@@ -66,82 +66,6 @@ proto.extractGML = function (response) {
       return gml;
     }
   });
-};
-
-proto.handleQueryResponseFromServerSingleLayer = function(layer, response, projections, wms=true) {
-  let layerName = layer.getName();
-  let layerFeatures;
-  let parser;
-  switch (layer.getInfoFormat()) {
-    case 'json':
-      parser = this._parseLayerGeoJSON;
-      const data = response.vector.data;
-      const features = parser.call(this, data, projections);
-      layerFeatures = [{
-        layer,
-        features
-      }];
-      break;
-    default:
-      const x2js = new X2JS();
-      if (!_.isString(response))
-        response = new XMLSerializer().serializeToString(response);
-      try {
-        if (_.isString(response)) {
-          // check if contain msGMLOutput
-          if(!/msGMLOutput/.test(response)) {
-            let fakeName;
-            if (layer.isWmsUseLayerIds() && wms) {
-              layerName = fakeName = layer.getId();
-              jsonresponse = x2js.xml_str2json(response);
-            } else {
-              layerName = wms ? layerName.replace(/[/\s]/g, '') : layerName.replace(/[/\s]/g, '_');
-              layerName = layerName.replace(/(\'+)/, '');
-              layerName = layerName.replace(/(\)+)/, '');
-              layerName = layerName.replace(/(\(+)/, '');
-              let reg = new RegExp(`qgs:${layerName}\\b`, "g");
-              fakeName = `g3wlayer${layerName}`;
-              response = response.replace(reg, `qgs:${fakeName}`);
-              //other layer evantually with name starting with numerber
-              response = response.replace(/qgs:[0-9]+/g, 'qgs:otherLayer');
-              jsonresponse = x2js.xml_str2json(response);
-            }
-            const FeatureCollection = jsonresponse.FeatureCollection;
-            if(FeatureCollection && FeatureCollection.featureMember)
-              FeatureCollection.featureMember = Array.isArray(FeatureCollection.featureMember) ? FeatureCollection.featureMember.filter((feature) => {
-                return feature[fakeName];
-              }) : FeatureCollection.featureMember[fakeName] ? [FeatureCollection.featureMember] : [];
-            else
-              FeatureCollection.featureMember = [];
-          } else
-            jsonresponse = x2js.xml_str2json(response);
-        }
-      } catch (error) {
-        return;
-      }
-      const rootNode = _.keys(jsonresponse)[0];
-      switch (rootNode) {
-        case 'FeatureCollection':
-          layerFeatures = this._parseLayerFeatureCollection({
-            jsonresponse,
-            layer,
-            projections
-          });
-          break;
-        case "msGMLOutput":
-          const layers = layer.getQueryLayerOrigName();
-          parser = new ol.format.WMSGetFeatureInfo({
-            layers
-          });
-          const features = parser.readFeatures(response);
-          layerFeatures = [{
-            layer,
-            features
-          }];
-          break;
-      }
-  }
-  return layerFeatures;
 };
 
 // Method to transform xml from server to present to queryreult component
