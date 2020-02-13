@@ -1,3 +1,4 @@
+import { BING_API_KEY } from '../config/config';
 const Projections = require('../projection/projections');
 const BaseLayers = {};
 
@@ -15,7 +16,7 @@ BaseLayers.BING.Road = new ol.layer.Tile({
   visible: false,
   preload: Infinity,
   source: new ol.source.BingMaps({
-    key: 'Am_mASnUA-jtW3O3MxIYmOOPLOvL39dwMvRnyoHxfKf_EPNYgfWM9imqGETWKGVn',
+    key: BING_API_KEY,
     imagerySet: 'Road'
       // use maxZoom 19 to see stretched tiles instead of the BingMaps
       // "no photos at this zoom level" tiles
@@ -81,7 +82,7 @@ BaseLayers.BING.AerialWithLabels = new ol.layer.Tile({
   visible: true,
   preload: Infinity,
   source: new ol.source.BingMaps({
-    key: 'Am_mASnUA-jtW3O3MxIYmOOPLOvL39dwMvRnyoHxfKf_EPNYgfWM9imqGETWKGVn',
+    key: BING_API_KEY,
     imagerySet: 'AerialWithLabels'
       // use maxZoom 19 to see stretched tiles instead of the BingMaps
       // "no photos at this zoom level" tiles
@@ -95,7 +96,7 @@ BaseLayers.BING.Aerial = new ol.layer.Tile({
   visible: false,
   preload: Infinity,
   source: new ol.source.BingMaps({
-    key: 'Am_mASnUA-jtW3O3MxIYmOOPLOvL39dwMvRnyoHxfKf_EPNYgfWM9imqGETWKGVn',
+    key: BING_API_KEY,
     imagerySet: 'Aerial'
       // use maxZoom 19 to see stretched tiles instead of the BingMaps
       // "no photos at this zoom level" tiles

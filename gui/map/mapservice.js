@@ -559,11 +559,12 @@ proto._setupControls = function() {
         case 'mouseposition':
           if (!isMobile.any) {
             const coordinateLabels = this.getProjection().getUnits() === 'm' ? ['X', 'Y'] : ['Lng', 'Lat'];
+            const crs = this.getCrs();
             control = this.createMapControl(controlType, {
               add: false,
               options: {
                 coordinateFormat: (coordinate) => {
-                  return ol.coordinate.format(coordinate, `${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}`, 4);
+                  return ol.coordinate.format(coordinate, `\u00A0${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}\u00A0\u00A0 [${crs}]\u00A0`, 4);
                 },
                 projection: this.getCrs()
               }
