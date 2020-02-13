@@ -3,10 +3,10 @@ const inherit = require('core/utils/utils').inherit;
 const imageToDataURL = require('core/utils/utils').imageToDataURL;
 const base = require('core/utils/utils').base;
 const Component = require('gui/vue/component');
-const template = require('./printpage.html');
+const compiledTemplate = createCompiledTemplate(require('./printpage.html'));
 
 const InternalComponent = Vue.extend({
-  ...createCompiledTemplate(template),
+  ...compiledTemplate,
   data: function() {
     return {
       state: null,
@@ -61,7 +61,7 @@ const PrintPage = function(options={}) {
   // istanzio il componente interno
   this.setService(service);
   const internalComponent = new InternalComponent({
-    service: service
+    service
   });
   this.setInternalComponent(internalComponent);
   this.internalComponent.state = service.state.output;
