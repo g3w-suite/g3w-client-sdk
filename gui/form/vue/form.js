@@ -1,16 +1,17 @@
+import { createCompiledTemplate } from 'gui/vue/utils';
 const inherit = require('core/utils/utils').inherit;
 const GUI = require('gui/gui');
 const Component = require('gui/vue/component');
 const Service = require('../formservice');
 const base = require('core/utils/utils').base;
-const Template = require('./form.html');
+const compiledTemplate = createCompiledTemplate(require('./form.html'));
 const HeaderFormComponent = require('../components/header/vue/header');
 const BodyFormComponent = require('../components/body/vue/body');
 const G3wFormFooter = require('gui/form/components/footer/vue/footer');
 
 //vue component
 const vueComponentObject = {
-  template: null,
+ ...compiledTemplate,
   data: function() {
     return {
       state: {},
@@ -84,7 +85,6 @@ function FormComponent(options = {}) {
   base(this, options);
   options.service = options.service ?  new options.service : new Service;
   options.vueComponentObject = options.vueComponentObject  || vueComponentObject;
-  options.template = options.template || Template;
   //set statdar element of the form
   const components = options.components || [
     {id: options.title, component: BodyFormComponent}

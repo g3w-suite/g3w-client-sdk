@@ -38,14 +38,15 @@ const Component = function(options={}) {
     this.vueComponent = this.createVueComponent(options.vueComponentObject);
     this._components = options.components || [];
     const service = options.service || noop ;
+    const {template} = options;
     this.setService(service);
     this._service.init ? this._service.init(options): null;
-    options.template && this.setInternalComponentTemplate(options.template);
+    template && this.setInternalComponentTemplate(template);
     this.setInternalComponent = function() {
       const InternalComponent = Vue.extend(this.vueComponent);
       this.internalComponent = new InternalComponent({
         service: this._service,
-        template: this.getInternalTemplate()
+        template
       });
       this.internalComponent.state = this.getService().state;
     };
