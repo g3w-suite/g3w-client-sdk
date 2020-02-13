@@ -1,4 +1,4 @@
-import { BING_API_KEY } from '../config/config';
+import { BING_API_KEY } from '../../config/config';
 const Projections = require('../projection/projections');
 const BaseLayers = {};
 
