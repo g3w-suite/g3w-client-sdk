@@ -1,10 +1,12 @@
+import { createCompiledTemplate } from 'gui/vue/utils'
 const inherit = require('core/utils/utils').inherit;
 const imageToDataURL = require('core/utils/utils').imageToDataURL;
 const base = require('core/utils/utils').base;
 const Component = require('gui/vue/component');
+const template = require('./printpage.html');
 
 const InternalComponent = Vue.extend({
-  template: require('./printpage.html'),
+  ...createCompiledTemplate(template),
   data: function() {
     return {
       state: null,

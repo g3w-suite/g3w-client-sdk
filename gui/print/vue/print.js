@@ -1,11 +1,13 @@
+import { createCompiledTemplate } from 'gui/vue/utils';
 const inherit = require('core/utils/utils').inherit;
 const Component = require('gui/vue/component');
 const PrintService = require('gui/print/printservice');
 const base = require('core/utils/utils').base;
 const t = require('core/i18n/i18n.service').t;
+const compiledTemplate = createCompiledTemplate(require('./print.html'))
 
 const vueComponentOptions = {
-  template: require('./print.html'),
+  ...compiledTemplate,
   data: function() {
     return {
       state: null,

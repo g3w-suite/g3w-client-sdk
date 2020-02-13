@@ -1,5 +1,7 @@
+import { createCompiledTemplate } from 'gui/vue/utils';
+const compiledTemplate = createCompiledTemplate(require('./header.html'));
 const HeaderFormComponent = Vue.extend({
-  template: require('./header.html'),
+  ...compiledTemplate,
   props: {
     headers: {
       type: Array,

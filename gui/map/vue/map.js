@@ -1,13 +1,15 @@
+import { createCompiledTemplate } from 'gui/vue/utils';
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const merge = require('core/utils/utils').merge;
 const Component = require('gui/vue/component');
 const AddLayerComponent = require('./addlayer');
 const MapService = require('../mapservice');
+const templateCompiled = createCompiledTemplate(require('./map.html'));
 
 // map vue component
 const vueComponentOptions = {
-  template: require('./map.html'),
+  ...templateCompiled,
   data: function() {
     const {service} = this.$options;
     return {

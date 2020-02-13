@@ -1,3 +1,4 @@
+import { createCompiledTemplate } from 'gui/vue/utils';
 const inherit = require('core/utils/utils').inherit;
 const t = require('core/i18n/i18n.service').t;
 const base = require('core/utils/utils').base;
@@ -10,10 +11,11 @@ const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresreg
 const Service = require('../catalogservice');
 const ChromeComponent = VueColor.Chrome;
 const CatalogEventHub = new Vue();
+const templateCompiled = createCompiledTemplate(require('./catalog.html'));
 let QGISVERSION;
 
 const vueComponentOptions = {
-  template: require('./catalog.html'),
+  ...templateCompiled,
   data() {
     return {
       state: null,

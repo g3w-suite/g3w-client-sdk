@@ -8,7 +8,6 @@ const HeaderFormComponent = require('../components/header/vue/header');
 const BodyFormComponent = require('../components/body/vue/body');
 const G3wFormFooter = require('gui/form/components/footer/vue/footer');
 
-
 //vue component
 const vueComponentObject = {
   template: null,

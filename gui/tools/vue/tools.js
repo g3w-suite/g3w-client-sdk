@@ -1,11 +1,13 @@
+import { createCompiledTemplate } from 'gui/vue/utils';
+import G3wTool from './tool.vue';
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const GUI = require('gui/gui');
 const Component = require('gui/vue/component');
 const ToolsService = require('gui/tools/service');
-import G3wTool from './tool.vue';
+const compiledTemplate = createCompiledTemplate(require('./tools.html'));
 const InternalComponent = Vue.extend({
-  template: require('./tools.html'),
+  ...compiledTemplate,
   data: function() {
     return {
       state: null

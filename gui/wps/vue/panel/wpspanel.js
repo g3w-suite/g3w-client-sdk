@@ -1,11 +1,13 @@
+import { createCompiledTemplate } from 'gui/vue/utils';
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const Panel = require('gui/panel');
 const Service = require('gui/wps/service');
 const t = require('core/i18n/i18n.service').t;
+const compiledTemplate = createCompiledTemplate(require('./wpspanel.html'));
 
 const WpsPanelComponent = Vue.extend({
-  template: require('./wpspanel.html'),
+  ...compiledTemplate,
   components:{},
   data() {
     return {

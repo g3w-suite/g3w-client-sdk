@@ -1,3 +1,4 @@
+import { createCompiledTemplate } from 'gui/vue/utils';
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const GUI = require('gui/gui');
@@ -6,10 +7,11 @@ const t = require('core/i18n/i18n.service').t;
 const Service = require('../relationsservice');
 const Field = require('gui/fields/g3w-field.vue');
 const RelationPageEventBus = new Vue();
+const compiledTemplate = createCompiledTemplate(require('./relations.html'));
 
 /* List of relations */
 const relationsComponent = {
-  template: require('./relations.html'),
+  ...compiledTemplate,
   props: ['relations', 'feature'],
   methods: {
     showRelation: function(relation) {

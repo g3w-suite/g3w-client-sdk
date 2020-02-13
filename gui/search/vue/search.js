@@ -1,12 +1,14 @@
+import G3wTool from 'gui/tools/vue/tool.vue'
+import { createCompiledTemplate } from 'gui/vue/utils';
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const Component = require('gui/vue/component');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const Service = require('gui/search/service');
-import G3wTool from 'gui/tools/vue/tool.vue'
+const templateCompiled = createCompiledTemplate(require('./search.html'));
 
 const vueComponentOptions = {
-   template: require('./search.html'),
+  ...templateCompiled,
    data: function() {
      return {
        state: null
