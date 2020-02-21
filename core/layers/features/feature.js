@@ -1,30 +1,19 @@
-// Classe Feature che eridita da ol.Feature sfruttando tutti i metodi
-// necessari anche alla costruzione di un layer vettoriale
-// Allo stesso modo può essere un oggetto non vettoriale non settando la geometria
-// ma solo le proprièta
-const Feature = function(options) {
+const uniqueId = require('core/utils/utils').uniqueId;
+const Feature = function(options={}) {
   ol.Feature.call(this);
-  options = options || {};
+  this._uid = uniqueId();
   this._newPrefix = '_new_';
-  // mi serve per capire quale è la pk della feature
   this._pk = options.pk || "id";
   const feature = options.feature;
-  //verificare come utilizzare clone
   if (feature) {
     this.setProperties(feature.getProperties());
-    //vado a scrivere l'id univoco (corrispondente alla chiave primaria)
     this.setId(feature.getId());
     this.setGeometryName(feature.getGeometryName());
     const geometry = feature.getGeometry();
-    if (geometry) {
-      this.setGeometry(geometry);
-    }
+    geometry && this.setGeometry(geometry);
     const style = this.getStyle();
-    if (style) {
-      this.setStyle(style);
-    }
+    style && this.setStyle(style);
   }
-  // necessario per poter interagire reattivamente con l'esterno
   this.state = {
     new: false,
     state: null
@@ -38,6 +27,14 @@ const proto = Feature.prototype;
 // vado a cambiare il costruttore
 proto.constructor = 'Feature';
 
+proto.getUid = function(){
+  return this._uid
+};
+
+proto._setUid = function(uid){
+  this._uid = uid;
+};
+
 proto.clone = function() {
   // clono la feature
   const feature = ol.Feature.prototype.clone.call(this);
@@ -46,6 +43,7 @@ proto.clone = function() {
     feature: feature,
     pk: this._pk
   });
+  clone._setUid(this.getUid());
   clone.setState(this.getState());
   this.isNew() && clone.setNew();
   return clone;
@@ -54,6 +52,7 @@ proto.clone = function() {
 proto.setTemporaryId = function() {
   let newValue = this._newPrefix + Date.now();
   this.setId(newValue);
+  //this.get(this._pk) === null && this.set(this._pk, newValue);
   this.setNew();
 };
 

@@ -11,11 +11,11 @@ const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresreg
 const Service = require('../catalogservice');
 const ChromeComponent = VueColor.Chrome;
 const CatalogEventHub = new Vue();
-const templateCompiled = createCompiledTemplate(require('./catalog.html'));
+const compiledTemplate = createCompiledTemplate(require('./catalog.html'));
 let QGISVERSION;
 
 const vueComponentOptions = {
-  ...templateCompiled,
+  ...compiledTemplate,
   data() {
     return {
       state: null,
@@ -390,10 +390,11 @@ Vue.component('layers-group', {
   }
 });
 
+const compiledTristateTreeTemplate = createCompiledTemplate(require('./tristate-tree.html'));
 /* CHILDREN COMPONENTS */
 // tree component
 Vue.component('tristate-tree', {
-  template: require('./tristate-tree.html'),
+  ...compiledTristateTreeTemplate,
   props : ['layerstree', 'storeid', 'highlightlayers', 'parent_mutually_exclusive', 'parentFolder', 'externallayers', 'root', "parent"],
   data: function () {
     return {
@@ -594,8 +595,10 @@ Vue.component('tristate-tree', {
   }
 });
 
+const compiletLegendTemplate = createCompiledTemplate(require('./legend.html'));
+
 Vue.component('layerslegend',{
-    template: require('./legend.html'),
+    ...compiletLegendTemplate,
     props: ['layerstree', 'legend', 'active'],
     data: function() {
       return {}
@@ -633,8 +636,10 @@ Vue.component('layerslegend',{
     }
 });
 
+const compiledLegendItemsTemplate = createCompiledTemplate(require('./legend_items.html'));
+
 Vue.component('layerslegend-items',{
-  template: require('./legend_items.html'),
+  ...compiledLegendItemsTemplate,
   props: ['layers', 'legend'],
   data() {
     return {

@@ -157,7 +157,7 @@ proto._handleWMSMultilayers = function({layer, response, projections} = {}) {
     originalFeatureMember.forEach((featureMember) => {
       layersNames.add(Object.keys(featureMember)[0]);
     });
-    for (let layerName of layersNames) {
+    for (const layerName of layersNames) {
       jsonresponse.FeatureCollection.featureMember = originalFeatureMember.filter((feature) => {
         return feature[layerName]
       });
@@ -169,7 +169,7 @@ proto._handleWMSMultilayers = function({layer, response, projections} = {}) {
       if (handledResponse) {
         const response = handledResponse[0];
         response.layer = layerName.replace(WORD_NUMERIC_XML_TAG_ESCAPE,'');
-        handledResponses.push(response);
+        handledResponses.unshift(response);
       }
     }
   }
@@ -198,7 +198,7 @@ proto._handleWMSMultiLayersResponseFromQGISSERVER = function({groupFeatures, pre
     if (handledResponse) {
       const response = handledResponse[0];
       response.layer = layer;
-      handledResponses.push(response);
+      handledResponses.unshift(response);
     }
   });
 };
@@ -266,7 +266,7 @@ proto._getHandledResponsesFromResponse = function({response, layers, projections
           layer,
           projections
         });
-        handledResponse && handledResponses.push(handledResponse[0]);
+        handledResponse && handledResponses.unshift(handledResponse[0]);
       }
     }
   }

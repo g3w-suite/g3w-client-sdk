@@ -140,14 +140,9 @@ proto._commit = function(commitItems) {
 
 // get feature from id
 proto.getFeatureById = function(featureId) {
-  let feat;
-  this._features.find((feature) => {
-    if (feature.getId() === featureId) {
-      feat = feature;
-      return true;
-    }
+  return this._features.find((feature) => {
+    return feature.getId() === featureId
   });
-  return feat;
 };
 
 proto._addFeature = function(feature) {
@@ -157,7 +152,7 @@ proto._addFeature = function(feature) {
 //substitute feature after update
 proto._updateFeature = function(feature) {
   this._features.find((feat, idx) => {
-    if (feat.getId() === feature.getId()) {
+    if (feat.getUid() === feature.getUid()) {
       this._features[idx] = feature;
       return true;
     }
@@ -174,12 +169,13 @@ proto.setFeatures = function(features) {
 
 proto._removeFeature = function(feature) {
   this._features = this._features.filter((feat) => {
-    return feature.getId() !== feat.getId();
+    return feature.getUid() !== feat.getUid();
   })
 };
 
 proto._clearFeatures = function() {
-  this._features.splice(0);
+  this._features = null;
+  this._features = [];
 };
 
 proto.getDataProvider = function() {

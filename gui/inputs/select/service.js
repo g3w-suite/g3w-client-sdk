@@ -1,6 +1,5 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
-const getAppLanguage = require('core/i18n/i18n.service').getAppLanguage;
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const Service = require('gui/inputs/service');
 
@@ -15,10 +14,6 @@ const proto = SelectService.prototype;
 
 proto._getLayerById = function(layer_id) {
   return CatalogLayersStoresRegistry.getLayerById(layer_id);
-};
-
-proto.getLanguage = function() {
-  return getAppLanguage();
 };
 
 proto.addValue = function(value) {

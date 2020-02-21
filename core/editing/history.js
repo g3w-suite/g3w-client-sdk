@@ -216,18 +216,16 @@ proto.redo = function() {
 // ripulisce tutta la storia se non è stato specificato nessun ids
 // ids: array di id
 proto.clear = function(ids) {
-  if (ids) {
+  if (ids)
     this._states.forEach((state, idx) => {
-      if (ids.indexOf(state.id) != -1) {
+      if (ids.indexOf(state.id) !== -1) {
         if (this._current && this._current == state.id())
           //faccio un undo
           this.undo();
         this._states.splice(idx, 1);
       }
-    })
-  } else {
-    this._clearAll();
-  }
+    });
+  else this._clearAll();
 };
 
 // funzione che pulisce tutto states
@@ -237,7 +235,6 @@ proto._clearAll =  function() {
   this.state.commit = false;
   this.state.redo = false;
   this.state.undo = false;
-
 };
 
 // ritorna lo stato a seconda dell'id
@@ -332,7 +329,7 @@ proto.commit = function() {
       if (Array.isArray(item)) item = item[1];
       commitItems[item.layerId] && commitItems[item.layerId].forEach((commitItem, index) => {
         // check if already inserted feature
-        if (commitItem.getId() === item.feature.getId()) {
+        if (commitItem.getUid() === item.feature.getUid()) {
           if (item.feature.isNew() && !commitItem.isDeleted() && item.feature.isUpdated() ) {
             const _item = item.feature.clone();
             _item.add();

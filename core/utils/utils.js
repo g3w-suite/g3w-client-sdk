@@ -67,7 +67,7 @@ const utils = {
   },
 
   uniqueId: function() {
-    return `${parseInt(Math.random() * 100) + Date.now() }`
+    return utils.getUniqueDomId();
   },
 
   basemixin: function mixin(destination, source) {

@@ -72,8 +72,8 @@ proto._start = function(options={}) {
       if (this._add) {
         // return feature from server - clone it
         features = this._cloneFeatures(features);
-        // add clone feature to internal features store
-        this._featuresstore.addFeatures(features);
+        // set clone feature to internal features store
+        this._featuresstore.setFeatures(features);
       }
       this.state.started = true;
       d.resolve(features);

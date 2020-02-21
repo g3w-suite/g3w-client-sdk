@@ -1,14 +1,16 @@
 <template>
   <div>
-    <component v-if="state.type !== 'child'"
-      @changeinput="changeInput"
-      @addinput="addToValidate"
-      :addToValidate="addToValidate"
-      :changeInput="changeInput"
-      :state="state"
-      :is="type">
-    </component>
-    <span v-if="state.type !== 'child'" class="divider"></span>
+    <div v-if="state.type !== 'child'">
+      <component
+        @changeinput="changeInput"
+        @addinput="addToValidate"
+        :addToValidate="addToValidate"
+        :changeInput="changeInput"
+        :state="state"
+        :is="type">
+      </component>
+      <span class="divider"></span>
+    </div>
     <div v-else style="border-top: 2px solid" class="skin-border-color field-child">
       <h4 style="font-weight: bold">{{ state.label}}</h4>
       <div> {{ state.description }} </div>

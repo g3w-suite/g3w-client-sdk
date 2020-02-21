@@ -7,10 +7,9 @@ const CheckBoxInput = Vue.extend({
   mixins: [Input, WidgetMixins],
   template: require('./checkbox.html'),
   data: function() {
-    const values = _.map(this.state.input.options, function(option) {
-      return option.value;
+    const values = this.state.input.options.values.map((value) => {
+      return value;
     });
-    const label = values.indexOf(this.state.value) != -1 ? this.state.value : null;
     return {
       service: new Service({
         state: this.state,
@@ -19,8 +18,8 @@ const CheckBoxInput = Vue.extend({
           values
         }
       }),
-      value: false,
-      label: label,
+      value: null,
+      label:null,
       id: getUniqueDomId() // new id
     }
   },
@@ -29,16 +28,16 @@ const CheckBoxInput = Vue.extend({
       // convert label
       this.label = this.service.convertCheckedToValue(this.value);
     },
-    setValue(value) {
-      this.value = this.service.convertValueToChecked(value);
+    setValue() {
+      this.value = this.service.convertValueToChecked();
     },
     changeCheckBox: function() {
       // convert label
       this.setLabel();
       this.widgetChanged();
     },
-    stateValueChanged(value) {
-      this.setValue(value);
+    stateValueChanged() {
+      this.setValue();
       this.setLabel();
     }
   },

@@ -15,13 +15,21 @@ const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const Filter = require('core/layers/filter/filter');
 const WFSProvider = require('core/layers/providers/wfsprovider');
 const ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
-const getResolutionFromScale = require('g3w-ol3/src/utils/utils').getResolutionFromScale;
+const {getScaleFromResolution, getResolutionFromScale} = require('g3w-ol3/src/utils/utils');
 const ControlsFactory = require('gui/map/control/factory');
 const StreetViewService = require('gui/streetview/streetviewservice');
 const ControlsRegistry = require('gui/map/control/registry');
 const VectorLayer = require('core/layers/vectorlayer');
 const debounce = require('core/utils/utils').debounce;
 const throttle = require('core/utils/utils').throttle;
+const SETTINGS = {
+  zoom : {
+    maxScale: 2000,
+  },
+  animation: {
+    duration: 2000
+  }
+};
 
 function MapService(options={}) {
   this.id = 'MapService';
@@ -128,7 +136,7 @@ function MapService(options={}) {
       return this._setupControls()
     },
     addHideMap: function({ratio, layers=[], mainview=false, switchable=false} = {}) {
-      const id = 'hidemap_'+ Date.now();
+      const id = `hidemap_${Date.now()}`;
       const idMap = {
         id,
         map: null,
@@ -176,7 +184,7 @@ function MapService(options={}) {
     if (layer) {
       const geometryType  = layer.getGeometryType();
       const querable = layer.isQueryable();
-      for (let i = 0; i< this._mapControls.length; i++) {
+      for (let i = 0; i < this._mapControls.length; i++) {
         const mapcontrol = this._mapControls[i];
         if (mapcontrol.control._onSelectLayer) {
           if (mapcontrol.control.getGeometryTypes().indexOf(geometryType) !== -1) {
@@ -186,8 +194,7 @@ function MapService(options={}) {
               if (layer === _toggledLayer)
                 mapcontrol.control.setEnable(layer.isVisible())
             })
-          } else
-            mapcontrol.control.setEnable(false)
+          } else mapcontrol.control.setEnable(false)
         }
       }
     }
@@ -206,11 +213,9 @@ function MapService(options={}) {
   this.on('cataloglayerunselected', this._onCatalogUnSelectLayer);
 
   this.on('extraParamsSet',(extraParams, update) => {
-    if (update) {
-      this.getMapLayers().forEach((mapLayer) => {
+    update && this.getMapLayers().forEach((mapLayer) => {
         mapLayer.update(this.state,extraParams);
       })
-    }
   });
 
   //CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
@@ -230,10 +235,15 @@ function MapService(options={}) {
   base(this);
 }
 
-
 inherit(MapService, G3WObject);
 
 const proto = MapService.prototype;
+
+proto.getScaleFromExtent = function(extent) {
+  const resolution = this.getMap().getView().getResolutionForExtent(extent, this.getMap().getSize());
+  const scale = getScaleFromResolution(resolution, this.getMapUnits());
+  return scale;
+};
 
 proto._addHideMap = function({ratio, layers=[], mainview=false} = {}) {
   const idMap = this.state.hidemaps[this.state.hidemaps.length - 1 ];
@@ -270,8 +280,7 @@ proto.removeHideMap = function(id) {
       break;
     }
   }
-  if (index !== undefined)
-    this.state.hidemaps.splice(index,1);
+  index !== undefined && this.state.hidemaps.splice(index,1);
 };
 
 proto._showHideMapElement = function({map, show=false} = {}) {
@@ -299,9 +308,7 @@ proto.getApplicationAttribution = function() {
   const {header_terms_of_use_link, header_terms_of_use_text} = this.config.group;
   if (header_terms_of_use_text) {
     return `<a href="${header_terms_of_use_link}">${header_terms_of_use_text}</a>`;
-  } else {
-    return false
-  }
+  } else return false
 };
 
 proto.slaveOf = function(mapService, sameLayers) {
@@ -309,7 +316,7 @@ proto.slaveOf = function(mapService, sameLayers) {
 };
 
 proto.setLayersExtraParams = function(params,update){
-  this.layersExtraParams = _.assign(this.layersExtraParams,params);
+  this.layersExtraParams = _.assign(this.layersExtraParams, params);
   this.emit('extraParamsSet',params,update);
 };
 
@@ -327,15 +334,9 @@ proto.getMap = function() {
 };
 
 proto.getMapCanvas = function(map) {
-  let viewport;
-  if (!map)
-    viewport = $(`#${this.maps_container} .g3w-map`).last().children('.ol-viewport')[0];
-  else {
-    viewport = map.getViewport();
-  }
+  const viewport = map ? map.getViewport() : $(`#${this.maps_container} .g3w-map`).last().children('.ol-viewport')[0];
   return $(viewport).children('canvas')[0];
 };
-
 
 proto.getProjection = function() {
   return this.project.getProjection();
@@ -370,8 +371,7 @@ proto.getGetFeatureInfoUrlForLayer = function(layer,coordinates,resolution,epsg,
   return mapLayer.getGetFeatureInfoUrl(coordinates,resolution,epsg,params);
 };
 
-proto.showMarker = function(coordinates, duration) {
-  duration = duration || 1000;
+proto.showMarker = function(coordinates, duration=1000) {
   this._marker.setPosition(coordinates);
   setTimeout(() => {
     this._marker.setPosition();
@@ -1350,6 +1350,12 @@ proto.getProjectLayer = function(layerId) {
   return MapLayersStoreRegistry.getLayerById(layerId);
 };
 
+proto._setSettings = function(){
+  const maxScale = this.getScaleFromExtent(this.project.state.initextent);
+  // settings maxScale
+  SETTINGS.zoom.maxScale = 2000 > maxScale ? maxScale : 2000;
+};
+
 proto._resetView = function() {
   const [width, height] = this.viewer.map.getSize();
   const extent = this.project.state.extent;
@@ -1363,12 +1369,13 @@ proto._resetView = function() {
     resolution: this.viewer.map.getView().getResolution(),
     maxResolution
   });
+  this._setSettings();
   this.viewer.map.setView(view);
 };
 
-proto._calculateViewOptions = function({project, width, height}) {
-  const projection = this.getProjection();
+proto._calculateViewOptions = function({project, width, height}={}) {
   const initextent = project.state.initextent;
+  const projection = this.getProjection();
   const extent = project.state.extent;
   const maxxRes = ol.extent.getWidth(extent) / width;
   const minyRes = ol.extent.getHeight(extent) / height;
@@ -1397,6 +1404,7 @@ proto._setupViewer = function(width, height) {
     })
   });
 
+  this._setSettings();
   this.state.size = this.viewer.map.getSize();
   //set mapunit
   this.state.mapUnits = this.viewer.map.getView().getProjection().getUnits();
@@ -1708,13 +1716,12 @@ proto.goTo = function(coordinates,zoom) {
 };
 
 proto.goToRes = function(coordinates, resolution){
-  const options = {
+  this.viewer.goToRes(coordinates, {
     resolution
-  };
-  this.viewer.goToRes(coordinates, options);
+  });
 };
 
-proto.zoomToFeatures = function(features, options={maxZoom:8, highlight: false}) {
+proto.zoomToFeatures = function(features, options={highlight: false}) {
   let extent;
   let geometryType;
   const geometryCoordinates = [];
@@ -1737,7 +1744,7 @@ proto.zoomToFeatures = function(features, options={maxZoom:8, highlight: false})
       options.highLightGeometry = new ol.geom[olClassGeomType]();
       options.highLightGeometry.setCoordinates(geometryCoordinates);
     } catch(e) {
-      console.log(e)
+      console.log(e);
     }
   }
   extent && this.zoomToExtent(extent, options);
@@ -1745,11 +1752,22 @@ proto.zoomToFeatures = function(features, options={maxZoom:8, highlight: false})
 
 proto.zoomToExtent = function(extent, options={}) {
   const map = this.getMap();
-  const {maxZoom=8} = options;
-  map.getView().fit(extent, {
-    size: map.getSize(),
-    maxZoom
-  });
+  const projectInitExtent = this.project.state.initextent;
+  const inside = ol.extent.containsExtent(projectInitExtent, extent);
+  // max resolution of the map
+  const maxResolution = getResolutionFromScale(SETTINGS.zoom.maxScale, this.getMapUnits()); // map resolution of the map
+  const center = ol.extent.getCenter(extent);
+  // check if
+  if (inside) {
+    // calculate main resolutions
+    const currentResolution = map.getView().getResolution(); // Current Resolution
+    const extentResolution = map.getView().getResolutionForExtent(extent, map.getSize()); // resolution of request extent
+    ////
+    // set the final resolution to go to
+    let resolution = extentResolution > maxResolution ? extentResolution: maxResolution;
+    resolution = (currentResolution < resolution) && (currentResolution > extentResolution) ? currentResolution : resolution;
+    this.goToRes(center, resolution);
+  } else this.goToRes(center, maxResolution); // set max resolution
   options.highLightGeometry && this.highlightGeometry(options.highLightGeometry, {
     zoom: false
   });
@@ -1795,7 +1813,7 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
     return styles;
   };
   const highlight = (typeof options.highlight == 'boolean') ? options.highlight : true;
-  const duration = options.duration || 2000;
+  const duration = options.duration || SETTINGS.animation.duration;
   let geometry;
   if (geometryObj instanceof ol.geom.Geometry){
     geometry = geometryObj;
@@ -1803,17 +1821,9 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
     let format = new ol.format.GeoJSON;
     geometry = format.readGeometry(geometryObj);
   }
-  const geometryType = geometry.getType();
   if (zoom) {
-    const goToResolution = getResolutionFromScale(2000, this.getMapUnits());
-    if (geometryType === 'Point' || (geometryType === 'MultiPoint' && geometry.getPoints().length === 1)) {
-      const coordinates = geometryType === 'Point' ? geometry.getCoordinates() : geometry.getPoint(0).getCoordinates();
-      this.goToRes(coordinates, goToResolution);
-    } else {
-      options.minResolution = goToResolution;
-      options.constrainResolution = false;
-      this.viewer.fit(geometry, options);
-    }
+    const extent = geometry.getExtent();
+    this.zoomToExtent(extent);
   }
   if (highlight) {
     const feature = new ol.Feature({
@@ -1868,7 +1878,7 @@ proto.layout = function({width, height}) {
   if (!this.viewer) {
     this.setupViewer(width,height);
   } else {
-    this.setHidden((width == 0 || height == 0));
+    this.setHidden((width === 0 || height === 0));
     this.getMap().updateSize();
     this.state.hidemaps.forEach((hidemap) => {
       hidemap.map.updateSize()
@@ -2020,9 +2030,7 @@ proto.stopDrawGreyCover = function() {
   if (this._greyListenerKey) {
     ol.Observable.unByKey(this._greyListenerKey);
     this._greyListenerKey = null;
-    if (this._drawShadow.inner.length) {
-      this._resetDrawShadowInner();
-    }
+    this._drawShadow.inner.length && this._resetDrawShadowInner();
   }
   map.render();
 };
@@ -2077,33 +2085,6 @@ proto.addExternalLayer = function(externalLayer) {
       name: name
     });
     vectorLayer.setStyle(this.setExternalLayerStyle(color));
-    return vectorLayer;
-  };
-  if (!layer) {
-    let format;
-    switch (type) {
-      case 'geojson':
-        format = new ol.format.GeoJSON();
-        vectorLayer = loadExternalLayer(format, data);
-        break;
-      case 'kml':
-        format = new ol.format.KML({
-          extractStyles: false
-        });
-        vectorLayer = loadExternalLayer(format, data);
-        break;
-      case 'zip':
-        shpToGeojson({
-          url: data,
-          encoding: 'big5',
-          EPSG: crs
-        }, (geojson) => {
-          const data = JSON.stringify(geojson);
-          format = new ol.format.GeoJSON({});
-          vectorLayer = loadExternalLayer(format, data, "EPSG:4326");
-        });
-        break;
-    }
     const extent = vectorLayer.getSource().getExtent();
     externalLayer.bbox = {
       minx: extent[0],
@@ -2116,6 +2097,33 @@ proto.addExternalLayer = function(externalLayer) {
     QueryResultService.registerVectorLayer(vectorLayer);
     catalogService.addExternalLayer(externalLayer);
     map.getView().fit(extent);
+    return vectorLayer;
+  };
+  if (!layer) {
+    let format;
+    switch (type) {
+      case 'geojson':
+        format = new ol.format.GeoJSON();
+        loadExternalLayer(format, data);
+        break;
+      case 'kml':
+        format = new ol.format.KML({
+          extractStyles: false
+        });
+        loadExternalLayer(format, data);
+        break;
+      case 'zip':
+        shpToGeojson({
+          url: data,
+          encoding: 'big5',
+          EPSG: crs
+        }, (geojson) => {
+          const data = JSON.stringify(geojson);
+          format = new ol.format.GeoJSON({});
+          loadExternalLayer(format, data, "EPSG:4326");
+        });
+        break;
+    }
   } else {
     GUI.notify.info(t("layer_is_added"));
   }

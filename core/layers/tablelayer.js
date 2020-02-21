@@ -183,8 +183,7 @@ proto.getLayerForEditing = function({vectorurl, project_type}={}) {
   vectorurl && this.setVectorUrl(vectorurl);
   project_type && this.setProjectType(project_type);
   this.setEditingUrl();
-  // if the original layer is a vector layer return itself
-  return this;
+  return this.clone();
 };
 
 proto.setEditingUrls = function({urls}={}) {
@@ -224,14 +223,17 @@ proto.isFieldRequired = function(fieldName) {
 
 // apply response data from server in case of new inserted feature
 proto.applyCommitResponse = function(response={}) {
-  const data = response;
-  if (data && data.result) {
-    const ids = data.response.new;
-    const lockids = data.response.new_lockids;
+  if (response && response.result) {
+    const {response:data} = response;
+    const ids = data.new;
+    const lockids = data.new_lockids;
     ids.forEach((idobj) => {
       const feature = this._featuresStore.getFeatureById(idobj.clientid);
       feature.setId(idobj.id);
-      this._featuresStore.addLoadedIds(feature.getId());
+      try {
+        // temporary inside try ckeck if feature contain a field with the same pk of the layer
+        feature.getKeys().indexOf(this.getPk()) !== -1 && feature.set(this.getPk(), idobj.id);
+      } catch(err) {}
     });
     this._featuresStore.addLockIds(lockids);
   }
@@ -428,9 +430,7 @@ proto._deleteFeature = function(feature) {
   return feature.getId();
 };
 
-proto._updateFeature = function(feature) {
-  //
-};
+proto._updateFeature = function(feature) {};
 
 proto._clearFeatures = function() {
   this._featuresStore.clearFeatures();
@@ -491,7 +491,7 @@ proto.getFieldsWithValues = function(obj, options={}) {
         // che check if has a value
         if (feature.getId()) {
           field.value = feature.getId();
-          editable = false;
+          editable = feature.isNew();
         } else field.value = null;
         field.editable = editable;
       } else field.value = attributes[field.name];
@@ -507,7 +507,7 @@ proto.getFieldsWithValues = function(obj, options={}) {
       // for editing purpose
       if (field.validate === undefined)
         field.validate = {};
-      field.validate.valid = false;
+      field.validate.valid = true;
       field.validate.unique = true;
       field.validate.required = field.validate.required === undefined ? false : field.validate.required;
       field.validate.empty = field.validate.required;

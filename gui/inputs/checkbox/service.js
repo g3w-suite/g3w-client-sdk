@@ -3,8 +3,12 @@ const base = require('core/utils/utils').base;
 const Service = require('gui/inputs/service');
 
 function CheckBoxService(options={}) {
+  const value = options.state.input.options.values.find(value => {
+    return value.checked === false;
+  });
+  if (options.state.value === null)
+    options.state.value = value.value;
   base(this, options);
-  this.state.value = this.state.value !== undefined ? this.state.value : this.convertCheckedToValue(false);
 }
 
 inherit(CheckBoxService, Service);
@@ -12,30 +16,21 @@ inherit(CheckBoxService, Service);
 const proto = CheckBoxService.prototype;
 
 proto.convertCheckedToValue = function(checked) {
-  let value;
-  const options = this.state.input.options.values;
-  options.forEach((option) => {
-    if (option.checked === checked) {
-      this.state.value = value = option.value;
-      return false;
-    }
+  const option = this.state.input.options.values.find((value) => {
+    return value.checked === checked
   });
-  return value;
+  this.state.value = option.value;
+  return this.state.value;
 };
 
-proto.convertValueToChecked = function(value=null) {
-  let checked = null;
-  const valueToCheck = value|| this.state.value;
-  const options = this.state.input.options.values;
+proto.convertValueToChecked = function() {
+  const valueToCheck = this.state.value;
   if (valueToCheck === null)
-    return false;
-  options.forEach((option) => {
-    if (option.value === valueToCheck) {
-      checked = option.checked;
-      return false;
-    }
+    return null;
+  const option = this.state.input.options.values.find((value) => {
+    return value.value == valueToCheck
   });
-  return checked
+  return option.checked;
 };
 
 

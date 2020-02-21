@@ -1,11 +1,12 @@
+import Select2 from './select2.vue'
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const Panel = require('gui/panel');
 const Service = require('./searchservice');
-import Select2 from './select2.vue'
+const compiledTemplate = Vue.compile(require('./searchpanel.html'));
 
 const SearchPanelComponent = Vue.extend({
-  template: require('./searchpanel.html'),
+  ...compiledTemplate,
   components:{
     Select2
   },
@@ -26,9 +27,9 @@ const SearchPanelComponent = Vue.extend({
         });
       }
     },
-    changeDependencyFields({attribute, value, fillfieldspromises=[]}) {
+    changeDependencyFields({attribute:field, value, fillfieldspromises=[]}) {
       const dependency = this.state.dependencies.find((_dependency) => {
-        return attribute === _dependency.observer
+        return field === _dependency.observer
       });
       if (dependency) {
         const subscribers = dependency.subscribers || [];
@@ -36,8 +37,10 @@ const SearchPanelComponent = Vue.extend({
           const forminputvalue = this.state.forminputs.find((input) => {
             return input.attribute === subscribers[i].attribute;
           });
+          const dependance = subscribers[i].options.dependance;
           fillfieldspromises.push(this.$options.service.fillDependencyInputs({
-            field: attribute,
+            field,
+            dependance,
             subscribers,
             value
           }));

@@ -28,9 +28,6 @@ const TableInput = Vue.extend({
     deleteRow(index) {
       console.log('Delete Row ', index)
     }
-  },
-  created() {
-    console.log(this.state)
   }
 });
 

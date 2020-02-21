@@ -1,5 +1,9 @@
-var selectMixin = {
+const getAppLanguage = require('core/i18n/i18n.service').getAppLanguage;
+const selectMixin = {
   methods: {
+    getLanguage() {
+      return getAppLanguage();
+    },
     changeSelect: function(value) {
       this.state.value = value === 'null' ? null : value;
       this.change();

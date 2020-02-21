@@ -26,6 +26,7 @@ function SearchService(config={}) {
     loading: {},
     searching: false
   };
+  this.depedencies = {};
   this.project = ProjectsRegistry.getCurrentProject();
   this.searchLayer = null;
   this.filter = null;
@@ -142,7 +143,13 @@ proto._getCascadeDependanciesFilter = function(field, dependencies=[]) {
   return dependencies
 };
 
+proto._getDependanceCurrentValue = function(field) {
+  const dependance = this.depedencies[field];
+  return this.state.cachedependencies[dependance]._currentValue
+};
+
 proto.fillDependencyInputs = function({field, subscribers=[], value=''}={}) {
+  const isRoot = this.depedencies.root === field;
   return new Promise((resolve, reject) => {
     subscribers.forEach((subscribe) => {
       subscribe.options.disabled = true;
@@ -150,12 +157,22 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=''}={}) {
       subscribe.options.values.splice(1);
     });
     if (value) {
-      if (this.state.cachedependencies[field] && this.state.cachedependencies[field][value]) {
+      let isCached = false;
+      let rootValues;
+      if (isRoot) {
+        isCached = this.state.cachedependencies[field] && this.state.cachedependencies[field][value];
+        rootValues = isCached && this.state.cachedependencies[field][value];
+      } else {
+        const dependenceValue = this._getDependanceCurrentValue(field);
+        isCached = this.state.cachedependencies[field] && this.state.cachedependencies[field][dependenceValue] && this.state.cachedependencies[field] && this.state.cachedependencies[field][dependenceValue][value];
+        rootValues = isCached && this.state.cachedependencies[field][dependenceValue][value];
+      }
+      if (isCached) {
         for (let i = 0; i < subscribers.length; i++) {
           const subscribe = subscribers[i];
-          const values = this.state.cachedependencies[field][value][subscribe.attribute];
+          const values = rootValues[subscribe.attribute];
           if (values && values.length) {
-            for (let i = 0; i <values.length; i++) {
+            for (let i = 0; i < values.length; i++) {
               subscribe.options.values.push(values[i]);
             }
             subscribe.options.disabled = false;
@@ -165,8 +182,14 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=''}={}) {
       } else {
         this.queryService = GUI.getComponent('queryresults').getService();
         this.state.loading[field] = true;
-        this.state.cachedependencies[field] = this.state.cachedependencies[field] ? this.state.cachedependencies[field] : {};
-        this.state.cachedependencies[field][value] = this.state.cachedependencies[field][value] ? this.state.cachedependencies[field][value] : {};
+        this.state.cachedependencies[field] = this.state.cachedependencies[field] || {};
+        this.state.cachedependencies[field]._currentValue = value;
+        if (isRoot) this.state.cachedependencies[field][value] = this.state.cachedependencies[field][value] || {};
+        else {
+          const dependenceValue =  this._getDependanceCurrentValue(field);
+          this.state.cachedependencies[field][dependenceValue] = this.state.cachedependencies[field][dependenceValue] || {};
+          this.state.cachedependencies[field][dependenceValue][value] = this.state.cachedependencies[field][dependenceValue][value] || {}
+        }
         const equality = {};
         const inputFilterObject = {};
         equality[field] = value;
@@ -201,7 +224,12 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=''}={}) {
                 }
               });
               subscribe.options.values.sort();
-              this.state.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
+              if (isRoot)
+                this.state.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
+              else {
+                const dependenceValue =  this._getDependanceCurrentValue(field);
+                this.state.cachedependencies[field][dependenceValue][value][subscribe.attribute] = subscribe.options.values.slice(1);
+              }
               subscribe.options.disabled = false;
             }
           }
@@ -242,16 +270,17 @@ proto.fillInputsFormFromFilter = function({filter}) {
         value: '',
         id: input.id || id
       };
-
       if (forminput.type === 'selectfield') {
-        const field = forminput.options.dependance;
-        if (field) {
-          this.state.loading[field] = false;
+        const dependance = forminput.options.dependance;
+        if (dependance) {
+          this.depedencies[forminput.attribute] = dependance;
+          this.state.loading[dependance] = false;
           forminput.options.disabled = true;
           this._checkInputDependencies(forminput);
+        } else {
+          this.depedencies.root = forminput.attribute;
         }
         if (forminput.options.values[0] !== '')
-          //add a starting all
           forminput.options.values.unshift('');
         forminput.value = '';
       } else

@@ -21,6 +21,7 @@ function QueryResultsService() {
   };
   this._relations = [];
   const project = this._project = ProjectsRegistry.getCurrentProject();
+  // userful to set right order for query result based on toc order layers
   this._projectLayerIds = this._project.getConfigLayers().map((layer) => {
     return layer.id;
   });
@@ -41,6 +42,7 @@ function QueryResultsService() {
       this.setLayersData(layers);
     },
     setLayersData: function(layers) {
+      // here set the right order of result layers based on toc
       this._orderResponseByProjectLayers(layers);
       this.state.loading = false;
       this.state.layers =  layers;

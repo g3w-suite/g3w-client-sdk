@@ -14,7 +14,7 @@ const BaseInput = {
     // called when input value change
     change: function() {
       // validate input
-      this.service.validate();
+      this.state.validate.required && this.service.validate();
       // emit change input
       this.$emit('changeinput', this.state);
     },
@@ -24,12 +24,15 @@ const BaseInput = {
     isVisible: function() {}
   },
   created() {
-    if (!this.service)
+    if (!this.service) {
       this.service = new Service({
-        state: this.state
+        state: this.state,
       });
+    }
+    ///this.service.setValue(this.state.value)
     this.state.validate.message = this.service.getErrorMessage(this.state);
-    this.service.validate();
+    //if required validate it
+    this.state.validate.required && this.service.validate();
     this.$emit('addinput', this.state);
   }
 };
