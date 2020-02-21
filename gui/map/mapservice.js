@@ -992,7 +992,11 @@ proto._setupControls = function() {
             this.showMarker(evt.coordinates);
           }));
           control.on('error', (e) => {
-            GUI.notify.error(t("mapcontrols.geolocations.error"))
+            GUI.showUserMessage({
+              type: 'warning',
+              message: t("mapcontrols.geolocations.error"),
+              autoclose: true
+            })
           });
           break;
         case 'addlayers':

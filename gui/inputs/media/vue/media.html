@@ -1,13 +1,17 @@
 <baseinput :state="state">
   <div slot="body">
-    <input
-      style="margin-bottom: 3px; width:100%"
-      :name="state.name"
-      :data-url="state.input.options.uploadurl"
-      @change="onChange"
-      v-disabled="!isEditable()"
-      :class="{'input-error-validation' : notvalid}"
-      type="file">
+    <div class="g3w_input_button skin-background-color" @click="onClick" style="border-radius: 4px; width:100%; cursor: pointer; text-align: center;">
+      <i :class="g3wtemplate.getFontClass('file-upload')" class="fa-2x" style="color: #ffffff;padding: 5px;">
+        <input
+          :id="mediaid"
+          style="display:none"
+          :name="state.name"
+          :data-url="state.input.options.uploadurl"
+          v-disabled="!isEditable()"
+          :class="{'input-error-validation' : notvalid}"
+          type="file">
+      </i>
+    </div>
     <bar-loader :loading="loading"></bar-loader>
     <g3w-media :state="data">
       <div class="clearmedia" @click="clearMedia()">
