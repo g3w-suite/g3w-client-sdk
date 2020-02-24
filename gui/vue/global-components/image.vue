@@ -66,6 +66,7 @@
     padding-left: 0 !important;
     min-width: 100px;
     max-width: 100%;
+    cursor:pointer;
   }
 
 </style>
