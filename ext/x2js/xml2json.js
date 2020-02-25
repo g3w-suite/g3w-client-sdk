@@ -443,7 +443,7 @@
 				for( var it in jsonObj ) {
 					//set filter for wfs xml format
 					if (['_fid', '__prefix'].indexOf(it) === -1 && !it.match(/xmlns:|xsi:/) && jsonXmlSpecialElem (jsonObj, it)) {
-						const _it = it.replace(/^_+/, '');
+						var _it = it.replace(/^_+/, '');
 						jsonObj[_it] = jsonObj[it];
 						it = _it
 					}
@@ -575,8 +575,7 @@
 		};
 
 		this.json2xml_str = function (jsonObj) {
-			const xml = parseJSONObject ( jsonObj, "" );
-			return xml
+			return parseJSONObject ( jsonObj, "" );
 		};
 
 		this.json2xml = function (jsonObj) {
