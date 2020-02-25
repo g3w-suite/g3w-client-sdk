@@ -25,7 +25,7 @@ const proto = TableService.prototype;
 
 proto.getHeaders = function(fields) {
   const headers = fields.filter((field) => {
-    return  ['boundedBy', 'geom','the_geom','geometry','bbox', 'GEOMETRY'].indexOf(field.name) === -1
+    return  ['boundedBy', 'geom','the_geom','geometry','bbox', 'GEOMETRY', 'geometria'].indexOf(field.name) === -1
   });
   return headers;
 };

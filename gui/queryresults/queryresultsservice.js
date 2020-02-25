@@ -196,6 +196,17 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
         }
       }
     if (featuresForLayer.features && featuresForLayer.features.length) {
+      const layerSpecialAttributesName = (layer instanceof Layer) ? layerAttributes.filter(attribute => {
+        try {
+          return attribute.name[0] === '_' || Number.isInteger(1*attribute.name[0])
+        } catch(e) {
+          return false
+        }
+      }).map(attribute => ({
+        alias: attribute.name.replace(/_/, ''),
+        name: attribute.name
+      })) : [];
+      layerSpecialAttributesName.length && featuresForLayer.features.forEach( feature => this._setSpecialAttributesFetureProperty(layerSpecialAttributesName, feature));
       layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0], relationNames);
       layerObj.attributes.forEach((attribute) => {
         if (formStructure) {
@@ -234,6 +245,21 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       })
   });
   return layers;
+};
+
+proto._setSpecialAttributesFetureProperty = function(layerSpecialAttributesName, feature) {
+  const featureAttributes = feature.getProperties();
+  const featureAttributesNames = Object.keys(featureAttributes);
+  if (layerSpecialAttributesName.length) {
+    layerSpecialAttributesName.forEach(attributeObj =>{
+      featureAttributesNames.find(featureAttribute => {
+        if (featureAttribute.match(attributeObj.alias)) {
+          feature.set(attributeObj.name, feature.get(featureAttribute));
+          return true
+        }
+      })
+    });
+  }
 };
 
 proto._parseAttributes = function(layerAttributes, feature, relationNames) {

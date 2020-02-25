@@ -2,6 +2,7 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const geoutils = require('g3w-ol3/src/utils/utils');
 const G3WObject = require('core/g3wobject');
+const convert = require('xml-js');
 const WORD_NUMERIC_XML_TAG_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_';
 
 function Provider(options = {}) {
@@ -392,10 +393,9 @@ proto._tranformFeatures = function(features, projections) {
 
 proto._parseLayerFeatureCollection = function({jsonresponse, layer, projections}) {
   const x2js = new X2JS();
-  let layerFeatureCollectionXML = x2js.json2xml_str(jsonresponse);
+  const layerFeatureCollectionXML = x2js.json2xml_str(jsonresponse);
   const parser = new ol.format.WMSGetFeatureInfo();
-  let features = parser.readFeatures(layerFeatureCollectionXML);
-  features = this._tranformFeatures(features, projections);
+  const features = this._tranformFeatures(parser.readFeatures(layerFeatureCollectionXML), projections);
   return [{
     layer,
     features
