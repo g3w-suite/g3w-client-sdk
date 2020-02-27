@@ -555,8 +555,6 @@ QueryResultsService.showQueryRelations = function(layer, feature, action) {
   });
 };
 
-
-
 module.exports = QueryResultsService;
 
 

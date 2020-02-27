@@ -66,6 +66,7 @@ proto.onbeforeasync = function(setter, listener, priority) {
 };
 
 proto.un = function(setter, key) {
+  // cicle on after before (key) and for each settersListeners (array) find key
   Object.entries(this.settersListeners).forEach(([_key, settersListeners]) => {
     settersListeners[setter].forEach((setterListener, idx) => {
       if (setterListener.key === key) {
@@ -109,8 +110,7 @@ proto._setupListenersChain = function(setters) {
     const setterOption = setters[setter];
     let setterFnc = noop;
     let setterFallback = noop;
-    if (_.isFunction(setterOption))
-      setterFnc = setterOption
+    if (_.isFunction(setterOption)) setterFnc = setterOption;
     else {
       setterFnc = setterOption.fnc;
       setterFallback = setterOption.fallback || noop; // method called in case of error
@@ -130,15 +130,13 @@ proto._setupListenersChain = function(setters) {
         // resolve promise
         deferred.resolve(returnVal);
         //call all subscribed methods afet setter
-        const onceListeners = [];
+        const onceListenerKeys = [];
         const afterListeners = this.settersListeners.after[setter];
-        afterListeners.forEach((listener, index) => {
-          listener.once && onceListeners.push(index);
+        afterListeners.forEach(listener => {
           listener.fnc.apply(this, args);
+          listener.once && onceListenerKeys.push(listener.key);
         });
-        onceListeners.forEach((index) => {
-          this.settersListeners.after[setter].splice(index, 1);
-        })
+        onceListenerKeys.forEach(key => this.un(setter, key));
       };
       //  abort function
       const abort = () => {

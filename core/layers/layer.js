@@ -9,7 +9,7 @@ const ProviderFactory = require('core/layers/providers/providersfactory');
 // Base Class of all Layer
 function Layer(config={}) {
   const ProjectsRegistry = require('core/project/projectsregistry');
-  ProjectsRegistry.onafter('setCurrentProject', (project) => {
+  ProjectsRegistry.onceafter('setCurrentProject', (project) => {
     const qgisVersion = project.getQgisVersion({
       type: 'major'
     });
