@@ -10,15 +10,13 @@ function GeoLayerMixin(config={}) {}
 
 const proto = GeoLayerMixin.prototype;
 
-proto.setup = function(config={}) {
-  const ProjectsRegistry = require('core/project/projectsregistry');
-  ProjectsRegistry.onceafter('setCurrentProject', (project) => {
-    this.config.map_crs = 1*project.getProjection().getCode().split('EPSG:')[1];
-  });
+proto.setup = function(config={}, options={}) {
   if (!this.config) {
     console.log("GeoLayerMixin must be used from a valid (geo) Layer instance");
     return;
   }
+  const {project} = options;
+  this.config.map_crs = 1*project.getProjection().getCode().split('EPSG:')[1];
   this.config.multilayerid = config.multilayer;
   // state extend of layer setting geolayer property to true
   // and adding informations of bbox

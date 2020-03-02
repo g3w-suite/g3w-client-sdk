@@ -3,8 +3,8 @@ const base = require('core/utils/utils').base;
 const BaseLayer = require('core/layers/baselayers/baselayer');
 const BasesLayers = require('g3w-ol3/src/layers/bases');
 
-function OSMLayer(options){
-  base(this,options);
+function OSMLayer(config={}, options={}){
+  base(this, config, options);
 }
 
 inherit(OSMLayer, BaseLayer);

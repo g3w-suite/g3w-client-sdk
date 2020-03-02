@@ -11,7 +11,7 @@ function VectorLayer(config={}, options) {
   this._mapLayer = null; // later tah will be added to map
   this.type = Layer.LayerTypes.VECTOR;
   // need a ol layer for add to map
-  this.setup(config);
+  this.setup(config, options);
   this.onafter('setColor', (color) => {})
 }
 

@@ -82,11 +82,12 @@ function TableLayer(config={}, options={}) {
   this.type = Layer.LayerTypes.TABLE;
   // color
   this._color = null;
-  const currentProject = options.project || ProjectsRegistry.getCurrentProject();
+  options.project = options.project || ProjectsRegistry.getCurrentProject();
+  const {project} = options;
   // set urls
-  this.projectId = currentProject.getId();
+  this.projectId = project.getId();
   this.layerId = config.id;
-  this.projectType = options.project_type || currentProject.getType();
+  this.projectType = options.project_type || project.getType();
   this.vectorUrl = options.vectorurl || initConfig.vectorurl;
   // add urls
   config.urls = config.urls || {};
@@ -100,8 +101,8 @@ function TableLayer(config={}, options={}) {
     fields: [] // editing fields
   };
   // call base layer
-  base(this, config);
-  const projectRelations = currentProject.getRelations();
+  base(this, config, options);
+  const projectRelations = project.getRelations();
   // create realations
   this._relations = null;
   this._createRelations(projectRelations);

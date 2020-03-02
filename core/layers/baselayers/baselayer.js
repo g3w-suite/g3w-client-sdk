@@ -3,8 +3,8 @@ const base = require('core/utils/utils').base;
 const WMSLayer = require('../map/wmslayer');
 const ImageLayer = require('core/layers/imagelayer');
 
-function BaseLayer(options = {}) {
-  base(this, options);
+function BaseLayer(config = {}, options={}) {
+  base(this, config, options);
   if (this.isWMS()) {
     const config = {
       url: this.getWmsUrl(),

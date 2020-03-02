@@ -7,26 +7,8 @@ const Filter = require('core/layers/filter/filter');
 const ProviderFactory = require('core/layers/providers/providersfactory');
 
 // Base Class of all Layer
-function Layer(config={}) {
-  const ProjectsRegistry = require('core/project/projectsregistry');
-  ProjectsRegistry.onceafter('setCurrentProject', (project) => {
-    const qgisVersion = project.getQgisVersion({
-      type: 'major'
-    });
-    const projectType = project.getType();
-    const projectId = project.getId();
-    const suffixUrl = `${projectType}/${projectId}/${config.id}/`;
-    const vectorUrl = initConfig.vectorurl;
-    this.config.urls.data = `${vectorUrl}data/${suffixUrl}`;
-    this.config.urls.shp = `${vectorUrl}shp/${suffixUrl}`;
-    //set custom parameters based on project qgis version
-    this.config.customParams = {
-      search: {
-        I: qgisVersion === 2 ? null : 0,
-        J: qgisVersion === 2 ? null : 0
-      }
-    }
-  });
+function Layer(config={}, options={}) {
+  this.config = config;
   // assign some attribute
   config.id = config.id || 'Layer';
   config.title = config.title || config.name;
@@ -38,7 +20,24 @@ function Layer(config={}) {
     query: config.infourl && config.infourl !== '' ? config.infourl : config.wmsUrl,
     ...(config.urls || {})
   };
-  this.config = config;
+  const {project} = options;
+  if (!this.isBaseLayer()) {
+    const qgisVersion = project.getQgisVersion({
+      type: 'major'
+    });
+    const projectType = project.getType();
+    const projectId = project.getId();
+    const suffixUrl = `${projectType}/${projectId}/${config.id}/`;
+    const vectorUrl = initConfig.vectorurl;
+    this.config.urls.data = `${vectorUrl}data/${suffixUrl}`;
+    this.config.urls.shp = `${vectorUrl}shp/${suffixUrl}`;
+    //set custom parameters based on project qgis version
+    this.config.searchParams = {
+      I: qgisVersion === 2 ? null : 0,
+      J: qgisVersion === 2 ? null : 0
+    };
+  }
+
   // dinamic layer values
   this.state = {
     id: config.id,
@@ -202,14 +201,15 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
 };
 
 // search method
-proto.search = function(options={}) {
+proto.search = function(options={}, params={}) {
   // check option feature_count
   options.feature_count = options.feature_count || 10;
   //for qgis 2 / 3 purpose
   options = {
     ...options,
-    ...this.config.customParams.search
-  };
+    ...this.config.searchParams,
+    ...params
+    };
   const d = $.Deferred();
   const provider = this.getProvider('search');
   if (provider) {

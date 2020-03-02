@@ -10,10 +10,7 @@ function LayerFactory() {
   this.build = function(config, options) {
     // return the layer instance
     const layerClass = this.get(config);
-    if (layerClass) {
-      return new layerClass(config, options);
-    }
-    return null;
+    return layerClass ? new layerClass(config, options) : null
   };
 
   this.get = function(config) {

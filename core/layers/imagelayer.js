@@ -9,7 +9,7 @@ const XYZLayer = require('./map/xyzlayer');
 const LegendService = require('./legend/legendservice');
 const GeoLayerMixin = require('./geolayermixin');
 
-function ImageLayer(config={}) {
+function ImageLayer(config={}, options={}) {
   /*{
     id,
     title,
@@ -39,10 +39,10 @@ function ImageLayer(config={}) {
     ows_method
     wms_use_layer_ids
   }*/
-  base(this, config);
+  base(this, config, options);
   this.config.baselayer = config.baselayer || false;
   this.type = Layer.LayerTypes.IMAGE;
-  this.setup(config);
+  this.setup(config, options);
 }
 
 inherit(ImageLayer, Layer);
@@ -51,19 +51,18 @@ mixin(ImageLayer, GeoLayerMixin);
 
 const proto = ImageLayer.prototype;
 
-proto.getLayerForEditing = function({force=false, vectorurl, project_type}={}) {
+proto.getLayerForEditing = function({force=false, vectorurl, project_type, project}={}) {
   if (this.isEditable() || force) {
-    //return istance of vectorlayer
+    const project = project || require('core/project/projectsregistry').getCurrentProject();
     const editingLayer = new VectorLayer(this.config, {
       vectorurl,
-      project_type
+      project_type,
+      project
     });
     // set editing layer
     this.setEditingLayer(editingLayer);
     return editingLayer;
-  } else {
-    return null
-  }
+  } else return null
 };
 
 proto.isBaseLayer = function() {

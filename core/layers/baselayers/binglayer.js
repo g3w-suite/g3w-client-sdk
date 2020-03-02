@@ -3,8 +3,8 @@ const base = require('core/utils/utils').base;
 const BaseLayer = require('core/layers/baselayers/baselayer');
 const BasesLayers = require('g3w-ol3/src/layers/bases');
 
-function BingLayer(options){
-  base(this,options);
+function BingLayer(config={}, options={}){
+  base(this, config, options);
 }
 
 inherit(BingLayer, BaseLayer);

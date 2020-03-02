@@ -3,9 +3,9 @@ const base = require('core/utils/utils').base;
 const BaseLayer = require('core/layers/baselayers/baselayer');
 const BasesLayers = require('g3w-ol3/src/layers/bases');
 
-function ARCGISMAPSERVERLayer(options={}) {
-  this.config = options;
-  base(this, options);
+function ARCGISMAPSERVERLayer(config={}, options={}) {
+  this.config = config;
+  base(this, config, options);
 }
 
 inherit(ARCGISMAPSERVERLayer, BaseLayer);
