@@ -155,27 +155,32 @@ proto.getFeatures = function(options={}, params={}) {
   let url;
   //editing mode
   if (options.editing) {
+    let promise;
     url = this._editingUrl;
-    let filter = options.filter || null;
-    if (filter && filter.bbox) {
-      const bbox = filter.bbox;
-      filter = {in_bbox: `${bbox[0]},${bbox[1]},${bbox[2]},${bbox[3]}`};
-    }
-    const pk = this._layer.getPk();
     if (!url) {
       d.reject('Url non valido');
       return;
     }
-    const features = [];
-    const jsonFilter = JSON.stringify(filter);
     const urlParams = $.param(params);
     url+=  urlParams ? '?' + urlParams : '';
-    $.post({
-      url,
-      data: jsonFilter,
-      contentType: "application/json"
-    })
-      .then((response) => {
+    const pk = this._layer.getPk();
+    const features = [];
+    let filter = options.filter || null;
+    if (filter) {
+      if (filter.bbox) {
+        const bbox = filter.bbox;
+        filter = {in_bbox: `${bbox[0]},${bbox[1]},${bbox[2]},${bbox[3]}`};
+        const jsonFilter = JSON.stringify(filter);
+        promise = $.post({
+          url,
+          data: jsonFilter,
+          contentType: "application/json"
+        })
+      } else if (filter.field) {
+        promise = $.get( url, filter.field );
+      }
+    }
+    promise.then((response) => {
         const {vector, result, featurelocks} = response;
         if (result) {
           const {data, geometrytype} = vector;
