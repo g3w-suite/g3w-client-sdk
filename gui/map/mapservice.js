@@ -2060,13 +2060,13 @@ proto.addExternalLayer = function(externalLayer) {
   if (externalLayer instanceof ol.layer.Vector) {
     vectorLayer = externalLayer;
     name = vectorLayer.get('name');
+    type = 'vector';
     externalLayer = {
       name,
       title: name,
       removable: true,
       external: true,
       visible: true
-
     };
   } else {
     name = externalLayer.name;
@@ -2076,7 +2076,21 @@ proto.addExternalLayer = function(externalLayer) {
     color = externalLayer.color;
   }
   const layer = this.getLayerByName(name);
-  const loadExternalLayer = (format, data, epsg=crs) => {
+  const loadExternalLayer  = (layer) => {
+    const extent = layer.getSource().getExtent();
+    externalLayer.bbox = {
+      minx: extent[0],
+      miny: extent[1],
+      maxx: extent[2],
+      maxy: extent[3]
+    };
+    externalLayer.checked = true;
+    map.addLayer(layer);
+    QueryResultService.registerVectorLayer(layer);
+    catalogService.addExternalLayer(externalLayer);
+    map.getView().fit(extent);
+  };
+  const createExternalLayer = (format, data, epsg=crs) => {
     const features = format.readFeatures(data, {
       dataProjection: epsg,
       featureProjection: this.getEpsg()
@@ -2089,32 +2103,24 @@ proto.addExternalLayer = function(externalLayer) {
       name: name
     });
     vectorLayer.setStyle(this.setExternalLayerStyle(color));
-    const extent = vectorLayer.getSource().getExtent();
-    externalLayer.bbox = {
-      minx: extent[0],
-      miny: extent[1],
-      maxx: extent[2],
-      maxy: extent[3]
-    };
-    externalLayer.checked = true;
-    map.addLayer(vectorLayer);
-    QueryResultService.registerVectorLayer(vectorLayer);
-    catalogService.addExternalLayer(externalLayer);
-    map.getView().fit(extent);
     return vectorLayer;
   };
+
   if (!layer) {
     let format;
+    let layer;
     switch (type) {
       case 'geojson':
         format = new ol.format.GeoJSON();
-        loadExternalLayer(format, data);
+        layer = createExternalLayer(format, data);
+        loadExternalLayer(layer);
         break;
       case 'kml':
         format = new ol.format.KML({
           extractStyles: false
         });
-        loadExternalLayer(format, data);
+        layer = createExternalLayer(format, data);
+        loadExternalLayer(layer);
         break;
       case 'zip':
         shpToGeojson({
@@ -2124,8 +2130,12 @@ proto.addExternalLayer = function(externalLayer) {
         }, (geojson) => {
           const data = JSON.stringify(geojson);
           format = new ol.format.GeoJSON({});
-          loadExternalLayer(format, data, "EPSG:4326");
+          layer = createExternalLayer(format, data, "EPSG:4326");
+          loadExternalLayer(layer);
         });
+        break;
+      case 'vector':
+        loadExternalLayer(vectorLayer);
         break;
     }
   } else {

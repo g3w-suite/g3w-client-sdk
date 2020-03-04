@@ -112,7 +112,7 @@ proto.run = async function({inputs=[], id}={}){
         source.addFeatures(data);
         const layer = new ol.layer.Vector({
           source,
-          name: 'Pippo'
+          name: 'prova2', //t
         });
         mapService.addExternalLayer(layer);
         break;

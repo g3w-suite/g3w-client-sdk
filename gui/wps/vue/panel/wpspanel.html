@@ -17,11 +17,12 @@
         <template v-for="input in currentInputs" :key="input.id">
           <p style="margin-bottom: 3px; margin-top: 3px;">[ {{ input.id }} ]</p>
           <label :for="input.id">{{ input.label }}</label>
-          <input :type="input.type ==='float' ? 'number' : ''" class="form-control" :id="input.id" v-model="input.value" min="0">
-          <div v-if="showPickCoordinate && input.id === pickcoordinateinputs[0]"  style="margin-top: 5px; margin-bottom: 5px; text-align: center">
-            <button @click.prevent="pickCoordinate" class="btn skin-background-color btn-circle skin-tooltip-left" :title="pickcoordinates_tooltip" id="pickcoordinates" data-placement="left" data-toggle="tooltip"><i :class="g3wtemplate.getFontClass('marker')"></i></button>
+          <input v-if="input.type==='float' || input.type==='number'" :type="input.type ==='float' ? 'number' : ''" class="form-control" :id="input.id" v-model="input.value" min="0">
+          <div v-else-if="showPickCoordinate && input.id === pickcoordinateinputs[0]"  style="margin-top: 5px; margin-bottom: 5px; text-align: center">
+            <button @click.prevent="pickCoordinate" class="btn skin-background-color btn-circle skin-tooltip-left" :title="pickcoordinates_tooltip" id="pickcoordinates" data-placement="left" data-toggle="tooltip">
+              <i :class="g3wtemplate.getFontClass('marker')"></i></button>
           </div>
-          <div v-if="input.type ==='file'" @click="openInputFile(input.id)" class="g3w_input_button skin-background-color" style="width:100%; cursor: pointer; text-align: center">
+          <div v-else-if="input.type ==='file'" @click="openInputFile(input.id)" class="g3w_input_button skin-background-color" style="width:100%; cursor: pointer; text-align: center">
             <i :class="g3wtemplate.getFontClass('file-upload')" class="fa-2x" style="padding: 3px;">
               <input style="display: none" type="file" :id="input.id" name="file"  :accept="input.options.mimetype" @change="loadFile({input, event:$event})">
             </i>
