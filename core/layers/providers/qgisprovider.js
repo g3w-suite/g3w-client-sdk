@@ -179,6 +179,11 @@ proto.getFeatures = function(options={}, params={}) {
       } else if (filter.field) {
         promise = $.get( url, filter.field );
       }
+    } else {
+      promise = $.post({
+        url,
+        contentType: "application/json"
+      })
     }
     promise.then((response) => {
         const {vector, result, featurelocks} = response;
