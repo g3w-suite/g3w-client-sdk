@@ -30,6 +30,8 @@ function Session(options={}) {
   this._featuresstore = options.featuresstore || new FeaturesStore({
     provider: this._editor && this._editor.getLayer() && this._editor.getLayer().getProvider('data')
   });
+  // original features;
+  this._features;
   // history -- oggetto che contiene gli stati dei layers
   this._history = new History({
     id: this.state.id
@@ -70,6 +72,7 @@ proto._start = function(options={}) {
   this._editor.start(options)
     .then((features) => {
       if (this._add) {
+        this._features = features;
         // return feature from server - clone it
         features = this._cloneFeatures(features);
         // set clone feature to internal features store
@@ -92,6 +95,7 @@ proto._getFeatures = function(options={}) {
     .then((promise) => {
       promise.then((features) => {
         if (this._add) {
+          features.forEach(feature => this._features.push(feature));
           features = this._cloneFeatures(features);
           this._featuresstore.addFeatures(features);
         }
@@ -230,21 +234,13 @@ proto._applyChanges = function(items, reverse=true) {
   ChangesManager.execute(this._featuresstore, items, reverse);
 };
 
-// method to revert (cancel) all changes in history and clen session
+// method to revert (cancel) all changes in history and clean session
 proto.revert = function() {
   const d = $.Deferred();
-  this._editor.getFeatures().then((promise) => {
-    promise
-      .then((features)  =>{
-        features =  this._cloneFeatures(features);
-        this.getFeaturesStore().setFeatures(features);
-        this._history.clear();
-        d.resolve();
-      })
-      .fail((err) => {
-        d.reject(err);
-      })
-  });
+  const features  = this._cloneFeatures(this._features);
+  this.getFeaturesStore().setFeatures(features);
+  this._history.clear();
+  d.resolve();
   return d.promise();
 };
 
@@ -274,7 +270,7 @@ proto.rollback = function(changes) {
   if (changes) {
     this._applyChanges(changes, true);
     d.resolve();
-  }  else {
+  } else {
     changes = this._filterChanges();
     // apply changes to featurestore (rollback temporary changes)
     this._applyChanges(changes.own, true);
@@ -412,6 +408,7 @@ proto.clear = function() {
   this._clearHistory();
   // clear a learestor
   this._featuresstore.clear();
+  this._features = null;
 };
 
 //return l'history

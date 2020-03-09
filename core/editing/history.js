@@ -213,14 +213,12 @@ proto.redo = function() {
   return items;
 };
 
-// ripulisce tutta la storia se non è stato specificato nessun ids
-// ids: array di id
+
 proto.clear = function(ids) {
   if (ids)
     this._states.forEach((state, idx) => {
       if (ids.indexOf(state.id) !== -1) {
         if (this._current && this._current == state.id())
-          //faccio un undo
           this.undo();
         this._states.splice(idx, 1);
       }
@@ -228,7 +226,6 @@ proto.clear = function(ids) {
   else this._clearAll();
 };
 
-// funzione che pulisce tutto states
 proto._clearAll =  function() {
   this._states = [];
   this._current = null;
@@ -237,16 +234,8 @@ proto._clearAll =  function() {
   this.state.undo = false;
 };
 
-// ritorna lo stato a seconda dell'id
 proto.getState = function(id) {
-  let state = null;
-  this._states.forEach((state) => {
-    if (state.id === id) {
-      state = state;
-      return false;
-    }
-  });
-  return state;
+  return this._states.find(state => state.id === id);
 };
 
 proto.getFirstState = function() {
@@ -264,11 +253,8 @@ proto.getLastState = function() {
 proto.getCurrentState = function() {
   let currentState = null;
   if (this._current && this._states.length) {
-    this._states.forEach((state) => {
-        if (this._current == state.id) {
-          currentState = state;
-          return false
-        }
+    currentState = this._states.find((state) => {
+     return this._current === state.id;
     });
   }
   return currentState;
@@ -279,7 +265,7 @@ proto.getCurrentStateIndex = function() {
   let currentStateIndex = null;
   if (this._current && this._states.length) {
     this._states.forEach((state, idx) => {
-      if (this._current == state.id) {
+      if (this._current === state.id) {
         currentStateIndex = idx;
         return false
       }

@@ -17,10 +17,10 @@ function Editor(options={}) {
     deleteFeature: function(feature) {
       this._deleteFeature(feature);
     },
-    setFeatures: function(features) {
+    setFeatures: function(features=[]) {
       this._setFeatures(features);
     },
-    getFeatures: function (options) {
+    getFeatures: function(options={}) {
       return this._getFeatures(options);
     }
   };
@@ -45,7 +45,7 @@ proto.setLayer = function(layer) {
 };
 
 // fget features methods
-proto._getFeatures = function(options) {
+proto._getFeatures = function(options={}) {
   const d = $.Deferred();
   this._layer.getFeatures(options)
     .then((promise) => {
