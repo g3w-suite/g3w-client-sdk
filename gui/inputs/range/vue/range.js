@@ -1,5 +1,4 @@
 const Input = require('gui/inputs/input');
-const Service = require('../service');
 
 const RangeInput = Vue.extend({
   mixins: [Input],
@@ -12,20 +11,13 @@ const RangeInput = Vue.extend({
     return {
       max,
       min,
-      step: step,
-      service: new Service({
-        state: this.state
-      })
+      step: step
     }
   },
   methods: {
     checkValue() {
       this.change();
     }
-  },
-  created() {
-    this.service.setValue(this.state.value);
-    this.state.info = `(min: ${this.min} - max: ${this.max})`
   }
 });
 

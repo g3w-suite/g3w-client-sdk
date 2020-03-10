@@ -6,17 +6,7 @@
   </slot>
   <div class="col-sm-8">
     <slot name="loading"></slot>
-    <slot name="body">
-      <input
-        @keyup="change()"
-        v-disabled="!isEditable()"
-        :field="state.name"
-        class="form-control"
-        v-model="state.value"
-        :class="{'input-error-validation' : notvalid}"
-        :id="state.name"
-        :placeholder="state.input.label">
-    </slot>
+    <slot name="body"></slot>
     <slot name="message">
       <p v-if="notvalid" class="error-input-message" v-html="state.validate.message"></p>
       <p v-else-if="state.info" v-html="state.info"></p>

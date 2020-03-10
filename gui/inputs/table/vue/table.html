@@ -1,5 +1,5 @@
 <baseinput :state="state">
-  <div slot="body" v-disabled="!isEditable()" :class="{'input-error-validation' : notvalid}" style="max-width: 100%; min-width: 100%">
+  <div slot="body" v-disabled="!editable" :class="{'input-error-validation' : notvalid}" style="max-width: 100%; min-width: 100%">
     <div class="input_table_header" style="display: flex; justify-content: flex-end" >
       <span @click="addRow" class="skin-color" :class="g3wtemplate.font['plus']"></span>
     </div>

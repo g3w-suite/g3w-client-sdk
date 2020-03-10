@@ -3,7 +3,7 @@
     <input
       @change="changeCheckBox"
       style="width:100%"
-      v-disabled="!isEditable()"
+      v-disabled="!editable"
       :class="{'input-error-validation' : notvalid}"
       class="magic-checkbox"
       v-model="value"

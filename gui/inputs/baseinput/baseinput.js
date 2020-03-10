@@ -1,13 +1,10 @@
-// Base object that has common  inputs methods
-const Service = require('../service');
-
-const BaseInput = {
-  props: ['state'],
-  template: require('./baseinput.html'),
+const BaseInputMixin = {
   computed: {
     notvalid() {
-      if (this.state.validate.valid === false) this.service.getErrorMessage(this.state);
       return this.state.validate.valid === false;
+    },
+    editable() {
+      return this.state.editable;
     }
   },
   methods: {
@@ -18,30 +15,17 @@ const BaseInput = {
       // emit change input
       this.$emit('changeinput', this.state);
     },
-    isEditable: function() {
-      return this.service.isEditable();
-    },
     isVisible: function() {}
-  },
-  created() {
-    if (!this.service) {
-      this.service = new Service({
-        state: this.state,
-      });
-    }
-    ///this.service.setValue(this.state.value)
-    this.state.validate.message = this.service.getErrorMessage(this.state);
-    //if required validate it
-    this.state.validate.required && this.service.validate();
-    this.$emit('addinput', this.state);
   }
 };
 
-const BaseInputComponent = Vue.extend({
-  mixins: [BaseInput]
-});
+const BaseInput = {
+  props: ['state'],
+  template: require('./baseinput.html'),
+  ...BaseInputMixin
+};
 
 module.exports = {
-  BaseInput: BaseInput,
-  BaseInputComponent: BaseInputComponent
+  BaseInput,
+  BaseInputMixin
 };

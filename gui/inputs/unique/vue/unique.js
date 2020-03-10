@@ -1,8 +1,7 @@
+import { createCompiledTemplate } from 'gui/vue/utils';
 const Input = require('gui/inputs/input');
 const selectMixin = require('gui/inputs/select/vue/selectmixin');
 const getUniqueDomId = require('core/utils/utils').getUniqueDomId;
-const Service = require('../service');
-import { createCompiledTemplate } from 'gui/vue/utils';
 const compiledTemplate = createCompiledTemplate(require('./unique.html'));
 
 const UniqueInput = Vue.extend({
@@ -10,12 +9,7 @@ const UniqueInput = Vue.extend({
   ...compiledTemplate,
   data: function() {
     const id = `unique_${getUniqueDomId()}`;
-    return {
-      service: new Service({
-        state: this.state
-      }),
-      id
-    }
+    return {id}
   },
   watch: {
     'state.input.options.values'(values) {

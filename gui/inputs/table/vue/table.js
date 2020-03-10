@@ -1,6 +1,6 @@
-const Input = require('gui/inputs/input');
 import InputTableHeader from './components/input-table-header.vue';
 import InputTableBody from './components/input-table-body.vue';
+const Input = require('gui/inputs/input');
 
 const TableInput = Vue.extend({
   mixins: [Input],

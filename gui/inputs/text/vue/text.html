@@ -1,2 +1,13 @@
-
+<baseinput :state="state">
+  <input
+    slot="body"
+    @keyup="change()"
+    v-disabled="!editable"
+    :field="state.name"
+    class="form-control"
+    v-model="state.value"
+    :class="{'input-error-validation' : notvalid}"
+    :id="state.name"
+    :placeholder="state.input.label">
+</baseinput>
 

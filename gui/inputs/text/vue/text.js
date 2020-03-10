@@ -1,7 +1,7 @@
-// oggetto base utilizzato per i mixins
-var Input = require('gui/inputs/input');
+const Input = require('gui/inputs/input');
 
-var TextInput = Vue.extend({
+const TextInput = Vue.extend({
+  template: require('./text.html'),
   mixins: [Input]
 });
 

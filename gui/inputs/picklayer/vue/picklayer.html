@@ -6,10 +6,10 @@
       @click="pickLayer"
       @blur="unpick"
       style="width: 100%;"
-      :style="{cursor: isEditable() ? 'pointer': null}"
+      :style="{cursor: editable ? 'pointer': null}"
       class="form-control"
       readonly="readonly"
-      v-disabled="!isEditable()"
+      v-disabled="!editable"
       :class="{'input-error-validation' : notvalid}"
       v-model="state.value">
   </div>

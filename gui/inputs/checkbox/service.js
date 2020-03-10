@@ -6,6 +6,9 @@ function CheckBoxService(options={}) {
   const value = options.state.input.options.values.find(value => {
     return value.checked === false;
   });
+  options.validatorOptions =  {
+    values: options.state.input.options.values.map(value => value)
+  };
   if (options.state.value === null)
     options.state.value = value.value;
   base(this, options);

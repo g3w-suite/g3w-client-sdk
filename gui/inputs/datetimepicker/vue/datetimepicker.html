@@ -3,9 +3,9 @@
     <div class='input-group date' :id='iddatetimepicker'>
       <input
         :id="idinputdatetimepiker"
-        :readonly="!isEditable() ? 'readonly' : null"
+        :readonly="!editable ? 'readonly' : null"
         type='text'
-        v-disabled="!isEditable()"
+        v-disabled="!editable"
         :class="{'input-error-validation' : notvalid}"
         class="form-control" />
       <span

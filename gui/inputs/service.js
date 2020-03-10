@@ -5,11 +5,12 @@ function Service(options = {}) {
   // set state of input
   this.state = options.state || {};
   // type of input
-  this.setValue(this.state.value);
+  this.state.validate.required && this.setValue(this.state.value);
   const type = this.state.type;
   const validatorOptions = (options.validatorOptions || this.state.input.options) || {};
   // useful for the validator to validate input
   this._validator = Validators.get(type, validatorOptions);
+  this.setErrorMessage(options.state);
 }
 
 const proto = Service.prototype;
@@ -24,10 +25,18 @@ proto.getValue = function() {
 
 proto.setValue = function(value) {
   if (value === null || value === undefined) {
-    this.state.value = Array.isArray(this.state.input.options) ? this.state.input.options[0].default
-      : Array.isArray(this.state.input.options.values) && this.state.input.options.values.length ?
-        this.state.input.options.values[0] && this.state.input.options.values[0].value || this.state.input.options.values[0]
-        : this.state.input.options.default;
+    if (Array.isArray(this.state.input.options)) {
+      if (this.state.input.options[0].default)
+        this.state.value = this.state.input.options[0].default;
+      else if(Array.isArray(this.state.input.options.values)) {
+        if (this.state.input.options.values.length) {
+          this.state.value =  this.state.input.options.values[0] &&
+            this.state.input.options.values[0].value
+            || this.state.input.options.values[0]
+        }
+      }
+    } else
+      this.state.value = this.state.input.options.default;
   }
 };
 
@@ -82,7 +91,7 @@ proto.validate = function() {
   return this.state.validate.valid;
 };
 
-proto.getErrorMessage = function(input) {
+proto.setErrorMessage = function(input) {
   if (input.validate.mutually)
     return `${t("sdk.form.inputs.input_validation_mutually_exclusive")} ( ${input.validate.mutually.join(',')} )`;
   else if (input.validate.max_field)
@@ -100,14 +109,10 @@ proto.getErrorMessage = function(input) {
                  </div>         
       `
     }
-    this.state.validate.message = message;
+    this.state.validate.message = this.state.info || message;
   } else {
     this.state.validate.message = this.state.info;
   }
-};
-
-proto.isEditable = function() {
-  return this.state.editable;
 };
 
 module.exports = Service;

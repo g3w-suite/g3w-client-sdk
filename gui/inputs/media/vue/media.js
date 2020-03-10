@@ -12,9 +12,6 @@ const MediaInput = Vue.extend({
   },
   data: function() {
     return {
-      service: new Service({
-        state: this.state
-      }),
       data: {
         value: null,
         mime_type: null

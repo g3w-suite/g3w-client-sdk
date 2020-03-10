@@ -7,7 +7,7 @@
           style="display:none"
           :name="state.name"
           :data-url="state.input.options.uploadurl"
-          v-disabled="!isEditable()"
+          v-disabled="!editable"
           :class="{'input-error-validation' : notvalid}"
           type="file">
       </i>

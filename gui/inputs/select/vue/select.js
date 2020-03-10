@@ -1,16 +1,10 @@
-// oggetto base utilizzato per i mixins
-var Input = require('gui/inputs/input');
-var selectMixin = require('./selectmixin');
-var Service = require('../service');
+const Input = require('gui/inputs/input');
+const selectMixin = require('./selectmixin');
 
-var SelectInput = Vue.extend({
+const SelectInput = Vue.extend({
   mixins: [Input, selectMixin],
   data: function() {
-    return {
-      service: new Service({
-        state: this.state
-      })
-    }
+    return {}
   },
   template: require('./select.html'),
   watch: {
@@ -21,8 +15,6 @@ var SelectInput = Vue.extend({
   },
   created() {
     this.autocomplete && this.state.value && this.service.getKeyByValue({search: this.state.value});
-    if (!this.state.value)
-      this.state.value = this.state.input.options.values.length ? this.state.input.options.values[0].value : null;
   },
   mounted() {
     this.$nextTick(() => {
