@@ -11,7 +11,6 @@ const Input = {
     this.service = new InputServices[this.state.input.type]({
       state: this.state,
     });
-    //if required validate it
     this.state.validate.required && this.service.validate();
     this.$emit('addinput', this.state);
   }
