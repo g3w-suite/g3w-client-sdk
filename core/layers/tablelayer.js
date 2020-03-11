@@ -523,7 +523,7 @@ proto._createRelations = function(projectRelations) {
   const relations = [];
   const layerId = this.getId();
   projectRelations.forEach((relation) => {
-    if ([relation.referencedLayer, relation.referencingLayer].indexOf(layerId) != -1)
+    if ([relation.referencedLayer, relation.referencingLayer].indexOf(layerId) !== -1)
       relations.push(relation);
   });
   if (!!relations.length) {
