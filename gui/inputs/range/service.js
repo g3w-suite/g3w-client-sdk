@@ -5,7 +5,7 @@ const ValidatorClass = require('core/validators/inputs/range');
 
 function RangeService(options={}) {
   const {min, max} = options.state.input.options.values[0];
-  options.state.info = `[min: ${min} - max: ${max}]`;
+  options.state.info = `[MIN: ${min} - MAX: ${max}]`;
   base(this, options);
   const validator = new ValidatorClass({
     min: 1*min,
