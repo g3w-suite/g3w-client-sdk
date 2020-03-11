@@ -2,7 +2,6 @@ const utils = require('../utils');
 const InteractionControl = require('./interactioncontrol');
 const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
 
-
 const StreetViewControl = function(options) {
   const _options = {
     name: "streetview",

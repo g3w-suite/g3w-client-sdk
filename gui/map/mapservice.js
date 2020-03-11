@@ -880,15 +880,15 @@ proto._setupControls = function() {
             this.viewer.map.addLayer(control.getLayer());
           });
           if (!isMobile.any) {
-            $script("https://maps.googleapis.com/maps/api/js?key=AIzaSyBCHtKGx3yXWZZ7_gwtJKG8a_6hArEFefs", () => {
-              let position = {
+            const streetViewService = new StreetViewService();
+            streetViewService.init().then(()=> {
+              const position = {
                 lat: null,
                 lng: null
               };
               const closeContentFnc = () => {
                 control.clearMarker();
               };
-              const streetViewService = new StreetViewService();
               streetViewService.onafter('postRender', (position) => {
                 control.setPosition(position);
               });
@@ -909,8 +909,8 @@ proto._setupControls = function() {
                 control.on('disabled', () => {
                   GUI.closeContent();
                   GUI.off('closecontent', closeContentFnc);
-                  })
-                }
+                })
+              }
             })
           }
           break;
