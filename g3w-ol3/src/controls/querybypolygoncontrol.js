@@ -5,6 +5,7 @@ const VALIDGEOMETRIES = ['Polygon', 'MultiPolygon'];
 
 const QueryByPolygonControl = function(options={}) {
   const _options = {
+    offline: false,
     name: "querybypolygon",
     tipLabel: "Query By Polygon",
     label: options.label || "\ue903",

@@ -1,7 +1,7 @@
 const Control = require('./control');
 
 function NominatimControl(options) {
-  let self = this;
+  const self = this;
   this.options = {
     provider: 'osm',
     placeholder: options.placeholder || 'Città, indirizzo ... ',
@@ -843,7 +843,8 @@ function NominatimControl(options) {
   this.layer = this.nominatim.layer;
   Control.call(this, {
     element: this.container,
-    name: "nominatim"
+    name: "nominatim",
+    offline: false
   });
 }
 

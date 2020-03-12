@@ -16,14 +16,11 @@ const ScaleControl = require('g3w-ol3/src/controls/scalecontrol');
 const OnClikControl = require('g3w-ol3/src/controls/onclickcontrol');
 const ScreenshotControl = require('g3w-ol3/src/controls/screenshotcontrol');
 
-
 const ControlsFactory = {
   create: function(options={}) {
     let control;
     const ControlClass = ControlsFactory.CONTROLS[options.type];
-    if (ControlClass) {
-      control = new ControlClass(options);
-    }
+    if (ControlClass) control = new ControlClass(options);
     const visible = (control instanceof Control && control.isVisible) ? control.isVisible() : true;
     return visible ? control: null
   }

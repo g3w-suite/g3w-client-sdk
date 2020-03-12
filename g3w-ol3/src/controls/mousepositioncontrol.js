@@ -11,7 +11,10 @@ const MousePositionControl = function(options= {}) {
 ol.inherits(MousePositionControl, ol.control.MousePosition);
 
 module.exports = MousePositionControl;
+
 const proto = MousePositionControl.prototype;
+
+proto.offline = true;
 
 proto.changelayout = function(map) {
   const position = this.position;
@@ -21,6 +24,10 @@ proto.changelayout = function(map) {
     position,
     element
   });
+};
+
+proto.setEnable = function(bool) {
+  bool ? $(this.element) : $(this.element)
 };
 
 proto.layout = function(map) {

@@ -22,6 +22,9 @@ const ApplicationService = function() {
   this.version = G3W_VERSION.indexOf("G3W_VERSION") === -1 ? G3W_VERSION  : "";
   this.ready = false;
   this.iframe = window.top !== window.self;
+  this.status = {
+    online: navigator.onLine
+  };
   this.complete = false;
   // store all services sidebar etc..
   this._applicationServices = {};
@@ -33,7 +36,9 @@ const ApplicationService = function() {
   this.setters = {
     changeProject({gid, host}={}){
       return this._changeProject({gid, host})
-    }
+    },
+    online(){},
+    offline(){}
   };
   base(this);
   // init from server
@@ -42,6 +47,41 @@ const ApplicationService = function() {
     this._groupId = this._config.group.name.replace(/\s+/g, '-').toLowerCase();
     // run bbotstrap
     return this._bootstrap();
+  };
+
+  this.registerOnlineOfflineEvent = function(){
+    this.registerWindowEvent({
+      evt: 'online',
+      cb:()=> {
+        this.setOnline();
+        this.online();
+      }
+    });
+
+    this.registerWindowEvent({
+      evt: 'offline',
+      cb:() => {
+        this.setOffline();
+        this.offline();
+      }
+    })
+  };
+
+  this.unregisterOnlineOfflineEvent = function() {
+    window.removeEventListener('online');
+    window.removeEventListener('offline');
+  };
+
+  this.setOnline = function() {
+    this.status.online = true;
+  };
+
+  this.setOffline = function(){
+    this.status.online = false;
+  };
+  
+  this.isOnline = function(){
+    return this.status.online;
   };
 
   //check if is in Iframe
@@ -162,6 +202,8 @@ const ApplicationService = function() {
         // inizialize api service
         ApiService.init(this._config)
       ).then(() => {
+        //rigistern online event
+        this.registerOnlineOfflineEvent();
         this.emit('ready');
         this.ready = this.initialized = true;
         d.resolve();
@@ -192,9 +234,7 @@ const ApplicationService = function() {
     return this._applicationServices[element];
   };
 
-  this.errorHandler = function(error) {
-    console.log(error);
-  };
+  this.errorHandler = function(error) {};
 
   this.clearInitConfig = function() {
     window.initConfig = null;
@@ -245,10 +285,13 @@ const ApplicationService = function() {
         //TODO
       });
     return d.promise();
+  };
+  this.clear = function(){
+    this.unregisterOnlineOfflineEvent();
   }
 };
 
-inherit(ApplicationService,G3WObject);
+inherit(ApplicationService, G3WObject);
 
 
 module.exports = new ApplicationService;

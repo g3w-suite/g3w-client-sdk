@@ -4,6 +4,7 @@ const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinter
 
 const QueryControl = function(options={}){
   const _options = {
+    offline: false,
     name: "querylayer",
     tipLabel: "Query layer",
     label: options.label || "\uea0f",

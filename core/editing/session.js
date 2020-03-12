@@ -357,7 +357,14 @@ proto.getCommitItems = function() {
   return this._serializeCommit(commitItems);
 };
 
-proto.commit = function({ids=null, relations=true}={}) {
+proto.saveLocalStorage = function(commitItems) {
+  return new Promise((resolve, reject) => {
+    console.log(commitItems);
+    resolve();
+  })
+};
+
+proto.commit = function({ids=null, relations=true, offline=false}={}) {
   const d = $.Deferred();
   let commitItems;
   if (ids) {
@@ -367,19 +374,25 @@ proto.commit = function({ids=null, relations=true}={}) {
     commitItems = this._history.commit();
     commitItems = this._serializeCommit(commitItems);
     if (!relations) commitItems.relations = {};
-    this._editor.commit(commitItems, this._featuresstore)
-      .then((response) => {
-        if (response && response.result)
-          // if the response of server is correct clear history
-          this._featuresstore.readFeatures().forEach((feature) => {
-            feature.clearState();
-          });
-          this._history.clear();
-        d.resolve(commitItems, response)
-      })
-      .fail((err) => {
-        d.reject(err);
+    if (offline) {
+      this.saveLocalStorage(commitItems).then(()=>{
+        this._history.clear();
+        d.resolve(commitItems)
       });
+    } else
+      this._editor.commit(commitItems, this._featuresstore)
+        .then((response) => {
+          if (response && response.result)
+            // if the response of server is correct clear history
+            this._featuresstore.readFeatures().forEach((feature) => {
+              feature.clearState();
+            });
+          this._history.clear();
+          d.resolve(commitItems, response)
+        })
+        .fail((err) => {
+          d.reject(err);
+        });
   }
   return d.promise();
 };

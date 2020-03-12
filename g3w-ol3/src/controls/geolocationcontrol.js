@@ -1,6 +1,7 @@
 const Control = require('./control');
 function GeolocationControl() {
   const options = {
+    offline: false,
     name: "geolocation",
     tipLabel: "Geolocation",
     label: "\ue904"

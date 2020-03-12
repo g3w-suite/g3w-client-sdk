@@ -18,7 +18,10 @@ const ScaleControl = function(options= {}) {
 ol.inherits(ScaleControl, ol.control.Control);
 
 module.exports = ScaleControl;
+
 const proto = ScaleControl.prototype;
+
+proto.offline = true;
 
 // called from map when layout change
 proto.changelayout = function(map) {

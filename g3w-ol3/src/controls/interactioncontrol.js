@@ -9,7 +9,6 @@ const InteractionControl = function(options={}) {
   this._autountoggle = options.autountoggle || false;
   this._geometryTypes = options.geometryTypes || []; // array of types geometries
   this._onSelectLayer = options.onselectlayer || false;
-  this._enabled = (options.enabled === false) ? false : true;
   this._onhover = options.onhover || false;
   this._help = options.help  || null;
   this._helpButton = null;
@@ -92,25 +91,6 @@ proto.toggle = function(toggle) {
     controlButton.removeClass('g3w-ol-toggled');
   }
   this.dispatchEvent('toggled', toggle);
-};
-
-// funzione che abilita e disabilita il controllo
-proto.setEnable = function(bool) {
-  const controlButton = $(this.element).find('button').first();
-  if (bool)  {
-    controlButton.removeClass('g3w-ol-disabled');
-  } else {
-    controlButton.addClass('g3w-ol-disabled');
-    controlButton.removeClass('g3w-ol-toggled');
-    if (this._interaction) {
-      this._interaction.setActive(false);
-    }
-  }
-  this._enabled = bool;
-};
-
-proto.getEnable = function() {
-  return this._enabled;
 };
 
 proto.getGeometryTypes = function() {

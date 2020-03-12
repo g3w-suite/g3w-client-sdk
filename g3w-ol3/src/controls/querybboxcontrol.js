@@ -4,6 +4,7 @@ const InteractionControl = require('./interactioncontrol');
 const QueryBBoxControl = function(options = {}){
   this._startCoordinate = null;
   const _options = {
+    offline: false,
     name: "querybbox",
     tipLabel: "Query BBox layer",
     label: options.label || "\ue902",

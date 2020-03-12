@@ -4,6 +4,7 @@ const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinter
 
 const StreetViewControl = function(options) {
   const _options = {
+    offline: false,
     name: "streetview",
     tipLabel: "StreetView",
     label: "\ue905",

@@ -19,15 +19,18 @@ const OLControl = function(options={}) {
   $(this._control.element).addClass("ol-control-"+this.positionCode);
 
   ol.control.Control.call(this,{
-    element: this._control.element
+    element: this._control.element,
   });
 };
 
 // sotto classe della classe control di OL3
 ol.inherits(OLControl, ol.control.Control);
+
 module.exports = OLControl;
 
 const proto = OLControl.prototype;
+
+proto.offline = true;
 
 proto.getPosition = function(positionCode) {
   positionCode = positionCode || this.positionCode;

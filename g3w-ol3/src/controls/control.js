@@ -1,6 +1,8 @@
 const layout = require('./utils').layout;
 const Control = function(options) {
   const name = options.name || "";
+  this._enabled = (options.enabled === false) ? false : true;
+  this.offline = options.offline !== undefined ? options.offline : true;
   this.name = name.split(' ').join('-').toLowerCase();
   this.id = this.name+'_'+(Math.floor(Math.random() * 1000000));
   this.eventKeys = {}; // store eventKey and original havenHandler
@@ -128,6 +130,24 @@ proto.hideControl = function() {
   $(this.element).hide();
 };
 
+// funzione che abilita e disabilita il controllo
+proto.setEnable = function(bool) {
+  const controlButton = $(this.element).find('button').first();
+  if (bool)  {
+    controlButton.removeClass('g3w-ol-disabled');
+  } else {
+    controlButton.addClass('g3w-ol-disabled');
+    controlButton.removeClass('g3w-ol-toggled');
+    if (this._interaction) {
+      this._interaction.setActive(false);
+    }
+  }
+  this._enabled = bool;
+};
+
+proto.getEnable = function() {
+  return this._enabled;
+};
 
 proto._postRender = function() {};
 

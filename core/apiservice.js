@@ -61,6 +61,6 @@ function ApiService(){
   base(this);
 }
 
-inherit(ApiService,G3WObject);
+inherit(ApiService, G3WObject);
 
 module.exports = new ApiService;
