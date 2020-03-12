@@ -4,9 +4,10 @@ const Validator = require('./validator');
 
 function RangeValidator(options={}) {
   base(this, options);
+  const {min, max} = options;
   this.validate = function(value) {
     value = 1*value;
-    return value >= this.options.min && value <= this.options.max;
+    return value >= min && value <= max;
   }
 }
 
