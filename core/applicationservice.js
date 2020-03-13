@@ -79,9 +79,28 @@ const ApplicationService = function() {
   this.setOffline = function(){
     this.status.online = false;
   };
-  
+
   this.isOnline = function(){
     return this.status.online;
+  };
+
+  this.setOfflineItem = async function(id, data={}){
+    try {
+      const item = JSON.stringify(data);
+      window.localStorage.setItem(id, item);
+    } catch(error) {
+      return error;
+    }
+  };
+
+  this.getOfflineItem = function(id) {
+    const item = window.localStorage.getItem(id);
+    if (item) return JSON.parse(item);
+    else return null;
+  };
+
+  this.removeOfflineItem = function(id){
+    window.localStorage.removeItem(id);
   };
 
   //check if is in Iframe

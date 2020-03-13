@@ -8,11 +8,19 @@ function ControlsRegistry() {
   this._controls = {};
   this._offlineids = [];
   ApplicationService.onbefore('offline', () =>{
-    this._offlineids.forEach(id => this._controls[id].setEnable(false))
+    this._offlineids.forEach(controlItem => {
+      const {id} = controlItem;
+      const control = this._controls[id];
+      controlItem.enable = control.getEnable();
+      control.setEnable(false);
+    })
   });
 
   ApplicationService.onbefore('online', ()=>{
-    this._offlineids.forEach(id => this._controls[id].setEnable(true))
+    this._offlineids.forEach(controlItem => {
+      const {id, enable} = controlItem;
+      this._controls[id].setEnable(enable);
+    })
   });
 
   this.setters = {
@@ -23,7 +31,13 @@ function ControlsRegistry() {
 
   this._registerControl = function(id, control) {
     this._controls[id] = control;
-   control.offline === false && this._offlineids.push(id);
+    if (control.offline === false) {
+      this._offlineids.push({
+        id,
+        enable: control.getEnable()
+      });
+      control.getEnable() && control.setEnable(ApplicationService.isOnline())
+    }
   };
 
   this.getControl = function(id) {

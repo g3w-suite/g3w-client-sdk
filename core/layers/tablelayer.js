@@ -98,7 +98,7 @@ function TableLayer(config={}, options={}) {
   // add editing configurations
   config.editing = {
     pk: null, // primary key
-    fields: [] // editing fields
+    fields: [], // editing fields,
   };
   // call base layer
   base(this, config, options);
@@ -312,14 +312,14 @@ proto.isPkEditable = function() {
 // get configuration from server
 proto.getEditingConfig = function(options={}) {
   const d = $.Deferred();
-  const provider = this.getProvider('data');
-  provider.getConfig(options)
-    .then((config) => {
-      d.resolve(config);
-    })
-    .fail((err) => {
-      d.reject(err)
-    });
+  this.getProvider('data')
+    .getConfig(options)
+      .then((config) => {
+        d.resolve(config);
+      })
+      .fail((err) => {
+        d.reject(err)
+      });
   return d.promise()
 };
 

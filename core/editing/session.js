@@ -357,28 +357,28 @@ proto.getCommitItems = function() {
   return this._serializeCommit(commitItems);
 };
 
-proto.saveLocalStorage = function(commitItems) {
-  return new Promise((resolve, reject) => {
-    console.log(commitItems);
-    resolve();
-  })
-};
-
-proto.commit = function({ids=null, relations=true, offline=false}={}) {
+/*
+* ids: array of id
+* items: object contain serialized items
+*
+* */
+proto.commit = function({ids=null, items, relations=true, offline=false}={}) {
   const d = $.Deferred();
   let commitItems;
   if (ids) {
     commitItems = this._history.commit(ids);
     this._history.clear(ids);
-  } else {
-    commitItems = this._history.commit();
-    commitItems = this._serializeCommit(commitItems);
+  } else  {
+    if (items)
+      commitItems = items;
+    else {
+      commitItems = this._history.commit();
+      commitItems = this._serializeCommit(commitItems);
+    }
     if (!relations) commitItems.relations = {};
     if (offline) {
-      this.saveLocalStorage(commitItems).then(()=>{
-        this._history.clear();
-        d.resolve(commitItems)
-      });
+      this._history.clear();
+      d.resolve(commitItems)
     } else
       this._editor.commit(commitItems, this._featuresstore)
         .then((response) => {
