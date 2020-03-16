@@ -27,6 +27,7 @@
 </template>
 
 <script>
+  const AppState = require('core/applicationservice').getState();
   const GUI = require('gui/gui');
   const TOOLSTATE = {
     alert: {
@@ -62,7 +63,7 @@
     },
     computed: {
       disabled() {
-        return this.tool.loading || this.tool.disabled;
+        return (!this.tool.offline && !AppState.online)  || (this.tool.loading || this.tool.disabled);
       },
       icon() {
         return this.tool.icon || 'caret-right'

@@ -57,8 +57,8 @@ function TableLayer(config={}, options={}) {
                 features = featurestore.readFeatures();
                 this._featuresStore.setFeatures(features);
               }
-              this.applyCommitResponse(response);
-              return d.resolve(response);
+              const unsetnewids = this.applyCommitResponse(response);
+              return d.resolve(response, unsetnewids);
             })
             .fail((err) => {
               return d.reject(err);
@@ -224,20 +224,25 @@ proto.isFieldRequired = function(fieldName) {
 
 // apply response data from server in case of new inserted feature
 proto.applyCommitResponse = function(response={}) {
+  // //array of unsetted new id (maybe cause by changes offline)
+  const unsetnewids = [];
   if (response && response.result) {
     const {response:data} = response;
     const ids = data.new;
     const lockids = data.new_lockids;
     ids.forEach((idobj) => {
       const feature = this._featuresStore.getFeatureById(idobj.clientid);
-      feature.setId(idobj.id);
-      try {
-        // temporary inside try ckeck if feature contain a field with the same pk of the layer
-        feature.getKeys().indexOf(this.getPk()) !== -1 && feature.set(this.getPk(), idobj.id);
-      } catch(err) {}
+      if (feature) {
+        feature.setId(idobj.id);
+        try {
+          // temporary inside try ckeck if feature contain a field with the same pk of the layer
+          feature.getKeys().indexOf(this.getPk()) !== -1 && feature.set(this.getPk(), idobj.id);
+        } catch(err) {}
+      } else unsetnewids.push(idobj);
     });
     this._featuresStore.addLockIds(lockids);
   }
+  return unsetnewids;
 };
 
 // unlock editng features

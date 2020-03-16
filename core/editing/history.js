@@ -213,12 +213,29 @@ proto.redo = function() {
   return items;
 };
 
+proto.setItemsFeatureIds = function(unsetnewids=[]) {
+  unsetnewids.forEach(unsetnewid =>{
+    const {id, clientid} = unsetnewid;
+    this._states.forEach(state => {
+      const {items} = state;
+      items.forEach(item => {
+        const feature = item.feature.getId() === clientid && item.feature;
+        if (feature) {
+          feature.setId(id);
+          try {
+            feature.getKeys().indexOf(this.getPk()) !== -1 && feature.set(this.getPk(), idobj.id);
+          } catch (err) {}
+        }
+      })
+    });
+  })
+};
 
 proto.clear = function(ids) {
   if (ids)
     this._states.forEach((state, idx) => {
       if (ids.indexOf(state.id) !== -1) {
-        if (this._current && this._current == state.id())
+        if (this._current && this._current === state.id())
           this.undo();
         this._states.splice(idx, 1);
       }

@@ -1,11 +1,13 @@
-const g3w = g3w || {};
 import config from './config';
+import ApplicationState from 'core/applicationstate';
+const g3w = g3w || {};
 
 g3w.core = {
   G3WObject: require('core/g3wobject'),
   utils: require('core/utils/utils'),
   geoutils: require('core/utils/geo'),
   ApplicationService: require('core/applicationservice'),
+  ApplicationState,
   ApiService: require('core/apiservice'),
   Router: require('core/router'),
   i18n: require('core/i18n/i18n.service'),

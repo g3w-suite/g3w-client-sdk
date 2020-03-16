@@ -381,7 +381,9 @@ proto.commit = function({ids=null, items, relations=true, offline=false}={}) {
       d.resolve(commitItems)
     } else
       this._editor.commit(commitItems, this._featuresstore)
-        .then((response) => {
+        .then((response, unsetnewids) => {
+          if (unsetnewids.length)
+            this._history.setItemsFeatureIds(unsetnewids);
           if (response && response.result)
             // if the response of server is correct clear history
             this._featuresstore.readFeatures().forEach((feature) => {

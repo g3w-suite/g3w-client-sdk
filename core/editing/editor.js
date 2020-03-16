@@ -67,9 +67,9 @@ proto.commit = function(commitItems, featurestore) {
   this._layer.commit(commitItems, featurestore)
     .then((promise) => {
       promise
-        .then((response) => {
+        .then((response, unsetnewids) => {
           // update features after new insert
-          return d.resolve(response);
+          return d.resolve(response, unsetnewids);
         })
         .fail((err) => {
         return d.reject(err);

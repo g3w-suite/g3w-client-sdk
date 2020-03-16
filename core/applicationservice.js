@@ -1,3 +1,4 @@
+import Applicationstate from './applicationstate';
 const inherit = require('core/utils/utils').inherit;
 const XHR = require('core/utils/utils').XHR;
 const base = require('core/utils/utils').base;
@@ -11,6 +12,7 @@ const GlobalComponents = require('gui/vue/vue.globalcomponents');
 const GlobalDirective = require('gui/vue/vue.directives');
 const GUI = require('gui/gui');
 const G3W_VERSION = "{G3W_VERSION}";
+
 // install global components
 Vue.use(GlobalComponents);
 // install gloabl directive
@@ -20,11 +22,8 @@ Vue.use(GlobalDirective);
 const ApplicationService = function() {
   let production = false;
   this.version = G3W_VERSION.indexOf("G3W_VERSION") === -1 ? G3W_VERSION  : "";
-  this.ready = false;
-  this.iframe = window.top !== window.self;
-  this.status = {
-    online: navigator.onLine
-  };
+  Applicationstate.iframe = window.top !== window.self;
+  Applicationstate.online = navigator.onLine;
   this.complete = false;
   // store all services sidebar etc..
   this._applicationServices = {};
@@ -72,16 +71,20 @@ const ApplicationService = function() {
     window.removeEventListener('offline');
   };
 
+  this.getState = function(){
+    return Applicationstate;
+  };
+
   this.setOnline = function() {
-    this.status.online = true;
+    Applicationstate.online = true;
   };
 
   this.setOffline = function(){
-    this.status.online = false;
+    Applicationstate.online = false;
   };
 
   this.isOnline = function(){
-    return this.status.online;
+    return Applicationstate.online;
   };
 
   this.setOfflineItem = async function(id, data={}){
@@ -105,7 +108,7 @@ const ApplicationService = function() {
 
   //check if is in Iframe
   this.isIframe = function() {
-    return this.iframe;
+    return Applicationstate.iframe;
   };
 
   // get config
@@ -212,7 +215,7 @@ const ApplicationService = function() {
   this._bootstrap = function() {
     const d = $.Deferred();
     //first time l'application service is not ready
-    if (!this.ready) {
+    if (!Applicationstate.ready) {
       // LOAD DEVELOPMENT CONFIGURATION
       if (!production) require('../config/dev/index');
       $.when(
@@ -224,7 +227,7 @@ const ApplicationService = function() {
         //rigistern online event
         this.registerOnlineOfflineEvent();
         this.emit('ready');
-        this.ready = this.initialized = true;
+        Applicationstate.ready = this.initialized = true;
         d.resolve();
       }).fail((error) => {
         d.reject(error);
