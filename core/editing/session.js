@@ -71,8 +71,8 @@ proto._start = function(options={}) {
   this.register();
   this._editor.start(options)
     .then((features) => {
+      this._features = features;
       if (this._add) {
-        this._features = features;
         // return feature from server - clone it
         features = this._cloneFeatures(features);
         // set clone feature to internal features store
@@ -94,8 +94,8 @@ proto._getFeatures = function(options={}) {
   this._editor.getFeatures(options)
     .then((promise) => {
       promise.then((features) => {
+        features.forEach(feature => this._features.push(feature));
         if (this._add) {
-          features.forEach(feature => this._features.push(feature));
           features = this._cloneFeatures(features);
           this._featuresstore.addFeatures(features);
         }
