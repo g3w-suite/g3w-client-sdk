@@ -175,10 +175,16 @@ proto.getLayerForEditing = function() {
   return this;
 };
 
+proto.getEditingSource = function() {
+  return this._editor.getSource();
+};
+
+proto.readEditingFeatures = function() {
+  return this.getEditingSource().readFeatures();
+};
+
 proto.getEditingLayer = function() {
-  const clone = this.clone();
-  clone.setSource(this._editor.getSource());
-  return clone;
+  return this;
 };
 
 proto.setEditingUrls = function({urls}={}) {
@@ -378,10 +384,9 @@ proto.getFeaturesStore = function() {
 };
 
 proto.setFeaturesStore = function(featuresstore) {
-  featuresstore = featuresstore || new FeaturesStore({
+  this._featuresstore = featuresstore || new FeaturesStore({
     provider: this.providers.data
   });
-  this._featuresstore = featuresstore;
 };
 
 proto.setSource = function(source) {

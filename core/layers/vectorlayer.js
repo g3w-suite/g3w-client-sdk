@@ -22,14 +22,21 @@ mixin(VectorLayer, GeoLayerMixin);
 const proto = VectorLayer.prototype;
 
 proto.setFeaturesStore = function(featuresstore) {
-  featuresstore = featuresstore || new OLFeaturesStore({
+  this._featuresstore = featuresstore || new OLFeaturesStore({
     provider: this.providers.data
   });
-  this._featuresstore = featuresstore;
 };
 
 proto.getEditingLayer = function() {
   return this.getMapLayer().getOLLayer();
+};
+
+proto.getEditingSource = function() {
+  return this.getEditingLayer().getSource();
+};
+
+proto.readEditingFeatures = function() {
+  return this.getEditingSource().getFeatures();
 };
 
 proto._setOtherConfigParameters = function(config) {
