@@ -5,7 +5,7 @@ const FeaturesStore = require('./featuresstore');
 // Storage of the feature in vector layer
 function OlFeaturesStore(options={}) {
   base(this, options);
-  this._features = new ol.Collection();
+  this._features = new ol.Collection([]);
 }
 
 inherit(OlFeaturesStore, FeaturesStore);
@@ -66,7 +66,7 @@ proto._removeFeature = function(feature) {
   const featuresArray = this._features.getArray();
   for (let i = 0; i < featuresArray.length; i++) {
     const feat = featuresArray[i];
-    if (feature.getId() === feat.getId()) {
+    if (feature.getUid() === feat.getUid()) {
       this._features.removeAt(i);
       break;
     }
@@ -74,10 +74,10 @@ proto._removeFeature = function(feature) {
   this._features.dispatchEvent('change')
 };
 
+
 proto._clearFeatures = function() {
   // needed if we use Modify or snap interaction in ol to remove listerner on add or remove event on collection
-  this._features = null;
-  this._features = new ol.Collection();
+  this._features.clear();
 };
 
 module.exports = OlFeaturesStore;

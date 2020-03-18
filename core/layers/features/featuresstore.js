@@ -6,13 +6,13 @@ const G3WObject = require('core/g3wobject');
 function FeaturesStore(options={}) {
   this._features = options.features || [];
   this._provider = options.provider || null;
-  this._loadedIds = []; // store loeckedids
+  this._loadedIds = []; // save features id
   this._lockIds = []; // store locked features
   this.setters = {
     addFeatures: function(features) {
       features.forEach((feature) => {
         this._addFeature(feature);
-      })
+      });
     },
     addFeature: function(feature) {
       this._addFeature(feature);
@@ -65,7 +65,7 @@ proto._getFeatures = function(options={}) {
   const d = $.Deferred();
   if (this._provider && options) {
     this._provider.getFeatures(options)
-      .then((options) => {
+      .then((options={}) => {
         const features = this._filterFeaturesResponse(options);
         this.addFeatures(features);
         d.resolve(features);
@@ -83,14 +83,14 @@ proto._getFeatures = function(options={}) {
 proto._filterFeaturesResponse = function(options={}) {
   const features = options.features || [];
   const featurelocks = options.featurelocks || [];
-  const featuresToAdd = features.filter((feature) => {
+  const newFeatures = features.filter((feature) => {
     const featureId = feature.getId();
     const added = this._loadedIds.indexOf(featureId) !== -1;
     if (!added) this._loadedIds.push(featureId);
     return !added
   });
   this._filterLockIds(featurelocks);
-  return featuresToAdd;
+  return newFeatures;
 };
 
 // method cget fetaures locked
@@ -113,8 +113,8 @@ proto.getLockIds = function() {
 };
 
 //method to add new lockid
-proto.addLockIds = function(lockIds) {
-  this._lockIds = _.union(this._lockIds, lockIds);
+proto.addLockIds = function(lockIds=[]) {
+  this._lockIds = [...this._lockIds, ...lockIds];
 };
 
 proto._readFeatures = function() {
@@ -159,9 +159,7 @@ proto._updateFeature = function(feature) {
   });
 };
 
-proto.updatePkFeature = function(newValue, oldValue) {
-  //TODO
-};
+proto.updatePkFeature = function(newValue, oldValue) {};
 
 proto.setFeatures = function(features) {
   this._features = features;

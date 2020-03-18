@@ -59,10 +59,28 @@ proto.getLayerForEditing = function({force=false, vectorurl, project_type, proje
       project_type,
       project
     });
-    // set editing layer
     this.setEditingLayer(editingLayer);
     return editingLayer;
   } else return null
+};
+
+proto.getEditingLayer = function({force=false, vectorurl, project_type, project}={}){
+  return new Promise((resolve, reject) => {
+    if (this.isEditable() || force) {
+      const project = project || require('core/project/projectsregistry').getCurrentProject();
+      const vectorLayer = new VectorLayer(this.config, {
+        vectorurl,
+        project_type,
+        project
+      });
+      if (vectorLayer.isReady())
+        resolve(vectorLayer.getEditingLayer());
+      else
+        vectorLayer.once('layer-config-ready', ()=>{
+          resolve(vectorLayer.getEditingLayer())
+        })
+    } else reject()
+  })
 };
 
 proto.isBaseLayer = function() {

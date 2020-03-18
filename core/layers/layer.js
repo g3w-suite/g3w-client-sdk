@@ -308,7 +308,6 @@ proto.isShpDownlodable = function() {
   return this.config.download;
 };
 
-
 proto.getEditingLayer = function() {
   return this._editingLayer;
 };

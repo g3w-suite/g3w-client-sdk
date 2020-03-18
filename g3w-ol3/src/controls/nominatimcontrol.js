@@ -729,7 +729,6 @@ function NominatimControl(options) {
       li.className = 'nominatim-noresults';
       ul.appendChild(li);
     }
-
   };
 
   Nominatim.prototype.chosen = function chosen(place, addressHtml, addressObj, addressOriginal) {

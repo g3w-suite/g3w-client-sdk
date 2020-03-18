@@ -166,12 +166,13 @@ module.exports = {
 
   createOlLayer: function(options = {}) {
     const id = options.id;
+    const features = options.features;
     const geometryType = options.geometryType;
     const color = options.color;
     let style = options.style;
     // create ol layer to add to map
     const olSource = new ol.source.Vector({
-      features: new ol.Collection()
+      features: features || new ol.Collection()
     });
     const olLayer = new ol.layer.Vector({
       id: id,

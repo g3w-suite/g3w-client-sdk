@@ -5,14 +5,14 @@ const Layer = require('./layer');
 const TableLayer = require('./tablelayer');
 const GeoLayerMixin = require('./geolayermixin');
 const VectoMapLayer = require('./map/vectorlayer');
+const OLFeaturesStore = require('./features/olfeaturesstore');
 
 function VectorLayer(config={}, options) {
   base(this, config, options);
-  this._mapLayer = null; // later tah will be added to map
   this.type = Layer.LayerTypes.VECTOR;
-  // need a ol layer for add to map
+  this._mapLayer = null;
   this.setup(config, options);
-  this.onafter('setColor', (color) => {})
+  this.onafter('setColor', () => {})
 }
 
 inherit(VectorLayer, TableLayer);
@@ -20,6 +20,17 @@ inherit(VectorLayer, TableLayer);
 mixin(VectorLayer, GeoLayerMixin);
 
 const proto = VectorLayer.prototype;
+
+proto.setFeaturesStore = function(featuresstore) {
+  featuresstore = featuresstore || new OLFeaturesStore({
+    provider: this.providers.data
+  });
+  this._featuresstore = featuresstore;
+};
+
+proto.getEditingLayer = function() {
+  return this.getMapLayer().getOLLayer();
+};
 
 proto._setOtherConfigParameters = function(config) {
   this.config.editing.geometrytype = config.geometrytype;
@@ -37,12 +48,14 @@ proto.getMapLayer = function() {
   const color = this.getColor();
   const style = this.getStyle();
   const provider = this.getProvider('data');
+  const featuresstore = this.getEditor() && this.getEditor().getSource();
   this._mapLayer = new VectoMapLayer({
     id,
     geometryType,
     color,
     style,
-    provider
+    provider,
+    featuresstore
   });
   return this._mapLayer;
 };

@@ -2,7 +2,6 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils//utils').base;
 const G3WObject = require('core/g3wobject');
 const History = require('./history');
-const FeaturesStore = require('core/layers/features/featuresstore');
 const ChangesManager = require('./changesmanager');
 const SessionsRegistry = require('./sessionsregistry');
 
@@ -15,7 +14,7 @@ function Session(options={}) {
       return this._getFeatures(options);
     },
     stop: function() {
-      this._stop();
+      return this._stop();
     }
   };
   base(this, options);
@@ -25,19 +24,12 @@ function Session(options={}) {
     started: false
   };
   // editor
-  this._editor = options.editor || null;
-  // featuresstore it's a temprary features source of the layer
-  this._featuresstore = options.featuresstore || new FeaturesStore({
-    provider: this._editor && this._editor.getLayer() && this._editor.getLayer().getProvider('data')
-  });
-  // original features;
-  this._features;
+  this._editor = options.editor;
+
   // history -- oggetto che contiene gli stati dei layers
   this._history = new History({
     id: this.state.id
   });
-  // this is usefult in case of using a features store of editing layer
-  this._add = options.add === undefined ? true: options.add;
   ///tempraray changes before save iit on history object
   this._temporarychanges = [];
 }
@@ -71,13 +63,6 @@ proto._start = function(options={}) {
   this.register();
   this._editor.start(options)
     .then((features) => {
-      if (this._add) {
-        this._features = features;
-        // return feature from server - clone it
-        features = this._cloneFeatures(features);
-        // set clone feature to internal features store
-        this._featuresstore.setFeatures(features);
-      }
       this.state.started = true;
       d.resolve(features);
     })
@@ -94,11 +79,6 @@ proto._getFeatures = function(options={}) {
   this._editor.getFeatures(options)
     .then((promise) => {
       promise.then((features) => {
-        if (this._add) {
-          features.forEach(feature => this._features.push(feature));
-          features = this._cloneFeatures(features);
-          this._featuresstore.addFeatures(features);
-        }
         d.resolve(features);
       })
       .fail((err) => {
@@ -106,11 +86,6 @@ proto._getFeatures = function(options={}) {
       });
     });
   return d.promise();
-};
-
-//clone features method
-proto._cloneFeatures = function(features) {
-  return features.map((feature) => feature.clone());
 };
 
 proto.isStarted = function() {
@@ -231,14 +206,14 @@ proto.push = function(New, Old) {
 };
 
 proto._applyChanges = function(items, reverse=true) {
-  ChangesManager.execute(this._featuresstore, items, reverse);
+  const featuresstore = this._editor.getSource();
+  ChangesManager.execute(featuresstore, items, reverse);
 };
 
 // method to revert (cancel) all changes in history and clean session
 proto.revert = function() {
   const d = $.Deferred();
-  const features  = this._cloneFeatures(this._features);
-  this.getFeaturesStore().setFeatures(features);
+  this._editor.revert();
   this._history.clear();
   d.resolve();
   return d.promise();
@@ -272,7 +247,6 @@ proto.rollback = function(changes) {
     d.resolve();
   } else {
     changes = this._filterChanges();
-    // apply changes to featurestore (rollback temporary changes)
     this._applyChanges(changes.own, true);
     this._temporarychanges = [];
     d.resolve(changes.dependencies);
@@ -380,15 +354,10 @@ proto.commit = function({ids=null, items, relations=true, offline=false}={}) {
       this._history.clear();
       d.resolve(commitItems)
     } else
-      this._editor.commit(commitItems, this._featuresstore)
+      this._editor.commit(commitItems)
         .then((response, unsetnewids) => {
-          if (unsetnewids.length)
-            this._history.setItemsFeatureIds(unsetnewids);
-          if (response && response.result)
-            // if the response of server is correct clear history
-            this._featuresstore.readFeatures().forEach((feature) => {
-              feature.clearState();
-            });
+          if (unsetnewids.length) this._history.setItemsFeatureIds(unsetnewids);
+          if (response && response.result) this.featuresClearState();
           this._history.clear();
           d.resolve(commitItems, response)
         })
@@ -399,12 +368,17 @@ proto.commit = function({ids=null, items, relations=true, offline=false}={}) {
   return d.promise();
 };
 
+proto.featuresClearState = function(){
+  this._editor.getSource().readFeatures().forEach((feature) => {
+    feature.clearState();
+  });
+};
+
 //stop session
 proto._stop = function() {
   const d = $.Deferred();
   // unregister a session
   this.unregister();
-  //console.log('Sessione stopping ..');
   this._editor.stop()
     .then(() => {
       d.resolve();
@@ -421,9 +395,6 @@ proto.clear = function() {
   this.state.started = false;
   // clar related history
   this._clearHistory();
-  // clear a learestor
-  this._featuresstore.clear();
-  this._features = null;
 };
 
 //return l'history

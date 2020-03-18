@@ -13,25 +13,19 @@ function TableLayer(config={}, options={}) {
   this.setters = {
     // delete all features
     clearFeatures: function () {
-      this._clearFeatures();
+      return this._clearFeatures();
     },
     addFeature: function (feature) {
-      this._addFeature(feature);
+      return this._addFeature(feature);
     },
     deleteFeature: function (feature) {
-      this._deleteFeature(feature);
-    },
-    updateFeature: function (feature) {
-      this._updateFeature(feature);
-    },
-    setFeatures: function (features) {
-      this._setFeatures(features);
+      return this._deleteFeature(feature);
     },
     // get data from every sources (server, wms, etc..)
     // throught provider related to featuresstore
     getFeatures: function (options={}) {
       const d = $.Deferred();
-      this._featuresStore.getFeatures(options)
+      this._featuresstore.getFeatures(options)
         .then((promise) => {
           promise.then((features) => {
             this.emit('getFeatures', features);
@@ -45,20 +39,13 @@ function TableLayer(config={}, options={}) {
         });
       return d.promise();
     },
-    commit: function(commitItems, featurestore) {
+    commit: function(commitItems) {
       const d = $.Deferred();
-      this._featuresStore.commit(commitItems)
+      this._featuresstore.commit(commitItems)
         .then((promise) => {
           promise
             .then((response) => {
-              // if commit go right
-              // apply commit changes to features store eventually passed (ex: session featurestore)
-              if (featurestore) {
-                features = featurestore.readFeatures();
-                this._featuresStore.setFeatures(features);
-              }
-              const unsetnewids = this.applyCommitResponse(response);
-              return d.resolve(response, unsetnewids);
+              return d.resolve(response);
             })
             .fail((err) => {
               return d.reject(err);
@@ -95,6 +82,7 @@ function TableLayer(config={}, options={}) {
   this.setEditingUrls({
     urls: config.urls
   });
+  this.editing = false;
   // add editing configurations
   config.editing = {
     pk: null, // primary key
@@ -129,6 +117,10 @@ function TableLayer(config={}, options={}) {
           this.setColor(vector.style.color)
         }
         this._setPkEditable(this.config.editing.fields);
+        this.setFeaturesStore();
+        this._editor = new Editor({
+          layer: this
+        });
         this.setReady(true);
       })
       .fail((err) => {
@@ -138,25 +130,24 @@ function TableLayer(config={}, options={}) {
         this.emit('layer-config-ready', this.config);
       })
   }
-  this._featuresStore = new FeaturesStore({
-    provider: this.providers.data
-  });
-  // creare an instace of editor
-  this._editor = new Editor({
-    layer: this
-  });
 }
 
 inherit(TableLayer, Layer);
 
 const proto = TableLayer.prototype;
 
+proto.setEditor = function(){
+  this._editor = new Editor({
+    layer: this
+  });
+};
+
 proto.clone = function() {
   return _.cloneDeep(this);
 };
 
 proto.cloneFeatures = function() {
-  return this._featuresStore.clone();
+  return this._featuresstore.clone();
 };
 
 proto.setVectorUrl = function(url) {
@@ -176,15 +167,18 @@ proto.getColor = function() {
 };
 
 proto.readFeatures = function() {
-  return this._featuresStore.readFeatures();
+  return this._featuresstore.readFeatures();
 };
 
 // return layer for editing
-proto.getLayerForEditing = function({vectorurl, project_type}={}) {
-  vectorurl && this.setVectorUrl(vectorurl);
-  project_type && this.setProjectType(project_type);
-  this.setEditingUrl();
-  return this.clone();
+proto.getLayerForEditing = function() {
+  return this;
+};
+
+proto.getEditingLayer = function() {
+  const clone = this.clone();
+  clone.setSource(this._editor.getSource());
+  return clone;
 };
 
 proto.setEditingUrls = function({urls}={}) {
@@ -222,33 +216,10 @@ proto.isFieldRequired = function(fieldName) {
   return required;
 };
 
-// apply response data from server in case of new inserted feature
-proto.applyCommitResponse = function(response={}) {
-  // //array of unsetted new id (maybe cause by changes offline)
-  const unsetnewids = [];
-  if (response && response.result) {
-    const {response:data} = response;
-    const ids = data.new;
-    const lockids = data.new_lockids;
-    ids.forEach((idobj) => {
-      const feature = this._featuresStore.getFeatureById(idobj.clientid);
-      if (feature) {
-        feature.setId(idobj.id);
-        try {
-          // temporary inside try ckeck if feature contain a field with the same pk of the layer
-          feature.getKeys().indexOf(this.getPk()) !== -1 && feature.set(this.getPk(), idobj.id);
-        } catch(err) {}
-      } else unsetnewids.push(idobj);
-    });
-    this._featuresStore.addLockIds(lockids);
-  }
-  return unsetnewids;
-};
-
 // unlock editng features
 proto.unlock = function() {
   const d = $.Deferred();
-  this._featuresStore.unlock()
+  this._featuresstore.unlock()
     .then(() => {
       d.resolve()
     })
@@ -403,23 +374,27 @@ proto.setEditor = function(editor) {
 };
 
 proto.getFeaturesStore = function() {
-  return this._featuresStore;
+  return this._featuresstore;
 };
 
 proto.setFeaturesStore = function(featuresstore) {
-  this._featuresStore = featuresstore;
+  featuresstore = featuresstore || new FeaturesStore({
+    provider: this.providers.data
+  });
+  this._featuresstore = featuresstore;
 };
 
 proto.setSource = function(source) {
   this.setFeaturesStore(source);
 };
 
+// this is original source of layer
 proto.getSource = function() {
-  return this._featuresStore;
+  return this._featuresstore;
 };
 
 proto._setFeatures = function(features) {
-  this._featuresStore.setFeatures(features);
+  this._featuresstore.setFeatures(features);
 };
 
 proto.addFeatures = function(features) {
@@ -429,7 +404,7 @@ proto.addFeatures = function(features) {
 };
 
 proto._addFeature = function(feature) {
-  this._featuresStore.addFeature(feature);
+  this._featuresstore.addFeature(feature);
 };
 
 proto._deleteFeature = function(feature) {
@@ -439,11 +414,7 @@ proto._deleteFeature = function(feature) {
 proto._updateFeature = function(feature) {};
 
 proto._clearFeatures = function() {
-  this._featuresStore.clearFeatures();
-};
-
-proto.addLockIds = function(lockIds) {
-  this._featuresStore.addLockIds(lockIds);
+  this._featuresstore.clearFeatures();
 };
 
 proto.setFieldsWithValues = function(feature, fields) {

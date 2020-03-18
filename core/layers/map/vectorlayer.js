@@ -6,6 +6,7 @@ const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 
 function VectorLayer(options = {}) {
+  const featuresstore = options.featuresstore;
   this.mapService = GUI.getComponent('map').getService();
   this.geometrytype = options.geometrytype || null;
   this.type = options.type || null;
@@ -18,12 +19,12 @@ function VectorLayer(options = {}) {
   this.mapProjection = this.mapService.getProjection().getCode();
   this.projection = options.projection || this.mapProjection;
   this.url = options.url;
-  this.data = options.data;
-  this.provider = options.provider;
-  this._olLayer = null;
+  this.provider = featuresstore && featuresstore.getProvider() || options.provider;
+  this.features = featuresstore && featuresstore.getFeaturesCollection();
+  this._olLayer = options.olLayer || null;
 }
 
-inherit(VectorLayer,G3WObject);
+inherit(VectorLayer, G3WObject);
 
 module.exports = VectorLayer;
 
@@ -43,7 +44,9 @@ proto._makeOlLayer = function({style} = {}) {
     name: this.name,
     id: this.id,
     style: _style,
-    source: new ol.source.Vector({})
+    source: new ol.source.Vector({
+      features: this.features
+    })
   })
 };
 
@@ -79,29 +82,6 @@ proto._makeStyle = function(styleConfig) {
   return style
 };
 
-proto.getFeatures = function(options={}) {
-  const d = $.Deferred();
-  this.provider.getFeatures(options)
-    .then((features) => {
-      this.addFeatures(features);
-      d.resolve(features);
-    })
-    .fail((err) => {
-      d.reject(err)
-    });
-  return d.promise()
-};
-
-proto.addFeatures = function(features=[]) {
-  this.getSource().addFeatures(features)
-};
-
-proto.addFeature = function(feature) {
-  if (feature) {
-    this.getSource().addFeature(feature)
-  }
-};
-
 proto.getOLLayer = function() {
   if (this._olLayer) {
     return this._olLayer
@@ -114,8 +94,9 @@ proto.getOLLayer = function() {
       id,
       geometryType,
       color,
-      style
-    })
+      style,
+      features: this.features
+    });
   }
   return this._olLayer;
 };

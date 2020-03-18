@@ -8,18 +8,6 @@ function Editor(options={}) {
     save: function() {
       this._save();
     },
-    addFeature: function(feature) {
-      this._addFeature(feature);
-    },
-    updateFeature: function(feature) {
-      this._updateFeature(feature);
-    },
-    deleteFeature: function(feature) {
-      this._deleteFeature(feature);
-    },
-    setFeatures: function(features=[]) {
-      this._setFeatures(features);
-    },
     getFeatures: function(options={}) {
       return this._getFeatures(options);
     }
@@ -27,6 +15,8 @@ function Editor(options={}) {
   base(this);
   // referred layer
   this._layer = options.layer;
+  // features
+  this._featuresstore = this._layer.getSource().clone();
   // editor is active or not
   this._started = false;
 }
@@ -34,6 +24,10 @@ function Editor(options={}) {
 inherit(Editor, G3WObject);
 
 const proto = Editor.prototype;
+
+proto.getSource = function() {
+  return this._featuresstore;
+};
 
 proto.getLayer = function() {
   return this._layer;
@@ -44,12 +38,19 @@ proto.setLayer = function(layer) {
   return this._layer;
 };
 
-// fget features methods
+//clone features method
+proto._cloneFeatures = function(features) {
+  return features.map((feature) => feature.clone());
+};
+
+// get features methods
 proto._getFeatures = function(options={}) {
   const d = $.Deferred();
   this._layer.getFeatures(options)
     .then((promise) => {
       promise.then((features) => {
+        // add features
+        this._featuresstore.addFeatures(features);
         return d.resolve(features);
       }).fail((err) => {
         return d.reject(err);
@@ -61,14 +62,48 @@ proto._getFeatures = function(options={}) {
   return d.promise();
 };
 
+proto.revert = function(){
+  const features = this._layer.readFeatures();
+  this._featuresstore.setFeatures(features);
+};
+
+// apply response data from server in case of new inserted feature
+proto.applyCommitResponse = function(response={}) {
+  // //array of unsetted new id (maybe cause by changes offline)
+  const unsetnewids = [];
+  if (response && response.result) {
+    const {response:data} = response;
+    const ids = data.new;
+    const lockids = data.new_lockids || [];
+    ids.forEach((idobj) => {
+      const feature = this._featuresstore.getFeatureById(idobj.clientid);
+      if (feature) {
+        feature.setId(idobj.id);
+        try {
+          // temporary inside try ckeck if feature contain a field with the same pk of the layer
+          feature.getKeys().indexOf(this.getPk()) !== -1 && feature.set(this.getPk(), idobj.id);
+        } catch(err) {}
+      } else unsetnewids.push(idobj);
+    });
+    this.addLockIds(lockids);
+  }
+  const features = this._featuresstore.readFeatures();
+  this._layer.getFeaturesStore().setFeatures(features);
+  return unsetnewids;
+};
+
+proto.addLockIds = function(lockIds=[]) {
+  this._layer.getFeaturesStore().addLockIds(lockIds);
+};
+
 // run after server apply chaged to origin resource
-proto.commit = function(commitItems, featurestore) {
+proto.commit = function(commitItems) {
   const d = $.Deferred();
-  this._layer.commit(commitItems, featurestore)
+  this._layer.commit(commitItems)
     .then((promise) => {
       promise
-        .then((response, unsetnewids) => {
-          // update features after new insert
+        .then(response => {
+          const unsetnewids = this.applyCommitResponse(response);
           return d.resolve(response, unsetnewids);
         })
         .fail((err) => {
@@ -105,24 +140,6 @@ proto.start = function(options) {
   return d.promise()
 };
 
-//action to layer
-
-proto._addFeature = function(feature) {
-  this._layer.addFeature(feature);
-};
-
-proto._deleteFeature = function(feature) {
-  this._layer.deleteFeature(feature);
-};
-
-proto._updateFeature = function(feature) {
-  this._layer.updateFeature(feature);
-};
-
-proto._setFeatures = function(features) {
-  this._layer.setFeatures(features);
-};
-
 // stop editor
 proto.stop = function() {
   const d = $.Deferred();
@@ -148,7 +165,8 @@ proto.isStarted = function() {
 };
 
 proto.clear = function() {
-  this._layer.getFeaturesStore().clear();
+  this._featuresstore.clear();
+  this._layer.getSource().clear();
 };
 
 
