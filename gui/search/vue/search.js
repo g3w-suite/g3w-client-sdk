@@ -3,7 +3,6 @@ import { createCompiledTemplate } from 'gui/vue/utils';
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const Component = require('gui/vue/component');
-const ProjectsRegistry = require('core/project/projectsregistry');
 const Service = require('gui/search/service');
 const templateCompiled = createCompiledTemplate(require('./search.html'));
 
@@ -36,12 +35,22 @@ function SearchComponent(options={}){
     service: this._service
   });
   this.internalComponent.state = this._service.state;
-  this.state.visible = ProjectsRegistry.getCurrentProject().state.search.length > 0;
-
+  this.state.visible = (this._service.state.searches.length + this._service.state.searchtools.length) > 0;
+  const handlerVisible = (bool) =>{
+    this.state.visible = bool;
+  };
+  this._searches_searchtools = new Vue();
+  this._searches_searchtools.$watch(() => (this._service.state.searches.length + this._service.state.searchtools.length) > 0 , {
+    immediate: true,
+    handler: handlerVisible
+  });
   this._reload = function() {
-    this.state.visible = ProjectsRegistry.getCurrentProject().state.search.length > 0;
     this._service.reload();
   };
+  this.unmount = function() {
+    this._searches_searchtools.$destroy();
+    return base(this, 'unmount');
+  }
 }
 
 inherit(SearchComponent, Component);

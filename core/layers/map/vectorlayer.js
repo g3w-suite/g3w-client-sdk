@@ -38,6 +38,13 @@ proto.getProvider = function() {
   return this._provider;
 };
 
+proto.resetSource = function(features=[]){
+  const source = new ol.source.Vector({
+    features
+  });
+  this.setSource(source);
+};
+
 proto._makeOlLayer = function({style} = {}) {
   const _style = this._makeStyle(style);
   this._olLayer = new ol.layer.Vector({

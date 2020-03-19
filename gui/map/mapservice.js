@@ -33,6 +33,7 @@ const SETTINGS = {
 
 function MapService(options={}) {
   this.id = 'MapService';
+  this.ready = false;
   this.viewer = null;
   this.target = options.target || null;
   this.maps_container = options.maps_container || null;
@@ -113,6 +114,7 @@ function MapService(options={}) {
     this.project = ProjectsRegistry.getCurrentProject();
     //on after setting current project
     ProjectsRegistry.onafter('setCurrentProject', (project) => {
+      this.setReady(false);
       this.removeLayers();
       this._removeListeners();
       this.project = project;
@@ -238,6 +240,15 @@ function MapService(options={}) {
 inherit(MapService, G3WObject);
 
 const proto = MapService.prototype;
+
+proto.isReady = function(){
+  return this.ready;
+};
+
+proto.setReady = function(bool=false){
+  this.ready = bool;
+  bool && this.emit('ready');
+};
 
 proto.getScaleFromExtent = function(extent) {
   const resolution = this.getMap().getView().getResolutionForExtent(extent, this.getMap().getSize());
@@ -1439,7 +1450,7 @@ proto._setupViewer = function(width, height) {
   });
 
   this.viewer.map.addOverlay(this._marker);
-  this.emit('ready');
+  this.setReady(true);
 };
 
 proto.getMapUnits = function() {

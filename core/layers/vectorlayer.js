@@ -48,14 +48,20 @@ proto.getEditingGeometryType = function() {
 };
 
 proto.getMapLayer = function() {
-  if (this._mapLayer)
-    return this._mapLayer;
+  if (this._mapLayer) return this._mapLayer;
   const id = this.getId();
   const geometryType =  this.getGeometryType();
   const color = this.getColor();
   const style = this.getStyle();
   const provider = this.getProvider('data');
+  //set featurestore for editing
   const featuresstore = this.getEditor() && this.getEditor().getSource();
+  if (featuresstore) {
+    featuresstore.onafter('clear', () => {
+      const features = featuresstore.getFeaturesCollection();
+      this._mapLayer.resetSource(features)
+    })
+  }
   this._mapLayer = new VectoMapLayer({
     id,
     geometryType,

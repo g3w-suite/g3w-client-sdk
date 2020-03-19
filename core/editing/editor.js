@@ -15,7 +15,7 @@ function Editor(options={}) {
   base(this);
   // referred layer
   this._layer = options.layer;
-  // features
+  // clone featurestore of
   this._featuresstore = this._layer.getSource().clone();
   // editor is active or not
   this._started = false;

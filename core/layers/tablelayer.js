@@ -95,14 +95,15 @@ function TableLayer(config={}, options={}) {
   this._relations = null;
   this._createRelations(projectRelations);
   // add state info for the layer
-  this.state = _.merge({
+  this.state = {
+    ...this.state,
     editing: {
       started: false,
       modified: false,
       ready: false,
       ispkeditable: false
     }
-  }, this.state);
+  };
   // get configuration from server if is editable
   if (this.isEditable()) {
     this.getEditingConfig()
@@ -172,7 +173,15 @@ proto.readFeatures = function() {
 
 // return layer for editing
 proto.getLayerForEditing = function() {
-  return this;
+  return new Promise((resolve, reject) => {
+    if (this.isReady())
+      resolve(this);
+    else {
+      this.once('layer-config-ready', ()=>{
+        resolve(this)
+      })
+    }
+  });
 };
 
 proto.getEditingSource = function() {

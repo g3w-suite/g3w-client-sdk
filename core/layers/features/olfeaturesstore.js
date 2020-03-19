@@ -78,6 +78,7 @@ proto._removeFeature = function(feature) {
 proto._clearFeatures = function() {
   // needed if we use Modify or snap interaction in ol to remove listerner on add or remove event on collection
   this._features.clear();
+  this._features = new ol.Collection([])
 };
 
 module.exports = OlFeaturesStore;

@@ -36,8 +36,12 @@ const ApplicationService = function() {
     changeProject({gid, host}={}){
       return this._changeProject({gid, host})
     },
-    online(){},
-    offline(){}
+    online() {
+      this.setOnline();
+    },
+    offline(){
+      this.setOffline();
+    }
   };
   base(this);
   // init from server
@@ -51,18 +55,12 @@ const ApplicationService = function() {
   this.registerOnlineOfflineEvent = function(){
     this.registerWindowEvent({
       evt: 'online',
-      cb:()=> {
-        this.setOnline();
-        this.online();
-      }
+      cb:()=> this.online()
     });
 
     this.registerWindowEvent({
       evt: 'offline',
-      cb:() => {
-        this.setOffline();
-        this.offline();
-      }
+      cb:() => this.offline()
     })
   };
 
