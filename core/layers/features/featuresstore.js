@@ -31,8 +31,8 @@ function FeaturesStore(options={}) {
     getFeatures: function(options={}) {
       return this._getFeatures(options);
     },
-    commit: function(commitItems, featurestore) {
-      return this._commit(commitItems, featurestore);
+    commit: function(commitItems) {
+      return this._commit(commitItems);
     }
   };
 

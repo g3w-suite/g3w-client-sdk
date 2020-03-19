@@ -357,7 +357,6 @@ proto.commit = function({ids=null, items, relations=true, offline=false}={}) {
       this._editor.commit(commitItems)
         .then((response, unsetnewids) => {
           if (unsetnewids.length) this._history.setItemsFeatureIds(unsetnewids);
-          if (response && response.result) this.featuresClearState();
           this._history.clear();
           d.resolve(commitItems, response)
         })
@@ -368,11 +367,6 @@ proto.commit = function({ids=null, items, relations=true, offline=false}={}) {
   return d.promise();
 };
 
-proto.featuresClearState = function(){
-  this._editor.getSource().readFeatures().forEach((feature) => {
-    feature.clearState();
-  });
-};
 
 //stop session
 proto._stop = function() {

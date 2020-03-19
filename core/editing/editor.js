@@ -38,11 +38,6 @@ proto.setLayer = function(layer) {
   return this._layer;
 };
 
-//clone features method
-proto._cloneFeatures = function(features) {
-  return features.map((feature) => feature.clone());
-};
-
 // get features methods
 proto._getFeatures = function(options={}) {
   const d = $.Deferred();
@@ -88,7 +83,10 @@ proto.applyCommitResponse = function(response={}) {
     this.addLockIds(lockids);
   }
   const features = this._featuresstore.readFeatures();
-  this._layer.getFeaturesStore().setFeatures(features);
+  features.forEach((feature) => {
+    feature.clearState();
+  });
+  this._layer.getSource().setFeatures(features);
   return unsetnewids;
 };
 

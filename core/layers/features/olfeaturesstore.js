@@ -39,6 +39,7 @@ proto.getFeatureById = function(featureId) {
 
 proto._addFeature = function(feature) {
   this._features.push(feature);
+  // useful for ol.source.Vector
   this._features.dispatchEvent('change')
 };
 
