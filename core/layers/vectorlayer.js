@@ -21,6 +21,19 @@ mixin(VectorLayer, GeoLayerMixin);
 
 const proto = VectorLayer.prototype;
 
+
+proto.getEditingLayer = function() {
+  return this.getMapLayer().getOLLayer();
+};
+
+proto.getEditingSource = function() {
+  return this.getEditingLayer().getSource();
+};
+
+proto.readEditingFeatures = function() {
+  return this.getEditingSource().getFeatures();
+};
+
 proto._setOtherConfigParameters = function(config) {
   this.config.editing.geometrytype = config.geometrytype;
 };

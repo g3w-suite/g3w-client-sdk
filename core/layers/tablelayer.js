@@ -5,6 +5,7 @@ const Editor = require('core/editing/editor');
 const FeaturesStore = require('./features/featuresstore');
 const Feature = require('./features/feature');
 const Relations = require('core/relations/relations');
+const SessionsRegistry = require('core/editing/sessionsregistry');
 
 // Base Layer that support editing
 function TableLayer(config={}, options={}) {
@@ -185,6 +186,19 @@ proto.getLayerForEditing = function({vectorurl, project_type}={}) {
   project_type && this.setProjectType(project_type);
   this.setEditingUrl();
   return this.clone();
+};
+
+proto.getEditingSource = function() {
+  const session = SessionsRegistry.getSession(this.getId());
+  return session.getFeaturesStore();
+};
+
+proto.readEditingFeatures = function() {
+  return this.getEditingSource().readFeatures();
+};
+
+proto.getEditingLayer = function() {
+  return this;
 };
 
 proto.setEditingUrls = function({urls}={}) {
