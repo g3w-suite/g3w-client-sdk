@@ -49,9 +49,7 @@ proto.addTools = function(searchTools) {
   }
 };
 
-proto.removeTool = function(searchTool) {
-  //TODO
-};
+proto.removeTool = function(searchTool) {};
 
 proto.removeTools = function() {
   this.state.searchtools.splice(0)
