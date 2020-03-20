@@ -14,7 +14,7 @@ const UniqueInput = Vue.extend({
   watch: {
     'state.input.options.values'(values) {
       this.state.value = this.state.value ? this.state.value: null;
-      values.indexOf(this.state.value) === -1 && this.service.addValueToValues(this.state.value);
+      this.state.value !== null && values.indexOf(this.state.value) === -1 && this.service.addValueToValues(this.state.value);
       this.$nextTick(() => {
         this.state.value && this.select2.val(this.state.value).trigger('change');
       })
