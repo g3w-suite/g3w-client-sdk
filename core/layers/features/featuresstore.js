@@ -124,7 +124,6 @@ proto._readFeatures = function() {
 proto._commit = function(commitItems) {
   const d = $.Deferred();
   if (commitItems && this._provider) {
-    commitItems.lockids = this._lockIds;
     this._provider.commit(commitItems)
       .then((response) => {
         d.resolve(response);

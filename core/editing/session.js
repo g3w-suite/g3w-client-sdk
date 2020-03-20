@@ -272,10 +272,12 @@ proto.redo = function(items) {
 
 proto._serializeCommit = function(itemsToCommit) {
   const id = this.getId();
+  const lockids = this.getEditor().getLockIds();
   let state;
   let layer;
   const commitObj = {
     add: [],
+    lockids,
     update: [],
     delete: [],
     relations: {}

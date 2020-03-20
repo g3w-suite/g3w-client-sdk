@@ -90,8 +90,12 @@ proto.applyCommitResponse = function(response={}) {
   return unsetnewids;
 };
 
+proto.getLockIds = function(){
+  return this._layer.getSource().getLockIds();
+};
+
 proto.addLockIds = function(lockIds=[]) {
-  this._layer.getFeaturesStore().addLockIds(lockIds);
+  this._layer.getSource().addLockIds(lockIds);
 };
 
 // run after server apply chaged to origin resource
