@@ -1734,7 +1734,8 @@ proto.zoomToFeatures = function(features, options={highlight: false}) {
     const feature = features[i];
     const geometry = feature.getGeometry ? feature.getGeometry() : feature.geometry;
     if (geometry) {
-      extent = !extent ? geometry.getExtent() : ol.extent.extend(extent, geometry.getExtent());
+      const featureExtent = [...geometry.getExtent()];
+      extent = !extent ? featureExtent : ol.extent.extend(extent, featureExtent);
       if (highlight) {
         geometryType = geometryType || geometry.getType();
         const coordinates = geometry.getCoordinates();
@@ -1757,6 +1758,7 @@ proto.zoomToFeatures = function(features, options={highlight: false}) {
 proto.zoomToExtent = function(extent, options={}) {
   const map = this.getMap();
   const projectInitExtent = this.project.state.initextent;
+  const projectMaxResolution = map.getView().getResolutionForExtent(projectInitExtent, map.getSize());
   const inside = ol.extent.containsExtent(projectInitExtent, extent);
   // max resolution of the map
   const maxResolution = getResolutionFromScale(SETTINGS.zoom.maxScale, this.getMapUnits()); // map resolution of the map
@@ -1771,7 +1773,7 @@ proto.zoomToExtent = function(extent, options={}) {
     let resolution = extentResolution > maxResolution ? extentResolution: maxResolution;
     resolution = (currentResolution < resolution) && (currentResolution > extentResolution) ? currentResolution : resolution;
     this.goToRes(center, resolution);
-  } else this.goToRes(center, maxResolution); // set max resolution
+  } else this.goToRes(center, projectMaxResolution); // set max resolution
   options.highLightGeometry && this.highlightGeometry(options.highLightGeometry, {
     zoom: false
   });
