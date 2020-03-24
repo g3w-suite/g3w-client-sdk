@@ -502,6 +502,10 @@ proto.createMapControl = function(type, options={add=true, toggled=false, visibl
   return control;
 };
 
+proto.showAddLayerModal = function() {
+  this.emit('addexternallayer');
+};
+
 proto._setupControls = function() {
   const baseLayers = getMapLayersByFilter({
     BASELAYER: true
