@@ -523,9 +523,11 @@ proto.getFieldsWithValues = function(obj, options={}) {
       if (field.validate === undefined)
         field.validate = {};
       field.validate.valid = true;
+      field.validate._valid = true; //usefult to get previous value in certain case
       field.validate.unique = true;
       field.validate.required = field.validate.required === undefined ? false : field.validate.required;
-      field.validate.empty = field.validate.required;
+      field.validate.mutually_valid = true;
+      field.validate.empty = !field.validate.required;
       field.validate.message = null;
       // end editng purpose
     });

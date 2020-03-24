@@ -10,6 +10,7 @@ const BaseInputMixin = {
   methods: {
     // called when input value change
     change: function() {
+      this.service.setEmpty();
       // validate input
       this.state.validate.required && this.service.validate();
       // emit change input

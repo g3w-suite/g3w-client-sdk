@@ -7,6 +7,12 @@ const Input = {
   components: {
     'baseinput': BaseInput
   },
+  watch: {
+    'notvalid'(newValid){
+      if (newValid) 
+        this.service.setErrorMessage(this.state)
+    }
+  },
   created() {
     this.service = new InputServices[this.state.input.type]({
       state: this.state,
