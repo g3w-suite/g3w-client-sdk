@@ -1,3 +1,7 @@
+const t = require('core/i18n/i18n.service').t;
+const GUI = require('gui/gui');
+const SUPPORTED_FORMAT = ['zip', 'geojson', 'kml', 'json'];
+
 const EPSG = [
   "EPSG:3003",
   "EPSG:3004",
@@ -76,16 +80,22 @@ const AddLayerComponent = {
       this.layer.id = name;
       const type = evt.target.files[0].name.split('.');
       this.layer.type = type[type.length-1].toLowerCase();
-      if (this.layer.type == 'zip') {
-        this.layer.data = evt.target.files[0];
-        $('input:file').val(null);
-      } else {
-        reader.onload = (evt) => {
-          this.layer.data = evt.target.result;
+      if (SUPPORTED_FORMAT.indexOf(this.layer.type) !== -1) {
+        if (this.layer.type === 'zip') {
+          this.layer.data = evt.target.files[0];
           $('input:file').val(null);
-        };
-        reader.readAsText(evt.target.files[0]);
-      }
+        } else {
+          reader.onload = (evt) => {
+            this.layer.data = evt.target.result;
+            $('input:file').val(null);
+          };
+          reader.readAsText(evt.target.files[0]);
+        }
+      } else GUI.showUserMessage({
+        type: 'warning',
+        autoclose: true,
+        message: t('sdk.errors.add_external_layer')
+      })
     },
     addLayer: function() {
       if (this.layer.name) {

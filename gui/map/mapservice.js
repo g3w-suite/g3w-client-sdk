@@ -2102,11 +2102,11 @@ proto.addExternalLayer = function(externalLayer) {
       featureProjection: this.getEpsg()
     });
     const vectorSource = new ol.source.Vector({
-      features: features
+      features
     });
     const vectorLayer = new ol.layer.Vector({
       source: vectorSource,
-      name: name
+      name
     });
     vectorLayer.setStyle(this.setExternalLayerStyle(color));
     return vectorLayer;
@@ -2116,6 +2116,13 @@ proto.addExternalLayer = function(externalLayer) {
     let format;
     let layer;
     switch (type) {
+      case 'gml':
+        format = new ol.format.GML3({
+          featureType: ['gml', 'ogr']
+        });
+        layer = createExternalLayer(format, data);
+        loadExternalLayer(layer);
+        break;
       case 'geojson':
         format = new ol.format.GeoJSON();
         layer = createExternalLayer(format, data);

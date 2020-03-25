@@ -27,7 +27,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button v-t="'add'" type="button" class="btn btn-success pull-left" @click="addLayer" data-dismiss="modal"></button>
+        <button v-t="'add'" type="button" class="btn btn-success pull-left" @click="addLayer" :disabled="!layer.name" data-dismiss="modal"></button>
         <button v-t="'close'" type="button" class="btn btn-default" data-dismiss="modal" @click="clearLayer"></button>
       </div>
     </div>

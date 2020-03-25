@@ -7,6 +7,7 @@ const Panel = function(options={}) {
   this.id = options.id || null;
   this.title = options.title || '';
   this.internalPanel = options.panel || null;
+  this.service = options.service;
 };
 
 inherit(Panel, G3WObject);
@@ -19,6 +20,14 @@ proto.getId = function(){
 
 proto.getTitle = function(){
   return this.title;
+};
+
+proto.getService = function(){
+  return this.service;
+};
+
+proto.setService = function(service) {
+  this.service = service;
 };
 
 proto.getInternalPanel = function() {
