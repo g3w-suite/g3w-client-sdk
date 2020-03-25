@@ -1,5 +1,3 @@
-const t = require('core/i18n/i18n.service').t;
-const GUI = require('gui/gui');
 const SUPPORTED_FORMAT = ['zip', 'geojson', 'kml', 'json'];
 
 const EPSG = [
@@ -37,6 +35,9 @@ const AddLayerComponent = {
   data: function() {
     return {
       options: EPSG,
+      error: false,
+      error_message: null,
+      loading: false,
       layer: {
         name: null,
         type: null,
@@ -62,25 +63,29 @@ const AddLayerComponent = {
   components: {
     'chrome-picker': ChromeComponent
   },
-  created: function() {
-    this.layer.crs = this.service.getCrs();
-    this.service.on('addexternallayer', () => {
-      $('#modal-addlayer').modal('show');
-    });
-  },
   methods: {
+    setError(type){
+      this.error_message = `sdk.errors.${type}`;
+      this.error = true;
+    },
+    clearError(){
+      this.error = false;
+      this.error_message = null;
+    },
     onChangeColor: function(val) {
       this.layer.color = val;
     },
     onAddLayer: function(evt) {
       const reader = new FileReader();
       const name = evt.target.files[0].name;
-      this.layer.name = name;
-      this.layer.title = name;
-      this.layer.id = name;
-      const type = evt.target.files[0].name.split('.');
-      this.layer.type = type[type.length-1].toLowerCase();
-      if (SUPPORTED_FORMAT.indexOf(this.layer.type) !== -1) {
+      let type = evt.target.files[0].name.split('.');
+      type = type[type.length-1].toLowerCase();
+      if (SUPPORTED_FORMAT.indexOf(type) !== -1) {
+        this.clearError();
+        this.layer.name = name;
+        this.layer.title = name;
+        this.layer.id = name;
+        this.layer.type = type;
         if (this.layer.type === 'zip') {
           this.layer.data = evt.target.files[0];
           $('input:file').val(null);
@@ -91,21 +96,28 @@ const AddLayerComponent = {
           };
           reader.readAsText(evt.target.files[0]);
         }
-      } else GUI.showUserMessage({
-        type: 'warning',
-        autoclose: true,
-        message: t('sdk.errors.add_external_layer')
-      })
+      } else this.setError('unsupported_format');
     },
     addLayer: function() {
       if (this.layer.name) {
+        this.loading = true;
         const layer = _.cloneDeep(this.layer);
-        this.service.addExternalLayer(layer);
-        $('#modal-addlayer').modal('hide');
-        this.clearLayer();
+        this.service.addExternalLayer(layer)
+          .then(() =>{
+            $('#modal-addlayer').modal('hide');
+            this.clearLayer();
+          })
+          .catch(()=>{
+            this.setError('add_external_layer');
+          })
+          .finally(()=>{
+            this.loading = false;
+          })
       }
     },
     clearLayer: function() {
+      this.clearError();
+      this.loading = false;
       this.layer.name = null;
       this.layer.title = null;
       this.layer.id = null;
@@ -123,6 +135,15 @@ const AddLayerComponent = {
       };
       this.layer.data = null;
     }
+  },
+  created: function() {
+    this.layer.crs = this.service.getCrs();
+    this.service.on('addexternallayer', () => {
+      $('#modal-addlayer').modal('show');
+    });
+  },
+  beforeDestroy() {
+    this.clearLayer()
   }
 };
 

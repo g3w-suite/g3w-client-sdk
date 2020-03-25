@@ -2054,7 +2054,7 @@ proto.removeExternalLayer = function(name) {
   catalogService.removeExternalLayer(name);
 };
 
-proto.addExternalLayer = function(externalLayer) {
+proto.addExternalLayer = async function(externalLayer) {
   let vectorLayer,
     name,
     data,
@@ -2083,35 +2083,40 @@ proto.addExternalLayer = function(externalLayer) {
   }
   const layer = this.getLayerByName(name);
   const loadExternalLayer  = (layer) => {
-    const extent = layer.getSource().getExtent();
-    externalLayer.bbox = {
-      minx: extent[0],
-      miny: extent[1],
-      maxx: extent[2],
-      maxy: extent[3]
-    };
-    externalLayer.checked = true;
-    map.addLayer(layer);
-    QueryResultService.registerVectorLayer(layer);
-    catalogService.addExternalLayer(externalLayer);
-    map.getView().fit(extent);
+    if (layer) {
+      const extent = layer.getSource().getExtent();
+      externalLayer.bbox = {
+        minx: extent[0],
+        miny: extent[1],
+        maxx: extent[2],
+        maxy: extent[3]
+      };
+      externalLayer.checked = true;
+      map.addLayer(layer);
+      QueryResultService.registerVectorLayer(layer);
+      catalogService.addExternalLayer(externalLayer);
+      map.getView().fit(extent);
+      return Promise.resolve(layer);
+    } else return Promise.reject();
   };
   const createExternalLayer = (format, data, epsg=crs) => {
+    let vectorLayer;
     const features = format.readFeatures(data, {
       dataProjection: epsg,
       featureProjection: this.getEpsg()
     });
-    const vectorSource = new ol.source.Vector({
-      features
-    });
-    const vectorLayer = new ol.layer.Vector({
-      source: vectorSource,
-      name
-    });
-    vectorLayer.setStyle(this.setExternalLayerStyle(color));
+    if (features.length) {
+      const vectorSource = new ol.source.Vector({
+        features
+      });
+      vectorLayer = new ol.layer.Vector({
+        source: vectorSource,
+        name
+      });
+      vectorLayer.setStyle(this.setExternalLayerStyle(color));
+    }
     return vectorLayer;
   };
-
   if (!layer) {
     let format;
     let layer;
@@ -2121,34 +2126,45 @@ proto.addExternalLayer = function(externalLayer) {
           featureType: ['gml', 'ogr']
         });
         layer = createExternalLayer(format, data);
-        loadExternalLayer(layer);
+        return loadExternalLayer(layer);
         break;
       case 'geojson':
         format = new ol.format.GeoJSON();
         layer = createExternalLayer(format, data);
-        loadExternalLayer(layer);
+        return loadExternalLayer(layer);
         break;
       case 'kml':
         format = new ol.format.KML({
           extractStyles: false
         });
-        layer = createExternalLayer(format, data);
-        loadExternalLayer(layer);
+        layer = createExternalLayer(format, data,  "EPSG:4326");
+        return loadExternalLayer(layer);
         break;
       case 'zip':
-        shpToGeojson({
-          url: data,
-          encoding: 'big5',
-          EPSG: crs
-        }, (geojson) => {
-          const data = JSON.stringify(geojson);
-          format = new ol.format.GeoJSON({});
-          layer = createExternalLayer(format, data, "EPSG:4326");
-          loadExternalLayer(layer);
+        const promise = new Promise((resolve, reject) =>{
+          shpToGeojson({
+            url: data,
+            encoding: 'big5',
+            EPSG: crs
+          }, (geojson) => {
+            const data = JSON.stringify(geojson);
+            format = new ol.format.GeoJSON({});
+            layer = createExternalLayer(format, data, "EPSG:4326");
+            loadExternalLayer(layer).then(()=>{
+              resolve(layer)
+            }).catch(()=>{
+              reject()
+            })
+          });
         });
+        try {
+          return await promise;
+        } catch(err) {
+          return Promise.reject();
+        }
         break;
       case 'vector':
-        loadExternalLayer(vectorLayer);
+        return loadExternalLayer(vectorLayer);
         break;
     }
   } else {
