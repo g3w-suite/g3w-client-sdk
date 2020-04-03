@@ -16,6 +16,7 @@
         </div>
         <p v-t="'mapcontrols.add_layer_control.select_color'" style="font-weight: 700;"></p>
         <chrome-picker v-model="layer.color" @change-color="onChangeColor" style="width:90%;margin:auto"></chrome-picker>
+        <bar-loader :loading="loading"></bar-loader>
         <form id="addcustomlayer">
           <input type="file" title=" " @change="onAddLayer($event)" accept=".kml,.geojson, .KML, .GEOJSON, .zip">
           <h4 v-t="'mapcontrols.add_layer_control.drag_layer'"></h4>
@@ -26,8 +27,9 @@
           <p>.geojson, .kml, .zip(shapefile)</p>
         </form>
       </div>
+      <div style="font-weight: bold; font-size: 1.2em; background-color: orange; padding: 10px; text-align: center" v-if="error" v-t="error_message"></div>
       <div class="modal-footer">
-        <button v-t="'add'" type="button" class="btn btn-success pull-left" @click="addLayer" data-dismiss="modal"></button>
+        <button v-t="'add'" type="button" class="btn btn-success pull-left" @click="addLayer" :disabled="!layer.name"></button>
         <button v-t="'close'" type="button" class="btn btn-default" data-dismiss="modal" @click="clearLayer"></button>
       </div>
     </div>

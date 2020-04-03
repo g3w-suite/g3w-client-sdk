@@ -49,7 +49,8 @@ proto._makeOlLayer = function(){
   const projection = this.projection ? this.projection : this.layer.getProjection();
   const layerOptions = {
     url: this.layer.getCacheUrl()+"/{z}/{x}/{y}.png",
-    maxZoom: 20
+    maxZoom: 20,
+    iframe_internal: this.iframe_internal
   };
 
   layerOptions.projection = projection;

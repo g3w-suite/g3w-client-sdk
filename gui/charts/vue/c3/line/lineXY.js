@@ -1,6 +1,7 @@
 const id = require('core/utils/utils').getUniqueDomId();
+const templateCompiled = Vue.compile( require('./lineXY.html'));
 const C3XYLine = {
-  template: require('./lineXY.html'),
+  ...templateCompiled,
   props: {
     showdata: {
       type: Boolean,

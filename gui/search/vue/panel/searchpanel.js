@@ -80,6 +80,7 @@ const SearchPanelComponent = Vue.extend({
 
 function SearchPanel(options = {}) {
   const service = options.service || new Service(options);
+  this.setService(service);
   const SearchPanel = options.component || SearchPanelComponent;
   const internalPanel = new SearchPanel({
     service

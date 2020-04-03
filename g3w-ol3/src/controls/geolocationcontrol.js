@@ -16,12 +16,10 @@ const proto = GeolocationControl.prototype;
 proto.setMap = function(map) {
   const self = this;
   Control.prototype.setMap.call(this,map);
-  // faccio la gestione tutta interna alla rimozione del controllo
   const geolocation = new ol.Geolocation({
     projection: map.getView().getProjection(),
     tracking: true
   });
-  //mi metto in ascolto del proprety change in particolare quando viene settato allow o block
   geolocation.once('change:position', function(e) {
     if (this.getPosition()) {
       $(self.element).removeClass('g3w-ol-disabled');

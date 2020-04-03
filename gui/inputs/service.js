@@ -6,6 +6,7 @@ function Service(options = {}) {
   this.state = options.state || {};
   // type of input
   this.state.validate.required && this.setValue(this.state.value);
+  this.setEmpty(this.state.value);
   const type = this.state.type;
   const validatorOptions = (options.validatorOptions || this.state.input.options) || {};
   // useful for the validator to validate input
@@ -61,10 +62,19 @@ proto.setValidator = function(validator) {
   this._validator = validator;
 };
 
+proto.setEmpty = function(){
+  this.state.validate.empty = !((Array.isArray(this.state.value) && this.state.value.length) || !_.isEmpty(_.trim(this.state.value)));
+};
+
 // general method to check the value of the state is valid or not
 proto.validate = function() {
-  if ((Array.isArray(this.state.value) && this.state.value.length) || !_.isEmpty(_.trim(this.state.value))) {
-    this.state.validate.empty = false;
+  if (this.state.validate.empty) {
+    this.state.validate.empty = true;
+    this.state.value = null;
+    this.state.validate.unique = true;
+    // check if require or check validation
+    this.state.validate.valid = this.state.validate.required ? false : this._validator.validate(this.state.value);
+  } else {
     if (this.state.input.type === 'integer' || this.state.input.type === 'float') {
       if (+this.state.value < 0) {
         this.state.value = null;
@@ -74,34 +84,30 @@ proto.validate = function() {
         this.state.validate.valid = this._validator.validate(this.state.value);
     }
     if (this.state.validate.exclude_values && this.state.validate.exclude_values.length) {
-        if (this.state.validate.exclude_values.indexOf(this.state.value) !== -1) {
-          this.state.validate.valid = false;
-          this.state.validate.unique = false;
-        } else
-          this.state.validate.unique = true;
+      if (this.state.validate.exclude_values.indexOf(this.state.value) !== -1) {
+        this.state.validate.valid = false;
+        this.state.validate.unique = false;
+      } else
+        this.state.validate.unique = true;
     } else
       this.state.validate.valid = this._validator.validate(this.state.value);
-  } else {
-    this.state.validate.empty = true;
-    this.state.value = null;
-    this.state.validate.unique = true;
-    // check if require or check validation
-    this.state.validate.valid = this.state.validate.required ? false : this._validator.validate(this.state.value);
   }
+
   return this.state.validate.valid;
 };
 
 proto.setErrorMessage = function(input) {
-  if (input.validate.mutually)
-    return `${t("sdk.form.inputs.input_validation_mutually_exclusive")} ( ${input.validate.mutually.join(',')} )`;
+  let message;
+  if (input.validate.mutually && !input.validate.mutually_valid)
+    this.state.validate.message =  `${t("sdk.form.inputs.input_validation_mutually_exclusive")} ( ${input.validate.mutually.join(',')} )`;
   else if (input.validate.max_field)
-    return `${t("sdk.form.inputs.input_validation_max_field")} (${input.validate.max_field})`;
+    this.state.validate.message = `${t("sdk.form.inputs.input_validation_max_field")} (${input.validate.max_field})`;
   else if (input.validate.min_field)
-    return `${t("sdk.form.inputs.input_validation_min_field")} (${input.validate.min_field})`;
+    this.state.validate.message = `${t("sdk.form.inputs.input_validation_min_field")} (${input.validate.min_field})`;
   else if (!input.validate.unique && input.validate.exclude_values)
-    return `${t("sdk.form.inputs.input_validation_exclude_values")}`;
+    this.state.validate.message = `${t("sdk.form.inputs.input_validation_exclude_values")}`;
   else if (input.validate.required) {
-    let message = `${t("sdk.form.inputs.input_validation_error")} ( ${t("sdk.form.inputs." + input.type)} )`;
+    message = `${t("sdk.form.inputs.input_validation_error")} ( ${t("sdk.form.inputs." + input.type)} )`;
     if (this.state.info) {
       message = `${message}
                  <div>

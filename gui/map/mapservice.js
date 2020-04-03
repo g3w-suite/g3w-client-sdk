@@ -33,7 +33,6 @@ const SETTINGS = {
 
 function MapService(options={}) {
   this.id = 'MapService';
-  this.ready = false;
   this.viewer = null;
   this.target = options.target || null;
   this.maps_container = options.maps_container || null;
@@ -108,13 +107,11 @@ function MapService(options={}) {
     }
     this._decrementLoaders();
   };
-
   if (options.project) this.project = options.project;
   else {
     this.project = ProjectsRegistry.getCurrentProject();
     //on after setting current project
     ProjectsRegistry.onafter('setCurrentProject', (project) => {
-      this.setReady(false);
       this.removeLayers();
       this._removeListeners();
       this.project = project;
@@ -177,9 +174,7 @@ function MapService(options={}) {
       });
       this.emit('viewerset');
     },
-    controlClick: function(active) {
-      //SETTER to register map control activated
-    }
+    controlClick: function(active) {}
   };
 
   this._onCatalogSelectLayer = function(layer) {
@@ -220,20 +215,23 @@ function MapService(options={}) {
       })
   });
 
-  //CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
-  MapLayersStoreRegistry.getLayersStores().forEach((layersStore) => {
-    this._setUpEventsKeysToLayersStore(layersStore);
+  this.once('viewerset', ()=> {
+    //CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
+    MapLayersStoreRegistry.getLayersStores().forEach((layersStore) => {
+      this._setUpEventsKeysToLayersStore(layersStore);
+    });
+
+    // LISTEN ON EVERY ADDED LAYERSSTORE
+    MapLayersStoreRegistry.onafter('addLayersStore', (layersStore) => {
+      this._setUpEventsKeysToLayersStore(layersStore);
+    });
+
+    // LISTENER ON REMOVE LAYERSTORE
+    MapLayersStoreRegistry.onafter('removeLayersStore', (layerStore) => {
+      this._removeEventsKeysToLayersStore(layerStore);
+    });
   });
 
-  // LISTEN ON EVERY ADDED LAYERSSTORE
-  MapLayersStoreRegistry.onafter('addLayersStore', (layersStore) => {
-    this._setUpEventsKeysToLayersStore(layersStore);
-  });
-
-  // LISTENER ON REMOVE LAYERSTORE
-  MapLayersStoreRegistry.onafter('removeLayersStore', (layerStore) => {
-    this._removeEventsKeysToLayersStore(layerStore);
-  });
   base(this);
 }
 
@@ -241,13 +239,16 @@ inherit(MapService, G3WObject);
 
 const proto = MapService.prototype;
 
-proto.isReady = function(){
-  return this.ready;
+proto.showMapSpinner = function(){
+  GUI.showSpinner({
+    container: $('#map-spinner'),
+    id: 'maploadspinner',
+    style: 'transparent'
+  });
 };
 
-proto.setReady = function(bool=false){
-  this.ready = bool;
-  bool && this.emit('ready');
+proto.hideMapSpinner = function(){
+  GUI.hideSpinner('maploadspinner')
 };
 
 proto.getScaleFromExtent = function(extent) {
@@ -511,6 +512,10 @@ proto.createMapControl = function(type, options={add=true, toggled=false, visibl
   });
   control && this.addControl(id, type, control, options.add, options.visible);
   return control;
+};
+
+proto.showAddLayerModal = function() {
+  this.emit('addexternallayer');
 };
 
 proto._setupControls = function() {
@@ -1450,7 +1455,7 @@ proto._setupViewer = function(width, height) {
   });
 
   this.viewer.map.addOverlay(this._marker);
-  this.setReady(true);
+  this.emit('ready');
 };
 
 proto.getMapUnits = function() {
@@ -1745,7 +1750,8 @@ proto.zoomToFeatures = function(features, options={highlight: false}) {
     const feature = features[i];
     const geometry = feature.getGeometry ? feature.getGeometry() : feature.geometry;
     if (geometry) {
-      extent = !extent ? geometry.getExtent() : ol.extent.extend(extent, geometry.getExtent());
+      const featureExtent = [...geometry.getExtent()];
+      extent = !extent ? featureExtent : ol.extent.extend(extent, featureExtent);
       if (highlight) {
         geometryType = geometryType || geometry.getType();
         const coordinates = geometry.getCoordinates();
@@ -1768,6 +1774,7 @@ proto.zoomToFeatures = function(features, options={highlight: false}) {
 proto.zoomToExtent = function(extent, options={}) {
   const map = this.getMap();
   const projectInitExtent = this.project.state.initextent;
+  const projectMaxResolution = map.getView().getResolutionForExtent(projectInitExtent, map.getSize());
   const inside = ol.extent.containsExtent(projectInitExtent, extent);
   // max resolution of the map
   const maxResolution = getResolutionFromScale(SETTINGS.zoom.maxScale, this.getMapUnits()); // map resolution of the map
@@ -1782,7 +1789,7 @@ proto.zoomToExtent = function(extent, options={}) {
     let resolution = extentResolution > maxResolution ? extentResolution: maxResolution;
     resolution = (currentResolution < resolution) && (currentResolution > extentResolution) ? currentResolution : resolution;
     this.goToRes(center, resolution);
-  } else this.goToRes(center, maxResolution); // set max resolution
+  } else this.goToRes(center, projectMaxResolution); // set max resolution
   options.highLightGeometry && this.highlightGeometry(options.highLightGeometry, {
     zoom: false
   });
@@ -2059,7 +2066,7 @@ proto.removeExternalLayer = function(name) {
   catalogService.removeExternalLayer(name);
 };
 
-proto.addExternalLayer = function(externalLayer) {
+proto.addExternalLayer = async function(externalLayer) {
   let vectorLayer,
     name,
     data,
@@ -2088,65 +2095,88 @@ proto.addExternalLayer = function(externalLayer) {
   }
   const layer = this.getLayerByName(name);
   const loadExternalLayer  = (layer) => {
-    const extent = layer.getSource().getExtent();
-    externalLayer.bbox = {
-      minx: extent[0],
-      miny: extent[1],
-      maxx: extent[2],
-      maxy: extent[3]
-    };
-    externalLayer.checked = true;
-    map.addLayer(layer);
-    QueryResultService.registerVectorLayer(layer);
-    catalogService.addExternalLayer(externalLayer);
-    map.getView().fit(extent);
+    if (layer) {
+      const extent = layer.getSource().getExtent();
+      externalLayer.bbox = {
+        minx: extent[0],
+        miny: extent[1],
+        maxx: extent[2],
+        maxy: extent[3]
+      };
+      externalLayer.checked = true;
+      map.addLayer(layer);
+      QueryResultService.registerVectorLayer(layer);
+      catalogService.addExternalLayer(externalLayer);
+      map.getView().fit(extent);
+      return Promise.resolve(layer);
+    } else return Promise.reject();
   };
   const createExternalLayer = (format, data, epsg=crs) => {
+    let vectorLayer;
     const features = format.readFeatures(data, {
       dataProjection: epsg,
       featureProjection: this.getEpsg()
     });
-    const vectorSource = new ol.source.Vector({
-      features: features
-    });
-    const vectorLayer = new ol.layer.Vector({
-      source: vectorSource,
-      name: name
-    });
-    vectorLayer.setStyle(this.setExternalLayerStyle(color));
+    if (features.length) {
+      const vectorSource = new ol.source.Vector({
+        features
+      });
+      vectorLayer = new ol.layer.Vector({
+        source: vectorSource,
+        name
+      });
+      vectorLayer.setStyle(this.setExternalLayerStyle(color));
+    }
     return vectorLayer;
   };
-
   if (!layer) {
     let format;
     let layer;
     switch (type) {
+      case 'gml':
+        format = new ol.format.GML3({
+          featureType: ['gml', 'ogr']
+        });
+        layer = createExternalLayer(format, data);
+        return loadExternalLayer(layer);
+        break;
       case 'geojson':
         format = new ol.format.GeoJSON();
         layer = createExternalLayer(format, data);
-        loadExternalLayer(layer);
+        return loadExternalLayer(layer);
         break;
       case 'kml':
         format = new ol.format.KML({
           extractStyles: false
         });
-        layer = createExternalLayer(format, data);
-        loadExternalLayer(layer);
+        layer = createExternalLayer(format, data,  "EPSG:4326");
+        return loadExternalLayer(layer);
         break;
       case 'zip':
-        shpToGeojson({
-          url: data,
-          encoding: 'big5',
-          EPSG: crs
-        }, (geojson) => {
-          const data = JSON.stringify(geojson);
-          format = new ol.format.GeoJSON({});
-          layer = createExternalLayer(format, data, "EPSG:4326");
-          loadExternalLayer(layer);
+        const promise = new Promise((resolve, reject) =>{
+          shpToGeojson({
+            url: data,
+            encoding: 'big5',
+            EPSG: crs
+          }, (geojson) => {
+            const data = JSON.stringify(geojson);
+            format = new ol.format.GeoJSON({});
+            layer = createExternalLayer(format, data, "EPSG:4326");
+            loadExternalLayer(layer).then(()=>{
+              resolve(layer)
+            }).catch(()=>{
+              reject()
+            })
+          });
         });
+        try {
+          return await promise;
+        } catch(err) {
+          return Promise.reject();
+        }
         break;
       case 'vector':
-        loadExternalLayer(vectorLayer);
+        return loadExternalLayer(vectorLayer);
         break;
     }
   } else {

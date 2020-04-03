@@ -11,6 +11,7 @@ const GUI = require('gui/gui');
 //Class to manage flow of steps
 function Workflow(options={}) {
   base(this);
+  this._promise = null;
   // inputs mandatory to work with editing
   this._inputs = options.inputs || null;
   this._context = options.context || null;
@@ -146,9 +147,18 @@ proto._isThereUserMessaggeSteps = function() {
   return Object.keys(this._userMessageSteps).length;
 };
 
+proto.reject  = function(){
+  this._promise && this._promise.reject();
+};
+
+proto.resolve = function(){
+  this._promise && this._promise.resolve();
+};
+
 // start workflow
 proto.start = function(options={}) {
   const d = $.Deferred();
+  this._promise = d;
   this._inputs = options.inputs;
   this._context = options.context || {};
   //check if are workflow running
@@ -173,7 +183,7 @@ proto.start = function(options={}) {
       }
     });
   }
-  
+
   this._flow.start(this)
     .then((outputs) => {
       showUserMessage && setTimeout(()=>{
@@ -193,6 +203,7 @@ proto.start = function(options={}) {
 
 // stop workflow during flow
 proto.stop = function() {
+  this._promise = null;
   ////console.log('Workflow stopping .... ');
   const d = $.Deferred();
   // stop child workflow indpendent from father workflow

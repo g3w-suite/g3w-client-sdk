@@ -177,7 +177,11 @@ proto.getFeatures = function(options={}, params={}) {
           contentType: "application/json"
         })
       } else if (filter.field) {
-        promise = $.get( url, filter.field );
+        const urlParams = $.param(filter.field);
+        url+= urlParams ? '?' + urlParams : '';
+        promise = $.get({
+          url
+        });
       }
     } else {
       promise = $.post({

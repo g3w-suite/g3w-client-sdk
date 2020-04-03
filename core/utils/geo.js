@@ -79,43 +79,44 @@ module.exports = {
         feature.type = 'Feature';
         geometry = feature.geometry = {};
         properties = feature.properties = dbfRecords[i];
-
-        // point : 1 , polyline : 3 , polygon : 5, multipoint : 8
-        switch(shpRecords[i].shape.type) {
-          case 1:
-            geometry.type = "Point";
-            const reprj = TransCoord(shpRecords[i].shape.content.x, shpRecords[i].shape.content.y);
-            geometry.coordinates = [
-              reprj.x, reprj.y
-            ];
-            break;
-          case 3:
-          case 8:
-            geometry.type = (shpRecords[i].shape.type == 3 ? "LineString" : "MultiPoint");
-            geometry.coordinates = [];
-            for (let j = 0; j < shpRecords[i].shape.content.points.length; j+=2) {
-              const reprj = TransCoord(shpRecords[i].shape.content.points[j], shpRecords[i].shape.content.points[j+1]);
-              geometry.coordinates.push([reprj.x, reprj.y]);
-            }
-            break;
-          case 5:
-            geometry.type = "Polygon";
-            geometry.coordinates = [];
-            for (let pts = 0; pts < shpRecords[i].shape.content.parts.length; pts++) {
-              let partsIndex = shpRecords[i].shape.content.parts[pts],
-                part = [];
-              for (let j = partsIndex*2; j < (shpRecords[i].shape.content.parts[pts+1]*2 || shpRecords[i].shape.content.points.length); j+=2) {
-                const point = shpRecords[i].shape.content.points;
-                const reprj = TransCoord(point[j], point[j+1]);
-                part.push([reprj.x, reprj.y]);
+        if (shpRecords[i].shape) {
+          // point : 1 , polyline : 3 , polygon : 5, multipoint : 8
+          switch(shpRecords[i].shape.type) {
+            case 1:
+              geometry.type = "Point";
+              const reprj = TransCoord(shpRecords[i].shape.content.x, shpRecords[i].shape.content.y);
+              geometry.coordinates = [
+                reprj.x, reprj.y
+              ];
+              break;
+            case 3:
+            case 8:
+              geometry.type = (shpRecords[i].shape.type == 3 ? "LineString" : "MultiPoint");
+              geometry.coordinates = [];
+              for (let j = 0; j < shpRecords[i].shape.content.points.length; j+=2) {
+                const reprj = TransCoord(shpRecords[i].shape.content.points[j], shpRecords[i].shape.content.points[j+1]);
+                geometry.coordinates.push([reprj.x, reprj.y]);
               }
-              geometry.coordinates.push(part);
+              break;
+            case 5:
+              geometry.type = "Polygon";
+              geometry.coordinates = [];
+              for (let pts = 0; pts < shpRecords[i].shape.content.parts.length; pts++) {
+                let partsIndex = shpRecords[i].shape.content.parts[pts],
+                  part = [];
+                for (let j = partsIndex*2; j < (shpRecords[i].shape.content.parts[pts+1]*2 || shpRecords[i].shape.content.points.length); j+=2) {
+                  const point = shpRecords[i].shape.content.points;
+                  const reprj = TransCoord(point[j], point[j+1]);
+                  part.push([reprj.x, reprj.y]);
+                }
+                geometry.coordinates.push(part);
 
-            }
-            break;
-          default:
+              }
+              break;
+            default:
+          }
+          if("coordinates" in feature.geometry) features.push(feature);
         }
-        if("coordinates" in feature.geometry) features.push(feature);
       }
       return geojson;
     }
@@ -126,8 +127,13 @@ module.exports = {
         zip = new JSZip(e.target.result),
         shpString =  zip.file(/.shp$/i)[0].name,
         dbfString = zip.file(/.dbf$/i)[0].name;
-      SHPParser.load(URL.createObjectURL(new Blob([zip.file(shpString).asArrayBuffer()])), shpLoader, returnData);
-      DBFParser.load(URL.createObjectURL(new Blob([zip.file(dbfString).asArrayBuffer()])), encoding, dbfLoader, returnData);
+      try {
+        SHPParser.load(URL.createObjectURL(new Blob([zip.file(shpString).asArrayBuffer()])), shpLoader, returnData);
+        DBFParser.load(URL.createObjectURL(new Blob([zip.file(dbfString).asArrayBuffer()])), encoding, dbfLoader, returnData);
+      } catch(error){
+        console.log(error)
+      }
+
     };
     reader.readAsArrayBuffer(url);
   },

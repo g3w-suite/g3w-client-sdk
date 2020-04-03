@@ -106,23 +106,33 @@ proto.getValidComponent = function(id) {
 // Every input send to form it valid value that will change the genaral state of form
 proto.isValid = function(input) {
   if (input) {
+    // check mutually
     if (input.validate.mutually) {
       if (!input.validate.required) {
         if (!input.validate.empty) {
-          input.validate.valid = input.validate.mutually.reduce((previous, inputname) => {
+          input.validate._valid = input.validate.valid;
+          input.validate.mutually_valid = input.validate.mutually.reduce((previous, inputname) => {
             return previous && this.state.tovalidate[inputname].validate.empty;
-          }, true)
+          }, true);
+          input.validate.valid = input.validate.mutually_valid && input.validate.valid;
         } else {
+          input.value = null;
+          input.validate.mutually_valid = true;
+          input.validate.valid = true;
+          input.validate._valid = true;
           let countNoTEmptyInputName = [];
           for (let i = input.validate.mutually.length; i--;) {
             const inputname = input.validate.mutually[i];
             !this.state.tovalidate[inputname].validate.empty && countNoTEmptyInputName.push(inputname) ;
           }
           if (countNoTEmptyInputName.length < 2) {
-            input.validate.valid = true;
-            input.value = null;
             countNoTEmptyInputName.forEach((inputname) => {
+              this.state.tovalidate[inputname].validate.mutually_valid = true;
               this.state.tovalidate[inputname].validate.valid = true;
+              setTimeout(()=>{
+                this.state.tovalidate[inputname].validate.valid = this.state.tovalidate[inputname].validate._valid;
+                this.state.valid = this.state.valid && this.state.tovalidate[inputname].validate.valid;
+              })
             })
           }
         }

@@ -52,41 +52,17 @@ mixin(ImageLayer, GeoLayerMixin);
 const proto = ImageLayer.prototype;
 
 proto.getLayerForEditing = function({force=false, vectorurl, project_type, project}={}) {
-  return new Promise((resolve, reject) =>{
-    if (this.isEditable() || force) {
-      const project = project || require('core/project/projectsregistry').getCurrentProject();
-      const editingLayer = new VectorLayer(this.config, {
-        vectorurl,
-        project_type,
-        project
-      });
-      this.setEditingLayer(editingLayer);
-      if (editingLayer.isReady())
-        resolve(editingLayer);
-      else editingLayer.once('layer-config-ready',() =>{
-        resolve(editingLayer);
-      })
-    } else reject()
-  })
-};
-
-proto.getEditingLayer = function({force=false, vectorurl, project_type, project}={}){
-  return new Promise((resolve, reject) => {
-    if (this.isEditable() || force) {
-      const project = project || require('core/project/projectsregistry').getCurrentProject();
-      const vectorLayer = new VectorLayer(this.config, {
-        vectorurl,
-        project_type,
-        project
-      });
-      if (vectorLayer.isReady())
-        resolve(vectorLayer.getEditingLayer());
-      else
-        vectorLayer.once('layer-config-ready', ()=>{
-          resolve(vectorLayer.getEditingLayer())
-        })
-    } else reject()
-  })
+  if (this.isEditable() || force) {
+    const project = project || require('core/project/projectsregistry').getCurrentProject();
+    const editingLayer = new VectorLayer(this.config, {
+      vectorurl,
+      project_type,
+      project
+    });
+    // set editing layer
+    this.setEditingLayer(editingLayer);
+    return editingLayer;
+  } else return null
 };
 
 proto.isBaseLayer = function() {
@@ -192,6 +168,9 @@ proto.getWfsCapabilities = function() {
 };
 
 proto.getMapLayer = function(options={}, extraParams) {
+  const ApplicationService = require('core/applicationservice');
+  const iframe_internal = ApplicationService.isIframe() && !this.isExternalWMS();
+  options.iframe_internal = iframe_internal;
   let mapLayer;
   const method = this.isExternalWMS() ? 'GET' : this.getOwsMethod();
   if (this.isCached()) {

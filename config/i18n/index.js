@@ -14,7 +14,9 @@ export default {
         errors: {
           layers: {
             load: "Alcuni layers presenti nel progetto non sono attualmente disponibili e quindi non compaiono nell'attuale visualizzazione"
-          }
+          },
+          unsupported_format: 'Formato non supportato',
+          add_external_layer: 'Errore nel caricamento del layer'
         },
         metadata: {
           "title": "Metadati",
@@ -174,7 +176,9 @@ export default {
         errors: {
           layers: {
             load: "Some layers are not available"
-          }
+          },
+          unsupported_format: 'Not supported format',
+          add_external_layer: 'Load layer error'
         },
         metadata: {
           'title': 'Metadata',

@@ -16,7 +16,7 @@ const RangeInput = Vue.extend({
   },
   methods: {
     checkValue() {
-      this.state.validate.valid = !this.state.validate.required ? this.service.getValidator().validate(this.state.value) : this.state.validate.valid;
+      this.state.validate.valid =  this.service.getValidator().validate(this.state.value);
       this.change();
     }
   }
