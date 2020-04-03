@@ -123,6 +123,10 @@ proto._setFeatures = function(features) {
   this._layer.setFeatures(features);
 };
 
+proto.readFeatures = function(){
+  return this._layer.readFeatures();
+};
+
 // stop editor
 proto.stop = function() {
   const d = $.Deferred();

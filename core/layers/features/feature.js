@@ -52,7 +52,7 @@ proto.clone = function() {
 proto.setTemporaryId = function() {
   let newValue = this._newPrefix + Date.now();
   this.setId(newValue);
-  //this.get(this._pk) === null && this.set(this._pk, newValue);
+  this.getProperties()[this._pk] !== undefined && this.set(this._pk, newValue);
   this.setNew();
 };
 

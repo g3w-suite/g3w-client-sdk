@@ -168,6 +168,9 @@ proto.getWfsCapabilities = function() {
 };
 
 proto.getMapLayer = function(options={}, extraParams) {
+  const ApplicationService = require('core/applicationservice');
+  const iframe_internal = ApplicationService.isIframe() && !this.isExternalWMS();
+  options.iframe_internal = iframe_internal;
   let mapLayer;
   const method = this.isExternalWMS() ? 'GET' : this.getOwsMethod();
   if (this.isCached()) {

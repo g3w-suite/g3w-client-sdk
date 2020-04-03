@@ -107,7 +107,6 @@ function MapService(options={}) {
     }
     this._decrementLoaders();
   };
-
   if (options.project) this.project = options.project;
   else {
     this.project = ProjectsRegistry.getCurrentProject();
@@ -175,9 +174,7 @@ function MapService(options={}) {
       });
       this.emit('viewerset');
     },
-    controlClick: function(active) {
-      //SETTER to register map control activated
-    }
+    controlClick: function(active) {}
   };
 
   this._onCatalogSelectLayer = function(layer) {
@@ -218,26 +215,41 @@ function MapService(options={}) {
       })
   });
 
-  //CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
-  MapLayersStoreRegistry.getLayersStores().forEach((layersStore) => {
-    this._setUpEventsKeysToLayersStore(layersStore);
+  this.once('viewerset', ()=> {
+    //CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
+    MapLayersStoreRegistry.getLayersStores().forEach((layersStore) => {
+      this._setUpEventsKeysToLayersStore(layersStore);
+    });
+
+    // LISTEN ON EVERY ADDED LAYERSSTORE
+    MapLayersStoreRegistry.onafter('addLayersStore', (layersStore) => {
+      this._setUpEventsKeysToLayersStore(layersStore);
+    });
+
+    // LISTENER ON REMOVE LAYERSTORE
+    MapLayersStoreRegistry.onafter('removeLayersStore', (layerStore) => {
+      this._removeEventsKeysToLayersStore(layerStore);
+    });
   });
 
-  // LISTEN ON EVERY ADDED LAYERSSTORE
-  MapLayersStoreRegistry.onafter('addLayersStore', (layersStore) => {
-    this._setUpEventsKeysToLayersStore(layersStore);
-  });
-
-  // LISTENER ON REMOVE LAYERSTORE
-  MapLayersStoreRegistry.onafter('removeLayersStore', (layerStore) => {
-    this._removeEventsKeysToLayersStore(layerStore);
-  });
   base(this);
 }
 
 inherit(MapService, G3WObject);
 
 const proto = MapService.prototype;
+
+proto.showMapSpinner = function(){
+  GUI.showSpinner({
+    container: $('#map-spinner'),
+    id: 'maploadspinner',
+    style: 'transparent'
+  });
+};
+
+proto.hideMapSpinner = function(){
+  GUI.hideSpinner('maploadspinner')
+};
 
 proto.getScaleFromExtent = function(extent) {
   const resolution = this.getMap().getView().getResolutionForExtent(extent, this.getMap().getSize());

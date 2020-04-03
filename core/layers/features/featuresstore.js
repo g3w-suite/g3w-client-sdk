@@ -31,8 +31,8 @@ function FeaturesStore(options={}) {
     getFeatures: function(options={}) {
       return this._getFeatures(options);
     },
-    commit: function(commitItems, featurestore) {
-      return this._commit(commitItems, featurestore);
+    commit: function(commitItems) {
+      return this._commit(commitItems);
     }
   };
 
@@ -115,6 +115,7 @@ proto.getLockIds = function() {
 //method to add new lockid
 proto.addLockIds = function(lockIds) {
   this._lockIds = _.union(this._lockIds, lockIds);
+  this._lockIds.forEach(lockId => this._loadedIds.push(lockId.featureid));
 };
 
 proto._readFeatures = function() {
@@ -140,9 +141,11 @@ proto._commit = function(commitItems) {
 
 // get feature from id
 proto.getFeatureById = function(featureId) {
-  return this._features.find((feature) => {
-    return feature.getId() === featureId
-  });
+  return this._features.find((feature) => feature.getId() == featureId);
+};
+
+proto.getFeatureByUid = function(uid) {
+  return this._features.find((feature) => feature.getUid() === uid);
 };
 
 proto._addFeature = function(feature) {

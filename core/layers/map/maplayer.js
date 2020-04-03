@@ -5,6 +5,7 @@ const G3WObject = require('core/g3wobject');
 function MapLayer(config={}) {
   this.config = config;
   this.id = config.id;
+  this.iframe_internal = config.iframe_internal || false;
   this.projection = config.projection;
   base(this);
 }

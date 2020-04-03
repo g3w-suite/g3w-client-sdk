@@ -55,7 +55,8 @@ function TableLayer(config={}, options={}) {
               // if commit go right
               // apply commit changes to features store eventually passed (ex: session featurestore)
               if (featurestore) {
-                features = featurestore.readFeatures();
+                const features = featurestore.readFeatures();
+                features.forEach(feature => feature.clearState());
                 this._featuresStore.setFeatures(features);
               }
               this.applyCommitResponse(response);
@@ -574,6 +575,11 @@ proto.getRelations = function() {
   return this._relations
 };
 
+proto.getRelationById = function(id) {
+  return this._relations.getArray().filter(relation => {
+    console.log(relation);
+  })
+};
 
 proto.getRelationAttributes = function(relationName) {
   let fields = [];

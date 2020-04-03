@@ -1,6 +1,29 @@
 const RasterLayers = {};
 const DPI = require('../utils/utils').getDPI();
 
+const loadImageTileFunction = function({method='GET', type='image', sourceOptions={}}) {
+  window.URL = window.URL || window.webkitURL;
+  sourceOptions[`${type}LoadFunction`] = function(imageTile, url) {
+    const xhr = new XMLHttpRequest();
+    const [_url, params] = url.split('?');
+    xhr.open(method, method === 'POST' && _url || url);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+    xhr.responseType = 'blob';
+    xhr.onload = function() {
+      const data = this.response;
+      if (data !== undefined) {
+        imageTile.getImage().src = window.URL.createObjectURL(data);
+      } else {
+        imageTile.setState(ol.TileState.ERROR);
+      }
+    };
+    xhr.onerror = function() {
+      image.setState(ol.TileState.ERROR);
+    };
+    xhr.send(method=== 'POST' && params);
+  };
+};
+
 RasterLayers.TiledWMSLayer = function(layerObj,extraParams){
   const options = {
     layerObj: layerObj,
@@ -40,16 +63,19 @@ RasterLayers.ImageArgisMapServer = function(options={}){
 };
 
 RasterLayers.TiledArgisMapServer = function(options={}){
+  const source = new ol.source.TileArcGISRest({
+    url: options.url
+  });
+
   return  new ol.layer.Tile({
     extent: options.extent,
-    source: new ol.source.TileArcGISRest({
-      url: options.url
-    })
+    source
   })
 };
 
 RasterLayers._WMSLayer = function(options={}) {
   const layerObj = options.layerObj;
+  const iframe_internal = layerObj.iframe_internal || false;
   const method = options.method || 'GET';
   const extraParams = options.extraParams;
   const tiled = options.tiled || false;
@@ -68,28 +94,13 @@ RasterLayers._WMSLayer = function(options={}) {
     ratio: 1,
     projection
   };
-  if (method === 'POST') {
-    window.URL = window.URL || window.webkitURL;
-    sourceOptions.imageLoadFunction = function(image, url) {
-      const xhr = new XMLHttpRequest();
-      const [_url, params] = url.split('?');
-      xhr.open('POST', _url);
-      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-      xhr.responseType = 'blob';
-      xhr.onload = function() {
-        const data = this.response;
-        if (data !== undefined) {
-          image.getImage().src = window.URL.createObjectURL(data);
-        } else {
-          image.setState(ol.TileState.ERROR);
-        }
-      };
-      xhr.onerror = function() {
-        image.setState(ol.TileState.ERROR);
-      };
-      xhr.send(params);
-    };
-  }
+
+  if (iframe_internal || method === 'POST')
+    loadImageTileFunction({
+      method,
+      type: 'image',
+      sourceOptions
+    });
 
   const imageOptions = {
     id: layerObj.id,
@@ -108,13 +119,13 @@ RasterLayers._WMSLayer = function(options={}) {
     source = new ol.source.ImageWMS(sourceOptions);
     imageClass = ol.layer.Image;
   }
-
   imageOptions.source = source;
-
-  return new imageClass(imageOptions);
+  const image = new imageClass(imageOptions);
+  return image;
 };
 
 RasterLayers.XYZLayer = function(options={}, method='GET') {
+  const iframe_internal = options.iframe_internal || false;
   if (!options.url){
     return;
   }
@@ -130,29 +141,16 @@ RasterLayers.XYZLayer = function(options={}, method='GET') {
   if (options.minZoom) {
     sourceOptions.minZoom = options.minZoom;
   }
-  // if (method === 'POST') {
-  //   window.URL = window.URL || window.webkitURL;
-  //   sourceOptions.tileLoadFunction = function(imageTile, url) {
-  //     const xhr = new XMLHttpRequest();
-  //     xhr.open('POST', url);
-  //     xhr.setRequestHeader('Content-Type', 'image/png');
-  //     xhr.responseType = 'blob';
-  //     xhr.onload = function() {
-  //       const data = this.response;
-  //       if (data !== undefined) {
-  //         imageTile.getImage().src = window.URL.createObjectURL(data);
-  //       } else {
-  //         imageTile.setState(ol.TileState.ERROR);
-  //       }
-  //     };
-  //     xhr.onerror = function() {
-  //       imageTile.setState(ol.TileState.ERROR);
-  //     };
-  //     xhr.send();
-  //   };
-  // }
+  if (iframe_internal)
+    loadImageTileFunction({
+      method,
+      type: 'tile',
+      sourceOptions
+    });
+  const source = new ol.source.XYZ(sourceOptions);
+
   return new ol.layer.Tile({
-    source: new ol.source.XYZ(sourceOptions)
+    source
   });
 };
 

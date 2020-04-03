@@ -12,8 +12,7 @@ function WMSLayer(options={}, extraParams={}, method='GET') {
   this._method = method;
   this.layers = []; // store all enabled layers
   this.allLayers = []; // store all layers
-
-  base(this,options);
+  base(this, options);
 }
 
 inherit(WMSLayer, MapLayer);
@@ -98,7 +97,8 @@ proto._makeOlLayer = function(withLayers) {
   const wmsConfig = {
     url: this.config.url,
     id: this.config.id,
-    projection: this.config.projection
+    projection: this.config.projection,
+    iframe_internal: this.iframe_internal
   };
   if (withLayers) {
     wmsConfig.layers = this.layers.map((layer) => {
