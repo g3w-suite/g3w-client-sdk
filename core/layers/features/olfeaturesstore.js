@@ -5,7 +5,7 @@ const FeaturesStore = require('./featuresstore');
 // Storage of the feature in vector layer
 function OlFeaturesStore(options={}) {
   base(this, options);
-  this._features = new ol.Collection();
+  this._features = new ol.Collection([]);
 }
 
 inherit(OlFeaturesStore, FeaturesStore);
@@ -33,12 +33,19 @@ proto.getFeaturesCollection = function() {
 
 proto.getFeatureById = function(featureId) {
   return this._features.getArray().find((feature) => {
-    return feature.getId() === featureId;
+    return feature.getId() == featureId;
+  });
+};
+
+proto.getFeatureByUid = function(uid) {
+  return this._features.getArray().find((feature) => {
+    return feature.getUid() === uid;
   });
 };
 
 proto._addFeature = function(feature) {
   this._features.push(feature);
+  // useful for ol.source.Vector
   this._features.dispatchEvent('change')
 };
 
@@ -49,7 +56,7 @@ proto._updateFeature = function(feature) {
   const featuresArray = this._features.getArray();
   for (let i = 0; featuresArray.length; i++) {
     const _feature = featuresArray[i];
-    if(_feature.getId() === feature.getId()) {
+    if(_feature.getUid() === feature.getUid()) {
       index = i;
       break;
     }
@@ -66,7 +73,7 @@ proto._removeFeature = function(feature) {
   const featuresArray = this._features.getArray();
   for (let i = 0; i < featuresArray.length; i++) {
     const feat = featuresArray[i];
-    if (feature.getId() === feat.getId()) {
+    if (feature.getUid() === feat.getUid()) {
       this._features.removeAt(i);
       break;
     }
@@ -74,8 +81,11 @@ proto._removeFeature = function(feature) {
   this._features.dispatchEvent('change')
 };
 
+
 proto._clearFeatures = function() {
-  // needed if we use Modify or snap interaction in ol to remove listerner on add or remove event on collection
+  try {
+    this._features.clear();
+  } catch(err){}
   this._features = null;
   this._features = new ol.Collection();
 };
