@@ -33,7 +33,13 @@ proto.getFeaturesCollection = function() {
 
 proto.getFeatureById = function(featureId) {
   return this._features.getArray().find((feature) => {
-    return feature.getId() === featureId;
+    return feature.getId() == featureId;
+  });
+};
+
+proto.getFeatureByUid = function(uid) {
+  return this._features.getArray().find((feature) => {
+    return feature.getUid() === uid;
   });
 };
 
@@ -50,7 +56,7 @@ proto._updateFeature = function(feature) {
   const featuresArray = this._features.getArray();
   for (let i = 0; featuresArray.length; i++) {
     const _feature = featuresArray[i];
-    if(_feature.getId() === feature.getId()) {
+    if(_feature.getUid() === feature.getUid()) {
       index = i;
       break;
     }
@@ -77,9 +83,11 @@ proto._removeFeature = function(feature) {
 
 
 proto._clearFeatures = function() {
-  // needed if we use Modify or snap interaction in ol to remove listerner on add or remove event on collection
-  this._features.clear();
-  this._features = new ol.Collection([])
+  try {
+    this._features.clear();
+  } catch(err){}
+  this._features = null;
+  this._features = new ol.Collection();
 };
 
 module.exports = OlFeaturesStore;
