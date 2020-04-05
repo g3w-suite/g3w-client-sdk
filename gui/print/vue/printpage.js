@@ -58,7 +58,6 @@ const InternalComponent = Vue.extend({
 const PrintPage = function(options={}) {
   base(this);
   const service = options.service;
-  // istanzio il componente interno
   this.setService(service);
   const internalComponent = new InternalComponent({
     service
