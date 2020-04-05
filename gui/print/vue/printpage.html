@@ -2,7 +2,7 @@
   <transition :duration="500" name="fade">
     <bar-loader :loading="loading"></bar-loader>
   </transition>
-  <div v-if="showdownloadbutton" style="display:flex; justify-content: flex-end; margin-bottom: 5px;">
+  <div v-if="showdownloadbutton" style="top: 23px;right: 70px;position: absolute;">
     <a :href="jpegimageurl" :download="downloadImageName">
       <button class="btn skin-button" style="font-weight: bold;" role="button">Download</button>
     </a>
