@@ -162,12 +162,13 @@ proto.applyCommitResponse = function(response={}) {
     const {response:data} = response;
     const ids = data.new;
     const lockids = data.new_lockids;
+    const pk = this._layer.getPk();
     ids.forEach((idobj) => {
       const feature = this._featuresstore.getFeatureById(idobj.clientid);
       feature.setId(idobj.id);
       try {
         // temporary inside try ckeck if feature contain a field with the same pk of the layer
-        feature.getKeys().indexOf(this.getPk()) !== -1 && feature.set(this.getPk(), idobj.id);
+        Object.keys(feature.getProperties()).indexOf(pk) !== -1 && feature.set(pk, idobj.id);
       } catch(err) {}
     });
     this._layer.getSource().addLockIds(lockids);
