@@ -29,10 +29,6 @@ function Session(options={}) {
   this._allfeatures = false;
   // editor
   this._editor = options.editor || null;
-  // featuresstore it's a temprary features source of the layer
-  this._featuresstore = options.featuresstore || new FeaturesStore({
-    provider: this._editor && this._editor.getLayer() && this._editor.getLayer().getProvider('data')
-  });
   // history -- oggetto che contiene gli stati dei layers
   this._history = new History({
     id: this.state.id
@@ -70,7 +66,6 @@ proto._start = function(options={}) {
   this.register();
   this._editor.start(options)
     .then((features) => {
-      this._addFeaturesFromServer(features);
       this.state.started = true;
       d.resolve(features);
     })
@@ -82,11 +77,6 @@ proto._start = function(options={}) {
   return d.promise();
 };
 
-proto._addFeaturesFromServer = function(features=[]){
-  features = this._cloneFeatures(features);
-  this._featuresstore.addFeatures(features);
-};
-
 //method to getFeature from server by editor
 proto._getFeatures = function(options={}) {
   const d = $.Deferred();
@@ -95,7 +85,6 @@ proto._getFeatures = function(options={}) {
     this._editor.getFeatures(options)
       .then((promise) => {
         promise.then((features) => {
-          this._addFeaturesFromServer(features);
           d.resolve(features);
         }).fail((err) => {
           this._allfeatures = false;
@@ -105,11 +94,6 @@ proto._getFeatures = function(options={}) {
   } else d.resolve([]);
 
   return d.promise();
-};
-
-//clone features method
-proto._cloneFeatures = function(features) {
-  return features.map((feature) => feature.clone());
 };
 
 proto.isStarted = function() {
@@ -122,10 +106,6 @@ proto.getEditor = function() {
 
 proto.setEditor = function(editor) {
   this._editor = editor;
-};
-
-proto.getFeaturesStore = function() {
-  return this._featuresstore;
 };
 
 // it used to save temporary changes to the layer
@@ -228,17 +208,14 @@ proto.push = function(New, Old) {
   this._temporarychanges.push(feature);
 };
 
-proto._applyChanges = function(items, reverse=true) {
-  ChangesManager.execute(this._featuresstore, items, reverse);
-};
 
 // method to revert (cancel) all changes in history and clean session
 proto.revert = function() {
   const d = $.Deferred();
-  const features  = this._cloneFeatures(this._editor.readFeatures());
-  this._featuresstore.setFeatures(features);
-  this._history.clear();
-  d.resolve();
+  this._editor.revert().then(()=>{
+    this._history.clear();
+    d.resolve();
+  });
   return d.promise();
 };
 
@@ -264,23 +241,22 @@ proto._filterChanges = function() {
 };
 
 proto.rollback = function(changes) {
-  const d = $.Deferred();
   if (changes) {
-    this._applyChanges(changes, true);
-    d.resolve();
+    return this._editor.rollback(changes);
   } else {
+    const d = $.Deferred();
     const changes = this._filterChanges();
-    // apply changes to featurestore (rollback temporary changes)
-    this._applyChanges(changes.own, true);
-    this._temporarychanges = [];
-    const {dependencies} = changes;
-    for (const id in dependencies) {
-      // rollbackt to eventually depenencies
-      SessionsRegistry.getSession(id).rollback(dependencies[id]);
-    }
-    d.resolve(changes.dependencies);
+    this._editor.rollback(changes).then(()=>{
+      this._temporarychanges = [];
+      const {dependencies} = changes;
+      for (const id in dependencies) {
+        // rollbackt to eventually depenencies
+        SessionsRegistry.getSession(id).rollback(dependencies[id]);
+      }
+      d.resolve(dependencies);
+    });
+    return d.promise();
   }
-  return d.promise()
 };
 
 // method undo
