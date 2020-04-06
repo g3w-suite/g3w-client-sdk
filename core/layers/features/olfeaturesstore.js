@@ -5,12 +5,13 @@ const FeaturesStore = require('./featuresstore');
 // Storage of the feature in vector layer
 function OlFeaturesStore(options={}) {
   base(this, options);
-  this._features = new ol.Collection([]);
+  this._features = options.features || new ol.Collection([]);
+
 }
 
 inherit(OlFeaturesStore, FeaturesStore);
 
-proto = OlFeaturesStore.prototype;
+const proto = OlFeaturesStore.prototype;
 
 proto.getLength = function() {
   return this._features.getLength();
@@ -87,7 +88,7 @@ proto._clearFeatures = function() {
     this._features.clear();
   } catch(err){}
   this._features = null;
-  this._features = new ol.Collection();
+  this._features = new ol.Collection([]);
 };
 
 module.exports = OlFeaturesStore;

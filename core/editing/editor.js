@@ -1,3 +1,4 @@
+import Applicationstate from 'core/applicationstate';
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils//utils').base;
 const G3WObject = require('core/g3wobject');
@@ -29,10 +30,16 @@ function Editor(options={}) {
     }
   };
   base(this);
+  // filter to getFeaturerequest
+  this._filter = {
+    bbox: null
+  };
+
+  this._allfeatures = false;
   // referred layer
   this._layer = options.layer;
   // editing featurestore
-  this.featurestore = this._layer.getType() === Layer.LayerTypes.TABLE ? new FeaturesStore() : new OlFeaturesStore();
+  this._featuresstore = this._layer.getType() === Layer.LayerTypes.TABLE ? new FeaturesStore() : new OlFeaturesStore();
   // editor is active or not
   this._started = false;
 }
@@ -41,7 +48,31 @@ inherit(Editor, G3WObject);
 
 const proto = Editor.prototype;
 
-proto._applyChanges = function(items, reverse=true) {
+proto._canDoGetFeaturesRequest = function(options={}) {
+  let doRequest = true;
+  if (this._layer.getType() === Layer.LayerTypes.VECTOR) {
+    const {bbox} = options.filter || {};
+    if(bbox) {
+      if(!this._filter.bbox)
+        this._filter.bbox = bbox;
+      else if(!ol.extent.containsExtent(this._filter.bbox, bbox)) {
+        this._filter.bbox = ol.extent.extend(this._filter.bbox, bbox);
+      } else
+        doRequest = false;
+    }
+  }
+  return doRequest
+};
+
+proto.getEditingSource = function() {
+  return this._featuresstore;
+};
+
+proto.getSource = function() {
+  this._layer.getSource();
+};
+
+proto._applyChanges = function(items=[], reverse=true) {
   ChangesManager.execute(this._featuresstore, items, reverse);
 };
 
@@ -64,21 +95,30 @@ proto._addFeaturesFromServer = function(features=[]){
   this._featuresstore.addFeatures(features);
 };
 
+proto._doGetFeaturesRequest = function(options={}) {
+  const doRequest = Applicationstate.online &&  !this._allfeatures;
+  return doRequest && this._canDoGetFeaturesRequest(options)
+};
+
 // fget features methods
 proto._getFeatures = function(options={}) {
   const d = $.Deferred();
-  this._layer.getFeatures(options)
-    .then((promise) => {
-      promise.then((features) => {
-        this._addFeaturesFromServer(features);
-        return d.resolve(features);
-      }).fail((err) => {
-        return d.reject(err);
+  const doRequest = this._doGetFeaturesRequest(options);
+  if (!doRequest) d.resolve();
+  else
+    this._layer.getFeatures(options)
+      .then((promise) => {
+        promise.then((features) => {
+          this._addFeaturesFromServer(features);
+          this._allfeatures = !options.filter;
+          return d.resolve(features);
+        }).fail((err) => {
+          return d.reject(err);
+        })
       })
-    })
-    .fail(function (err) {
-      d.reject(err);
-    });
+      .fail(function (err) {
+        d.reject(err);
+      });
   return d.promise();
 };
 
@@ -91,20 +131,60 @@ proto.revert = function() {
   return d.promise();
 };
 
-proto.rollback = function(changes) {
+proto.rollback = function(changes=[]) {
   const d = $.Deferred();
   this._applyChanges(changes, true);
-  d.resove();
+  d.resolve();
   return d.promise()
 };
+
+proto.applyChangesToNewRelationsAfterCommit = function(relationsResponse) {
+  for (const relationLayerId in relationsResponse) {
+    const response = relationsResponse[relationLayerId];
+    const layer = this.getLayerById(relationLayerId);
+    const editingLayerSource = this.getEditingLayer(relationLayerId).getEditingSource();
+    const features = editingLayerSource.readFeatures();
+    features.forEach((feature) => {
+      feature.clearState();
+    });
+    layer.getSource().setFeatures(features);
+    layer.applyCommitResponse({
+      response,
+      result: true
+    });
+    editingLayerSource.setFeatures(layer.getSource().readFeatures());
+  }
+};
+
+// apply response data from server in case of new inserted feature
+proto.applyCommitResponse = function(response={}) {
+  if (response && response.result) {
+    const {response:data} = response;
+    const ids = data.new;
+    const lockids = data.new_lockids;
+    ids.forEach((idobj) => {
+      const feature = this._featuresstore.getFeatureById(idobj.clientid);
+      feature.setId(idobj.id);
+      try {
+        // temporary inside try ckeck if feature contain a field with the same pk of the layer
+        feature.getKeys().indexOf(this.getPk()) !== -1 && feature.set(this.getPk(), idobj.id);
+      } catch(err) {}
+    });
+    this._layer.getSource().addLockIds(lockids);
+  }
+};
+
 // run after server apply chaged to origin resource
-proto.commit = function(commitItems, featurestore) {
+proto.commit = function(commitItems) {
   const d = $.Deferred();
-  this._layer.commit(commitItems, featurestore)
+  this._layer.commit(commitItems)
     .then((promise) => {
       promise
         .then((response) => {
-          // update features after new insert
+          this.applyCommitResponse(response);
+          const features = this._featuresstore.readFeatures();
+          features.forEach(feature => feature.clearState());
+          this._layer.setFeatures(features);
           return d.resolve(response);
         })
         .fail((err) => {
@@ -144,23 +224,27 @@ proto.start = function(options) {
 //action to layer
 
 proto._addFeature = function(feature) {
-  this._layer.addFeature(feature);
+  this._featuresstore.addFeature(feature);
 };
 
 proto._deleteFeature = function(feature) {
-  this._layer.deleteFeature(feature);
+  this._featuresstore.deleteFeature(feature);
 };
 
 proto._updateFeature = function(feature) {
-  this._layer.updateFeature(feature);
+  this._featuresstore.updateFeature(feature);
 };
 
 proto._setFeatures = function(features) {
-  this._layer.setFeatures(features);
+  this._featuresstore.setFeatures(features);
 };
 
 proto.readFeatures = function(){
   return this._layer.readFeatures();
+};
+
+proto.readEditingFeatures = function(){
+  return this._featuresstore.readFeatures()
 };
 
 // stop editor
@@ -169,6 +253,8 @@ proto.stop = function() {
   this._layer.unlock()
     .then((response) => {
       this._started = false;
+      this._filter.bbox = null;
+      this._allfeatures = false;
       this.clear();
       d.resolve(response);
     })
@@ -188,7 +274,9 @@ proto.isStarted = function() {
 };
 
 proto.clear = function() {
+  this._featuresstore.clear();
   this._layer.getFeaturesStore().clear();
+  this._layer.getType() === Layer.LayerTypes.VECTOR && this._layer.resetEditingSource( this._featuresstore.getFeaturesCollection());
 };
 
 

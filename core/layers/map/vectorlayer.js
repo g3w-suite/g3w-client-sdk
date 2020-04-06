@@ -6,7 +6,6 @@ const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 
 function VectorLayer(options = {}) {
-  const featuresstore = options.featuresstore;
   this.mapService = GUI.getComponent('map').getService();
   this.geometrytype = options.geometrytype || null;
   this.type = options.type || null;
@@ -19,9 +18,9 @@ function VectorLayer(options = {}) {
   this.mapProjection = this.mapService.getProjection().getCode();
   this.projection = options.projection || this.mapProjection;
   this.url = options.url;
-  this.provider = featuresstore && featuresstore.getProvider() || options.provider;
-  this.features = featuresstore && featuresstore.getFeaturesCollection();
-  this._olLayer = options.olLayer || null;
+  this.provider = options.provider;
+  this._features = options.features || [];
+  this._olLayer = options.olLayer || this.getOLLayer();
 }
 
 inherit(VectorLayer, G3WObject);
@@ -51,9 +50,7 @@ proto._makeOlLayer = function({style} = {}) {
     name: this.name,
     id: this.id,
     style: _style,
-    source: new ol.source.Vector({
-      features: this.features
-    })
+    source: new ol.source.Vector({})
   })
 };
 
@@ -89,6 +86,29 @@ proto._makeStyle = function(styleConfig) {
   return style
 };
 
+proto.getFeatures = function(options={}) {
+  const d = $.Deferred();
+  this.provider.getFeatures(options)
+    .then((features) => {
+      this.addFeatures(features);
+      d.resolve(features);
+    })
+    .fail((err) => {
+      d.reject(err)
+    });
+  return d.promise()
+};
+
+proto.addFeatures = function(features=[]) {
+  this.getSource().addFeatures(features)
+};
+
+proto.addFeature = function(feature) {
+  if (feature) {
+    this.getSource().addFeature(feature)
+  }
+};
+
 proto.getOLLayer = function() {
   if (this._olLayer) {
     return this._olLayer
@@ -102,8 +122,8 @@ proto.getOLLayer = function() {
       geometryType,
       color,
       style,
-      features: this.features
-    });
+      features: this._features
+    })
   }
   return this._olLayer;
 };
@@ -127,9 +147,7 @@ proto.setStyle = function(style) {
 };
 
 proto.getFeatureById = function(fid){
-  if (fid) {
-    return this._olLayer.getSource().getFeatureById(fid);
-  }
+  return fid ? this._olLayer.getSource().getFeatureById(fid) : null;
 };
 
 proto.isVisible = function() {

@@ -5,7 +5,6 @@ const Editor = require('core/editing/editor');
 const FeaturesStore = require('./features/featuresstore');
 const Feature = require('./features/feature');
 const Relations = require('core/relations/relations');
-const SessionsRegistry = require('core/editing/sessionsregistry');
 
 // Base Layer that support editing
 function TableLayer(config={}, options={}) {
@@ -32,7 +31,7 @@ function TableLayer(config={}, options={}) {
     // throught provider related to featuresstore
     getFeatures: function (options={}) {
       const d = $.Deferred();
-      this._featuresStore.getFeatures(options)
+      this._featuresstore.getFeatures(options)
         .then((promise) => {
           promise.then((features) => {
             this.emit('getFeatures', features);
@@ -46,20 +45,12 @@ function TableLayer(config={}, options={}) {
         });
       return d.promise();
     },
-    commit: function(commitItems, featurestore) {
+    commit: function(commitItems) {
       const d = $.Deferred();
-      this._featuresStore.commit(commitItems)
+      this._featuresstore.commit(commitItems)
         .then((promise) => {
           promise
             .then((response) => {
-              // if commit go right
-              // apply commit changes to features store eventually passed (ex: session featurestore)
-              if (featurestore) {
-                const features = featurestore.readFeatures();
-                features.forEach(feature => feature.clearState());
-                this._featuresStore.setFeatures(features);
-              }
-              this.applyCommitResponse(response);
               return d.resolve(response);
             })
             .fail((err) => {
@@ -131,6 +122,10 @@ function TableLayer(config={}, options={}) {
           this.setColor(vector.style.color)
         }
         this._setPkEditable(this.config.editing.fields);
+        // creare an instace of editor
+        this._editor = new Editor({
+          layer: this
+        });
         this.setReady(true);
       })
       .fail((err) => {
@@ -140,13 +135,10 @@ function TableLayer(config={}, options={}) {
         this.emit('layer-config-ready', this.config);
       })
   }
-  this._featuresStore = new FeaturesStore({
+  this._featuresstore = new FeaturesStore({
     provider: this.providers.data
   });
-  // creare an instace of editor
-  this._editor = new Editor({
-    layer: this
-  });
+
 }
 
 inherit(TableLayer, Layer);
@@ -158,7 +150,7 @@ proto.clone = function() {
 };
 
 proto.cloneFeatures = function() {
-  return this._featuresStore.clone();
+  return this._featuresstore.clone();
 };
 
 proto.setVectorUrl = function(url) {
@@ -178,7 +170,7 @@ proto.getColor = function() {
 };
 
 proto.readFeatures = function() {
-  return this._featuresStore.readFeatures();
+  return this._featuresstore.readFeatures();
 };
 
 // return layer for editing
@@ -190,12 +182,11 @@ proto.getLayerForEditing = function({vectorurl, project_type}={}) {
 };
 
 proto.getEditingSource = function() {
-  const session = SessionsRegistry.getSession(this.getId());
-  return session.getFeaturesStore();
+  return this._editor.getEditingSource();
 };
 
 proto.readEditingFeatures = function() {
-  return this.getEditingSource().readFeatures();
+  return this._editor.readEditingFeatures();
 };
 
 proto.getEditingLayer = function() {
@@ -237,28 +228,10 @@ proto.isFieldRequired = function(fieldName) {
   return required;
 };
 
-// apply response data from server in case of new inserted feature
-proto.applyCommitResponse = function(response={}) {
-  if (response && response.result) {
-    const {response:data} = response;
-    const ids = data.new;
-    const lockids = data.new_lockids;
-    ids.forEach((idobj) => {
-      const feature = this._featuresStore.getFeatureById(idobj.clientid);
-      feature.setId(idobj.id);
-      try {
-        // temporary inside try ckeck if feature contain a field with the same pk of the layer
-        feature.getKeys().indexOf(this.getPk()) !== -1 && feature.set(this.getPk(), idobj.id);
-      } catch(err) {}
-    });
-    this._featuresStore.addLockIds(lockids);
-  }
-};
-
 // unlock editng features
 proto.unlock = function() {
   const d = $.Deferred();
-  this._featuresStore.unlock()
+  this._featuresstore.unlock()
     .then(() => {
       d.resolve()
     })
@@ -413,11 +386,11 @@ proto.setEditor = function(editor) {
 };
 
 proto.getFeaturesStore = function() {
-  return this._featuresStore;
+  return this._featuresstore;
 };
 
 proto.setFeaturesStore = function(featuresstore) {
-  this._featuresStore = featuresstore;
+  this._featuresstore = featuresstore;
 };
 
 proto.setSource = function(source) {
@@ -425,11 +398,11 @@ proto.setSource = function(source) {
 };
 
 proto.getSource = function() {
-  return this._featuresStore;
+  return this._featuresstore;
 };
 
 proto._setFeatures = function(features) {
-  this._featuresStore.setFeatures(features);
+  this._featuresstore.setFeatures(features);
 };
 
 proto.addFeatures = function(features) {
@@ -439,7 +412,7 @@ proto.addFeatures = function(features) {
 };
 
 proto._addFeature = function(feature) {
-  this._featuresStore.addFeature(feature);
+  this._featuresstore.addFeature(feature);
 };
 
 proto._deleteFeature = function(feature) {
@@ -449,11 +422,11 @@ proto._deleteFeature = function(feature) {
 proto._updateFeature = function(feature) {};
 
 proto._clearFeatures = function() {
-  this._featuresStore.clearFeatures();
+  this._featuresstore.clearFeatures();
 };
 
 proto.addLockIds = function(lockIds) {
-  this._featuresStore.addLockIds(lockIds);
+  this._featuresstore.addLockIds(lockIds);
 };
 
 proto.setFieldsWithValues = function(feature, fields) {

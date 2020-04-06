@@ -26,12 +26,8 @@ proto.getEditingLayer = function() {
   return this.getMapLayer().getOLLayer();
 };
 
-proto.getEditingSource = function() {
-  return this.getEditingLayer().getSource();
-};
-
-proto.readEditingFeatures = function() {
-  return this.getEditingSource().getFeatures();
+proto.resetEditingSource = function(features=[]){
+  this.getMapLayer().resetSource(features)
 };
 
 proto._setOtherConfigParameters = function(config) {
@@ -55,7 +51,8 @@ proto.getMapLayer = function() {
     geometryType,
     color,
     style,
-    provider
+    provider,
+    features: this._editor && this._editor.getEditingSource().getFeaturesCollection()
   });
   return this._mapLayer;
 };

@@ -2,14 +2,11 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils//utils').base;
 const G3WObject = require('core/g3wobject');
 const History = require('./history');
-const FeaturesStore = require('core/layers/features/featuresstore');
-const ChangesManager = require('./changesmanager');
 const SessionsRegistry = require('./sessionsregistry');
 
 function Session(options={}) {
   this.setters = {
     start: function(options={}) {
-      this._allfeatures = !options.filter;
       return this._start(options);
     },
     getFeatures: function(options={}) {
@@ -25,10 +22,8 @@ function Session(options={}) {
     id: options.id, // id session is the same of id layer
     started: false
   };
-  // usefull to send a getFeature requets in case we already get all feature from server (case table layer for example)
-  this._allfeatures = false;
   // editor
-  this._editor = options.editor || null;
+  this._editor = options.editor;
   // history -- oggetto che contiene gli stati dei layers
   this._history = new History({
     id: this.state.id
@@ -71,7 +66,6 @@ proto._start = function(options={}) {
     })
     .fail((err) => {
       this.state.started = false;
-      this._allfeatures = false;
       d.reject(err);
     });
   return d.promise();
@@ -87,7 +81,6 @@ proto._getFeatures = function(options={}) {
         promise.then((features) => {
           d.resolve(features);
         }).fail((err) => {
-          this._allfeatures = false;
           d.reject(err);
           });
       });
@@ -246,7 +239,7 @@ proto.rollback = function(changes) {
   } else {
     const d = $.Deferred();
     const changes = this._filterChanges();
-    this._editor.rollback(changes).then(()=>{
+    this._editor.rollback(changes.own).then(()=>{
       this._temporarychanges = [];
       const {dependencies} = changes;
       for (const id in dependencies) {
@@ -346,9 +339,17 @@ proto.commit = function({ids=null, relations=true}={}) {
     commitItems = this._history.commit();
     commitItems = this._serializeCommit(commitItems);
     if (!relations) commitItems.relations = {};
-    this._editor.commit(commitItems, this._featuresstore)
+    this._editor.commit(commitItems)
       .then((response) => {
         if (response && response.result) {
+          const {response:data} = response;
+          const {new_relations={}} = data;
+          for (const id in new_relations) {
+            const session = SessionsRegistry.getSession(id);
+            session.getEditor().applyCommitResponse({
+              response: new_relations[id]
+            })
+          }
           this._history.clear();
         }
         d.resolve(commitItems, response)
@@ -369,7 +370,6 @@ proto._stop = function() {
   this._editor.stop()
     .then(() => {
       this.state.started = false;
-      this._allfeatures = false;
       d.resolve();
     })
     .fail((err) =>  {
@@ -385,7 +385,7 @@ proto.clear = function() {
   // clar related history
   this._clearHistory();
   // clear a learestor
-  this._featuresstore.clear();
+  this._editor.clear();
 };
 
 //return l'history

@@ -177,7 +177,7 @@ module.exports = {
     const color = options.color;
     let style = options.style;
     // create ol layer to add to map
-    const olSource = new ol.source.Vector({
+    const olSource = options.source || new ol.source.Vector({
       features: features || new ol.Collection()
     });
     const olLayer = new ol.layer.Vector({

@@ -57,13 +57,17 @@ proto.getProvider = function() {
 
 // method unlock features
 proto.unlock = function() {
-  return this._provider.unlock();
+  const d = $.Deferred();
+  this._provider.unlock().then((response)=>{
+    d.resolve(response);
+  }).fail(err => d.reject(err));
+  return d.promise();
 };
 
 // method get all features from server or attribute _features
 proto._getFeatures = function(options={}) {
   const d = $.Deferred();
-  if (this._provider && options) {
+  if (this._provider) {
     this._provider.getFeatures(options)
       .then((options) => {
         const features = this._filterFeaturesResponse(options);
@@ -162,9 +166,7 @@ proto._updateFeature = function(feature) {
   });
 };
 
-proto.updatePkFeature = function(newValue, oldValue) {
-  //TODO
-};
+proto.updatePkFeature = function(newValue, oldValue) {};
 
 proto.setFeatures = function(features) {
   this._features = features;
