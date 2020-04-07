@@ -20,7 +20,8 @@ function Session(options={}) {
 
   this.state = {
     id: options.id, // id session is the same of id layer
-    started: false
+    started: false,
+    getfeatures: false
   };
   // editor
   this._editor = options.editor;
@@ -65,7 +66,6 @@ proto._start = function(options={}) {
       d.resolve(features);
     })
     .fail((err) => {
-      this.state.started = false;
       d.reject(err);
     });
   return d.promise();
@@ -79,6 +79,7 @@ proto._getFeatures = function(options={}) {
     this._editor.getFeatures(options)
       .then((promise) => {
         promise.then((features) => {
+          this.state.getfeatures = true;
           d.resolve(features);
         }).fail((err) => {
           d.reject(err);
@@ -255,7 +256,7 @@ proto.rollback = function(changes) {
 // method undo
 proto.undo = function(items) {
   items = items || this._history.undo();
-  this._applyChanges(items.own, true);
+  this._editor.setChanges(items.own, true);
   this._history.canCommit();
   return items.dependencies;
 };
@@ -263,7 +264,7 @@ proto.undo = function(items) {
 // method redo
 proto.redo = function(items) {
   items = items || this._history.redo();
-  this._applyChanges(items.own, true);
+  this._editor.setChanges(items.own, true);
   this._history.canCommit();
   return items.dependencies;
 };
@@ -362,27 +363,31 @@ proto.commit = function({ids=null, relations=true}={}) {
   return d.promise();
 };
 
+proto._canStop = function() {
+  return this.state.started || this.state.getfeatures;
+};
+
 //stop session
 proto._stop = function() {
   const d = $.Deferred();
-  // unregister a session
-  this.unregister();
-  //console.log('Sessione stopping ..');
-  this._editor.stop()
-    .then(() => {
-      this.state.started = false;
-      d.resolve();
-    })
-    .fail((err) =>  {
-      d.reject(err);
-    });
-  this.clear();
+  if (this._canStop())
+    this._editor.stop()
+      .then(() => {
+        this.clear();
+        d.resolve();
+      })
+      .fail((err) =>  {
+        d.reject(err);
+      });
+  else d.resolve();
   return d.promise();
 };
 
 // clear all things bind to session
 proto.clear = function() {
+  this.unregister();
   this.state.started = false;
+  this.state.getfeatures = false;
   // clar related history
   this._clearHistory();
   // clear a learestor

@@ -76,6 +76,10 @@ proto._applyChanges = function(items=[], reverse=true) {
   ChangesManager.execute(this._featuresstore, items, reverse);
 };
 
+proto.setChanges = function(items, reverse) {
+  this._applyChanges(items, reverse)
+};
+
 proto.getLayer = function() {
   return this._layer;
 };
