@@ -76,7 +76,6 @@ function PrintComponent(options={}) {
   };
 
   this._setOpen = function(bool) {
-    console.log(bool)
     this._service.showPrintArea(bool);
   };
 }
