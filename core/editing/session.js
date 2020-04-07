@@ -347,7 +347,8 @@ proto.commit = function({ids=null, relations=true}={}) {
           for (const id in new_relations) {
             const session = SessionsRegistry.getSession(id);
             session.getEditor().applyCommitResponse({
-              response: new_relations[id]
+              response: new_relations[id],
+              result: true
             })
           }
           this._history.clear();
