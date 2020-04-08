@@ -1,9 +1,11 @@
 const inherit = require('core/utils/utils').inherit;
+const base = require('core/utils/utils').base;
 const ProjectsRegistry = require('core/project/projectsregistry');
 const G3WObject = require('core/g3wobject');
 const SearchPanel = require('gui/search/vue/panel/searchpanel');
 
 function Service() {
+  base(this);
   const currentProjectState = ProjectsRegistry.getCurrentProject().state;
   this.title = currentProjectState.search_title || "search";
   this.init = function (searchesObject) {
