@@ -143,6 +143,7 @@ proto._getCascadeDependanciesFilter = function(field, dependencies=[]) {
   return dependencies
 };
 
+// check the current value of father dependance
 proto._getDependanceCurrentValue = function(field) {
   const dependance = this.depedencies[field];
   return this.state.cachedependencies[dependance]._currentValue
@@ -156,16 +157,22 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=''}={}) {
       subscribe.value = '';
       subscribe.options.values.splice(1);
     });
+    this.state.cachedependencies[field] = this.state.cachedependencies[field] || {};
+    this.state.cachedependencies[field]._currentValue = value;
     if (value) {
-      let isCached = false;
+      let isCached;
       let rootValues;
       if (isRoot) {
-        isCached = this.state.cachedependencies[field] && this.state.cachedependencies[field][value];
-        rootValues = isCached && this.state.cachedependencies[field][value];
+        const cachedValue = this.state.cachedependencies[field] && this.state.cachedependencies[field][value];
+        isCached = cachedValue !== undefined;
+        rootValues = isCached && cachedValue;
       } else {
-        const dependenceValue = this._getDependanceCurrentValue(field);
-        isCached = this.state.cachedependencies[field] && this.state.cachedependencies[field][dependenceValue] && this.state.cachedependencies[field] && this.state.cachedependencies[field][dependenceValue][value];
-        rootValues = isCached && this.state.cachedependencies[field][dependenceValue][value];
+        const dependenceCurrentValue = this._getDependanceCurrentValue(field);
+        const cachedValue = this.state.cachedependencies[field]
+          && this.state.cachedependencies[field][dependenceCurrentValue]
+          && this.state.cachedependencies[field][dependenceCurrentValue][value];
+        isCached = cachedValue !== undefined;
+        rootValues = isCached && cachedValue;
       }
       if (isCached) {
         for (let i = 0; i < subscribers.length; i++) {
@@ -182,8 +189,6 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=''}={}) {
       } else {
         this.queryService = GUI.getComponent('queryresults').getService();
         this.state.loading[field] = true;
-        this.state.cachedependencies[field] = this.state.cachedependencies[field] || {};
-        this.state.cachedependencies[field]._currentValue = value;
         if (isRoot) this.state.cachedependencies[field][value] = this.state.cachedependencies[field][value] || {};
         else {
           const dependenceValue =  this._getDependanceCurrentValue(field);
@@ -224,8 +229,7 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=''}={}) {
                 }
               });
               subscribe.options.values.sort();
-              if (isRoot)
-                this.state.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
+              if (isRoot) this.state.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
               else {
                 const dependenceValue =  this._getDependanceCurrentValue(field);
                 this.state.cachedependencies[field][dependenceValue][value][subscribe.attribute] = subscribe.options.values.slice(1);
