@@ -11,6 +11,11 @@ export default {
           format: "Formato",
           rotation: "Rotazione"
         },
+        querybuilder: {
+          error_test: "Errore nell'esecuzione della query",
+          delete: 'Vuoi confermare la cancellazione?',
+          additem: 'Inserisci nome della ricerca'
+        },
         errors: {
           layers: {
             load: "Alcuni layers presenti nel progetto non sono attualmente disponibili e quindi non compaiono nell'attuale visualizzazione"
@@ -172,6 +177,11 @@ export default {
           scale: "Scale",
           format: "Format",
           rotation: "Rotation"
+        },
+        querybuilder: {
+          error_test: "An error occur during query execution",
+          delete: 'Do you want delete it?',
+          additem: 'Insert the name of the new search'
         },
         errors: {
           layers: {

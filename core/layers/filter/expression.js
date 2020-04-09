@@ -1,7 +1,8 @@
 //Expression
 function Expression(options={}) {
   this._layerName = options.layerName;
-  this._expression = '';
+  const filter = options.filter;
+  this._expression = filter &&  filter ||  '';
 }
 
 const proto = Expression.prototype;

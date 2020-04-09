@@ -1,0 +1,60 @@
+<div id="query_builder" class="form-group">
+  <div id="query_builder_header"></div>
+    <div id="query_builder_layers" style="margin-bottom: 5px;">
+      <label>Layers</label>
+      <select id="query_builder_layers_select" class="form-control">
+        <option v-for="(layer, index) in layers" :key="layer.label" :value="index">{{ layer.label }}</option>
+      </select>
+    </div>
+    <div id="query_builder_fields" style="margin-bottom:5px">
+      <div id="query_builder_fields_title">Fields</div>
+      <div id="query_builder_fields_content" style="max-height: 150px; overflow-y: auto">
+        <table class="table table-striped" style="background-color: white; color: #000000; margin-bottom:0;">
+          <tbody>
+            <tr v-for="field in fields" :key="field" @dblclick="addToExpression({value: field, type: 'field'})" style="cursor: pointer">
+              <th scope="row">{{ field }}</th>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div id="query_builder_values">
+      <div id="query_builder_values_title">Values</div>
+      <div id="query_builder_values_search"></div>
+      <div id="query_builder_values_content" style="max-height: 150px; min-height: 150px; background-color: white; overflow-y: auto">
+        <table class="table table-striped" style="background-color: white; color: #000000; margin-bottom:0;">
+          <tbody>
+            <tr v-for="field in []" :key="field" @dblclick="addToExpression({value: field, type: 'value'})" style="cursor: pointer">
+              <th scope="row">{{ field }}</th>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="query_builder_values_buttons" style=" margin-top: 3px; display: flex; justify-content: flex-end" class="skin-color">
+        <button id="query_builder_values_buttons_sample" class="btn btn-secondary" style="margin-right: 2px; width:70px;">Sample</button>
+        <button id="query_builder_values_buttons_all" class="btn btn-secondary" style="width:70px;">All</button>
+      </div>
+    </div>
+    <div id="query_builder_operators" style="margin-top: 3px;">
+      <div id="query_builder_operators_title" style="color: white">Operators</div>
+      <div id="query_builder_operators_content" style="display: flex; flex-wrap: wrap">
+        <button v-for="operator in operators" @click="addToExpression({value: operator, type: 'operator'})" :key="operator" class="btn btn-secondary skin-color" style="font-weight: bold; margin: 2px; width:50px;">{{ operator }}</button>
+      </div>
+    </div>
+    <div id="query_builder_expression">
+      <div id="query_builder_expression_title">Expression</div>
+      <div id="query_builder_expression_content">
+        <textarea style="width: 100%; resize: none; height: 100px; color:#000000" v-model="filter"></textarea>
+      </div>
+    </div>
+    <div id="query_builder_message">
+      <bar-loader :loading="loading"></bar-loader>
+      <span style="font-weight: bold">{{message}}</span>
+    </div>
+    <div id="query_builder_footer" style="margin-top: 5px; display: flex; justify-content: flex-end">
+      <button id="query_builder_footer_button_test" class="btn btn-secondary skin-color" style="margin: 2px; width:60px;" @click="test" :disabled="disabled">Test</button>
+      <button id="query_builder_footer_button_cancel" class="btn btn-secondary skin-color" style="margin: 2px; width:60px;" @click="reset">Clear</button>
+      <button id="query_builder_footer_button_run" class="btn btn-secondary skin-color" style="margin: 2px; width:60px;" @click="run" :disabled="disabled">Run</button>
+      <button id="query_builder_footer_button_ok" class="btn btn-secondary skin-color" style="margin: 2px; width:60px;" @click="save" :disabled="disabled">Save</button>
+    </div>
+</div>

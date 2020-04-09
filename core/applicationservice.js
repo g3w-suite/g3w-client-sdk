@@ -86,6 +86,13 @@ const ApplicationService = function() {
   };
 
   this.setOfflineItem = async function(id, data={}){
+    this.setLocalItem({
+      id,
+      data
+    })
+  };
+
+  this.setLocalItem = function({id, data}={}){
     try {
       const item = JSON.stringify(data);
       window.localStorage.setItem(id, item);
@@ -94,14 +101,22 @@ const ApplicationService = function() {
     }
   };
 
-  this.getOfflineItem = function(id) {
+  this.removeLocalItem = function(id){
+    window.localStorage.removeItem(id);
+  };
+
+  this.getLocalItem = function(id){
     const item = window.localStorage.getItem(id);
     if (item) return JSON.parse(item);
-    else return null;
+    else return undefined;
+  };
+
+  this.getOfflineItem = function(id) {
+    return this.getLocalItem(id);
   };
 
   this.removeOfflineItem = function(id){
-    window.localStorage.removeItem(id);
+    this.removeLocalItem(id);
   };
 
   //check if is in Iframe

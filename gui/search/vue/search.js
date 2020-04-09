@@ -1,4 +1,5 @@
-import G3wTool from 'gui/tools/vue/tool.vue'
+import G3WTool from 'gui/tools/vue/tool.vue'
+import G3WSearchQuerybuilder from 'gui/querybuilder/vue/g3w-search-querybuilder.vue';
 import { createCompiledTemplate } from 'gui/vue/utils';
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
@@ -14,11 +15,18 @@ const vueComponentOptions = {
      };
    },
   components: {
-    G3wTool
+    'g3w-tool': G3WTool,
+    'g3w-search-querybuilder': G3WSearchQuerybuilder
   },
    methods: {
     showPanel: function(config={}) {
       this.$options.service.showPanel(config);
+    },
+    removeItem({type, index}){
+      this.$options.service.removeItem({
+        type,
+        index
+      })
     }
   }
 };
@@ -35,12 +43,16 @@ function SearchComponent(options={}){
     service: this._service
   });
   this.internalComponent.state = this._service.state;
-  this.state.visible = (this._service.state.searches.length + this._service.state.searchtools.length) > 0;
+  this.state.visible = (this._service.state.searches.length +
+    this._service.state.searchtools.length +
+    this._service.state.querybuildersearches.length) > 0;
   const handlerVisible = (bool) =>{
     this.state.visible = bool;
   };
   this._searches_searchtools = new Vue();
-  this._searches_searchtools.$watch(() => (this._service.state.searches.length + this._service.state.searchtools.length) > 0 , {
+  this._searches_searchtools.$watch(() => (this._service.state.searches.length +
+    this._service.state.searchtools.length +
+    this._service.state.querybuildersearches.length) > 0 , {
     immediate: true,
     handler: handlerVisible
   });

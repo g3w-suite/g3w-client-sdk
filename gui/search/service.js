@@ -1,3 +1,4 @@
+import QueryBuilderService from 'gui/querybuilder/service';
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const ProjectsRegistry = require('core/project/projectsregistry');
@@ -13,13 +14,22 @@ function Service() {
   };
   this.state = {
     searches: [],
-    searchtools: []
+    searchtools: [],
+    querybuildersearches: QueryBuilderService.getItems()
   };
 }
 
 inherit(Service, G3WObject);
 
 const proto = Service.prototype;
+
+proto.removeItem = function({type, index}={}){
+  switch(type) {
+    case 'querybuilder':
+      this.state.querybuildersearches.splice(index, 1);
+      break;
+  }
+};
 
 proto.getTitle = function() {
   return this.title;
@@ -49,6 +59,10 @@ proto.addTools = function(searchTools) {
   for (const searchTool of searchTools) {
     this.addTool(searchTool);
   }
+};
+
+proto.addQueryBuilderSearch = function(querybuildersearch){
+  this.state.querybuildersearches.push(querybuildersearch);
 };
 
 proto.removeTool = function(searchTool) {};
