@@ -1,8 +1,8 @@
 import Service from "../service";
+import OPERATORS from 'core/layers/filter/operators';
 const templateCompiled = Vue.compile(require('./querybuilder.html'));
 const ProjectsRegistry = require('core/project/projectsregistry');
-const Expression = require('core/layers/filter/expression');
-const operators = Object.values(Expression.OPERATORS);
+const operators = Object.values(OPERATORS);
 
 const QueryBuilder = Vue.extend({
   ...templateCompiled,

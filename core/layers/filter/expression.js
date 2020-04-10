@@ -1,3 +1,4 @@
+import OPERATORS from './operators';
 //Expression
 function Expression(options={}) {
   this._layerName = options.layerName;
@@ -74,7 +75,7 @@ proto.get = function() {
 };
 
 proto._build = function(operator, field, value) {
-  return [`"${field}"`, Expression.OPERATORS[operator], `${value}`].join(' ');
+  return [`"${field}"`, OPERATORS[operator], `${value}`].join(' ');
 };
 
 proto.createExpressionFromFilter = function(filterObject, layername) {
@@ -82,7 +83,7 @@ proto.createExpressionFromFilter = function(filterObject, layername) {
     let filterElements = [];
     let rootFilter;
     for (const operator in booleanObject) {
-      rootFilter = Expression.OPERATORS[operator];
+      rootFilter = OPERATORS[operator];
       const inputs = booleanObject[operator];
       inputs.forEach((input) => {
         for (const operator in input) {
@@ -91,7 +92,7 @@ proto.createExpressionFromFilter = function(filterObject, layername) {
             filterElement = createSingleFilter(input);
           } else {
             const valueExtra = (operator === 'LIKE' || operator === 'ILIKE')  ? "%": "";
-            filterOp = Expression.OPERATORS[operator];
+            filterOp = OPERATORS[operator];
             for (const operator in input) {
               const field = input[operator];
               for (const name in field) {
@@ -136,21 +137,5 @@ proto.createExpressionFromFilter = function(filterObject, layername) {
   return this
 };
 
-// map object between operator
-Expression.OPERATORS = {
-  IN: 'IN',
-  eq: '=',
-  gt: '>',
-  gte: '>=',
-  lt: '<',
-  lte: '<=',
-  'lte=': '<=',
-  ltgt: '!=',
-  LIKE: 'LIKE',
-  ILIKE: 'ILIKE',
-  AND: 'AND',
-  OR: 'OR',
-  NOT: '!='
-};
 
 module.exports = Expression;
