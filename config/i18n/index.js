@@ -12,6 +12,21 @@ export default {
           rotation: "Rotazione"
         },
         querybuilder: {
+          panel: {
+            button: {
+              all: 'TUTTI',
+              save: 'SALVA',
+              test: 'TEST',
+              clear: 'PULISCI',
+              run: 'ESEGUI',
+              manual: 'MANUALE'
+            },
+            layers: 'LAYERS',
+            fields: 'CAMPI',
+            values: 'VALORI',
+            operators: 'OPERATORI',
+            expression: 'ESPERSSIONE'
+          },
           error_test: "Errore nell'esecuzione della query",
           delete: 'Vuoi confermare la cancellazione?',
           additem: 'Inserisci nome della ricerca'
@@ -179,6 +194,21 @@ export default {
           rotation: "Rotation"
         },
         querybuilder: {
+          panel: {
+            button: {
+              all: 'ALL',
+              save: 'SAVE',
+              test: 'TEST',
+              clear: 'CLEAR',
+              run: 'RUN',
+              manual: 'MANUAL'
+            },
+            layers: 'LAYERS',
+            fields: 'FIELDS',
+            values: 'VALUES',
+            operators: 'OPERATORS',
+            expression: 'EXPRESSION'
+          },
           error_test: "An error occur during query execution",
           delete: 'Do you want delete it?',
           additem: 'Insert the name of the new search'

@@ -1,4 +1,4 @@
-import OPERATORS from './operators';
+import {EXPRESSION_OPERATORS as OPERATORS} from './operators';
 //Expression
 function Expression(options={}) {
   this._layerName = options.layerName;

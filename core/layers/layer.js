@@ -129,7 +129,7 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
   if (!(this.getProvider('filter')  || this.getProvider('data'))) {
    d.reject();
   } else {
-    if (this.getServerType() === 'QGIS' && [Layer.SourceTypes.POSTGIS,Layer.SourceTypes.SPATIALITE].indexOf(this.config.source.type) !== -1) {
+    if (this.state.openattributetable) {
       provider = this.getProvider('data');
       provider.getFeatures({editing: false}, params)
         .done((response) => {
@@ -542,6 +542,7 @@ Layer.SourceTypes = {
   SPATIALITE: 'spatialite',
   CSV: 'delimitedtext',
   OGR: 'ogr',
+  GDAL: 'gdal',
   WMS: 'wms',
   GEOJSON: "geojson"
 };

@@ -77,7 +77,7 @@ proto.query = function(options={}) {
     }).catch((err) => {
       d.reject(err);
     });
-  }
+  } else d.reject();
   return d.promise();
 };
 

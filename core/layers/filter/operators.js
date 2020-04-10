@@ -1,15 +1,20 @@
-export default {
-  IN: 'IN',
+export const OPERATORS =  {
   eq: '=',
   gt: '>',
-  gte: '>=',
   lt: '<',
+  gte: '>=',
   lte: '<=',
-  'lte=': '<=',
-  ltgt: '!=',
+  IN: 'IN',
   LIKE: 'LIKE',
   ILIKE: 'ILIKE',
   AND: 'AND',
   OR: 'OR',
-  NOT: '!='
+  NOT: '!=',
+  'NOT IN': 'NOT IN',
+};
+
+export const EXPRESSION_OPERATORS = {
+  ...OPERATORS,
+  'lte=': '<=',
+  ltgt: '!=',
 };

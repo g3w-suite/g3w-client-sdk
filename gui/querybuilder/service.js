@@ -8,7 +8,9 @@ const uniqueId = require('core/utils/utils').uniqueId;
 const t = require('core/i18n/i18n.service').t;
 const QUERYBUILDERSEARCHES = 'QUERYBUILDERSEARCHES';
 
-function QueryBuilderService(options={}){}
+function QueryBuilderService(options={}){
+  this._cacheValues = {};
+}
 
 const proto = QueryBuilderService.prototype;
 
@@ -23,7 +25,24 @@ proto._getLayerById = function(layerId){
 };
 
 proto.getValues = async function({layerId, field}={}){
-  const layer = this._getLayerById(layerId)
+  this._cacheValues[layerId] = this._cacheValues[layerId] || {};
+  let valuesField = this._cacheValues[layerId][field];
+  if (valuesField  === undefined) {
+    try {
+      const data = await this.run({
+        layerId,
+        filter: `"${field}" != 'TESTTTTT'`,
+        showResult: false
+      });
+      const values = data[0].features.map(feature =>{
+        return feature.get(field)
+      });
+      valuesField = values;
+      return values;
+    } catch(err) {
+      reject();
+    }
+  } else return valuesField;
 };
 
 proto.run = function({layerId, filter, showResult=true}={}){
@@ -55,6 +74,7 @@ proto.run = function({layerId, filter, showResult=true}={}){
 };
 
 proto.test = async function({layerId, filter}={}){
+  console.log(filter)
   try {
     const data = await this.run({
       layerId,
@@ -131,7 +151,9 @@ proto.all = function() {};
 
 proto.sample = function(){};
 
-proto.clear = function(){};
+proto.clear = function(){
+  this._cacheValues = {};
+};
 
 proto.add = function() {};
 
