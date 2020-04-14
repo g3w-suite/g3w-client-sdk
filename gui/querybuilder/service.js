@@ -6,6 +6,7 @@ const ProjectsRegistry = require('core/project/projectsregistry');
 const GUI = require('gui/gui');
 const uniqueId = require('core/utils/utils').uniqueId;
 const t = require('core/i18n/i18n.service').t;
+const getAlphanumericPropertiesFromFeature = require('core/utils/geo').getAlphanumericPropertiesFromFeature;
 const QUERYBUILDERSEARCHES = 'QUERYBUILDERSEARCHES';
 
 function QueryBuilderService(options={}){
@@ -31,14 +32,22 @@ proto.getValues = async function({layerId, field}={}){
     try {
       const data = await this.run({
         layerId,
-        filter: `"${field}" != 'TESTTTTT'`,
+        filter: `"${field}" != '__G3W_ALL_VALUES__'`,
         showResult: false
       });
-      const values = data[0].features.map(feature =>{
-        return feature.get(field)
-      });
-      valuesField = values;
-      return values;
+      if (data[0].features.length) {
+        const feature  = data[0].features[0];
+        const fields = getAlphanumericPropertiesFromFeature(feature.getProperties());
+        fields.forEach(field => {
+          this._cacheValues[layerId][field] = new Set();
+        });
+        data[0].features.forEach(feature => {
+          fields.forEach(field => {
+            this._cacheValues[layerId][field].add(feature.get(field));
+          })
+        });
+      }
+      return this._cacheValues[layerId][field] || [];
     } catch(err) {
       reject();
     }

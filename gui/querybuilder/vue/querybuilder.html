@@ -20,7 +20,6 @@
     </div>
     <div id="query_builder_values" class="margin-between-element">
       <div id="query_builder_values_title" class="querybuilder-title" v-t="'sdk.querybuilder.panel.values'"></div>
-      <div id="query_builder_values_search"></div>
       <div v-if="!manual" id="query_builder_values_content" class="querybuilder-content margin-between-element">
         <bar-loader :loading="loading.values"></bar-loader>
         <table class="table table-striped content-table">
@@ -36,16 +35,18 @@
       </div>
       <div v-else id="querybuilder-manual" class="margin-between-element" style="display:flex; justify-content: space-between; align-items: stretch">
         <input class="form-control" style="" v-model="manualvalue" style="border: 0;">
-        <span style="cursor: pointer; font-size: 1.2em; background-color: white; padding: 9px;" @click="manualvalue && addToExpression({value: manualvalue, type: 'value'})" class="skin-color" :class="g3wtemplate.getFontClass('plus')"></span>
+        <span style="cursor: pointer; font-size: 1.2em; background-color: white; color: #000000; padding: 9px;"
+              @click="manualvalue && addToExpression({value: manualvalue, type: 'value'})"
+              :class="g3wtemplate.getFontClass('plus')"></span>
       </div>
-      <div id="query_builder_values_buttons" class="flex-end skin-color">
-        <button id="query_builder_values_buttons_sample" class="query_builder_button btn btn-secondary bold skin-color" v-t="'sdk.querybuilder.panel.button.manual'" @click="manual = true" :class="{'skin-border-color' : manual}"></button>
-        <button id="query_builder_values_buttons_all" class="query_builder_button btn btn-secondary bold skin-color" v-t="'sdk.querybuilder.panel.button.all'" @click="all" :class="{'skin-border-color' : !manual}"></button>
+      <div id="query_builder_values_buttons" class="content-end skin-color">
+        <button id="query_builder_values_buttons_sample" class="query_builder_button btn btn-secondary bold " v-t="'sdk.querybuilder.panel.button.manual'" @click="manual = true" :class="{'skin-border-color' : manual}"></button>
+        <button id="query_builder_values_buttons_all" class="query_builder_button btn btn-secondary bold " v-t="'sdk.querybuilder.panel.button.all'" @click="all" :disabled="select.field === null" :class="{'skin-border-color' : !manual}"></button>
       </div>
     </div>
     <div id="query_builder_operators" class="margin-between-element">
       <div id="query_builder_operators_title" class="querybuilder-title" v-t="'sdk.querybuilder.panel.operators'"></div>
-      <div id="query_builder_operators_content flex-wrap" style="justify-content: space-between">
+      <div id="query_builder_operators_content" class="content-wrap">
         <button v-for="operator in operators" @click="addToExpression({value: operator, type: 'operator'})" :key="operator" class="query_builder_button btn btn-secondary skin-color bold">{{ operator }}</button>
       </div>
     </div>
@@ -60,11 +61,11 @@
         <bar-loader :loading="loading.test"></bar-loader>
         <span class="bold">{{message}}</span>
       </div>
-      <div id="query_builder_footer_buttons"class="flex-end margin-between-element">
-        <button class="query_builder_button btn btn-secondary skin-color bold" @click="test" :disabled="disabled" v-t="'sdk.querybuilder.panel.button.test'"></button>
-        <button class="query_builder_button btn btn-secondary skin-color bold" @click="reset" v-t="'sdk.querybuilder.panel.button.clear'"></button>
-        <button class="query_builder_button btn btn-secondary skin-color bold" @click="run" :disabled="disabled" v-t="'sdk.querybuilder.panel.button.run'"></button>
-        <button class="query_builder_button btn btn-secondary skin-color bold" @click="save" :disabled="disabled" v-t="'sdk.querybuilder.panel.button.save'"></button>
+      <div id="query_builder_footer_buttons" class="content-end margin-between-element">
+        <button class="query_builder_button btn btn-secondary  bold" @click="test" :disabled="disabled" v-t="'sdk.querybuilder.panel.button.test'"></button>
+        <button class="query_builder_button btn btn-secondary  bold" @click="reset" v-t="'sdk.querybuilder.panel.button.clear'"></button>
+        <button class="query_builder_button btn btn-secondary  bold" @click="run" :disabled="disabled" v-t="'sdk.querybuilder.panel.button.run'"></button>
+        <button class="query_builder_button btn btn-secondary  bold" @click="save" :disabled="disabled" v-t="'sdk.querybuilder.panel.button.save'"></button>
       </div>
     </div>
 

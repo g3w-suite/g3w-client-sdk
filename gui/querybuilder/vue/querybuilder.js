@@ -42,31 +42,13 @@ const QueryBuilder = Vue.extend({
     addToExpression({value, type}={}){
       switch(type) {
         case 'operator':
-          if (this.filterElement.current === 'field' || this.filterElement.current === 'value') {
-            if (this.filterElement.current === 'value' && ['AND', 'OR'].indexOf(value) === -1)
-              value = null;
-            else {
-              this.filterElement.previous = this.filterElement.current;
-              this.filterElement.current = type;
-              this.filterElement.operator = value;
-              value = ` ${value} `;
-            }
-          } else value = null;
+          value = ` ${value} `;
           break;
         case 'field':
-          if (this.filterElement.current === null ||
-            (this.filterElement.current === 'operator' && ['AND', 'OR'].indexOf(this.filterElement.operator) !== -1 && this.filterElement.previous === 'value')) {
-            value = `"${value}"`;
-            this.filterElement.previous = this.filterElement.current;
-            this.filterElement.current = type;
-          } else value = null;
+          value = `"${value}"`;
           break;
         case 'value':
-          if (this.filterElement.current === 'operator') {
-            value = `'${value}'`;
-            this.filterElement.previous = this.filterElement.current;
-            this.filterElement.current = type;
-          } else value = null;
+          value = `'${value}'`;
           break;
       }
       if (value) this.filter = (`${this.filter}${value}`);
