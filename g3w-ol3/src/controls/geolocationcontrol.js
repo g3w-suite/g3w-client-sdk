@@ -1,4 +1,4 @@
-const Control = require('./control');
+const InteractionControl = require('./interactioncontrol');
 function GeolocationControl() {
   const options = {
     offline: false,
@@ -6,48 +6,65 @@ function GeolocationControl() {
     tipLabel: "Geolocation",
     label: "\ue904"
   };
-  Control.call(this, options);
+  this._layer;
+  InteractionControl.call(this, options);
 }
 
-ol.inherits(GeolocationControl, Control);
+ol.inherits(GeolocationControl, InteractionControl);
 
 const proto = GeolocationControl.prototype;
 
+proto._showMarker = function(coordinates, show=true){
+  const feature = new ol.Feature({
+    geometry: new ol.geom.Point(coordinates)
+  })
+  if (show) this._layer.getSource().addFeature(feature);
+  else this._layer.getSource().clear();
+};
+
 proto.setMap = function(map) {
-  const self = this;
-  Control.prototype.setMap.call(this,map);
+  InteractionControl.prototype.setMap.call(this, map);
   const geolocation = new ol.Geolocation({
     projection: map.getView().getProjection(),
     tracking: true
   });
-  geolocation.once('change:position', function(e) {
-    if (this.getPosition()) {
-      $(self.element).removeClass('g3w-ol-disabled');
-      $(self.element).on('click', function() {
-        const map = self.getMap();
-        const view = map.getView();
-        coordinates = geolocation.getPosition();
-        view.setCenter(coordinates);
-        self.dispatchEvent({
-          type: 'click',
-          coordinates: coordinates
+  geolocation.once('change:position', (e) => {
+    const coordinates = geolocation.getPosition();
+    if (coordinates) {
+      this._layer = new ol.layer.Vector({
+        source: new ol.source.Vector(),
+        style: new ol.style.Style({
+          text: new ol.style.Text({
+            text: '\uf3c5',
+            font: '900 3em "Font Awesome 5 Free"',
+            fill: new ol.style.Fill({
+              color: 'red'
+            })
+          })
         })
+      })
+      const coordinates = geolocation.getPosition();
+      const view = map.getView();
+      map.addLayer(this._layer);
+      $(this.element).removeClass('g3w-ol-disabled');
+      this.on('toggled', (event) => {
+        const toggled = event.target.isToggled();
+        toggled &&  view.setCenter(coordinates);
+        this._showMarker(coordinates, toggled);
+      });
+      $(this.element).on('click', () => {
+
       });
     } else {
-      self.hideControl();
+      this.hideControl();
     }
   });
-  geolocation.once('error', function(e) {
-    self.hideControl();
-    if (e.code != 1) {
-      self.dispatchEvent('error');
+  geolocation.once('error', (e) => {
+    this.hideControl();
+    if (e.code !== 1) {
+      this.dispatchEvent('error');
     }
   });
-};
-
-proto.layout = function(map) {
-  Control.prototype.layout.call(this, map);
-  $(this.element).addClass('g3w-ol-disabled');
 };
 
 

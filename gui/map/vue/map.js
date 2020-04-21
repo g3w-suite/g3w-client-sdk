@@ -11,12 +11,12 @@ const templateCompiled = createCompiledTemplate(require('./map.html'));
 const vueComponentOptions = {
   ...templateCompiled,
   data: function() {
-    const {service} = this.$options;
+    const {service, target} = this.$options;
     return {
-      target: this.$options.target,
+      target,
       maps_container: this.$options.maps_container,
       service,
-      hidemaps: this.$options.service.state.hidemaps
+      hidemaps: service.state.hidemaps
     }
   },
   components: {
@@ -47,6 +47,9 @@ const vueComponentOptions = {
         if (control.type !== "scaleline")
           control.control.showHide();
       })
+    },
+    createCopyMapExtentUrl(){
+      const mapService = this.$options.service.createCopyMapExtentUrl();
     }
   }
 };

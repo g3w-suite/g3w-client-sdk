@@ -11,6 +11,14 @@
     </div>
     <addlayer :service="service"></addlayer>
   </div>
+  <div id="map_footer" class="skin-border-color">
+    <div id="map_footer_left"></div>
+    <div id="map_footer_right" style="display: flex">
+      <div id="scale-control"></div>
+      <div id="mouse-position-control"></div>
+      <div id="permalink"><span class="skin-color" :class="g3wtemplate.getFontClass('link')" @click="createCopyMapExtentUrl"></span></div>
+    </div>
+  </div>
 </div>
 
 

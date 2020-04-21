@@ -1,6 +1,5 @@
-const inherit = require('core/utils/utils').inherit;
 const t = require('core/i18n/i18n.service').t;
-const base = require('core/utils/utils').base;
+const {inherit, base, copyUrl} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const {
   shpToGeojson,
@@ -528,7 +527,8 @@ proto._setupControls = function() {
   // check if base layer is set. If true add attribution control
   if (this.getApplicationAttribution() || baseLayers.length) {
     const attributionControl =  new ol.control.Attribution({
-      collapsible: false
+      collapsible: false,
+      target: 'map_footer_left'
     });
     this.getMap().addControl(attributionControl);
   }
@@ -1004,9 +1004,6 @@ proto._setupControls = function() {
           break;
         case 'geolocation':
           control = this.createMapControl(controlType);
-          control.on('click', throttle((evt) => {
-            this.showMarker(evt.coordinates);
-          }));
           control.on('error', (e) => {
             GUI.showUserMessage({
               type: 'warning',
@@ -1051,11 +1048,21 @@ proto._setupControls = function() {
           break;
       }
     });
-    //this._setMapControlsInsideContainerLenght();
-    //this.state.mapcontrolready = true;
     return this.getMapControls()
   }
 };
+
+proto.getMapExtent = function(){
+  const map = this.getMap();
+  return map.getView().calculateExtent(map.getSize());
+};
+
+proto.createCopyMapExtentUrl = function(){
+  const url = new URLSearchParams(location.href);
+  const map_extent = this.getMapExtent().toString();
+  url.append('map_extent', map_extent)
+  copyUrl(url);
+}
 
 proto._setMapControlsGrid = function(length) {
   const grid = this.state.mapControl.grid;
@@ -1394,7 +1401,9 @@ proto._resetView = function() {
 };
 
 proto._calculateViewOptions = function({project, width, height}={}) {
-  const initextent = project.state.initextent;
+  const searchParams = new URLSearchParams(location.search);
+  const map_extent = searchParams.get('map_extent');
+  const initextent = map_extent ? map_extent.split(',').map(coordinate => 1*coordinate) : project.state.initextent;
   const projection = this.getProjection();
   const extent = project.state.extent;
   const maxxRes = ol.extent.getWidth(extent) / width;
@@ -1448,7 +1457,7 @@ proto._setupViewer = function(width, height) {
   });
 
   this._marker = new ol.Overlay({
-    position: undefined,
+    position: null,
     positioning: 'center-center',
     element: document.getElementById('marker'),
     stopEvent: false

@@ -8,10 +8,7 @@ const SCALES = [
 
 const ScaleControl = function(options= {}) {
   this.isMobile = options.isMobile || false;
-  this.position = options.position || {
-    bottom: true,
-    right: true
-  };
+  options.target = 'scale-control';
   ol.control.Control.call(this, options);
 };
 
@@ -27,12 +24,6 @@ proto.offline = true;
 proto.changelayout = function(map) {
   const position = this.position;
   const element = $(this.element);
-  changeLayout({
-    map,
-    position,
-    element,
-    //isMobile: this.isMobile
-  });
 };
 
 proto.layout = function(map) {
@@ -41,11 +32,6 @@ proto.layout = function(map) {
   let selectedOnClick = false;
   const position = this.position;
   const element = $(this.element);
-  layout({
-    map,
-    position,
-    element
-  });
   const select2 = element.children('select').select2({
     tags: true,
     width: '120px',
@@ -169,7 +155,6 @@ proto._createControl = function() {
   controlDomElement.appendChild(select);
   // set element of control (it is necessary to visualize it)
   this.element = controlDomElement;
-  $(this.element).addClass('ol-control ol-control-br ol-scale-control');
   $(this.element).css('height', '20px');
 };
 
