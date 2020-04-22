@@ -1,6 +1,7 @@
 const inherit = require('core/utils/utils').inherit;
 const t = require('core/i18n/i18n.service').t;
 const base = require('core/utils/utils').base;
+const uniqueId = require('core/utils/utils').uniqueId;
 const G3WObject = require('core/g3wobject');
 const {
   shpToGeojson,
@@ -2076,7 +2077,14 @@ proto.addExternalLayer = async function(externalLayer, download) {
   const catalogService = GUI.getComponent('catalog').getService();
   const QueryResultService = GUI.getComponent('queryresults').getService();
   if (externalLayer instanceof ol.layer.Vector) {
+    externalLayer.get('id') === undefined && externalLayer.set('id', uniqueId());
     vectorLayer = externalLayer;
+    let color;
+    try {
+      color = externalLayer.getStyle().getStroke().getColor()
+    } catch(err) {
+      color = 'blue'
+    }
     name = vectorLayer.get('name');
     type = 'vector';
     externalLayer = {
@@ -2085,7 +2093,8 @@ proto.addExternalLayer = async function(externalLayer, download) {
       removable: true,
       external: true,
       download,
-      visible: true
+      visible: true,
+      color
     };
   } else {
     name = externalLayer.name;
@@ -2124,7 +2133,8 @@ proto.addExternalLayer = async function(externalLayer, download) {
       });
       vectorLayer = new ol.layer.Vector({
         source: vectorSource,
-        name
+        name,
+        id: uniqueId()
       });
       vectorLayer.setStyle(this.setExternalLayerStyle(color));
     }
