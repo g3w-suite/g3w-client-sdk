@@ -2,6 +2,7 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const geoutils = require('g3w-ol3/src/utils/utils');
 const G3WObject = require('core/g3wobject');
+const { geometryFields } =  require('core/utils/geo');
 const convert = require('xml-js');
 const WORD_NUMERIC_XML_TAG_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_';
 
@@ -357,7 +358,7 @@ proto.digestFeaturesForLayers = function(featuresForLayers) {
 proto._parseAttributes = function(layerAttributes, featureAttributes) {
   let featureAttributesNames = _.keys(featureAttributes);
   featureAttributesNames = _.filter(featureAttributesNames,function(featureAttributesName) {
-    return ['boundedBy', 'geom','the_geom','geometry','bbox', 'GEOMETRY'].indexOf(featureAttributesName) === -1;
+    return geometryFields.indexOf(featureAttributesName) === -1;
   });
   if (layerAttributes && layerAttributes.length) {
     let featureAttributesNames = _.keys(featureAttributes);
