@@ -1004,6 +1004,9 @@ proto._setupControls = function() {
           break;
         case 'geolocation':
           control = this.createMapControl(controlType);
+          control.on('click', throttle((evt) => {
+            this.showMarker(evt.coordinates);
+          }));
           control.on('error', (e) => {
             GUI.showUserMessage({
               type: 'warning',
@@ -1058,10 +1061,10 @@ proto.getMapExtent = function(){
 };
 
 proto.createCopyMapExtentUrl = function(){
-  const url = new URLSearchParams(location.href);
+  const url = new URL(location.href);
   const map_extent = this.getMapExtent().toString();
-  url.append('map_extent', map_extent)
-  copyUrl(url);
+  url.searchParams.set('map_extent', map_extent);
+  copyUrl(url.toString());
 }
 
 proto._setMapControlsGrid = function(length) {
@@ -2131,10 +2134,12 @@ proto.addExternalLayer = async function(externalLayer, download) {
   };
   const createExternalLayer = (format, data, epsg=crs) => {
     let vectorLayer;
+    console.log(data)
     const features = format.readFeatures(data, {
       dataProjection: epsg,
       featureProjection: this.getEpsg()
     });
+    console.log(features)
     if (features.length) {
       const vectorSource = new ol.source.Vector({
         features
@@ -2153,9 +2158,7 @@ proto.addExternalLayer = async function(externalLayer, download) {
     let layer;
     switch (type) {
       case 'gml':
-        format = new ol.format.GML3({
-          featureType: ['gml', 'ogr']
-        });
+        format = new ol.format.WMSGetFeatureInfo();
         layer = createExternalLayer(format, data);
         return loadExternalLayer(layer);
         break;
