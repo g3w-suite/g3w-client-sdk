@@ -22,6 +22,10 @@
           :class="g3wtemplate.getFontClass('trash')"
           @click="removeExternalLayer(layerstree.name)">
     </span>
+    <span style="color: #ffffff; margin-left: 5px;" v-if="layerstree.external && layerstree.download"
+          :class="g3wtemplate.getFontClass('download')"
+          @click="downloadExternalLayer(layerstree.download)">
+    </span>
     <span v-show="!layerstree.hidden"
       @click.stop="toggle(false)"
       :class="[layerstree.checked  ? g3wtemplate.getFontClass('check'): g3wtemplate.getFontClass('uncheck'),  parentFolder ? 'child' : 'root' ]"

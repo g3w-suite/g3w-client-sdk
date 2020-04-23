@@ -259,6 +259,14 @@ const utils = {
     document.execCommand('copy');
     document.body.removeChild(tempinput);
   },
+  downloadFile({filename, content, mime_type='text/plain'}={}){
+    const temapAncor = document.createElement('a');
+    const bb = new Blob([content], {type: mime_type});
+    temapAncor.setAttribute('href', window.URL.createObjectURL(bb));
+    temapAncor.setAttribute('download', filename);
+    temapAncor.dataset.downloadurl = [mime_type, temapAncor.download, temapAncor.href].join(':');
+    temapAncor.click();
+  },
   XHR: {
     get({url, params={}}={}) {
       return new Promise((resolve, reject) => {

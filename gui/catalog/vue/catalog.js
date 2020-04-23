@@ -1,7 +1,6 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
-const inherit = require('core/utils/utils').inherit;
+const {inherit, base, downloadFile} = require('core/utils/utils');
 const t = require('core/i18n/i18n.service').t;
-const base = require('core/utils/utils').base;
 const Component = require('gui/vue/component');
 const TableComponent = require('gui/table/vue/table');
 const ComponentsRegistry = require('gui/componentsregistry');
@@ -565,6 +564,11 @@ Vue.component('tristate-tree', {
         return this.layerstree.checked ? this.g3wtemplate.getFontClass('check') : this.g3wtemplate.getFontClass('uncheck');
       }
 
+    },
+    downloadExternalLayer(download) {
+      if (download.file) {
+        downloadFile(download.file);
+      } else if (download.url) {}
     },
     removeExternalLayer: function(name) {
       const mapService = GUI.getComponent('map').getService();
