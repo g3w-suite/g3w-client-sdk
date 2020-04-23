@@ -1,8 +1,10 @@
 const Geometry = require('core/geometry/geometry');
 const Filter = require('core/layers/filter/filter');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
+const geometryFields = ['geometryProperty', 'boundedBy', 'geom', 'the_geom', 'geometry', 'bbox', 'GEOMETRY', 'geoemtria'];
 
 module.exports = {
+  geometryFields,
   coordinatesToGeometry: function(geometryType, coordinates) {
     let geometryClass;
     switch (geometryType) {
@@ -258,7 +260,7 @@ module.exports = {
   getAlphanumericPropertiesFromFeature(properties=[]) {
     properties = Array.isArray(properties) ? properties : Object.keys(properties);
     return properties.filter((property) => {
-      return ['boundedBy', 'geom', 'the_geom', 'geometry', 'bbox', 'GEOMETRY'].indexOf(property) === -1;
+      return geometryFields.indexOf(property) === -1;
     });
   },
 
@@ -271,10 +273,7 @@ module.exports = {
     const mapProjection = map.getView().getProjection();
     const resolution = map.getView().getResolution();
     if (querymultilayers) {
-      // const multiLayers = _.groupBy(layers, function(layer) {
-      //   return layer.getMultiLayerId();
-      // });
-      const multiLayers = {};
+           const multiLayers = {};
       layers.forEach(layer => {
         const key = `${layer.getInfoFormat()}:${layer.getInfoUrl()}:${layer.getMultiLayerId()}`;
         if (multiLayers[key])

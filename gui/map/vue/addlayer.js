@@ -1,4 +1,4 @@
-const SUPPORTED_FORMAT = ['zip', 'geojson', 'kml', 'json'];
+const SUPPORTED_FORMAT = ['zip', 'geojson', 'kml', 'json', 'gml'];
 
 const EPSG = [
   "EPSG:3003",

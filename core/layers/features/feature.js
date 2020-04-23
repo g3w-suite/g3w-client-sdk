@@ -1,4 +1,5 @@
 const uniqueId = require('core/utils/utils').uniqueId;
+const { geometryFields } =  require('core/utils/geo');
 const Feature = function(options={}) {
   ol.Feature.call(this);
   this._uid = uniqueId();
@@ -122,7 +123,7 @@ proto.getAlphanumericProperties = function() {
   const properties = this.getProperties();
   const alphanumericproperties = {};
   for (let name in properties) {
-    if (['boundedBy', 'geom','the_geom','geometry','bbox', 'GEOMETRY'].indexOf(name) === -1)
+    if (geometryFields.indexOf(name) === -1)
       alphanumericproperties[name] = properties[name];
   }
   alphanumericproperties[this._pk] = this.getId();

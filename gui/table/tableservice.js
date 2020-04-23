@@ -1,6 +1,6 @@
 const GUI = require('gui/gui');
 const t = require('core/i18n/i18n.service').t;
-const coordinatesToGeometry =  require('core/utils/geo').coordinatesToGeometry;
+const {coordinatesToGeometry, geometryFields} =  require('core/utils/geo');
 
 const TableService = function(options = {}) {
   this.currentPage = 0; // number of pages
@@ -25,7 +25,7 @@ const proto = TableService.prototype;
 
 proto.getHeaders = function(fields) {
   const headers = fields.filter((field) => {
-    return  ['boundedBy', 'geom','the_geom','geometry','bbox', 'GEOMETRY', 'geometria'].indexOf(field.name) === -1
+    return  geometryFields.indexOf(field.name) === -1
   });
   return headers;
 };

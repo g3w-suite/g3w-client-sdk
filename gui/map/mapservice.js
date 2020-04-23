@@ -2145,9 +2145,7 @@ proto.addExternalLayer = async function(externalLayer, download) {
     let layer;
     switch (type) {
       case 'gml':
-        format = new ol.format.GML3({
-          featureType: ['gml', 'ogr']
-        });
+        format = new ol.format.WMSGetFeatureInfo();
         layer = createExternalLayer(format, data);
         return loadExternalLayer(layer);
         break;
