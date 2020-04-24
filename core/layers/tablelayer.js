@@ -477,10 +477,10 @@ proto.getFieldsWithValues = function(obj, options={}) {
       // check if pk
       if (field.name === this.config.editing.pk) {
         let editable = this.isPkEditable();
-        // che check if has a value
-        if (feature.getId()) {
+        // check check if has a value
+        if (feature.getId() && !feature.isNew()) {
           field.value = feature.getId();
-          editable = feature.isNew();
+          //editable = feature.isNew();
         } else field.value = null;
         field.editable = editable;
       } else field.value = attributes[field.name];

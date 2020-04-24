@@ -1,4 +1,5 @@
 const Geometry = require('core/geometry/geometry');
+const jsts = require('jsts');
 const Filter = require('core/layers/filter/filter');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const geometryFields = ['geometryProperty', 'boundedBy', 'geom', 'the_geom', 'geometry', 'bbox', 'GEOMETRY', 'geoemtria'];
@@ -223,7 +224,7 @@ module.exports = {
     return olLayer;
   },
 
-  createSelectedStyle({geometryType}) {
+  createSelectedStyle({geometryType}={}) {
     let style = null;
     if (geometryType === 'LineString' || geometryType === 'MultiLineString') {
       style = new ol.style.Style({
@@ -393,7 +394,40 @@ module.exports = {
     });
     return layers || [];
   },
+  splitFeatures({type='line', geometries={split, features}} ={}){
+    return geometries.features.map(feature =>{
+      const geometries = {
+        split,
+        feature
+      }
+      return this.spliFeature({type, geometries})
+    })
+  },
+  splitFeature({type='line', geometries={split, feature}} ={}){
+    let splitFeatureGeometry;
+    const parser = new jsts.io.OL3Parser();
+    switch (type){
+      case 'line':
+        const polygonFeature = geometries.feature.getPolygon(0);
+        console.log(polygonFeature)
+        const featureGeometry = parser.read(polygonFeature.getLinearRing(0));
+        console.log(featureGeometry.getGeometryType())
+        const splitGeometry = parser.read(geometries.split)
+        splitFeatureGeometry = featureGeometry.intersection(splitGeometry);
+        const union = featureGeometry.union(splitGeometry)
+        const polygonizer = new jsts.operation.polygonize.Polygonizer();
+        polygonizer.add(union);
+        const polygons = polygonizer.getPolygons();
+        for (var i = polygons.iterator(); i.hasNext();) {
+          const polygon = i.next();
+          console.log(polygon)
+          splitFeatureGeometry = parser.write(polygon)
+        }
 
+        break;
+    }
+    return splitFeatureGeometry
+  },
   dissolve({features=[], index=0, clone=false}={}) {
     const parser = new jsts.io.OL3Parser();
     const featuresLength = features.length;

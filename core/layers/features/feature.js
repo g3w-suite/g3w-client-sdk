@@ -5,12 +5,14 @@ const Feature = function(options={}) {
   this._uid = uniqueId();
   this._newPrefix = '_new_';
   this._pk = options.pk || "id";
+  this._geometry = false;
   const feature = options.feature;
   if (feature) {
     this.setProperties(feature.getProperties());
     this.setId(feature.getId());
     this.setGeometryName(feature.getGeometryName());
     const geometry = feature.getGeometry();
+    this._geometry = !!geometry;
     geometry && this.setGeometry(geometry);
     const style = this.getStyle();
     style && this.setStyle(style);
@@ -36,24 +38,30 @@ proto._setUid = function(uid){
   this._uid = uid;
 };
 
-proto.clone = function() {
-  // clono la feature
+proto.isGeometry = function(){
+  return this._geometry;
+};
+
+proto.clone = function({setNew=false}={}) {
   const feature = ol.Feature.prototype.clone.call(this);
   feature.setId(this.getId());
+  this.isGeometry() && feature.setGeometry(feature.getGeometry().clone());
   const clone =  new Feature({
-    feature: feature,
+    feature,
     pk: this._pk
   });
-  clone._setUid(this.getUid());
+  const uid = setNew && uniqueId() || this.getUid()
+  clone._setUid(uid);
   clone.setState(this.getState());
-  this.isNew() && clone.setNew();
+  (this.isNew() || setNew) && clone.setNew();
+  setNew && clone.setTemporaryId();
   return clone;
 };
 
 proto.setTemporaryId = function() {
-  let newValue = this._newPrefix + Date.now();
+  const newValue = this._newPrefix + Date.now();
   this.setId(newValue);
-  this.getProperties()[this._pk] !== undefined && this.set(this._pk, newValue);
+  this.get(this._pk) !== undefined  && this.set(this._pk, newValue);
   this.setNew();
 };
 
