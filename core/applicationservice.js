@@ -47,7 +47,7 @@ const ApplicationService = function() {
   // init from server
   this.init = function(config={}) {
     this._config = config;
-    this._groupId = this._config.group.name.replace(/\s+/g, '-').toLowerCase();
+    this._groupId = this._config.group.slug || this._config.group.name.replace(/\s+/g, '-').toLowerCase();
     // run bbotstrap
     return this._bootstrap();
   };
