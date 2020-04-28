@@ -23,7 +23,7 @@ inherit(Step, G3WObject);
 const proto = Step.prototype;
 
 // method to start task
-proto.run = function(inputs, context) {
+proto.run = function(inputs, context, queques) {
   //emit run
   this.emit('run', {inputs, context});
   const d = $.Deferred();
@@ -31,7 +31,7 @@ proto.run = function(inputs, context) {
     try {
       // change state to running
       this.state.running = true;
-      this._task.run(inputs, context)
+      this._task.run(inputs, context, queques)
         .then((outups) => {
           this.stop();
           d.resolve(outups);

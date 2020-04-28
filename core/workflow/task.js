@@ -13,6 +13,7 @@ inherit(Task, G3WObject);
 
 const proto = Task.prototype;
 
+
 proto.revert = function() {
   console.log('Revert to implemente ');
 };
@@ -42,8 +43,7 @@ proto.setUserMessageSteps = function(steps={}) {
 };
 
 proto.setUserMessageStepDone = function(type) {
-  if (type)
-    this.state.usermessagesteps[type].done = true;
+  if (type) this.state.usermessagesteps[type].done = true;
 };
 
 module.exports = Task;

@@ -42,7 +42,14 @@ proto.isGeometry = function(){
   return this._geometry;
 };
 
-proto.clone = function({setNew=false}={}) {
+proto.cloneNew = function(){
+  const clone = this.clone();
+  const uid = uniqueId();
+  clone._setUid(uid);
+  clone.setTemporaryId();
+  return clone;
+}
+proto.clone = function() {
   const feature = ol.Feature.prototype.clone.call(this);
   feature.setId(this.getId());
   this.isGeometry() && feature.setGeometry(feature.getGeometry().clone());
@@ -50,11 +57,10 @@ proto.clone = function({setNew=false}={}) {
     feature,
     pk: this._pk
   });
-  const uid = setNew && uniqueId() || this.getUid()
+  const uid = this.getUid()
   clone._setUid(uid);
   clone.setState(this.getState());
-  (this.isNew() || setNew) && clone.setNew();
-  setNew && clone.setTemporaryId();
+  this.isNew() && clone.setNew();
   return clone;
 };
 

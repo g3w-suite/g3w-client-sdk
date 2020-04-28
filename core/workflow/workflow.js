@@ -52,11 +52,8 @@ proto.getStackIndex = function() {
 };
 
 proto.addChild = function(workflow) {
-  if (this._child)
-    this._child.addChild(workflow);
-  else {
-    this._child = workflow;
-  }
+  if (this._child) this._child.addChild(workflow);
+  else this._child = workflow;
 };
 
 proto.removeChild = function() {
@@ -64,7 +61,6 @@ proto.removeChild = function() {
     const index = this._child.getStackIndex();
     WorkflowsStack.removeAt(index);
   }
-
   this._child = null;
 };
 
@@ -110,9 +106,6 @@ proto.getStep = function(index) {
 
 proto.setMessages = function(messages) {
   Object.assign(this._messages, messages);
-  /*for (let messageKey in messages) {
-    this._messages[messageKey] = messages[messageKey];
-  }*/
 };
 
 proto.getMessages = function() {

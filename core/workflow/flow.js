@@ -1,6 +1,7 @@
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils//utils').base;
 const G3WObject = require('core/g3wobject');
+const Queque = require('./queque')
 
 //Class Flow of workflow step by step
 function Flow() {
@@ -10,6 +11,10 @@ function Flow() {
   let context = null;
   let d;
   let _workflow;
+  this.queques = {
+    end: new Queque(),
+    micro: new Queque()
+  };
   //start workflow
   this.start = function(workflow) {
     d = $.Deferred();
@@ -35,8 +40,10 @@ function Flow() {
     _workflow.setMessages({
       help: step.state.help
     });
-    step.run(inputs, context)
+    const runTasks = this.queques.micro.getLength();
+    step.run(inputs, context, this.queques)
       .then((outputs) => {
+        runTasks && this.queques.micro.run();
         this.onDone(outputs);
       })
       .fail((error) => {
@@ -47,8 +54,9 @@ function Flow() {
   //check if all step are resolved
   this.onDone = function(outputs) {
     counter++;
-    if (counter == steps.length) {
+    if (counter === steps.length) {
       counter = 0;
+      this.clearQueques();
       d.resolve(outputs);
       return;
     }
@@ -57,9 +65,6 @@ function Flow() {
 
   // in case of error
   this.onError = function(err) {
-    // error step
-    //console.log('step error: ', err);
-    // reset counter to 0
     counter = 0;
     d.reject(err);
   };
@@ -78,13 +83,25 @@ function Flow() {
       //reject to force rollback session
       d.resolve();
     }
+    this.clearQueques();
     return d.promise();
   };
-
   base(this)
 }
 
 inherit(Flow, G3WObject);
+
+const proto = Flow.prototype;
+
+proto.clearQueques = function(){
+  this.queques.micro.clear();
+  this.runEndQueque();
+};
+
+proto.runEndQueque = function(){
+  this.queques.end.run();
+  this.queques.end.clear();
+};
 
 module.exports = Flow;
 
