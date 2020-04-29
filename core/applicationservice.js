@@ -44,6 +44,13 @@ const ApplicationService = function() {
     return this._bootstrap();
   };
 
+  this.changeLanguage = function(lng){
+    const pathname = window.location.pathname;
+    const pathArray = pathname.split('/');
+    pathArray[1] = lng;
+    window.location.pathname = pathArray.join('/');
+  };
+
   //check if is in Iframe
   this.isIframe = function() {
     return this.iframe;
@@ -211,6 +218,7 @@ const ApplicationService = function() {
     this.obtainInitConfig({
       host
     }).then((initConfig) => {
+        ProjectsRegistry.setProjects(initConfig.group.projects);
         ProjectsRegistry.getProject(gid)
           .then((project) => {
             GUI.closeUserMessage();

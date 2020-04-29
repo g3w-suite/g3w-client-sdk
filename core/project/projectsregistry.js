@@ -17,6 +17,7 @@ function ProjectsRegistry() {
   this.config = null;
   this.initialized = false;
   this.projectType = null;
+  this.overviewproject;
   this.setters = {
     setCurrentProject: function(project) {
       if (this.state.currentProject !== project) {
@@ -94,18 +95,7 @@ proto.setupState = function() {
   this.state.maxScale = this.config.maxscale;
   this.state.crs = this.config.crs;
   this.state.proj4 = this.config.proj4;
-  const overViewProject = (this.config.overviewproject && this.config.overviewproject.gid) ? this.config.overviewproject : null;
-  this.config.projects.forEach((project) => {
-    this.state.qgis_version = project.qgis_version || this.state.qgis_version;
-    project.aliasUrl = project.url || null;
-    project.baselayers = this.config.baselayers;
-    project.minscale = this.config.minscale;
-    project.maxscale = this.config.maxscale;
-    project.crs = this.config.crs;
-    project.proj4 = this.config.proj4;
-    project.overviewprojectgid = overViewProject;
-    this._groupProjects.push(project);
-  });
+  this.setProjects(this.config.projects);
 };
 
 proto.getProjectAliasUrl = function(gid) {
@@ -126,6 +116,21 @@ proto.getProjects = function() {
   return this._groupProjects;
 };
 
+proto.setProjects = function(projects) {
+  this.clearProjects();
+  projects.forEach((project) => {
+    this.state.qgis_version = project.qgis_version || this.state.qgis_version;
+    project.aliasUrl = project.url || null;
+    project.baselayers = this.config.baselayers;
+    project.minscale = this.config.minscale;
+    project.maxscale = this.config.maxscale;
+    project.crs = this.config.crs;
+    project.proj4 = this.config.proj4;
+    project.overviewprojectgid = this.overviewproject ? this.overviewproject.gid : null;
+    this._groupProjects.push(project);
+  });
+};
+
 proto.clearProjects = function() {
   this._groupProjects = [];
 };
@@ -134,7 +139,7 @@ proto.getListableProjects = function() {
   const currentProjectId = this.getCurrentProject().getId();
   return _.sortBy(this.getProjects().filter((project) => {
     if (!_.isNil(project.listable)) return project.listable;
-    if (project.id === currentProjectId || (project.overviewprojectgid && project.gid === project.overviewprojectgid.gid)) return false
+    if (project.id === currentProjectId || (project.overviewprojectgid && project.gid === project.overviewprojectgid)) return false
     return project;
   }), 'title')
 };
