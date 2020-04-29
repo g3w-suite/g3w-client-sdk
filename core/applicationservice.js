@@ -52,6 +52,13 @@ const ApplicationService = function() {
     return this._bootstrap();
   };
 
+  this.changeLanguage = function(lng){
+    const pathname = window.location.pathname;
+    const pathArray = pathname.split('/');
+    pathArray[1] = lng;
+    window.location.pathname = pathArray.join('/');
+  };
+
   this.registerOnlineOfflineEvent = function(){
     this.registerWindowEvent({
       evt: 'online',
@@ -286,6 +293,7 @@ const ApplicationService = function() {
     this.obtainInitConfig({
       host
     }).then((initConfig) => {
+        ProjectsRegistry.setProjects(initConfig.group.projects);
         ProjectsRegistry.getProject(gid)
           .then((project) => {
             GUI.closeUserMessage();
