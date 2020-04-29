@@ -224,12 +224,12 @@ const geoutils = {
     return olLayer;
   },
 
-  createSelectedStyle({geometryType}={}) {
+  createSelectedStyle({geometryType, color='rgb(255,255,0)'}={}) {
     let style = null;
     if (geometryType === 'LineString' || geometryType === 'MultiLineString') {
       style = new ol.style.Style({
         stroke: new ol.style.Stroke({
-          color: 'rgb(255,255,0)',
+          color,
           width: 4
         })
       });
@@ -239,7 +239,7 @@ const geoutils = {
         image: new ol.style.Circle({
           radius: 6,
           fill: new ol.style.Fill({
-            color: 'rgb(255,255,0)'
+            color
           })
         }),
         zIndex: Infinity
@@ -248,7 +248,7 @@ const geoutils = {
     } else if (geometryType === 'MultiPolygon' || geometryType === 'Polygon') {
       style = new ol.style.Style({
         stroke: new ol.style.Stroke({
-          color: 'rgb(255,255,0)',
+          color,
           width: 4
         }),
         fill: new ol.style.Fill({
@@ -396,10 +396,11 @@ const geoutils = {
   },
   splitFeatures({features=[], splitfeature} ={}){
     const splitterdGeometries = [];
-    geometries.features.forEach(feature =>{
+    features.forEach(feature => {
+      const geometries = geoutils.splitFeature({feature, splitfeature});
       geometries.length > 1 && splitterdGeometries.push({
         uid: feature.getUid(),
-        geometries: geoutils.spliFeature({feature, splitfeature})
+        geometries
       })
     })
     return splitterdGeometries;
@@ -433,7 +434,7 @@ const geoutils = {
           } else {
             const featureGeometry = parser.read(polygonFeature.getLinearRing(0));
             const splitGeometry = parser.read(geometries.split)
-            splitFeatureGeometry = featureGeometry.intersection(splitGeometry);
+            const splitFeatureGeometry = featureGeometry.intersection(splitGeometry);
             const union = featureGeometry.union(splitGeometry)
             const polygonizer = new jsts.operation.polygonize.Polygonizer();
             polygonizer.add(union);
@@ -443,11 +444,49 @@ const geoutils = {
               return splittedFeatureGeometries.push(isMulti ? new ol.geom.MultiPolygon([geometry.getCoordinates()]) : geometry)
             })
           }
-        } else if (geometryType.indexOf('LinesString') !== -1) {
-          //TODO LINE
+        } else if (geometryType.indexOf('LineString') !== -1) {
+          const isMulti = geometryType.indexOf('Multi') !== -1;
+          const lineFeatureGeometry = isMulti ? geometries.feature.getLineStrings() : geometries.feature;
+          if (Array.isArray(lineFeatureGeometry)) {
+            lineFeatureGeometry.forEach(lineGeometry =>{
+              geoutils.splitFeature({
+                splitfeature,
+                feature: new ol.Feature({
+                  geometry: lineGeometry
+                })
+              }).forEach(geometry => {
+                geometry && splittedFeatureGeometries.push(new ol.geom.MultiLineString([geometry.getCoordinates()]))
+              })
+            })
+          } else {
+            const featureGeometry = parser.read(lineFeatureGeometry);
+            const splitGeometry = parser.read(geometries.split)
+            const vertex = parser.write(featureGeometry.intersection(splitGeometry));
+            const originalCoordinates = lineFeatureGeometry.getCoordinates();
+            if (vertex.getType().indexOf('Multi') === -1) {
+              console.log(originalCoordinates)
+              const coordinates = lineFeatureGeometry.getClosestPoint(vertex.getCoordinates());
+              splittedFeatureGeometries.push(new ol.geom.LineString({
+                coordinates: [coordinates, originalCoordinates[1]]
+              }))
+              splittedFeatureGeometries.push(new ol.geom.LineString({
+                coordinates: [originalCoordinates[0], coordinates]
+              }))
+            } else {
+              vertex.getCoordinates().forEach(coordinates => {
+                splittedFeatureGeometries.push(new ol.geom.LineString({
+                  coordinates: [coordinates, originalCoordinates[1]]
+                }))
+                splittedFeatureGeometries.push(new ol.geom.LineString({
+                  coordinates: [originalCoordinates[0], coordinates]
+                }))
+              })
+            }
+          }
         }
         break;
     }
+    console.log(splittedFeatureGeometries)
     return splittedFeatureGeometries;
   },
   dissolve({features=[], index=0, clone=false}={}) {

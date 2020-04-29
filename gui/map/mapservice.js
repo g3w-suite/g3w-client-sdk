@@ -1836,6 +1836,7 @@ let animatingHighlight = false;
 
 proto.highlightGeometry = function(geometryObj, options = {}) {
   this.clearHighlightGeometry();
+  const {color} = options;
   let zoom = (typeof options.zoom === 'boolean') ? options.zoom : true;
   let hide = options.hide;
   if (hide) {
@@ -1846,7 +1847,8 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
     let styles = [];
     const geometryType = feature.getGeometry().getType();
     const style = createSelectedStyle({
-      geometryType
+      geometryType,
+      color
     });
     styles.push(style);
     return styles;

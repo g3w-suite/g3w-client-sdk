@@ -43,12 +43,14 @@ function Flow() {
     const runTasks = this.queques.micro.getLength();
     step.run(inputs, context, this.queques)
       .then((outputs) => {
-        runTasks && this.queques.micro.run();
         this.onDone(outputs);
       })
       .fail((error) => {
         this.onError(error);
-      });
+      })
+      .always(()=>{
+        runTasks && this.queques.micro.run();
+      })
   };
 
   //check if all step are resolved
