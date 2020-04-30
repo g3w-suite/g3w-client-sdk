@@ -189,7 +189,7 @@ proto.start = function(options={}) {
        this.clearUserMessagesSteps();
       }
       d.reject(error);
-    });
+    })
 
   return d.promise();
 };

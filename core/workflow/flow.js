@@ -40,14 +40,13 @@ function Flow() {
     _workflow.setMessages({
       help: step.state.help
     });
-    const runTasks = this.queques.micro.getLength();
+    const runMicroTasks = this.queques.micro.getLength();
     step.run(inputs, context, this.queques)
       .then((outputs) => {
+        runMicroTasks && this.queques.micro.run();
         this.onDone(outputs);
-        runTasks && this.queques.micro.run();
       })
       .fail((error) => {
-        this.clearQueques();
         this.onError(error);
       })
   };
@@ -57,7 +56,6 @@ function Flow() {
     counter++;
     if (counter === steps.length) {
       counter = 0;
-      this.clearQueques();
       d.resolve(outputs);
       return;
     }
@@ -67,15 +65,15 @@ function Flow() {
   // in case of error
   this.onError = function(err) {
     counter = 0;
-
+    this.clearQueques();
     d.reject(err);
   };
 
   // stop flow
   this.stop = function() {
     const d = $.Deferred();
-    //vcheck the counter
     steps[counter].isRunning() ? steps[counter].stop() : null;
+    this.clearQueques();
     if (counter > 0) {
       // set counter to 0
       counter = 0;
@@ -85,7 +83,6 @@ function Flow() {
       //reject to force rollback session
       d.resolve();
     }
-    this.clearQueques();
     return d.promise();
   };
   base(this)
@@ -97,13 +94,9 @@ const proto = Flow.prototype;
 
 proto.clearQueques = function(){
   this.queques.micro.clear();
-  this.runEndQueque();
-};
-
-proto.runEndQueque = function(){
-  this.queques.end.run();
   this.queques.end.clear();
 };
+
 
 module.exports = Flow;
 

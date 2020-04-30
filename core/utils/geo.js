@@ -397,6 +397,34 @@ const geoutils = {
   areCoordinatesEqual(coordinates1=[], coordinates2=[]) {
     return (coordinates1[0]===coordinates2[0] && coordinates1[1]===coordinates2[1]);
   },
+  splitLine(splitFeature, lineFeature) {
+    // var newFeatures = []
+    // this.jstsFromWkt = new jsts.io.WKTReader();
+    // this.wktFromOl = new OpenLayers.Format.WKT();
+    // this.olFromJsts = new jsts.io.OpenLayersParser();
+    // this.layer = layer;
+    // var splitLine = this.jstsFromWkt.read(this.wktFromOl.write(splitFeature));
+    // var targetLine = this.jstsFromWkt.read(this.wktFromOl.write(lineFeature));
+    // var pointStore = [];
+    // var endPoint;
+    // for(var i = 0; i < targetLine.points.length -1; i++) {
+    //   var startPoint = targetLine.points[i];
+    //   endPoint = targetLine.points[i+1];
+    //   var segment = new jsts.geom.LineString([startPoint, endPoint]);
+    //   if(segment.intersects(splitLine)) {
+    //     var splitPoint = segment.intersection(splitLine).coordinate;
+    //     var newLine= new jsts.geom.LineString(pointStore.concat([startPoint, splitPoint]));
+    //     pointStore = [splitPoint];
+    //     newFeatures.push(new OpenLayers.Feature.Vector(this.olFromJsts.write(newLine), OpenLayers.Util.extend({}, lineFeature.attributes)));
+    //   } else {
+    //     pointStore.push(startPoint);
+    //   }
+    // }
+    // var restLine = new jsts.geom.LineString(pointStore.concat([endPoint]));
+    // newFeatures.push(new OpenLayers.Feature.Vector(this.olFromJsts.write(restLine), OpenLayers.Util.extend({}, lineFeature.attributes)));
+    // this._deleteFeature(lineFeature)
+    // return newFeatures;
+  },
   splitLineGeometry(coordinates, geometry){
     const tollerance = 1e-10;
     if (!coordinates) return geometry;

@@ -24,6 +24,7 @@ proto.getLength = function(){
 }
 
 proto.clear = function(){
+  this.run();
   this.tasks = [];
 }
 

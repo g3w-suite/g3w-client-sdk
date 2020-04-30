@@ -98,15 +98,10 @@ const vueComponentOptions = {
     featureHasActions: function(layer,feature) {
       return this.geometryAvailable(feature);
     },
-    /*getLayerActions: function(layer) {
-     return this.$options.queryResultsService.getLayerActions(layer);
-     },*/
     geometryAvailable: function(feature) {
       return feature.geometry ? true : false;
     },
     attributesSubset: function(attributes) {
-      // faccio un filtro sul campo immagine perchè non ha senso far vedere
-      // la stringa con il path dell'immagine
       const _attributes = _.filter(attributes, function(attribute) {
         return attribute.type != 'image';
       });

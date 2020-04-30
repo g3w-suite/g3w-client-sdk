@@ -15,7 +15,8 @@ const PickFeatureInteraction = function(options={}) {
     handleUpEvent: PickFeatureInteraction.handleUpEvent_,
     handleMoveEvent: PickFeatureInteraction.handleMoveEvent_
   });
-  this.features_ = options.features || null;
+  const {features} = options;
+  this.features_ = Array.isArray(features) && features.length && features || null;
   this.layers_ = options.layers || null;
   this.pickedFeature_ = null;
   this.pickedLayer_ = null;
