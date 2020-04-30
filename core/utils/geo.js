@@ -394,6 +394,68 @@ const geoutils = {
     });
     return layers || [];
   },
+  areCoordinatesEqual(coordinates1=[], coordinates2=[]) {
+    return (coordinates1[0]===coordinates2[0] && coordinates1[1]===coordinates2[1]);
+  },
+  splitLineGeometry(coordinates, geometry){
+    const tollerance = 1e-10;
+    if (!coordinates) return geometry;
+    // Test if list of points
+    if (coordinates.length && coordinates[0].length) {
+      let result = [geometry];
+      for (let i=0; i< coordinates.length; i++) {
+        let r = [];
+        for (var k=0; k<result.length; k++) {
+          const ri = geoutils.splitLineGeometry(coordinates[i], result[k]);
+          r = r.concat(ri);
+        }
+        result = r;
+      }
+      return result;
+    }
+    // Nothing to do
+    if (geoutils.areCoordinatesEqual(coordinates, geometry.getFirstCoordinate())
+      || geoutils.areCoordinatesEqual(coordinates, geometry.getLastCoordinate())) {
+      return [line];
+    }
+    // Get
+    const lineCoordinates = geometry.getCoordinates();
+    let splittedLineCoordinates=[lineCoordinates[0]];
+    const segments = [];
+    for (let i=0; i < lineCoordinates.length-1; i++) {
+      // Filter equal points
+      if (geoutils.areCoordinatesEqual(lineCoordinates[i],lineCoordinates[i+1])) continue;
+      // Extremity found
+      if (geoutils.areCoordinatesEqual(coordinates,lineCoordinates[i+1])) {
+        splittedLineCoordinates.push(lineCoordinates[i+1]);
+        segments.push(new ol.geom.LineString(splittedLineCoordinates));
+        splittedLineCoordinates = [];
+      } else if (!geoutils.areCoordinatesEqual(coordinates, lineCoordinates[i])) {
+        let d1, d2, split=false;
+        if (lineCoordinates[i][0] == lineCoordinates[i+1][0]) {
+          d1 = (lineCoordinates[i][1]-coordinates[1]) / (lineCoordinates[i][1]-lineCoordinates[i+1][1]);
+          split = (lineCoordinates[i][0] == coordinates[0]) && (0 < d1 && d1 <= 1)
+        } else if (lineCoordinates[i][1] == lineCoordinates[i+1][1]) {
+          d1 = (lineCoordinates[i][0]-coordinates[0]) / (lineCoordinates[i][0]-lineCoordinates[i+1][0]);
+          split = (lineCoordinates[i][1] == pt[1]) && (0 < d1 && d1 <= 1)
+        } else {
+          d1 = (lineCoordinates[i][0]-coordinates[0]) / (lineCoordinates[i][0]-lineCoordinates[i+1][0]);
+          d2 = (lineCoordinates[i][1]-coordinates[1]) / (lineCoordinates[i][1]-lineCoordinates[i+1][1]);
+          split = (Math.abs(d1-d2) <= tollerance && 0 < d1 && d1 <= 1)
+        }
+        // pt is inside the segment > split
+        if (split) {
+          splittedLineCoordinates.push(coordinates);
+          segments.push(new ol.geom.LineString(splittedLineCoordinates));
+          splittedLineCoordinates = [coordinates];
+        }
+      }
+      splittedLineCoordinates.push(lineCoordinates[i+1]);
+    }
+    if (splittedLineCoordinates.length > 1) segments.push(new ol.geom.LineString(splittedLineCoordinates));
+    if (segments.length) return segments;
+    else return [geometry];
+  },
   splitFeatures({features=[], splitfeature} ={}){
     const splitterdGeometries = [];
     features.forEach(feature => {
@@ -459,34 +521,24 @@ const geoutils = {
               })
             })
           } else {
-            const featureGeometry = parser.read(lineFeatureGeometry);
-            const splitGeometry = parser.read(geometries.split)
-            const vertex = parser.write(featureGeometry.intersection(splitGeometry));
-            const originalCoordinates = lineFeatureGeometry.getCoordinates();
+            const featureJSTSGeometry = parser.read(lineFeatureGeometry);
+            const splitJSTSGeometry = parser.read(geometries.split)
+            const vertex = parser.write(featureJSTSGeometry.intersection(splitJSTSGeometry));
             if (vertex.getType().indexOf('Multi') === -1) {
-              console.log(originalCoordinates)
-              const coordinates = lineFeatureGeometry.getClosestPoint(vertex.getCoordinates());
-              splittedFeatureGeometries.push(new ol.geom.LineString({
-                coordinates: [coordinates, originalCoordinates[1]]
-              }))
-              splittedFeatureGeometries.push(new ol.geom.LineString({
-                coordinates: [originalCoordinates[0], coordinates]
-              }))
+              const coordinates = vertex.getCoordinates();
+              geoutils.splitLineGeometry(coordinates, lineFeatureGeometry).forEach(segment => {
+                splittedFeatureGeometries.push(segment);
+              })
             } else {
-              vertex.getCoordinates().forEach(coordinates => {
-                splittedFeatureGeometries.push(new ol.geom.LineString({
-                  coordinates: [coordinates, originalCoordinates[1]]
-                }))
-                splittedFeatureGeometries.push(new ol.geom.LineString({
-                  coordinates: [originalCoordinates[0], coordinates]
-                }))
+              const coordinates = vertex.getCoordinates();
+              geoutils.splitLineGeometry(coordinates, lineFeatureGeometry).forEach(segment =>{
+                splittedFeatureGeometries.push(segment);
               })
             }
           }
         }
         break;
     }
-    console.log(splittedFeatureGeometries)
     return splittedFeatureGeometries;
   },
   dissolve({features=[], index=0, clone=false}={}) {
@@ -504,22 +556,38 @@ const geoutils = {
         const baseFeature = dissolvedFeature = clone ? features[index].clone() : features[index];
         const baseFeatureGeometry = baseFeature.getGeometry();
         const baseFeatureGeometryType = baseFeatureGeometry.getType();
-        let jstsdissolvedFeatureGeometry = parser.read(baseFeatureGeometry);
-        for (let i=0; i < featuresLength ; i++) {
-          if (index !== i) {
+        // check if can buil a LineString
+        if (baseFeatureGeometryType === 'LineString') {
+          const lineMerger = new jsts.operation.linemerge.LineMerger();
+          for (let i=0; i < featuresLength ; i++) {
             const feature = features[i];
-            jstsdissolvedFeatureGeometry = jstsdissolvedFeatureGeometry.union(parser.read(feature.getGeometry()))
+            const coordinates = parser.read(feature.getGeometry()).getCoordinates();
+            const LineString = new jsts.geom.GeometryFactory().createLineString(coordinates)
+            lineMerger.addLineString(LineString);
+          }
+          const mergedLineString = lineMerger.getMergedLineStrings();
+          jstsdissolvedFeatureGeometry = mergedLineString.size() === 1 ? mergedLineString.toArray()[0] : null;
+        } else {
+          let jstsdissolvedFeatureGeometry = parser.read(baseFeatureGeometry);
+          for (let i=0; i < featuresLength ; i++) {
+            if (index !== i) {
+              const feature = features[i];
+              jstsdissolvedFeatureGeometry = jstsdissolvedFeatureGeometry.union(parser.read(feature.getGeometry()))
+            }
           }
         }
-        const dissolvedFeatureGeometry = parser.write(jstsdissolvedFeatureGeometry);
-        const dissolvedFeatureGeometryType = dissolvedFeatureGeometry.getType();
-        const dissolvedFeatuteGeometryCoordinates = dissolvedFeatureGeometryType === baseFeatureGeometryType ?
-          dissolvedFeatureGeometry.getCoordinates() :
-          baseFeatureGeometryType.indexOf('Multi') !== -1 && dissolvedFeatureGeometryType === baseFeatureGeometryType.replace('Multi', '') ? [dissolvedFeatureGeometry.getCoordinates()] : null;
-        if (dissolvedFeatuteGeometryCoordinates)
-          baseFeature.getGeometry().setCoordinates(dissolvedFeatuteGeometryCoordinates);
-        else
-          dissolvedFeature = null;
+        if (jstsdissolvedFeatureGeometry) {
+          const dissolvedFeatureGeometry = parser.write(jstsdissolvedFeatureGeometry);
+          const dissolvedFeatureGeometryType = dissolvedFeatureGeometry.getType();
+          const dissolvedFeatuteGeometryCoordinates = dissolvedFeatureGeometryType === baseFeatureGeometryType ?
+            dissolvedFeatureGeometry.getCoordinates() :
+            (baseFeatureGeometryType.indexOf('Multi') !== -1 && dissolvedFeatureGeometryType === baseFeatureGeometryType.replace('Multi', '')) ? [dissolvedFeatureGeometry.getCoordinates()]
+              : null;
+          if (dissolvedFeatuteGeometryCoordinates)
+            baseFeature.getGeometry().setCoordinates(dissolvedFeatuteGeometryCoordinates);
+          else
+            dissolvedFeature = null;
+        } else dissolvedFeature = null;
     }
     return dissolvedFeature;
   }

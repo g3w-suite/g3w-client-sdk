@@ -97,7 +97,7 @@ function TableLayer(config={}, options={}) {
   base(this, config, options);
   const projectRelations = project.getRelations();
   // create realations
-  this._relations = null;
+  this._relations;
   this._createRelations(projectRelations);
   // add state info for the layer
   this.state = _.merge({
@@ -549,8 +549,8 @@ proto.getRelations = function() {
 };
 
 proto.getRelationById = function(id) {
-  return this._relations.getArray().filter(relation => {
-    console.log(relation);
+  return this._relations.getArray().find(relation => {
+    relation.getId() === id;
   })
 };
 
