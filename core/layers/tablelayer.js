@@ -138,7 +138,6 @@ function TableLayer(config={}, options={}) {
   this._featuresstore = new FeaturesStore({
     provider: this.providers.data
   });
-
 }
 
 inherit(TableLayer, Layer);
@@ -480,8 +479,7 @@ proto.getFieldsWithValues = function(obj, options={}) {
         // check check if has a value
         if (feature.getId() && !feature.isNew()) {
           field.value = feature.getId();
-          //editable = feature.isNew();
-        } else field.value = null;
+        } else field.value = feature.get(field.name);
         field.editable = editable;
       } else field.value = attributes[field.name];
 

@@ -44,12 +44,11 @@ function Flow() {
     step.run(inputs, context, this.queques)
       .then((outputs) => {
         this.onDone(outputs);
+        runTasks && this.queques.micro.run();
       })
       .fail((error) => {
+        this.clearQueques();
         this.onError(error);
-      })
-      .always(()=>{
-        runTasks && this.queques.micro.run();
       })
   };
 
@@ -68,6 +67,7 @@ function Flow() {
   // in case of error
   this.onError = function(err) {
     counter = 0;
+
     d.reject(err);
   };
 

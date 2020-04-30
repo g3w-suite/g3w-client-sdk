@@ -437,13 +437,12 @@ const geoutils = {
           split = (lineCoordinates[i][0] == coordinates[0]) && (0 < d1 && d1 <= 1)
         } else if (lineCoordinates[i][1] == lineCoordinates[i+1][1]) {
           d1 = (lineCoordinates[i][0]-coordinates[0]) / (lineCoordinates[i][0]-lineCoordinates[i+1][0]);
-          split = (lineCoordinates[i][1] == pt[1]) && (0 < d1 && d1 <= 1)
+          split = (lineCoordinates[i][1] == coordinates[1]) && (0 < d1 && d1 <= 1)
         } else {
           d1 = (lineCoordinates[i][0]-coordinates[0]) / (lineCoordinates[i][0]-lineCoordinates[i+1][0]);
           d2 = (lineCoordinates[i][1]-coordinates[1]) / (lineCoordinates[i][1]-lineCoordinates[i+1][1]);
           split = (Math.abs(d1-d2) <= tollerance && 0 < d1 && d1 <= 1)
         }
-        // pt is inside the segment > split
         if (split) {
           splittedLineCoordinates.push(coordinates);
           segments.push(new ol.geom.LineString(splittedLineCoordinates));
@@ -545,6 +544,7 @@ const geoutils = {
     const parser = new jsts.io.OL3Parser();
     const featuresLength = features.length;
     let dissolvedFeature;
+    let jstsdissolvedFeatureGeometry;
     switch (featuresLength) {
       case 0:
         dissolvedFeature = null;
@@ -568,7 +568,7 @@ const geoutils = {
           const mergedLineString = lineMerger.getMergedLineStrings();
           jstsdissolvedFeatureGeometry = mergedLineString.size() === 1 ? mergedLineString.toArray()[0] : null;
         } else {
-          let jstsdissolvedFeatureGeometry = parser.read(baseFeatureGeometry);
+          jstsdissolvedFeatureGeometry = parser.read(baseFeatureGeometry);
           for (let i=0; i < featuresLength ; i++) {
             if (index !== i) {
               const feature = features[i];
