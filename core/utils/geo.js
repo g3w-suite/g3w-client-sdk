@@ -397,49 +397,44 @@ const geoutils = {
   areCoordinatesEqual(coordinates1=[], coordinates2=[]) {
     return (coordinates1[0]===coordinates2[0] && coordinates1[1]===coordinates2[1]);
   },
-  splitLine(splitFeature, lineFeature) {
-    // var newFeatures = []
-    // this.jstsFromWkt = new jsts.io.WKTReader();
-    // this.wktFromOl = new OpenLayers.Format.WKT();
-    // this.olFromJsts = new jsts.io.OpenLayersParser();
-    // this.layer = layer;
-    // var splitLine = this.jstsFromWkt.read(this.wktFromOl.write(splitFeature));
-    // var targetLine = this.jstsFromWkt.read(this.wktFromOl.write(lineFeature));
-    // var pointStore = [];
-    // var endPoint;
-    // for(var i = 0; i < targetLine.points.length -1; i++) {
-    //   var startPoint = targetLine.points[i];
-    //   endPoint = targetLine.points[i+1];
-    //   var segment = new jsts.geom.LineString([startPoint, endPoint]);
-    //   if(segment.intersects(splitLine)) {
-    //     var splitPoint = segment.intersection(splitLine).coordinate;
-    //     var newLine= new jsts.geom.LineString(pointStore.concat([startPoint, splitPoint]));
-    //     pointStore = [splitPoint];
-    //     newFeatures.push(new OpenLayers.Feature.Vector(this.olFromJsts.write(newLine), OpenLayers.Util.extend({}, lineFeature.attributes)));
-    //   } else {
-    //     pointStore.push(startPoint);
-    //   }
-    // }
-    // var restLine = new jsts.geom.LineString(pointStore.concat([endPoint]));
-    // newFeatures.push(new OpenLayers.Feature.Vector(this.olFromJsts.write(restLine), OpenLayers.Util.extend({}, lineFeature.attributes)));
-    // this._deleteFeature(lineFeature)
-    // return newFeatures;
+  splitLine(splitGeometry, lineGeometry) {
+    const splitted = []
+    const parser =  new jsts.io.OL3Parser();
+    const splitLine = parser.read(splitGeometry);
+    const lineCoordinates = lineGeometry.getCoordinates();
+    const lineCoordinatesLength = lineCoordinates.length;
+    const pointStore = [];
+    let endPoint;
+    for (let i = 0; i < lineCoordinatesLength-1; i++) {
+      const startPoint = lineCoordinates[i];
+      endPoint = lineCoordinates[i+1];
+      const lineSegment = parser.read(new ol.geom.LineString([startPoint, endPoint]));
+      const splitPoint = lineSegment.intersection(splitLine).getCoordinates();
+      if (splitPoint) {
+        const lineGeometry = new jsts.geom.LineString(pointStore.concat([startPoint, splitPoint]));
+        pointStore.push(parser.write(splitPoint));
+        splitted.push(parser.write(lineGeometry));
+      } else pointStore.push(startPoint);
+    }
+    const restLine = new ol.geom.LineString(pointStore.concat([endPoint]));
+    splitted.push(restLine);
+    return splitted;
   },
   splitLineGeometry(coordinates, geometry){
     const tollerance = 1e-10;
     if (!coordinates) return geometry;
     // Test if list of points
     if (coordinates.length && coordinates[0].length) {
-      let result = [geometry];
-      for (let i=0; i< coordinates.length; i++) {
+      let segments = [geometry];
+      for (let i=0; i < coordinates.length; i++) {
         let r = [];
-        for (var k=0; k<result.length; k++) {
-          const ri = geoutils.splitLineGeometry(coordinates[i], result[k]);
+        for (let k=0; k < segments.length; k++) {
+          const ri = geoutils.splitLineGeometry(coordinates[i], segments[k]);
           r = r.concat(ri);
         }
-        result = r;
+        segments = r;
       }
-      return result;
+      return segments;
     }
     // Nothing to do
     if (geoutils.areCoordinatesEqual(coordinates, geometry.getFirstCoordinate())
@@ -448,7 +443,7 @@ const geoutils = {
     }
     // Get
     const lineCoordinates = geometry.getCoordinates();
-    let splittedLineCoordinates=[lineCoordinates[0]];
+    let splittedLineCoordinates= [lineCoordinates[0]];
     const segments = [];
     for (let i=0; i < lineCoordinates.length-1; i++) {
       // Filter equal points
@@ -504,6 +499,7 @@ const geoutils = {
     const parser = new jsts.io.OL3Parser();
     switch (splitType){
       case 'LineString':
+        return geoutils.splitLine(geometries.split, geometries.feature)
         // check geometry type of feature
         const geometryType = geometries.feature.getType();
         if (geometryType.indexOf('Polygon') !== -1 ) {
@@ -523,7 +519,6 @@ const geoutils = {
           } else {
             const featureGeometry = parser.read(polygonFeature.getLinearRing(0));
             const splitGeometry = parser.read(geometries.split)
-            const splitFeatureGeometry = featureGeometry.intersection(splitGeometry);
             const union = featureGeometry.union(splitGeometry)
             const polygonizer = new jsts.operation.polygonize.Polygonizer();
             polygonizer.add(union);
