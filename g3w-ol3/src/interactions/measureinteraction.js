@@ -36,24 +36,20 @@ const MeasureIteraction = function(options={}) {
     case 'LineString':
      this._formatMeasure = function(feature) {
        let geometry = feature;
-       if (this._projection.getUnits() === 'degrees') {
-         geometry = feature.clone();
-         geometry.transform(this._projection.getCode(), 'EPSG:3857');
-       }
-       const length = Math.round(useSphereMethods ? ol.Sphere.getLength(geometry) : geometry.getLength() * 100) / 100;
-       const output = (length > 1000) ? `${(length / 1000).toFixed(3)} km`: `${length.toFixed(2)} m`;
-        return output;
+       const length = useSphereMethods ? ol.Sphere.getLength(geometry, {
+         projection: this._projection.getCode()
+       }) : geometry.getLength();
+       const output = (length > 1000) ? `${(Math.round(length / 1000 * 100) / 100).toFixed(3)} km`: `${(Math.round(length * 100) / 100).toFixed(2)} m`;
+       return output;
       };
       break;
     case 'Polygon':
       this._formatMeasure = function(feature) {
         let geometry = feature;
-        if (this._projection.getUnits() === 'degrees') {
-          geometry = feature.clone();
-          geometry.transform(this._projection.getCode(), 'EPSG:3857');
-        }
-        const area = useSphereMethods ? ol.Sphere.getArea(geometry): geometry.getArea();
-        const output = area > 1000000 ? `${(area / 1000000).toFixed(6)} km<sup>2</sup>` : `${area.toFixed(3)} m<sup>2</sup>`;
+        const area =  Math.round(useSphereMethods ? ol.Sphere.getArea(geometry, {
+          projection: this._projection.getCode()
+        }): geometry.getArea());
+        const output = area > 1000000 ? `${(Math.round(area / 1000000 * 100) / 100) .toFixed(6)} km<sup>2</sup>` : `${(Math.round(area * 100) / 100).toFixed(3)} m<sup>2</sup>`;
         return output;
       };
       break;

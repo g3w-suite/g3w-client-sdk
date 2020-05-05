@@ -3,8 +3,8 @@ const base = require('core/utils/utils').base;
 const geoutils = require('g3w-ol3/src/utils/utils');
 const G3WObject = require('core/g3wobject');
 const { geometryFields } =  require('core/utils/geo');
-const convert = require('xml-js');
 const WORD_NUMERIC_XML_TAG_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_';
+const WORD_NUMERIC_FIELD_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_FIELD_'
 
 function Provider(options = {}) {
   this._isReady = false;
@@ -288,6 +288,13 @@ proto._handleXMLStringResponseBeforeConvertToJSON = function({response, layers, 
     const reg = new RegExp(`qgs:${sanitizeLayerName}\\b`, "g");
     response = response.replace(reg, `qgs:layer${i}`);
   }
+  const arrayQGS = [...response.matchAll(/qgs:(\d+)(\w+)>/g)];
+  arrayQGS.forEach((find, idx) => {
+    if(idx%2 === 0) {
+      const regex = new RegExp(`${find[0]}`, "g");
+      response = response.replace(regex, `qgs:${WORD_NUMERIC_FIELD_ESCAPE}${find[1]}${find[2]}>`)
+    }
+  })
   return response;
 };
 
