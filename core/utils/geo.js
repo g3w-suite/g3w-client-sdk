@@ -397,86 +397,35 @@ const geoutils = {
   areCoordinatesEqual(coordinates1=[], coordinates2=[]) {
     return (coordinates1[0]===coordinates2[0] && coordinates1[1]===coordinates2[1]);
   },
-  splitLine(splitGeometry, lineGeometry) {
-    const splitted = []
-    const parser =  new jsts.io.OL3Parser();
-    const splitLine = parser.read(splitGeometry);
-    const lineCoordinates = lineGeometry.getCoordinates();
-    const lineCoordinatesLength = lineCoordinates.length;
+  splitGeometryLine(splitGeometry, lineGeometry) {
+    const splittedSegments = []
+    const jstsFromWkt = new jsts.io.WKTReader();
+    const wktFromOl = new ol.format.WKT();
+    const olFromJsts = new jsts.io.OL3Parser();
+    const splitLine = jstsFromWkt.read(wktFromOl.writeGeometry(splitGeometry));
+    const targetLine = jstsFromWkt.read(wktFromOl.writeGeometry(lineGeometry));
+    const targetCoordinates = targetLine.getCoordinates();
+    const targetCoordinatesLength = targetCoordinates.length;
     const pointStore = [];
+    const geometryFactory = new jsts.geom.GeometryFactory();
     let endPoint;
-    for (let i = 0; i < lineCoordinatesLength-1; i++) {
-      const startPoint = lineCoordinates[i];
-      endPoint = lineCoordinates[i+1];
-      const lineSegment = parser.read(new ol.geom.LineString([startPoint, endPoint]));
-      const splitPoint = lineSegment.intersection(splitLine).getCoordinates();
-      if (splitPoint) {
-        const lineGeometry = new jsts.geom.LineString(pointStore.concat([startPoint, splitPoint]));
-        pointStore.push(parser.write(splitPoint));
-        splitted.push(parser.write(lineGeometry));
+    for (let i = 0; i < targetCoordinatesLength -1; i++) {
+      let startPoint = targetCoordinates[i];
+      endPoint = targetCoordinates[i+1];
+      const segment = geometryFactory.createLineString([startPoint, endPoint])
+      if (segment.intersects(splitLine)) {
+        const intersectCoordinates = segment.intersection(splitLine).getCoordinates();
+        intersectCoordinates.forEach(splitPoint => {
+          const newSegment= geometryFactory.createLineString(pointStore.concat([startPoint, splitPoint]));
+          splittedSegments.push(olFromJsts.write(newSegment));
+          startPoint = splitPoint;
+        })
+        pointStore.push(startPoint);
       } else pointStore.push(startPoint);
-    }
-    const restLine = new ol.geom.LineString(pointStore.concat([endPoint]));
-    splitted.push(restLine);
-    return splitted;
-  },
-  splitLineGeometry(coordinates, geometry){
-    const tollerance = 1e-10;
-    if (!coordinates) return geometry;
-    // Test if list of points
-    if (coordinates.length && coordinates[0].length) {
-      let segments = [geometry];
-      for (let i=0; i < coordinates.length; i++) {
-        let r = [];
-        for (let k=0; k < segments.length; k++) {
-          const ri = geoutils.splitLineGeometry(coordinates[i], segments[k]);
-          r = r.concat(ri);
-        }
-        segments = r;
-      }
-      return segments;
-    }
-    // Nothing to do
-    if (geoutils.areCoordinatesEqual(coordinates, geometry.getFirstCoordinate())
-      || geoutils.areCoordinatesEqual(coordinates, geometry.getLastCoordinate())) {
-      return [line];
-    }
-    // Get
-    const lineCoordinates = geometry.getCoordinates();
-    let splittedLineCoordinates= [lineCoordinates[0]];
-    const segments = [];
-    for (let i=0; i < lineCoordinates.length-1; i++) {
-      // Filter equal points
-      if (geoutils.areCoordinatesEqual(lineCoordinates[i],lineCoordinates[i+1])) continue;
-      // Extremity found
-      if (geoutils.areCoordinatesEqual(coordinates,lineCoordinates[i+1])) {
-        splittedLineCoordinates.push(lineCoordinates[i+1]);
-        segments.push(new ol.geom.LineString(splittedLineCoordinates));
-        splittedLineCoordinates = [];
-      } else if (!geoutils.areCoordinatesEqual(coordinates, lineCoordinates[i])) {
-        let d1, d2, split=false;
-        if (lineCoordinates[i][0] == lineCoordinates[i+1][0]) {
-          d1 = (lineCoordinates[i][1]-coordinates[1]) / (lineCoordinates[i][1]-lineCoordinates[i+1][1]);
-          split = (lineCoordinates[i][0] == coordinates[0]) && (0 < d1 && d1 <= 1)
-        } else if (lineCoordinates[i][1] == lineCoordinates[i+1][1]) {
-          d1 = (lineCoordinates[i][0]-coordinates[0]) / (lineCoordinates[i][0]-lineCoordinates[i+1][0]);
-          split = (lineCoordinates[i][1] == coordinates[1]) && (0 < d1 && d1 <= 1)
-        } else {
-          d1 = (lineCoordinates[i][0]-coordinates[0]) / (lineCoordinates[i][0]-lineCoordinates[i+1][0]);
-          d2 = (lineCoordinates[i][1]-coordinates[1]) / (lineCoordinates[i][1]-lineCoordinates[i+1][1]);
-          split = (Math.abs(d1-d2) <= tollerance && 0 < d1 && d1 <= 1)
-        }
-        if (split) {
-          splittedLineCoordinates.push(coordinates);
-          segments.push(new ol.geom.LineString(splittedLineCoordinates));
-          splittedLineCoordinates = [coordinates];
-        }
-      }
-      splittedLineCoordinates.push(lineCoordinates[i+1]);
-    }
-    if (splittedLineCoordinates.length > 1) segments.push(new ol.geom.LineString(splittedLineCoordinates));
-    if (segments.length) return segments;
-    else return [geometry];
+     }
+    const restLine = geometryFactory.createLineString(pointStore.concat([endPoint]));
+    splittedSegments.push(olFromJsts.write(restLine));
+    return splittedSegments;
   },
   splitFeatures({features=[], splitfeature} ={}){
     const splitterdGeometries = [];
@@ -491,19 +440,22 @@ const geoutils = {
   },
   splitFeature({feature, splitfeature} ={}){
     const geometries = {
-      feature: feature.getGeometry(),
-      split: splitfeature.getGeometry()
+      feature: feature.getGeometry(), //geometry of the feature to split
+      split: splitfeature.getGeometry() // geometry of split feature
     }
+    // check geometry type of split
     const splitType = geometries.split.getType();
+    // check geometry type of feature
+    const featureGeometryType = geometries.feature.getType();
     const splittedFeatureGeometries = [];
     const parser = new jsts.io.OL3Parser();
     switch (splitType){
       case 'LineString':
-        return geoutils.splitLine(geometries.split, geometries.feature)
-        // check geometry type of feature
-        const geometryType = geometries.feature.getType();
-        if (geometryType.indexOf('Polygon') !== -1 ) {
-          const isMulti = geometryType.indexOf('Multi') !== -1;
+        // check if geoemtry is Polygon
+        if (featureGeometryType.indexOf('Polygon') !== -1 ) {
+          // check if is a MultiPolygon
+          const isMulti = featureGeometryType.indexOf('Multi') !== -1;
+          // if multiPolygon
           const polygonFeature = isMulti ? geometries.feature.getPolygons() : geometries.feature;
           if (Array.isArray(polygonFeature)) {
             polygonFeature.forEach(polygonGeometry =>{
@@ -517,9 +469,10 @@ const geoutils = {
               })
             })
           } else {
+            // case a Polygon
             const featureGeometry = parser.read(polygonFeature.getLinearRing(0));
-            const splitGeometry = parser.read(geometries.split)
-            const union = featureGeometry.union(splitGeometry)
+            const splitGeometry = parser.read(geometries.split);
+            const union = featureGeometry.union(splitGeometry);
             const polygonizer = new jsts.operation.polygonize.Polygonizer();
             polygonizer.add(union);
             const polygons = polygonizer.getPolygons().toArray();
@@ -528,8 +481,9 @@ const geoutils = {
               return splittedFeatureGeometries.push(isMulti ? new ol.geom.MultiPolygon([geometry.getCoordinates()]) : geometry)
             })
           }
-        } else if (geometryType.indexOf('LineString') !== -1) {
-          const isMulti = geometryType.indexOf('Multi') !== -1;
+        //LineString or MultiLineString
+        } else if (featureGeometryType.indexOf('LineString') !== -1) {
+          const isMulti = featureGeometryType.indexOf('Multi') !== -1;
           const lineFeatureGeometry = isMulti ? geometries.feature.getLineStrings() : geometries.feature;
           if (Array.isArray(lineFeatureGeometry)) {
             lineFeatureGeometry.forEach(lineGeometry =>{
@@ -542,22 +496,7 @@ const geoutils = {
                 geometry && splittedFeatureGeometries.push(new ol.geom.MultiLineString([geometry.getCoordinates()]))
               })
             })
-          } else {
-            const featureJSTSGeometry = parser.read(lineFeatureGeometry);
-            const splitJSTSGeometry = parser.read(geometries.split)
-            const vertex = parser.write(featureJSTSGeometry.intersection(splitJSTSGeometry));
-            if (vertex.getType().indexOf('Multi') === -1) {
-              const coordinates = vertex.getCoordinates();
-              geoutils.splitLineGeometry(coordinates, lineFeatureGeometry).forEach(segment => {
-                splittedFeatureGeometries.push(segment);
-              })
-            } else {
-              const coordinates = vertex.getCoordinates();
-              geoutils.splitLineGeometry(coordinates, lineFeatureGeometry).forEach(segment =>{
-                splittedFeatureGeometries.push(segment);
-              })
-            }
-          }
+          } else return geoutils.splitGeometryLine(geometries.split, geometries.feature);
         }
         break;
     }
