@@ -24,6 +24,7 @@ const ApplicationService = function() {
   this.version = G3W_VERSION.indexOf("G3W_VERSION") === -1 ? G3W_VERSION  : "";
   Applicationstate.iframe = window.top !== window.self;
   Applicationstate.online = navigator.onLine;
+  Applicationstate.ismobile= isMobile.any;
   this.complete = false;
   // store all services sidebar etc..
   this._applicationServices = {};

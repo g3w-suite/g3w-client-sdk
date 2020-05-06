@@ -43,19 +43,20 @@ function SearchComponent(options={}){
     service: this._service
   });
   this.internalComponent.state = this._service.state;
-  this.state.visible = (this._service.state.searches.length +
-    this._service.state.searchtools.length +
-    this._service.state.querybuildersearches.length) > 0;
-  const handlerVisible = (bool) =>{
-    this.state.visible = bool;
-  };
-  this._searches_searchtools = new Vue();
-  this._searches_searchtools.$watch(() => (this._service.state.searches.length +
-    this._service.state.searchtools.length +
-    this._service.state.querybuildersearches.length) > 0 , {
-    immediate: true,
-    handler: handlerVisible
-  });
+  this.state.visible = true;
+  // this.state.visible = (this._service.state.searches.length +
+  //   this._service.state.searchtools.length +
+  //   this._service.state.querybuildersearches.length) > 0;
+  // const handlerVisible = (bool) =>{
+  //   this.state.visible = bool;
+  // };
+  // this._searches_searchtools = new Vue();
+  // this._searches_searchtools.$watch(() => (this._service.state.searches.length +
+  //   this._service.state.searchtools.length +
+  //   this._service.state.querybuildersearches.length) > 0 , {
+  //   immediate: true,
+  //   handler: handlerVisible
+  // });
   this._reload = function() {
     this._service.reload();
   };
