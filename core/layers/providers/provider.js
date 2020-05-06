@@ -404,6 +404,20 @@ proto._parseLayerFeatureCollection = function({jsonresponse, layer, projections}
   const layerFeatureCollectionXML = x2js.json2xml_str(jsonresponse);
   const parser = new ol.format.WMSGetFeatureInfo();
   const features = this._tranformFeatures(parser.readFeatures(layerFeatureCollectionXML), projections);
+  if (features.length) {
+    const properties = Object.keys(features[0].getProperties());
+    const numericFields = properties.filter(property => property.indexOf(WORD_NUMERIC_FIELD_ESCAPE) !== -1);
+    if (numericFields.length) {
+      features.forEach(feature => {
+        numericFields.forEach(_field => {
+          const value = feature.get(_field);
+          const ori_field = _field.replace(WORD_NUMERIC_FIELD_ESCAPE, '');
+          feature.set(ori_field, value);
+          feature.unset(_field);
+        })
+      })
+    }
+  }
   return [{
     layer,
     features

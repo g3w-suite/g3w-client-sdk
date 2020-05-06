@@ -450,9 +450,9 @@ proto.saveLayerResult = function(layer, alias=true) {
     //get headers
     const attributes = Object.keys(layer.features[0].attributes);
     const properties = getAlphanumericPropertiesFromFeature(attributes);
-    const headers = !alias && properties || layer.attributes.map((attribute) => {
-      const index = properties.indexOf(attribute.name);
-      return layer.attributes[index].label;
+    const headers = !alias ? properties : properties.map((property) => {
+      const attribute = layer.attributes.find(attribute => attribute.name === property);
+      return attribute ? attribute.label : property;
     });
 
     function convertToCSV(items) {
@@ -468,10 +468,14 @@ proto.saveLayerResult = function(layer, alias=true) {
       return str;
     }
 
-    function exportCSVFile(headers, items, fileTitle) {
-      if (headers) {
-        items.unshift(headers);
-      }
+    function exportCSVFile(headers, items=[], fileTitle) {
+      items = items.map(item => {
+        Object.keys(item).forEach(key => {
+          item[key] = typeof item[key] === 'string' ? item[key].replace(/(\r\n|\n|\r)/gm," ") : item[key];
+        })
+        return item
+      })
+      if (headers) items.unshift(headers);
       // Convert Object to JSON
       const csv = convertToCSV(items);
       const exportedFilenmae = `${layer.id}.csv`;
