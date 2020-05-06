@@ -471,7 +471,7 @@ proto.saveLayerResult = function(layer, alias=true) {
     function exportCSVFile(headers, items=[], fileTitle) {
       items = items.map(item => {
         Object.keys(item).forEach(key => {
-          item[key] = item[key].replace(/(\r\n|\n|\r)/gm," ");
+          item[key] = typeof item[key] === 'string' ? item[key].replace(/(\r\n|\n|\r)/gm," ") : item[key];
         })
         return item
       })
@@ -509,7 +509,6 @@ proto.saveLayerResult = function(layer, alias=true) {
 
     exportCSVFile(headers, itemsFormatted);
   } catch(e) {
-    console.log(e)
     GUI.notify.error(t('info.server_error'));
   }
 };
