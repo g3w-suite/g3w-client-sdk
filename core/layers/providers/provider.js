@@ -10,6 +10,7 @@ function Provider(options = {}) {
   this._isReady = false;
   this._name = 'provider';
   this._layer = options.layer;
+  this._hasFieldsStartWithNumber = false;
   base(this);
 }
 
@@ -289,6 +290,7 @@ proto._handleXMLStringResponseBeforeConvertToJSON = function({response, layers, 
     response = response.replace(reg, `qgs:layer${i}`);
   }
   const arrayQGS = [...response.matchAll(/qgs:(\d+)(\w+)>/g)];
+  this._hasFieldsStartWithNumber = !!arrayQGS.length;
   arrayQGS.forEach((find, idx) => {
     if(idx%2 === 0) {
       const regex = new RegExp(`${find[0]}`, "g");
@@ -404,19 +406,18 @@ proto._parseLayerFeatureCollection = function({jsonresponse, layer, projections}
   const layerFeatureCollectionXML = x2js.json2xml_str(jsonresponse);
   const parser = new ol.format.WMSGetFeatureInfo();
   const features = this._tranformFeatures(parser.readFeatures(layerFeatureCollectionXML), projections);
-  if (features.length) {
+  if (features.length && this._hasFieldsStartWithNumber) {
     const properties = Object.keys(features[0].getProperties());
     const numericFields = properties.filter(property => property.indexOf(WORD_NUMERIC_FIELD_ESCAPE) !== -1);
-    if (numericFields.length) {
-      features.forEach(feature => {
-        numericFields.forEach(_field => {
-          const value = feature.get(_field);
-          const ori_field = _field.replace(WORD_NUMERIC_FIELD_ESCAPE, '');
-          feature.set(ori_field, value);
-          feature.unset(_field);
-        })
+    features.forEach(feature => {
+      numericFields.forEach(_field => {
+        const value = feature.get(_field);
+        const ori_field = _field.replace(WORD_NUMERIC_FIELD_ESCAPE, '');
+        feature.set(ori_field, value);
+        feature.unset(_field);
       })
-    }
+    });
+    this._hasFieldsStartWithNumber = false;
   }
   return [{
     layer,
