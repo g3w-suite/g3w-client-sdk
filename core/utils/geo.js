@@ -398,7 +398,8 @@ const geoutils = {
     return (coordinates1[0]===coordinates2[0] && coordinates1[1]===coordinates2[1]);
   },
   splitGeometryLine(splitGeometry, lineGeometry) {
-    const splittedSegments = []
+    let splitted = false;
+    const splittedSegments = [];
     const jstsFromWkt = new jsts.io.WKTReader();
     const wktFromOl = new ol.format.WKT();
     const olFromJsts = new jsts.io.OL3Parser();
@@ -406,26 +407,35 @@ const geoutils = {
     const targetLine = jstsFromWkt.read(wktFromOl.writeGeometry(lineGeometry));
     const targetCoordinates = targetLine.getCoordinates();
     const targetCoordinatesLength = targetCoordinates.length;
-    const pointStore = [];
     const geometryFactory = new jsts.geom.GeometryFactory();
+    let pointsNotSplitted = [];
     let endPoint;
+    let startPoint;
     for (let i = 0; i < targetCoordinatesLength -1; i++) {
-      let startPoint = targetCoordinates[i];
+      startPoint = targetCoordinates[i];
       endPoint = targetCoordinates[i+1];
+      // create a segment of two vertex
       const segment = geometryFactory.createLineString([startPoint, endPoint])
-      if (segment.intersects(splitLine)) {
-        const intersectCoordinates = segment.intersection(splitLine).getCoordinates();
+      const intersectCoordinates = segment.intersection(splitLine).getCoordinates();
+      if (intersectCoordinates.length) {
+        splitted = true;
         intersectCoordinates.forEach(splitPoint => {
-          const newSegment= geometryFactory.createLineString(pointStore.concat([startPoint, splitPoint]));
-          splittedSegments.push(olFromJsts.write(newSegment));
+          if (pointsNotSplitted.length) {
+            const newSegment= geometryFactory.createLineString(pointsNotSplitted.concat([startPoint, splitPoint]));
+            splittedSegments.push(olFromJsts.write(newSegment));
+            pointsNotSplitted = [];
+          } else {
+            const newSegment= geometryFactory.createLineString([startPoint, splitPoint]);
+            splittedSegments.push(olFromJsts.write(newSegment));
+          }
           startPoint = splitPoint;
         })
-        pointStore.push(startPoint);
-      } else pointStore.push(startPoint);
-     }
-    const restLine = geometryFactory.createLineString(pointStore.concat([endPoint]));
-    splittedSegments.push(olFromJsts.write(restLine));
-    return splittedSegments;
+        pointsNotSplitted = pointsNotSplitted.concat([startPoint, endPoint]);
+      } else pointsNotSplitted = pointsNotSplitted.concat([startPoint, endPoint]);
+    }
+    const restOfLine =  geometryFactory.createLineString(pointsNotSplitted);
+    splittedSegments.push(olFromJsts.write(restOfLine));
+    return splitted && splittedSegments || []
   },
   splitFeatures({features=[], splitfeature} ={}){
     const splitterdGeometries = [];

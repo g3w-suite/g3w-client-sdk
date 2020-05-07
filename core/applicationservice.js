@@ -47,6 +47,7 @@ const ApplicationService = function() {
   base(this);
   // init from server
   this.init = function(config={}) {
+    Applicationstate.lng = config._i18n.lng;
     this._config = config;
     this._groupId = this._config.group.slug || this._config.group.name.replace(/\s+/g, '-').toLowerCase();
     // run bbotstrap
@@ -54,6 +55,7 @@ const ApplicationService = function() {
   };
 
   this.changeLanguage = function(lng){
+    Applicationstate.lng = lng;
     const pathname = window.location.pathname;
     const pathArray = pathname.split('/');
     pathArray[1] = lng;

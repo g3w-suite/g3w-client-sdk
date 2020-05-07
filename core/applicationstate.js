@@ -3,7 +3,8 @@ const STATE = Vue.observable({
   ready: false,
   iframe: false,
   online: false,
-  ismobile: false
+  ismobile: false,
+  lng: 'en'
 });
 
 export default STATE;

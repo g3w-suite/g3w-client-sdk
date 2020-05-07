@@ -1,14 +1,21 @@
-const t = require('core/i18n/i18n.service').t;
-const tTemplate = require('core/i18n/i18n.service').tTemplate;
-const tPlugin = require('core/i18n/i18n.service').tPlugin;
+import ApplicationState from 'core/applicationstate';
+const {t, tTemplate, tPlugin, changeLanguage} = require('core/i18n/i18n.service')
 const GlobalDirective = {
   install(Vue) {
+    const vm = new Vue();
     const prePositioni18n = ({el, binding, i18nFnc = t }) => {
+      const innerHTML = el.innerHTML;
       const position = binding.arg ? binding.arg : 'post';
-      if (position === 'pre')
-        el.innerHTML = i18nFnc(binding.value) + el.innerHTML;
-      else if (position === 'post')
-        el.innerHTML = el.innerHTML + i18nFnc(binding.value);
+      const handlerElement = (innerHTML)=>{
+        if (position === 'pre') el.innerHTML = i18nFnc(binding.value) + innerHTML;
+        else if (position === 'post') el.innerHTML = innerHTML + i18nFnc(binding.value);
+      }
+      vm.$watch(() => ApplicationState.lng, (lng) => {
+          changeLanguage(lng);
+          handlerElement(innerHTML);
+        }
+      );
+      handlerElement(innerHTML);
     };
 
     Vue.directive("disabled",function(el, binding){
@@ -30,7 +37,7 @@ const GlobalDirective = {
     );
 
     Vue.directive("selected-first",function(el, binding){
-        if (binding.value==0){
+        if (binding.value===0){
           el.setAttribute('selected','');
         } else {
           el.removeAttribute('selected');
