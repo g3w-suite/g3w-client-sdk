@@ -20,7 +20,7 @@ function LayerFactory() {
       case Layer.ServerTypes.QGIS:
         LayerClass = ImageLayer;
         if (config.source && config.geometrytype) {
-          if ([Layer.SourceTypes.POSTGIS, Layer.SourceTypes.SPATIALITE, Layer.SourceTypes.CSV, Layer.SourceTypes.OGR].indexOf(config.source.type) > -1) {
+          if ([Layer.SourceTypes.POSTGIS, Layer.SourceTypes.MYSQL, Layer.SourceTypes.SPATIALITE, Layer.SourceTypes.CSV, Layer.SourceTypes.OGR].indexOf(config.source.type) > -1) {
             if (config.geometrytype && config.geometrytype === 'No geometry') {
               LayerClass = TableLayer;
             }

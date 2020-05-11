@@ -540,6 +540,7 @@ Layer.ServerTypes = {
 Layer.SourceTypes = {
   POSTGIS: 'postgres',
   SPATIALITE: 'spatialite',
+  MYSQL: 'mssql',
   CSV: 'delimitedtext',
   OGR: 'ogr',
   GDAL: 'gdal',
