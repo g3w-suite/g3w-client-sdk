@@ -155,6 +155,7 @@ const InternalComponent = Vue.extend({
       this.relation = relation;
       const field = relation.fieldRef.referencedField;
       let value = this.feature.attributes[field];
+      const fid = this.feature.attributes['g3w_fid'];
       if (value === null || value === undefined) {
         try {
           const splitFieldPk = this.feature[field].split('.');
@@ -170,12 +171,18 @@ const InternalComponent = Vue.extend({
       }
       GUI.setLoadingContent(true);
       this.$options.service.getRelations({
-        id: relation.id,
+        relation,
+        fid,
         value
-      }).then((relations) => {
-        this.table = this.$options.service.buildRelationTable(relations);
-        this.currentview = 'relation';
-        this.previousview = 'relations';
+      }).then((response) => {
+        if (response.result) {
+          const relations = response.vector.data.features || [];
+          this.table = this.$options.service.buildRelationTable(relations);
+          this.currentview = 'relation';
+          this.previousview = 'relations';
+        } else {
+
+        }
       }).catch((err) => {
       }).finally(() => {
         GUI.setLoadingContent(false);
@@ -202,7 +209,10 @@ const InternalComponent = Vue.extend({
 
 const RelationsPage = function(options={}) {
   base(this);
-  const service = options.service || new Service({});
+  const layer = options.layer;
+  const service = options.service || new Service({
+    layer
+  });
   const relations = options.relations || [];
   const relation = options.relation || null;
   const feature = options.feature || null;
@@ -211,10 +221,10 @@ const RelationsPage = function(options={}) {
   this.setService(service);
   const internalComponent = new InternalComponent({
     previousview: currentview,
-    service: service,
-    relations: relations,
+    service,
+    relations,
     relation,
-    feature: feature,
+    feature,
     currentview,
     table
   });

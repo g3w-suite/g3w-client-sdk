@@ -21,7 +21,7 @@ proto.setup = function(config={}, options={}) {
   // state extend of layer setting geolayer property to true
   // and adding informations of bbox
   _.extend(this.state, {
-    geolayer: true,
+    geolayer: config.geometrytype !== "No geometry",
     external: config.source && config.source.external || false,
     bbox: config.bbox || null,
     visible: config.visible || false,

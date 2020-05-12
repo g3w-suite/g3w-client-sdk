@@ -229,6 +229,10 @@ proto._getHandledResponsesFromResponse = function({response, layers, projections
       jsonresponse.FeatureCollection.featureMember = originalFeatureMember.filter((feature) => {
         const featureMember = feature[layerName];
          if (featureMember) {
+           featureMember.g3w_fid = {
+             __prefix: feature.__prefix,
+             __text: featureMember._fid
+           };
            if (Array.isArray(featureMember)){
              featureMemberArrayAndPrefix.features = featureMember;
              featureMemberArrayAndPrefix.__prefix = feature.__prefix;
@@ -296,7 +300,7 @@ proto._handleXMLStringResponseBeforeConvertToJSON = function({response, layers, 
       const regex = new RegExp(`${find[0]}`, "g");
       response = response.replace(regex, `qgs:${WORD_NUMERIC_FIELD_ESCAPE}${find[1]}${find[2]}>`)
     }
-  })
+  });
   return response;
 };
 

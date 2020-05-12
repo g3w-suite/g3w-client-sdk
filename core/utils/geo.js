@@ -1,5 +1,4 @@
 const Geometry = require('core/geometry/geometry');
-const jsts = require('jsts');
 const Filter = require('core/layers/filter/filter');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const geometryFields = ['geometryProperty', 'boundedBy', 'geom', 'the_geom', 'geometry', 'bbox', 'GEOMETRY', 'geoemtria'];
@@ -381,7 +380,9 @@ const geoutils = {
     });
     return results;
   },
-
+  getMapLayerById: function(layerId){
+    return MapLayersStoreRegistry.getLayerById(layerId);
+  },
   getMapLayersByFilter(filter) {
     filter = filter || {};
     const mapFilter = {

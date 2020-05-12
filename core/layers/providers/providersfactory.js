@@ -15,6 +15,12 @@ const ProvidersForServerTypes = {
       data: Providers.qgis,
       search: Providers.qgis
     },
+    'mssql': {
+      query: Providers.wms,
+      filter: Providers.wfs,
+      data: Providers.qgis,
+      search: Providers.qgis
+    },
     'spatialite': {
       query: Providers.wms,
       filter: Providers.wfs,
@@ -24,7 +30,7 @@ const ProvidersForServerTypes = {
     'ogr': {
       query: Providers.wms,
       filter: Providers.wfs,
-      data: null,
+      data: Providers.qgis,
       search: Providers.qgis
     },
     'delimitedtext': {

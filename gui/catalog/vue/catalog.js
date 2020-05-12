@@ -148,6 +148,10 @@ const vueComponentOptions = {
       const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
       return originalLayer ? (!!(!originalLayer.isType('table') && originalLayer.getFullWmsUrl())) : false;
     },
+    canDownloadXls(layerId) {
+      const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      return layer ? layer.isXlsDownlodable(): false;
+    },
     canDownloadShp(layerId) {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       return layer ? layer.isShpDownlodable(): false;
@@ -174,6 +178,16 @@ const vueComponentOptions = {
         GUI.notify.error(t("info.server_error"));
       }).finally(() => {
         this.layerMenu.loading.shp = false;
+        this._hideMenu();
+      })
+    },
+    downloadXls(layerId) {
+      this.layerMenu.loading.xls = true;
+      const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      layer.getXls().catch((err) => {
+        GUI.notify.error(t("info.server_error"));
+      }).finally(() => {
+        this.layerMenu.loading.xls = false;
         this._hideMenu();
       })
     },

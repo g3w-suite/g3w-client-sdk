@@ -552,7 +552,8 @@ QueryResultsService.showQueryRelations = function(layer, feature, action) {
   GUI.pushContent({
     content: new RelationsPage({
       relations: action.relations,
-      feature: feature
+      feature: feature,
+      layer
     }),
     backonclose: true,
     closable: false

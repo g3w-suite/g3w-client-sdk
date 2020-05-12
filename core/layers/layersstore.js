@@ -452,6 +452,7 @@ proto.createLayersTree = function(groupName, options={}) {
     }
   } else {
     const geoLayers = this.getGeoLayers();
+    console.log(geoLayers)
     geoLayers.forEach((layer) => {
       layerstree.push({
         id: layer.getId(),

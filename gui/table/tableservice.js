@@ -82,6 +82,7 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
         });
       })
         .fail((err) => {
+          console.log(err)
           GUI.notify.error(t("info.server_error"));
           reject(err);
         });

@@ -25,12 +25,14 @@ function Layer(config={}, options={}) {
     const qgisVersion = project.getQgisVersion({
       type: 'major'
     });
+    //set url to get varios type of data
     const projectType = project.getType();
     const projectId = project.getId();
     const suffixUrl = `${projectType}/${projectId}/${config.id}/`;
     const vectorUrl = initConfig.vectorurl;
     this.config.urls.data = `${vectorUrl}data/${suffixUrl}`;
     this.config.urls.shp = `${vectorUrl}shp/${suffixUrl}`;
+    this.config.urls.xls = `${vectorUrl}xls/${suffixUrl}`;
     //set custom parameters based on project qgis version
     this.config.searchParams = {
       I: qgisVersion === 2 ? null : 0,
@@ -98,6 +100,14 @@ proto.getWMSLayerName = function() {
 
 proto.isWmsUseLayerIds = function() {
   return this.config.wms_use_layer_ids;
+};
+
+proto.getXls = function(){
+  const url = this.getUrl('xls');
+  return XHR.fileDownload({
+    url,
+    httpMethod: "GET"
+  })
 };
 
 proto.getShp = function() {
@@ -308,6 +318,9 @@ proto.isShpDownlodable = function() {
   return this.config.download;
 };
 
+proto.isXlsDownlodable = function(){
+  return this.config.download_xls;
+}
 proto.getEditingLayer = function() {
   return this._editingLayer;
 };
@@ -415,7 +428,7 @@ proto.isBaseLayer = function() {
   return this.config.baselayer;
 };
 
-// get url by type ( data, editing..etc..)
+// get url by type ( data, shp, xls,  editing..etc..)
 proto.getUrl = function(type) {
   return this.config.urls[type];
 };
@@ -499,7 +512,7 @@ proto.setLayersStore = function(layerstore) {
 
 proto.canShowTable = function() {
   if (this.getServerType() === 'QGIS') {
-    if( ([Layer.SourceTypes.POSTGIS, Layer.SourceTypes.SPATIALITE].indexOf(this.config.source.type) > -1) && this.isQueryable()) {
+    if( ([Layer.SourceTypes.POSTGIS, Layer.SourceTypes.OGR, Layer.SourceTypes.MSSQL, Layer.SourceTypes.SPATIALITE].indexOf(this.config.source.type) > -1) && this.isQueryable()) {
       return true
     }
   } else if (this.getServerType() === 'G3WSUITE') {
@@ -540,7 +553,7 @@ Layer.ServerTypes = {
 Layer.SourceTypes = {
   POSTGIS: 'postgres',
   SPATIALITE: 'spatialite',
-  MYSQL: 'mssql',
+  MSSQL: 'mssql',
   CSV: 'delimitedtext',
   OGR: 'ogr',
   GDAL: 'gdal',
