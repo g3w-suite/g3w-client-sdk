@@ -6,6 +6,8 @@ const ProjectsRegistry = require('core/project/projectsregistry');
 const GUI = require('gui/gui');
 const uniqueId = require('core/utils/utils').uniqueId;
 const t = require('core/i18n/i18n.service').t;
+const XHR = require('core/utils/utils').XHR;
+const getFeaturesFromResponseVectorApi = require('core/utils/geo').getFeaturesFromResponseVectorApi;
 const getAlphanumericPropertiesFromFeature = require('core/utils/geo').getAlphanumericPropertiesFromFeature;
 const QUERYBUILDERSEARCHES = 'QUERYBUILDERSEARCHES';
 
@@ -30,20 +32,21 @@ proto.getValues = async function({layerId, field}={}){
   let valuesField = this._cacheValues[layerId][field];
   if (valuesField  === undefined) {
     try {
-      const data = await this.run({
-        layerId,
-        filter: `"${field}" != '__G3W_ALL_VALUES__'`,
-        showResult: false
+      const layer = this._getLayerById(layerId);
+      const dataUrl = layer.getUrl('data');
+      const response = await XHR.get({
+        url: dataUrl
       });
-      if (data[0].features.length) {
-        const feature  = data[0].features[0];
-        const fields = getAlphanumericPropertiesFromFeature(feature.getProperties());
+      const features = getFeaturesFromResponseVectorApi(response);
+      if (features && features.length) {
+        const feature  = features[0];
+        const fields = getAlphanumericPropertiesFromFeature(feature.properties);
         fields.forEach(field => {
           this._cacheValues[layerId][field] = new Set();
         });
-        data[0].features.forEach(feature => {
+        features.forEach(feature => {
           fields.forEach(field => {
-            this._cacheValues[layerId][field].add(feature.get(field));
+            this._cacheValues[layerId][field].add(feature.properties[field]);
           })
         });
       }
@@ -83,7 +86,6 @@ proto.run = function({layerId, filter, showResult=true}={}){
 };
 
 proto.test = async function({layerId, filter}={}){
-  console.log(filter)
   try {
     const data = await this.run({
       layerId,

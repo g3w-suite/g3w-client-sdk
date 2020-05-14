@@ -9,7 +9,7 @@ const GlobalDirective = {
       const handlerElement = (innerHTML)=>{
         if (position === 'pre') el.innerHTML = i18nFnc(binding.value) + innerHTML;
         else if (position === 'post') el.innerHTML = innerHTML + i18nFnc(binding.value);
-      }
+      };
       vm.$watch(() => ApplicationState.lng, (lng) => {
           changeLanguage(lng);
           handlerElement(innerHTML);

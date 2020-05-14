@@ -1,7 +1,6 @@
 const VectorParser = function() {
   // return the right parser for the request
-  this.get = function(options) {
-    options = options || {};
+  this.get = function(options={}) {
     const type = options.type;
     let parser;
     switch (type) {
@@ -19,7 +18,7 @@ const VectorParser = function() {
   this._parseLayermsGMLOutput = function(data) {
     const layers = this._layer.getQueryLayerOrigName();
     const parser = new ol.format.WMSGetFeatureInfo({
-      layers: layers
+      layers
     });
     return parser.readFeatures(data);
   };
@@ -32,7 +31,6 @@ const VectorParser = function() {
     });
     return geojson.readFeatures(data);
   };
-
 };
 
 module.exports = new VectorParser();

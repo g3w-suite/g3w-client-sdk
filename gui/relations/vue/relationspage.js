@@ -6,6 +6,7 @@ const Component = require('gui/vue/component');
 const t = require('core/i18n/i18n.service').t;
 const Service = require('../relationsservice');
 const Field = require('gui/fields/g3w-field.vue');
+const getFeaturesFromResponseVectorApi = require('core/utils/geo').getFeaturesFromResponseVectorApi;
 const RelationPageEventBus = new Vue();
 const compiledTemplate = createCompiledTemplate(require('./relations.html'));
 
@@ -153,30 +154,14 @@ const InternalComponent = Vue.extend({
     },
     showRelation: function(relation) {
       this.relation = relation;
-      const field = relation.fieldRef.referencedField;
-      let value = this.feature.attributes[field];
       const fid = this.feature.attributes['g3w_fid'];
-      if (value === null || value === undefined) {
-        try {
-          const splitFieldPk = this.feature[field].split('.');
-          value = splitFieldPk[splitFieldPk.length-1];
-        } catch(err) {}
-        finally {
-          if (value === null || value === undefined) {
-            GUI.notify.error(t('sdk.relations.error_missing_father_field'));
-            this.error = true;
-            return;
-          }
-        }
-      }
       GUI.setLoadingContent(true);
       this.$options.service.getRelations({
         relation,
-        fid,
-        value
+        fid
       }).then((response) => {
-        if (response.result) {
-          const relations = response.vector.data.features || [];
+        const relations = getFeaturesFromResponseVectorApi(response);
+        if (relations) {
           this.table = this.$options.service.buildRelationTable(relations);
           this.currentview = 'relation';
           this.previousview = 'relations';

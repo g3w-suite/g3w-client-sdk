@@ -1,4 +1,5 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
+import ApplicationState from 'core/applicationstate';
 const inherit = require('core/utils/utils').inherit;
 const GUI = require('gui/gui');
 const Component = require('gui/vue/component');

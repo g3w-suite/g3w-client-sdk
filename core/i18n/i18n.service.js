@@ -78,7 +78,7 @@ const addI18n = function(i18nObject) {
 
 const changeLanguage = function(lng){
   i18next.changeLanguage(lng);
-}
+};
 
 module.exports = {
   init,

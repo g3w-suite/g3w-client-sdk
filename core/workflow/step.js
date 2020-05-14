@@ -15,7 +15,7 @@ function Step(options={}) {
     running: false, // running
     error: null, // error
     message: options.message || null // message
-  }
+  };
 }
 
 inherit(Step, G3WObject);

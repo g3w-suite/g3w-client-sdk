@@ -380,7 +380,7 @@ const geoutils = {
     });
     return results;
   },
-  getMapLayerById: function(layerId){
+  getMapLayerById: function(layerId) {
     return MapLayersStoreRegistry.getLayerById(layerId);
   },
   getMapLayersByFilter(filter) {
@@ -397,6 +397,12 @@ const geoutils = {
   },
   areCoordinatesEqual(coordinates1=[], coordinates2=[]) {
     return (coordinates1[0]===coordinates2[0] && coordinates1[1]===coordinates2[1]);
+  },
+  getFeaturesFromResponseVectorApi: function(response={}) {
+    if (response.result) {
+      const features = response.vector.data.features || [];
+      return features;
+    } else return null;
   },
   splitGeometryLine(splitGeometry, lineGeometry) {
     let splitted = false;
@@ -416,7 +422,7 @@ const geoutils = {
       startPoint = targetCoordinates[i];
       endPoint = targetCoordinates[i+1];
       // create a segment of two vertex
-      const segment = geometryFactory.createLineString([startPoint, endPoint])
+      const segment = geometryFactory.createLineString([startPoint, endPoint]);
       const intersectCoordinates = segment.intersection(splitLine).getCoordinates();
       if (intersectCoordinates.length) {
         splitted = true;

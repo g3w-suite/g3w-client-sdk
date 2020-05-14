@@ -32,8 +32,7 @@ proto.setMap = function(map) {
       const toggled = event.target.isToggled();
       toggled && map.on('singleclick', querySingleClickFnc) || map.un('singleclick', querySingleClickFnc);
     });
-  } else
-    ol.Observable.unByKey(eventToggledKey);
+  } else ol.Observable.unByKey(eventToggledKey);
   InteractionControl.prototype.setMap.call(this, map);
 };
 

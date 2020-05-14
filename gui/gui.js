@@ -51,7 +51,7 @@ function GUI() {
     RouterService.goto(url);
   };
 
-  this.ready = function(){
+  this.ready = function() {
     this.emit('ready');
     this.isready = true;
   };

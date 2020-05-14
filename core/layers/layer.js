@@ -143,33 +143,41 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
       provider = this.getProvider('data');
       provider.getFeatures({editing: false}, params)
         .done((response) => {
-          let pkProperties;
+          // console.log(response)
+          // let pkProperties;
+          // const data = response.data;
+          // const count = response.count;
+          // const title = this.getTitle();
+          // let headers, features;
+          // if (this.getType() === 'table') {
+          //   features = data.map((feature) => {
+          //     return {
+          //       properties: feature
+          //     }
+          //   });
+          //   headers = this.getAttributes();
+          // } else if (this.get('source').type === 'geojson') {
+          //   const data = provider.digestFeaturesForLayers([{
+          //     layer: this,
+          //     features: response
+          //   }]);
+          //   headers = data[0].attributes;
+          //   features = data[0].features;
+          // } else {
+          //   pkProperties = this.getFields().find((field) => ((response.pk === field.name) && field.show));
+          //   features = data.features;
+          //   headers = features.length ? features[0].properties : [];
+          //   headers = provider._parseAttributes(this.getAttributes(), headers);
+          //   if (pkProperties)
+          //     headers.unshift(pkProperties);
           const data = response.data;
           const count = response.count;
           const title = this.getTitle();
-          let headers, features;
-          if (this.getType() === 'table') {
-            features = data.map((feature) => {
-              return {
-                properties: feature
-              }
-            });
-            headers = this.getAttributes();
-          } else if (this.get('source').type === 'geojson') {
-            const data = provider.digestFeaturesForLayers([{
-              layer: this,
-              features: response
-            }]);
-            headers = data[0].attributes;
-            features = data[0].features;
-          } else {
-            pkProperties = this.getFields().find((field) => ((response.pk === field.name) && field.show));
-            features = data.features;
-            headers = features.length ? features[0].properties : [];
-            headers = provider._parseAttributes(this.getAttributes(), headers);
-            if (pkProperties)
-              headers.unshift(pkProperties);
-          }
+          const pkProperties = this.getFields().find((field) => ((response.pk === field.name) && field.show));
+          const features = data.features && data.features || [];
+          let headers = features.length ? features[0].properties : [];
+          headers = provider._parseAttributes(this.getAttributes(), headers);
+          if (pkProperties) headers.unshift(pkProperties);
           const dataTableObject = {
             pk: !!pkProperties,
             pkField: response.pk,

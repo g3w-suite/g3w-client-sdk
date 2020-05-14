@@ -2,6 +2,7 @@ import Applicationstate from './applicationstate';
 const inherit = require('core/utils/utils').inherit;
 const XHR = require('core/utils/utils').XHR;
 const base = require('core/utils/utils').base;
+const changeLanguage = require('core/i18n/i18n.service').changeLanguage;
 const G3WObject = require('core/g3wobject');
 const ApiService = require('core/apiservice');
 const RouterService = require('core/router');
@@ -55,6 +56,7 @@ const ApplicationService = function() {
   };
 
   this.changeLanguage = function(lng){
+    changeLanguage(lng);
     Applicationstate.lng = lng;
     const pathname = window.location.pathname;
     const pathArray = pathname.split('/');
@@ -62,12 +64,12 @@ const ApplicationService = function() {
     window.location.pathname = pathArray.join('/');
   };
 
-  this.registerOnlineOfflineEvent = function(){
+  this.registerOnlineOfflineEvent = function() {
     this.registerWindowEvent({
       evt: 'online',
       cb:()=> this.online()
     });
-
+    
     this.registerWindowEvent({
       evt: 'offline',
       cb:() => this.offline()

@@ -23,8 +23,6 @@ const vueComponentOptions = {
       hasResults: false,
       headerExpandActionCellWidth: headerExpandActionCellWidth,
       headerActionsCellWidth: headerActionsCellWidth,
-      noresultmessage: t("info.no_results"),
-      openlink: t("info.open_link")
     }
   },
   components: {

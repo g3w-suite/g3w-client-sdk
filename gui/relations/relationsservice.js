@@ -11,7 +11,7 @@ function RelationsComponentService(options={}) {
   base(this);
 
   this.getRelations = function(options={}) {
-    return this._service.getRelations(options)
+    return this._service.getRelations(options);
   };
 
   this.buildRelationTable = function(relations=[]) {

@@ -1,4 +1,6 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
+import ApplicationState from "../../../core/applicationstate";
+const ApplicationService = require('core/applicationservice');
 const {inherit, base, downloadFile} = require('core/utils/utils');
 const t = require('core/i18n/i18n.service').t;
 const Component = require('gui/vue/component');
@@ -33,11 +35,6 @@ const vueComponentOptions = {
         loading: {
           data_table: false,
           shp: false
-        },
-        items: {
-          zoomtolayer: t("catalog_items.contextmenu.zoomtolayer"),
-          open_attribute_table: t("catalog_items.contextmenu.open_attribute_table"),
-          showmetadata: t("catalog_items.contextmenu.show_metadata")
         },
         //colorMenu
         colorMenu: {
@@ -156,9 +153,12 @@ const vueComponentOptions = {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       return layer ? layer.isShpDownlodable(): false;
     },
-    copyWmsUrl(evt, layerId) {
+    getWmsUrl(layerId) {
       const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
-      const url =  originalLayer.getFullWmsUrl();
+      return originalLayer.getFullWmsUrl();
+    },
+    copyWmsUrl(evt, layerId) {
+      const url = this.getWmsUrl(layerId);
       let ancorEement = document.createElement('a');
       ancorEement.href = url;
       const tempInput = document.createElement('input');
@@ -241,6 +241,10 @@ const vueComponentOptions = {
     }
   },
   created() {
+    const ApplicationState = ApplicationService.getState();
+    this.$watch(()=> ApplicationState.lng, ()=>{
+      this.copywmsurltooltip = t('sdk.catalog.menu.wms.copy');
+    });
     CatalogEventHub.$on('treenodetoogled', (storeid, node, parent_mutually_exclusive) => {
       const mapService = GUI.getComponent('map').getService();
       if (node.external && !node.source) {
@@ -284,7 +288,6 @@ const vueComponentOptions = {
                           layersIds.push(node.id);
                           return true;
                         }
-
                       } else {
                         getLayerIds(node.nodes);
                       }

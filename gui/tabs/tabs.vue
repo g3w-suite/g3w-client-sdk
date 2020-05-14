@@ -8,6 +8,8 @@
     <div class="tab-content">
       <div :id="ids[index]" class="tab-pane fade" v-for="(tab, index) in tabs" :key="ids[index]" :class="{'in active': index === 0}">
         <node
+          :feature="feature"
+          :layerid="layerid"
           :contenttype="contenttype"
           :addToValidate="addToValidate"
           :changeInput="changeInput"
@@ -29,7 +31,13 @@
       contenttype: {
         default: 'query'
       },
+      layerid:{
+        required: true
+      },
       tabs: {
+        required: true
+      },
+      feature: {
         required: true
       },
       fields: {

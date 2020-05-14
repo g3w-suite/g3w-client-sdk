@@ -15,6 +15,8 @@
           <template v-else>
             <div v-if="getNodeType(getNode(row, column)) === 'group'" class="sub-group">
               <node
+                :feature="feature"
+                :layerid="layerid"
                 :contenttype="contenttype"
                 @changeinput="changeInput"
                 @addinput="addToValidate"
@@ -71,7 +73,7 @@
   };
   export default {
     name: "node",
-    props: ['contenttype', 'node', 'fields', 'showTitle', 'addToValidate', 'changeInput'],
+    props: ['contenttype', 'node', 'fields', 'showTitle', 'addToValidate', 'changeInput', 'layerid', 'feature'],
     components: {
       G3wInput,
       ...Fields
@@ -127,26 +129,17 @@
         return relation.name;
       },
       showRelation(relationId) {
-        const relationService = new RelationsService();
         const relation = ProjectRegistry.getCurrentProject().getRelationById(relationId);
-        const field = this.fields.find((field) => {
-          return field.name === relation.fieldRef.referencedField;
-        });
-        const value = field.value;
-        relationService.getRelations({
-          value,
-          id: relationId
-        }).then((response) => {
-          const content = new RelationPage({
-            currentview: 'relation',
+        GUI.pushContent({
+          content: new RelationPage({
+            currentview: 'relations',
             relations: [relation],
-            relation,
-            table: response
-          });
-          GUI.pushContent({
-            content,
-            perc: 100
-          })
+            feature: this.feature,
+            layer: {
+              id: this.layerid
+            }
+          }),
+          perc: 100
         })
       },
       getNodes(row) {
