@@ -1065,12 +1065,18 @@ proto.getMapExtent = function(){
   return map.getView().calculateExtent(map.getSize());
 };
 
-proto.createCopyMapExtentUrl = function(){
+proto.getMapExtentUrl = function(){
   const url = new URL(location.href);
   const map_extent = this.getMapExtent().toString();
   url.searchParams.set('map_extent', map_extent);
-  copyUrl(url.toString());
-}
+  return url.toString()
+};
+
+proto.createCopyMapExtentUrl = function(){
+  const url = this.getMapExtentUrl();
+  copyUrl(url);
+};
+
 
 proto._setMapControlsGrid = function(length) {
   const grid = this.state.mapControl.grid;

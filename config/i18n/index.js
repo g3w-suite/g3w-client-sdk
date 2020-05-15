@@ -12,6 +12,9 @@ export default {
           rotation: "Rotazione"
         },
         querybuilder: {
+          messages: {
+            changed: 'Salvato correttamente'
+          },
           panel: {
             button: {
               all: 'TUTTI',
@@ -194,6 +197,9 @@ export default {
           rotation: "Rotation"
         },
         querybuilder: {
+          messages: {
+            changed: 'Saved'
+          },
           panel: {
             button: {
               all: 'ALL',

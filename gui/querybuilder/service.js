@@ -13,13 +13,21 @@ const QUERYBUILDERSEARCHES = 'QUERYBUILDERSEARCHES';
 
 function QueryBuilderService(options={}){
   this._cacheValues = {};
+  this._items = {};
 }
 
 const proto = QueryBuilderService.prototype;
 
+proto.getCurrentProjectItems = function() {
+  const projectId = ProjectsRegistry.getCurrentProject().getId();
+  const items = this.getItems(projectId);
+  this._items[projectId] = items;
+  return this._items[projectId];
+};
+
 proto.getItems = function(projectId) {
-  projectId = projectId || ProjectsRegistry.getCurrentProject().getId();
   const items = ApplicationService.getLocalItem(QUERYBUILDERSEARCHES);
+  projectId = projectId || ProjectsRegistry.getCurrentProject().getId();
   return items ? items[projectId] || [] : [];
 };
 
@@ -121,37 +129,69 @@ proto.delete = function({id}={}){
   })
 };
 
+proto.editLocalItem = function(projectId, querybuildersearch) {
+  projectId = projectId || ProjectsRegistry.getCurrentProject().getId();
+  const querybuildersearches = ApplicationService.getLocalItem(QUERYBUILDERSEARCHES);
+  querybuildersearches[projectId].find((_querybuildersearch, index) => {
+    if (_querybuildersearch.id === querybuildersearch.id) {
+      querybuildersearches[projectId][index] = querybuildersearch;
+      return true;
+    }
+  });
+  ApplicationService.setLocalItem({
+    id: QUERYBUILDERSEARCHES,
+    data: querybuildersearches
+  });
+  setTimeout(()=> {
+    querybuildersearches[projectId].forEach(querybuildersearch => this._items[projectId].push(querybuildersearch))
+  },0);
+  this._items[projectId].splice(0);
+};
+
 proto.addLocalItem = function(projectId, querybuildersearch) {
   querybuildersearch.id = uniqueId();
   projectId = projectId || ProjectsRegistry.getCurrentProject().getId();
   const querybuildersearches = ApplicationService.getLocalItem(QUERYBUILDERSEARCHES);
-  if (querybuildersearches === undefined)
+  if (querybuildersearches === undefined) {
     ApplicationService.setLocalItem({
       id: QUERYBUILDERSEARCHES,
       data: {
         [projectId]: [querybuildersearch]
       }
     });
-  else {
+    this._items[projectId] = [querybuildersearch]
+  } else {
     querybuildersearches[projectId] =  querybuildersearches[projectId] ? [...querybuildersearches[projectId], querybuildersearch] : [querybuildersearch];
     ApplicationService.setLocalItem({
       id: QUERYBUILDERSEARCHES,
       data: querybuildersearches
-    })
+    });
+    this._items[projectId] = querybuildersearches[projectId];
   }
 };
 
-proto.save = function({layerId, filter, projectId} = {}){
+proto.save = function({id, name, layerId, filter, projectId} = {}){
+  const layerName = this._getLayerById(layerId).getName();
+  const querybuildersearch = {
+    layerId,
+    filter,
+    layerName
+  };
+  if (id) {
+    querybuildersearch.name = name;
+    querybuildersearch.id = id;
+    this.editLocalItem(projectId, querybuildersearch);
+    GUI.showUserMessage({
+      type: 'success',
+      message: t("sdk.querybuilder.messages.changed"),
+      autoclose: true
+    });
+    return;
+  }
   GUI.dialog.prompt(t('sdk.querybuilder.additem'), (result)=>{
     if (result) {
-      const layerName = this._getLayerById(layerId).getName();
       const searchService = GUI.getComponent('search').getService();
-      const querybuildersearch = {
-        name: result,
-        layerId,
-        filter,
-        layerName
-      };
+      querybuildersearch.name =result;
       searchService.addQueryBuilderSearch(querybuildersearch);
       this.addLocalItem(projectId, querybuildersearch);
     }

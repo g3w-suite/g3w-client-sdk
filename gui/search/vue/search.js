@@ -18,7 +18,7 @@ const vueComponentOptions = {
     'g3w-tool': G3WTool,
     'g3w-search-querybuilder': G3WSearchQuerybuilder
   },
-   methods: {
+  methods: {
     showPanel: function(config={}) {
       this.$options.service.showPanel(config);
     },

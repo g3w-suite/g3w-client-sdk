@@ -13,6 +13,7 @@ const vueComponentOptions = {
   data: function() {
     const {service, target} = this.$options;
     return {
+      ready: false,
       target,
       maps_container: this.$options.maps_container,
       service,
@@ -29,6 +30,9 @@ const vueComponentOptions = {
   },
   mounted: function() {
     const mapService = this.$options.service;
+    mapService.once('ready', ()=>{
+      this.ready = true;
+    });
     this.crs = mapService.getCrs();
     this.$nextTick(() => {
       mapService.setMapControlsContainer($('.g3w-map-controls'));
@@ -47,6 +51,9 @@ const vueComponentOptions = {
         if (control.type !== "scaleline")
           control.control.showHide();
       })
+    },
+    getPermalinkUrl() {
+      return this.ready ? this.$options.service.getMapExtentUrl(): null;
     },
     createCopyMapExtentUrl(){
       const mapService = this.$options.service.createCopyMapExtentUrl();

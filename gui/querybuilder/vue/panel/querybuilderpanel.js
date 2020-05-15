@@ -6,7 +6,7 @@ const QueryBuilder = require('gui/querybuilder/vue/querybuilder');
 function QueryBuilderPanel(options={}) {
   options.title = 'Query Builder';
   base(this, options);
-  const internalPanel = new QueryBuilder({});
+  const internalPanel = new QueryBuilder(options);
   this.setInternalPanel(internalPanel);
 }
 

@@ -16,7 +16,9 @@
     <div id="map_footer_right" style="display: flex;">
       <div id="scale-control"></div>
       <div id="mouse-position-control"></div>
-      <div id="permalink"><span class="skin-color" :class="g3wtemplate.getFontClass('link')" @click="createCopyMapExtentUrl"></span></div>
+      <div id="permalink" :title="getPermalinkUrl()" style="background-color: #eeeeee">
+        <span class="skin-color" :class="g3wtemplate.getFontClass('link')" @click="createCopyMapExtentUrl"></span>
+      </div>
     </div>
   </div>
 </div>

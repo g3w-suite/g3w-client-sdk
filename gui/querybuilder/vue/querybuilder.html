@@ -1,4 +1,4 @@
-<div id="query_builder" class="form-group">
+<div id="query_builder" class="form-group" style="flex-wrap: nowrap !important">
   <div id="query_builder_header"></div>
     <div id="query_builder_layers" class="margin-between-element">
       <label class="querybuilder-title" v-t="'sdk.querybuilder.panel.layers'"></label>
@@ -44,7 +44,7 @@
         <button id="query_builder_values_buttons_all" class="query_builder_button btn btn-secondary bold " v-t="'sdk.querybuilder.panel.button.all'" @click="all" :disabled="select.field === null" :class="{'skin-border-color' : !manual}"></button>
       </div>
     </div>
-    <div id="query_builder_operators" class="margin-between-element">
+    <div id="query_builder_operators" class="margin-between-element" style="margin-top: auto !important">
       <div id="query_builder_operators_title" class="querybuilder-title" v-t="'sdk.querybuilder.panel.operators'"></div>
       <div id="query_builder_operators_content" class="content-wrap">
         <button v-for="operator in operators" @click="addToExpression({value: operator, type: 'operator'})" :key="operator" class="query_builder_button btn btn-secondary skin-color bold">{{ operator }}</button>
@@ -68,5 +68,4 @@
         <button class="query_builder_button btn btn-secondary  bold" @click="save" :disabled="disabled" v-t="'sdk.querybuilder.panel.button.save'"></button>
       </div>
     </div>
-
 </div>

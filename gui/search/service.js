@@ -15,7 +15,7 @@ function Service() {
   this.state = {
     searches: [],
     searchtools: [],
-    querybuildersearches: QueryBuilderService.getItems()
+    querybuildersearches: QueryBuilderService.getCurrentProjectItems()
   };
 }
 
