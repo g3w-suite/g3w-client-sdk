@@ -4,7 +4,7 @@ const MeasureControl = require('./measurecontrol');
 
 const AreaControl = function(options) {
   const _options = {
-    name: "Area",
+    tipLabel: "sdk.mapcontrols.measures.area.tooltip",
     label: "\ue909",
     interactionClass: AreaIteraction
   };

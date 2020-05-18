@@ -4,7 +4,7 @@ const MeasureControl = require('./measurecontrol');
 
 const LengthControl = function(options) {
   const _options = {
-    name: "Length",
+    tipLabel: "sdk.mapcontrols.measures.length.tooltip",
     label: "\ue908",
     interactionClass: LenghtIteraction
   };

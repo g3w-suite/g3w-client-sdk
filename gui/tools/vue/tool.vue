@@ -18,7 +18,7 @@
         <i :class="tool.html.icon"></i>
         {{ tool.html.text || tool.name}}
       </span>
-      <span v-else>{{ tool.name }}</span>
+      <span v-else v-t="tool.name"></span>
       <span @click.stop="showToolStateMessage" :style="{color: toolstatecolor}" v-if="tool.state.type" style="cursor: pointer; vertical-align: center; position:absolute; right: 0; top: 0; padding: 5px">
         <i :class="g3wtemplate.getFontClass(tool.state.type)"></i>
       </span>

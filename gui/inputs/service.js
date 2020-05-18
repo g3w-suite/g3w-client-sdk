@@ -49,7 +49,7 @@ proto._getValidatorType = function() {
   return this.state.type;
 };
 
-proto.setState = function(state) {
+proto.setState = function(state={}) {
   this.state = _.isObject(state) ? state : {};
 };
 
@@ -113,7 +113,7 @@ proto.setErrorMessage = function(input) {
                  <div>
                   <b>${this.state.info}</b>
                  </div>         
-      `
+      `;
     }
     this.state.validate.message = this.state.info || message;
   } else {

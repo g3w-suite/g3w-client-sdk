@@ -12,7 +12,6 @@ const vueComponentOptions = {
     return {
       state: null,
       button: {
-        title: t('create_print'),
         class: "btn-success",
         type:"stampa",
         disabled: false

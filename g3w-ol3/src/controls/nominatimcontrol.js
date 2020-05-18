@@ -477,11 +477,8 @@ function NominatimControl(options) {
 
   Html.prototype.createControl = function createControl () {
     let container, containerClass, elements;
-
     if (this.options.targetType === targetType.INPUT) {
-      containerClass = klasses.namespace + ' ' + klasses.inputText.container + ' ' + this.options.classMobile;
-      container = utils.createElement(
-        ['div', { classname: containerClass }], Html.input);
+      container = Html.container;
       elements = {
         container: container,
         control: utils.find('.' + klasses.inputText.control, container),
@@ -503,7 +500,7 @@ function NominatimControl(options) {
       };
     }
     //set placeholder from options
-    elements.input.placeholder = this.options.placeholder;
+    //elements.input.placeholder = this.options.placeholder;
     return elements;
   };
 
@@ -522,6 +519,72 @@ function NominatimControl(options) {
     '</div>',
     '<ul class="', klasses.glass.result, '"></ul>'
   ].join('');
+
+  const {placeholder, fontIcon} = this.options;
+  const containerClass = klasses.namespace + ' ' + klasses.inputText.container + ' ' + this.options.classMobile;
+  const nominatimVueContainer = Vue.extend({
+    functional: true,
+    render(h){
+      return h('div', {class: {[containerClass]: true}}, [
+        h('div', {
+          class: {
+            [klasses.inputText.control]: true,
+          }
+        }, [
+          h('input', {
+            attrs: {
+              type: 'text',
+              id: vars.inputQueryId,
+              autocomplete: 'off'
+            },
+            class:{
+              [klasses.inputText.input]: true
+            },
+            directives:[
+              {
+                name: 't-placeholder',
+                value: placeholder
+              }
+            ]
+          }),
+          h('button', {
+            attrs: {
+              type: 'button',
+              id: 'search_nominatim'
+            },
+            class:{
+              btn: true
+            }
+          }, [h('i', {
+            attrs: {
+              'aria-hidden': true
+            },
+            style: {
+              color:'#ffffff'
+            },
+            class: {
+              [fontIcon]: true
+            }
+          })]),
+          h('button', {
+            attrs: {
+              type: 'button',
+              id:  vars.inputResetId
+            },
+            class: {
+              [`${klasses.inputText.reset}  ${klasses.hidden}`]: true
+            }
+          }),
+        ]),
+        h('ul', {
+          class: {
+            [klasses.inputText.result]: true
+          }
+        })]
+      )
+    }
+  });
+  Html.container = new nominatimVueContainer().$mount().$el;
 
   Html.input = [
     '<div class="', klasses.inputText.control, '">',
@@ -725,8 +788,19 @@ function NominatimControl(options) {
         ul.appendChild(li);
       });
     } else {
-      const li = utils.createElement('li', this.options.noresults);
-      li.className = 'nominatim-noresults';
+      const noresults = this.options.noresults;
+      const elementVue = Vue.extend({
+        functional: true,
+        render(h){
+          return h('li', {
+            class: {
+              'nominatim-noresult': true
+            },  
+            directives:[{name: 't', value: noresults}]
+          })
+        }
+      });
+      const li = new elementVue().$mount().$el;
       ul.appendChild(li);
     }
   };

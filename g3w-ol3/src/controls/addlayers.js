@@ -2,7 +2,7 @@ const Control = require('./control');
 function AddLayersControl() {
   const options = {
     name: "addlayer",
-    tipLabel: "AddLayer",
+    tipLabel: "sdk.mapcontrols.addlayer.tooltip",
     label: "\ue907"
   };
   Control.call(this, options);

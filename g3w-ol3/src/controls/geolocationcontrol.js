@@ -3,7 +3,7 @@ function GeolocationControl() {
   const options = {
     offline: false,
     name: "geolocation",
-    tipLabel: "Geolocation",
+    tipLabel: "sdk.mapcontrols.geolocation.tooltip",
     label: "\ue904"
   };
   this._layer;

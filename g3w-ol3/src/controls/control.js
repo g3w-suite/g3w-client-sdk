@@ -19,7 +19,38 @@ const Control = function(options) {
     const customClass = options.customClass;
     const tipLabel = options.tipLabel || this.name;
     const label = options.label || '';
-    options.element = $(`<div class="${className} ol-unselectable ol-control"><button type="button" title="${tipLabel}">${label}<i class="${customClass}"></i></button></div>`)[0];
+    const mapControlButtonVue =  Vue.extend({
+      functional: true,
+      render(h){
+        return h('div', {
+          class: {
+            [className]: !!className,
+            'ol-unselectable': true,
+            'ol-control': true
+          }
+        }, [
+            h('button', {
+              attrs: {
+                type: 'button',
+              },
+              directives: [{
+                name: 't-mapcontrol',
+                value: tipLabel
+              }]
+            }, [
+                label,
+                h('i', {
+                  class: {
+                    [customClass]: !!customClass
+                  }
+                })
+            ])
+          ]
+        )
+      }
+    });
+    const mapControlButtonDOMElement = new mapControlButtonVue().$mount().$el;
+    options.element = mapControlButtonDOMElement;
   }
   const buttonClickHandler = options.buttonClickHandler || Control.prototype._handleClick.bind(this);
   $(options.element).on('click',buttonClickHandler);
@@ -27,7 +58,6 @@ const Control = function(options) {
   this._postRender();
 };
 
-// sotto classse della classe Control di OL3
 ol.inherits(Control, ol.control.Control);
 
 const proto = Control.prototype;

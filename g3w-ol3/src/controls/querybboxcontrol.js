@@ -6,7 +6,7 @@ const QueryBBoxControl = function(options = {}){
   const _options = {
     offline: false,
     name: "querybbox",
-    tipLabel: "Query BBox layer",
+    tipLabel: "sdk.mapcontrols.querybybbox.tooltip",
     label: options.label || "\ue902",
     interactionClass: ol.interaction.DragBox,
     onhover: true

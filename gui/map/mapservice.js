@@ -991,9 +991,9 @@ proto._setupControls = function() {
               isMobile: isMobile.any,
               bbox: this.project.state.initextent,
               mapCrs: 'EPSG:'+this.project.state.crs,
-              placeholder: t("mapcontrols.nominatim.placeholder"),
-              noresults: t("mapcontrols.nominatim.noresults"),
-              notresponseserver: t("mapcontrols.nominatim.notresponseserver"),
+              placeholder: "mapcontrols.nominatim.placeholder",
+              noresults: "mapcontrols.nominatim.noresults",
+              notresponseserver: "mapcontrols.nominatim.notresponseserver",
               fontIcon: GUI.getFontClass('search')
             }
           });

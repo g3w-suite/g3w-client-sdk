@@ -1,4 +1,4 @@
-import Applicationstate from './applicationstate';
+import ApplicationState from './applicationstate';
 const inherit = require('core/utils/utils').inherit;
 const XHR = require('core/utils/utils').XHR;
 const base = require('core/utils/utils').base;
@@ -23,9 +23,9 @@ Vue.use(GlobalDirective);
 const ApplicationService = function() {
   let production = false;
   this.version = G3W_VERSION.indexOf("G3W_VERSION") === -1 ? G3W_VERSION  : "";
-  Applicationstate.iframe = window.top !== window.self;
-  Applicationstate.online = navigator.onLine;
-  Applicationstate.ismobile= isMobile.any;
+  ApplicationState.iframe = window.top !== window.self;
+  ApplicationState.online = navigator.onLine;
+  ApplicationState.ismobile= isMobile.any;
   this.complete = false;
   // store all services sidebar etc..
   this._applicationServices = {};
@@ -48,7 +48,7 @@ const ApplicationService = function() {
   base(this);
   // init from server
   this.init = function(config={}) {
-    Applicationstate.lng = config._i18n.lng;
+    ApplicationState.lng = config._i18n.lng;
     this._config = config;
     this._groupId = this._config.group.slug || this._config.group.name.replace(/\s+/g, '-').toLowerCase();
     // run bbotstrap
@@ -57,11 +57,11 @@ const ApplicationService = function() {
 
   this.changeLanguage = function(lng){
     changeLanguage(lng);
-    Applicationstate.lng = lng;
-    const pathname = window.location.pathname;
-    const pathArray = pathname.split('/');
-    pathArray[1] = lng;
-    window.location.pathname = pathArray.join('/');
+    ApplicationState.lng = lng;
+    // const pathname = window.location.pathname;
+    // const pathArray = pathname.split('/');
+    // pathArray[1] = lng;
+    // window.location.pathname = pathArray.join('/');
   };
 
   this.registerOnlineOfflineEvent = function() {
@@ -82,19 +82,19 @@ const ApplicationService = function() {
   };
 
   this.getState = function(){
-    return Applicationstate;
+    return ApplicationState;
   };
 
   this.setOnline = function() {
-    Applicationstate.online = true;
+    ApplicationState.online = true;
   };
 
   this.setOffline = function(){
-    Applicationstate.online = false;
+    ApplicationState.online = false;
   };
 
   this.isOnline = function(){
-    return Applicationstate.online;
+    return ApplicationState.online;
   };
 
   this.setOfflineItem = async function(id, data={}){
@@ -133,7 +133,7 @@ const ApplicationService = function() {
 
   //check if is in Iframe
   this.isIframe = function() {
-    return Applicationstate.iframe;
+    return ApplicationState.iframe;
   };
 
   // get config
@@ -240,7 +240,7 @@ const ApplicationService = function() {
   this._bootstrap = function() {
     const d = $.Deferred();
     //first time l'application service is not ready
-    if (!Applicationstate.ready) {
+    if (!ApplicationState.ready) {
       // LOAD DEVELOPMENT CONFIGURATION
       if (!production) require('../config/dev/index');
       $.when(
@@ -252,7 +252,7 @@ const ApplicationService = function() {
         //rigistern online event
         this.registerOnlineOfflineEvent();
         this.emit('ready');
-        Applicationstate.ready = this.initialized = true;
+        ApplicationState.ready = this.initialized = true;
         d.resolve();
       }).fail((error) => {
         d.reject(error);

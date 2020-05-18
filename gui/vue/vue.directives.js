@@ -1,17 +1,17 @@
 import ApplicationState from 'core/applicationstate';
-const {t, tTemplate, tPlugin, changeLanguage} = require('core/i18n/i18n.service')
+const {t, tTemplate, tPlugin} = require('core/i18n/i18n.service');
 const GlobalDirective = {
   install(Vue) {
     const vm = new Vue();
-    const prePositioni18n = ({el, binding, i18nFnc = t }) => {
+    const prePositioni18n = ({el, binding, i18nFnc=t , update=false}) => {
       const innerHTML = el.innerHTML;
       const position = binding.arg ? binding.arg : 'post';
-      const handlerElement = (innerHTML)=>{
-        if (position === 'pre') el.innerHTML = i18nFnc(binding.value) + innerHTML;
-        else if (position === 'post') el.innerHTML = innerHTML + i18nFnc(binding.value);
+      const handlerElement = (innerHTML) => {
+        const value = binding.value !== null ?  i18nFnc(binding.value) : '';
+        if (position === 'pre') el.innerHTML =  `${value} ${innerHTML}`;
+        else if (position === 'post') el.innerHTML = `${innerHTML} ${value}`;
       };
-      vm.$watch(() => ApplicationState.lng, (lng) => {
-          changeLanguage(lng);
+      vm.$watch(() => ApplicationState.lng, () => {
           handlerElement(innerHTML);
         }
       );
@@ -37,7 +37,7 @@ const GlobalDirective = {
     );
 
     Vue.directive("selected-first",function(el, binding){
-        if (binding.value===0){
+        if (binding.value===0) {
           el.setAttribute('selected','');
         } else {
           el.removeAttribute('selected');
@@ -45,6 +45,46 @@ const GlobalDirective = {
       }
     );
 
+    Vue.directive('t-mapcontrol', {
+      bind(el, binding){
+        const value= binding.value;
+        const i18Fnc = binding.arg;
+        const handler = () =>{
+          const title = i18Fnc === 'plugin' ? tPlugin(value) : t(value);
+          el.setAttribute('data-original-title', title)
+        };
+        handler();
+        vm.$watch(() => ApplicationState.lng, handler);
+      }
+    });
+
+    Vue.directive('t-placeholder', {
+      bind(el, binding){
+        const value= binding.value;
+        const i18Fnc = binding.arg;
+        const handler = () =>{
+          const placeholder = i18Fnc === 'plugin' ? tPlugin(value) : t(value);
+          el.setAttribute('placeholder', placeholder);
+        };
+        handler();
+        vm.$watch(() => ApplicationState.lng, handler);
+      }
+    });
+    
+    Vue.directive('t-title', {
+      bind(el, binding){
+        const value= binding.value;
+        const i18Fnc = binding.arg;
+        const handler = () =>{
+          const title = i18Fnc === 'plugin' ? tPlugin(value) : t(value);
+          el.setAttribute('title', title);
+          el.setAttribute('data-original-title', title)
+        };
+        handler();
+        vm.$watch(() => ApplicationState.lng, handler);
+      }
+    });
+    
     Vue.directive("t", {
       bind: function (el, binding) {
         prePositioni18n({
@@ -70,7 +110,7 @@ const GlobalDirective = {
         prePositioni18n({
           el,
           binding,
-          i18nFnc: tPlugin
+          i18nFnc: tPlugin,
         })
       }
     });

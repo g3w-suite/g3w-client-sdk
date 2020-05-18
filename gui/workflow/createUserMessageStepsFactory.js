@@ -50,7 +50,14 @@ module.exports = function({steps={}}={}) {
               [GUI.getFontClass('empty-circle')]: state.todo,
               [GUI.getFontClass('success')]: state.done,
             }
-          }), step.description])
+          }), h('span', {
+            directives:[
+              {
+                name: step.directive,
+                value: step.description
+              }
+            ]
+          })])
       }))
     }
   };

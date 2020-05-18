@@ -49,7 +49,7 @@ proto._buildProjectGroupMetadata = function() {
       const fieldValue = project.metadata && project.metadata[field] ? project.metadata[field] : project[field];
       if (!!fieldValue) {
         groups[groupName][field] = {
-          label: t(['sdk','metadata','groups', groupName, 'fields', field].join('.')), // get traslation here
+          label: ['sdk','metadata','groups', groupName, 'fields', field].join('.'),
           value: fieldValue
         }
       }

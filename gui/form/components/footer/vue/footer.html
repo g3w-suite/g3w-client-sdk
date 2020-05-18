@@ -7,8 +7,7 @@
     <button v-for="button in state.buttons" class="btn "
       :class="[button.class]"
       @click.stop.prevent="exec(button.cbk)"
-      v-disabled="!btnEnabled(button)">
-      {{ button.title }}
+      v-disabled="!btnEnabled(button)" v-t="button.title">
     </button>
   </slot>
 </div>

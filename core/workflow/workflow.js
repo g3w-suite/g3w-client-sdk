@@ -167,7 +167,7 @@ proto.start = function(options={}) {
       steps: this._userMessageSteps
     });
     GUI.showUserMessage({
-      title: t('sdk.workflow.steps.title'),
+      title: 'sdk.workflow.steps.title',
       type: 'tool',
       position: 'left',
       size: 'small',

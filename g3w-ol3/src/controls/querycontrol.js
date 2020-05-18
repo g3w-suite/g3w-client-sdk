@@ -6,7 +6,7 @@ const QueryControl = function(options={}){
   const _options = {
     offline: false,
     name: "querylayer",
-    tipLabel: "Query layer",
+    tipLabel: "sdk.mapcontrols.query.tooltip",
     label: options.label || "\uea0f",
     interactionClass: PickCoordinatesInteraction
   };

@@ -7,7 +7,7 @@ const QueryByPolygonControl = function(options={}) {
   const _options = {
     offline: false,
     name: "querybypolygon",
-    tipLabel: "Query By Polygon",
+    tipLabel: "sdk.mapcontrols.querybypolygon.tooltip",
     label: options.label || "\ue903",
     onselectlayer: true,
     interactionClass: PickCoordinatesInteraction,
