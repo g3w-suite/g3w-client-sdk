@@ -11,7 +11,7 @@
       <div id="query_builder_fields_content" class="querybuilder-content">
         <table class="table table-striped content-table">
           <tbody>
-            <tr v-for="field in fields" :key="field" @click="select.field = field" @dblclick="addToExpression({value: field, type: 'field'})" :class="{'skin-background-color': select.field===field}" style="cursor: pointer">
+            <tr v-for="field in fields" :key="field" @click="select.field = field" @dblclick="addToExpression({value: field, type: 'field'})" :class="{'skin-background-color lighten': select.field===field}" style="cursor: pointer">
               <th scope="row">{{ field }}</th>
             </tr>
           </tbody>
@@ -24,7 +24,7 @@
         <bar-loader :loading="loading.values"></bar-loader>
         <table class="table table-striped content-table">
           <tbody>
-            <tr v-for="value in values" @click="select.value = value" :class="{'skin-background-color': select.value===value}" :key="value" @dblclick="addToExpression({value: value, type: 'value'})" style="cursor: pointer">
+            <tr v-for="value in values" @click="select.value = value" :class="{'skin-background-color lighten': select.value===value}" :key="value" @dblclick="addToExpression({value: value, type: 'value'})" style="cursor: pointer">
               <th scope="row">{{ value }}</th>
             </tr>
             <tr>

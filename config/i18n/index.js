@@ -28,7 +28,7 @@ export default {
             fields: 'CAMPI',
             values: 'VALORI',
             operators: 'OPERATORI',
-            expression: 'ESPERSSIONE'
+            expression: 'ESPRESSIONE'
           },
           error_test: "Errore nell'esecuzione della query",
           delete: 'Vuoi confermare la cancellazione?',
@@ -112,7 +112,7 @@ export default {
           },
           querybypolygon: {
             tooltip: 'Interroga per poligono',
-            help: `<h4>Guida - Query By Polygon</h4>
+            help: `<h4>Guida - Inrerrogazione con Poligono</h4>
                   <ul style="padding-left: 10px;">
                     <li style="font-size:0.8em;">Seleziona uno strato poligonale in legenda.</li>
                     <li style="font-size:0.8em;">Assicurati che lo strato sia visibile in mappa.</li>
@@ -121,7 +121,7 @@ export default {
           },
           querybybbox: {
             tooltip: 'Interroga per BBOX',
-            help: `<h4>Guida - Query BBox layer</h4>
+            help: `<h4>Guida - Inrerrogazione BBox</h4>
                    <ul style="padding-left: 10px;">
                     <li style="font-size:0.8em;">Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li>
                    </ul>`
@@ -130,7 +130,7 @@ export default {
             tooltip: 'Aggiungi Layer'
           },
           geolocation: {
-            tooltip: ''
+            tooltip: 'Geolocalizzazione'
           },
           measures: {
             length: {
@@ -324,7 +324,7 @@ export default {
             tooltip: 'Add Layer'
           },
           geolocation: {
-            tootlip: 'Geolocation'
+            tooltip: 'Geolocation'
           },
           measures: {
             length: {

@@ -42,7 +42,6 @@
       },
       reloadLayout() {
         this.$nextTick(() => {
-          dataTable.responsive.recalc();
           dataTable.columns.adjust();
         });
       },

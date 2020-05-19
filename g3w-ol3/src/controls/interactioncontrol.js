@@ -38,7 +38,7 @@ proto._showModalHelp = function() {
     message: this._help,
     position: 'left',
     size: 'small',
-    autoclose: true
+    autoclose: false
   })
 };
 

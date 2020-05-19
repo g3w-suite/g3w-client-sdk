@@ -162,16 +162,16 @@ proto.addComponents = function(components = []) {
 };
 
 proto.addComponent = function(component) {
-  const {id:title, icon, valid} = component;
+  const {id, title, name, icon, valid} = component;
   if (valid !== undefined) {
-    this.state.componentstovalidate[title] = valid;
+    this.state.componentstovalidate[id] = valid;
     this.state.valid = this.state.valid && valid;
     this.eventBus.$emit('add-component-validate', {
-      id: title,
+      id,
       valid
     });
   }
-  this.state.headers.push({title, icon});
+  this.state.headers.push({title, name, icon});
   this.state.components.push(component.component);
 };
 

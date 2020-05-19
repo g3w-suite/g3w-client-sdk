@@ -88,7 +88,7 @@ function FormComponent(options = {}) {
   options.vueComponentObject = options.vueComponentObject  || vueComponentObject;
   //set statdar element of the form
   const components = options.components || [
-    {id: options.title, component: BodyFormComponent}
+    {id: options.id, title: options.title, name:options.name, component: BodyFormComponent}
   ];
   // initialize component
   this.init(options);

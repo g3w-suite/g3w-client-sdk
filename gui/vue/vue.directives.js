@@ -58,6 +58,21 @@ const GlobalDirective = {
       }
     });
 
+    Vue.directive('t-html', {
+      bind(el, binding){
+        const handlerElement = () => {
+          console.log(binding.value)
+          el.innerHTML = `${t(binding.value)}`;
+        };
+        vm.$watch(() => ApplicationState.lng, () => {
+            handlerElement();
+          }
+        );
+        handlerElement();
+      }
+    });
+    
+    
     Vue.directive('t-placeholder', {
       bind(el, binding){
         const value= binding.value;

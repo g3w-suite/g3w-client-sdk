@@ -682,7 +682,7 @@ proto._setupControls = function() {
           control = this.createMapControl(controlType, {
             options: {
               layers: controlLayers,
-              help: t("sdk.mapcontrols.querybypolygon.help")
+              help: "sdk.mapcontrols.querybypolygon.help"
             }
           });
           if (control) {
@@ -809,7 +809,7 @@ proto._setupControls = function() {
             control = this.createMapControl(controlType, {
               options: {
                 layers: controlLayers,
-                help: t("sdk.mapcontrols.querybybbox.help")
+                help: "sdk.mapcontrols.querybybbox.help"
               }
             });
             if (control) {
@@ -1015,7 +1015,7 @@ proto._setupControls = function() {
           control.on('error', (e) => {
             GUI.showUserMessage({
               type: 'warning',
-              message: t("mapcontrols.geolocations.error"),
+              message: "mapcontrols.geolocations.error",
               autoclose: true
             })
           });
@@ -1032,10 +1032,10 @@ proto._setupControls = function() {
           if (!isMobile.any) {
             control = this.createMapControl(controlType, {
               options: {
-                tipLabel: t('sdk.mapcontrols.measures.length.tooltip'),
+                tipLabel: 'sdk.mapcontrols.measures.length.tooltip',
                 interactionClassOptions: {
                   projection: this.getProjection(),
-                  help: t('sdk.mapcontrols.measures.length.help')
+                  help: 'sdk.mapcontrols.measures.length.help'
                 }
               }
             });
@@ -1045,10 +1045,10 @@ proto._setupControls = function() {
           if (!isMobile.any) {
             control = this.createMapControl(controlType, {
               options: {
-                tipLabel: t('sdk.mapcontrols.measures.area.tooltip'),
+                tipLabel:'sdk.mapcontrols.measures.area.tooltip',
                 interactionClassOptions: {
                   projection: this.getProjection(),
-                  help: t('sdk.mapcontrols.measures.area.help')
+                  help: 'sdk.mapcontrols.measures.area.help'
                 }
               }
             });
