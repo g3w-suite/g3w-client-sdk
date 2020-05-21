@@ -17,7 +17,7 @@
       return {
         galleryId: 'gallery_' + Date.now(),
         active: null,
-        value: this.state.value.mime_type ? this.state.value.value : this.state.value
+        value: this.state.value.mime_type !== undefined ? this.state.value.value : this.state.value
       }
     },
     components: {

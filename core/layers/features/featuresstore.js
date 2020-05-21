@@ -108,8 +108,8 @@ proto._filterLockIds = function(featurelocks) {
   this._lockIds = [...this._lockIds, ...toAddLockId];
 };
 
-proto.addLoadedIds = function(pk) {
-  this._loadedIds.push(pk);
+proto.addLoadedIds = function(id) {
+  this._loadedIds.push(id);
 };
 
 proto.getLockIds = function() {
@@ -165,8 +165,6 @@ proto._updateFeature = function(feature) {
     }
   });
 };
-
-proto.updatePkFeature = function(newValue, oldValue) {};
 
 proto.setFeatures = function(features) {
   this._features = features;

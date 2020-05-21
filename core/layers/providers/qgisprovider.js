@@ -3,6 +3,7 @@ const base = require('core/utils/utils').base;
 const XHR = require('core/utils/utils').XHR;
 const t = require('core/i18n/i18n.service').t;
 const DataProvider = require('core/layers/providers/provider');
+const RelationsService = require('core/relations/relationsservice');
 const Feature = require('core/layers/features/feature');
 const Parsers = require('core/parsers/parsers');
 
@@ -17,6 +18,7 @@ function QGISProvider(options = {}) {
   this._unlockUrl = this._layer.getUrl('unlock');
   // url referred to query
   this._queryUrl = this._layer.getUrl('query');
+  this._dataUrl = this._layer.getUrl('data');
   // editing url api
   this._editingUrl = this._layer.getUrl('editing');
   this._commitUrl = this._layer.getUrl('commit');
@@ -163,7 +165,6 @@ proto.getFeatures = function(options={}, params={}) {
     }
     const urlParams = $.param(params);
     url+=  urlParams ? '?' + urlParams : '';
-    const pk = this._layer.getPk();
     const features = [];
     let filter = options.filter || null;
     if (filter) {
@@ -171,31 +172,22 @@ proto.getFeatures = function(options={}, params={}) {
         const bbox = filter.bbox;
         filter = {in_bbox: `${bbox[0]},${bbox[1]},${bbox[2]},${bbox[3]}`};
         const jsonFilter = JSON.stringify(filter);
-        promise = $.post({
+        promise = XHR.post({
           url,
           data: jsonFilter,
           contentType: "application/json"
         })
-      } else if (filter.field) {
-        const urlParams = $.param(filter.field);
-        url+= urlParams ? '?' + urlParams : '';
-        promise = $.get({
-          url
-        });
+      } else if (filter.fid) {
+        const options = filter.fid;
+        promise = RelationsService.getRelations(options);
       }
-    } else {
-      promise = $.post({
-        url,
-        contentType: "application/json"
-      })
-    }
+    } else promise = XHR.post({url,contentType: "application/json"});
     promise.then((response) => {
         const {vector, result, featurelocks} = response;
         if (result) {
           const {data, geometrytype} = vector;
           const parser = Parsers[layerType].get({
-            type: 'json',
-            pk
+            type: 'json'
           });
           const parser_options = (geometrytype !== 'No geometry') ? { crs: this._layer.getCrs() } : {};
           const lockIds = featurelocks.map((featureLock) => {
@@ -205,8 +197,7 @@ proto.getFeatures = function(options={}, params={}) {
             const featureId = `${feature.getId()}`;
             if (lockIds.indexOf(featureId) > -1) {
               features.push(new Feature({
-                feature,
-                pk
+                feature
               }));
             }
           });
@@ -221,13 +212,13 @@ proto.getFeatures = function(options={}, params={}) {
           });
         }
       })
-      .fail(function(err) {
+      .catch(function(err) {
         d.reject({
           message: t("info.server_error")
         });
       });
   } else {
-    url = this._layer.getUrl('data');
+    url = this._dataUrl;
     const urlParams = $.param(params);
     url+=  urlParams ? '?' + urlParams : '';
     $.get({
@@ -236,12 +227,10 @@ proto.getFeatures = function(options={}, params={}) {
     })
       .then((response) => {
         const vector = response.vector;
-        const pk = vector.pk;
         const data = vector.data;
         count = vector.count;
         d.resolve({
           data,
-          pk,
           count
         })
       })
@@ -415,7 +404,6 @@ proto._createVectorLayerFromConfig = function(layerCode) {
         crsLayer : crsLayer,
         id: layerConfig.id,
         name: layerConfig.name,
-        pk: vectorConfig.pk,
         editing: self._editingMode
       });
       // setto i campi del layer

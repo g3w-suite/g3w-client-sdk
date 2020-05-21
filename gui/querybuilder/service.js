@@ -14,21 +14,23 @@ const QUERYBUILDERSEARCHES = 'QUERYBUILDERSEARCHES';
 function QueryBuilderService(options={}){
   this._cacheValues = {};
   this._items = {};
+  ProjectsRegistry.oncebefore('setCurrentProject', (project) => {
+    const projectId = project.getId();
+    this._items[projectId] = this.getItems(projectId);
+  })
 }
 
 const proto = QueryBuilderService.prototype;
 
 proto.getCurrentProjectItems = function() {
   const projectId = ProjectsRegistry.getCurrentProject().getId();
-  const items = this.getItems(projectId);
-  this._items[projectId] = items;
   return this._items[projectId];
 };
 
 proto.getItems = function(projectId) {
   const items = ApplicationService.getLocalItem(QUERYBUILDERSEARCHES);
   projectId = projectId || ProjectsRegistry.getCurrentProject().getId();
-  return items ? items[projectId] || [] : [];
+  return items ? items[projectId] : [];
 };
 
 proto._getLayerById = function(layerId){
@@ -113,16 +115,16 @@ proto.delete = function({id}={}){
       if (result) {
         const querybuildersearches = this.getItems().filter(item => item.id !== id);
         const projectId = ProjectsRegistry.getCurrentProject().getId();
-        if (querybuildersearches.length === 0) {
-          const saveitems = ApplicationService.getLocalItem(QUERYBUILDERSEARCHES);
-          delete saveitems[projectId];
-          if (Object.keys(saveitems).length)
-            ApplicationService.setLocalItem({
-              id: QUERYBUILDERSEARCHES,
-              data: saveitems
-            });
-          else ApplicationService.removeLocalItem(QUERYBUILDERSEARCHES);
-        }
+        const saveitems = ApplicationService.getLocalItem(QUERYBUILDERSEARCHES);
+        if (querybuildersearches.length)
+          saveitems[projectId] = querybuildersearches;
+        else delete saveitems[projectId];
+        if (Object.keys(saveitems).length)
+          ApplicationService.setLocalItem({
+            id: QUERYBUILDERSEARCHES,
+            data: saveitems
+          });
+        else ApplicationService.removeLocalItem(QUERYBUILDERSEARCHES);
         resolve();
       } else reject();
     })
@@ -142,8 +144,12 @@ proto.editLocalItem = function(projectId, querybuildersearch) {
     id: QUERYBUILDERSEARCHES,
     data: querybuildersearches
   });
+  this._resetItems(projectId, querybuildersearches[projectId]);
+};
+
+proto._resetItems = function(projectId, querybuildersearches) {
   setTimeout(()=> {
-    querybuildersearches[projectId].forEach(querybuildersearch => this._items[projectId].push(querybuildersearch))
+    querybuildersearches.forEach(querybuildersearch => this._items[projectId].push(querybuildersearch));
   },0);
   this._items[projectId].splice(0);
 };
@@ -153,20 +159,21 @@ proto.addLocalItem = function(projectId, querybuildersearch) {
   projectId = projectId || ProjectsRegistry.getCurrentProject().getId();
   const querybuildersearches = ApplicationService.getLocalItem(QUERYBUILDERSEARCHES);
   if (querybuildersearches === undefined) {
+    const querybuildersearches = [querybuildersearch];
     ApplicationService.setLocalItem({
       id: QUERYBUILDERSEARCHES,
       data: {
-        [projectId]: [querybuildersearch]
+        [projectId]: querybuildersearches
       }
     });
-    this._items[projectId] = [querybuildersearch]
+    this._resetItems(projectId, querybuildersearches);
   } else {
     querybuildersearches[projectId] =  querybuildersearches[projectId] ? [...querybuildersearches[projectId], querybuildersearch] : [querybuildersearch];
     ApplicationService.setLocalItem({
       id: QUERYBUILDERSEARCHES,
       data: querybuildersearches
     });
-    this._items[projectId] = querybuildersearches[projectId];
+    this._resetItems(projectId, querybuildersearches[projectId]);
   }
 };
 
@@ -200,9 +207,9 @@ proto.save = function({id, name, layerId, filter, projectId} = {}){
 
 proto.all = function() {};
 
-proto.sample = function(){};
+proto.sample = function() {};
 
-proto.clear = function(){
+proto.clear = function() {
   this._cacheValues = {};
 };
 

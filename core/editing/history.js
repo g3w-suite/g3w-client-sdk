@@ -222,9 +222,6 @@ proto.setItemsFeatureIds = function(unsetnewids=[]) {
         const feature = item.feature.getId() === clientid && item.feature;
         if (feature) {
           feature.setId(id);
-          try {
-            feature.getKeys().indexOf(this.getPk()) !== -1 && feature.set(this.getPk(), idobj.id);
-          } catch (err) {}
         }
       })
     });

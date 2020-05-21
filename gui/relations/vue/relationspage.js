@@ -3,7 +3,6 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const GUI = require('gui/gui');
 const Component = require('gui/vue/component');
-const t = require('core/i18n/i18n.service').t;
 const Service = require('../relationsservice');
 const Field = require('gui/fields/g3w-field.vue');
 const getFeaturesFromResponseVectorApi = require('core/utils/geo').getFeaturesFromResponseVectorApi;
@@ -21,7 +20,7 @@ const relationsComponent = {
     featureInfo: function() {
       let infoFeatures = [];
       let index = 0;
-      _.forEach(this.feature.attributes, function(value, key) {
+      Object.entries(this.feature.attributes).forEach(([key, value]) => {
         if (index > 2) return false;
         if (value && _.isString(value) && value.indexOf('/') === -1 ) {
           infoFeatures.push({
@@ -30,7 +29,6 @@ const relationsComponent = {
           });
           index+=1;
         }
-
       });
       return infoFeatures
     }
@@ -149,25 +147,19 @@ const InternalComponent = Vue.extend({
     reloadLayout() {
       RelationPageEventBus.$emit('reload');
     },
-    isOneRelation() {
-      return this.relations.length === 1 && this.relations[0].type === 'ONE'
-    },
     showRelation: function(relation) {
       this.relation = relation;
       const fid = this.feature.attributes['g3w_fid'];
       GUI.setLoadingContent(true);
       this.$options.service.getRelations({
+        layer: this.$options.layer,
         relation,
         fid
       }).then((response) => {
         const relations = getFeaturesFromResponseVectorApi(response);
-        if (relations) {
-          this.table = this.$options.service.buildRelationTable(relations);
-          this.currentview = 'relation';
-          this.previousview = 'relations';
-        } else {
-
-        }
+        this.table = this.$options.service.buildRelationTable(relations);
+        this.currentview = 'relation';
+        this.previousview = 'relations';
       }).catch((err) => {
       }).finally(() => {
         GUI.setLoadingContent(false);
@@ -179,7 +171,7 @@ const InternalComponent = Vue.extend({
     }
   },
   beforeMount () {
-    this.isOneRelation() && this.showRelation(this.relations[0])
+    if (this.relations.length === 1 && this.relations[0].type === 'ONE')  this.showRelation(this.relations[0])
   },
   mounted() {
     this.$nextTick(()=> {
@@ -194,14 +186,8 @@ const InternalComponent = Vue.extend({
 
 const RelationsPage = function(options={}) {
   base(this);
-  const layer = options.layer;
-  const service = options.service || new Service({
-    layer
-  });
-  const relations = options.relations || [];
-  const relation = options.relation || null;
-  const feature = options.feature || null;
-  const table = options.table || null;
+  const service = options.service || new Service();
+  const {layer, relation=null, relations=[], feature=null, table=null} = options;
   const currentview = options.currentview || 'relations';
   this.setService(service);
   const internalComponent = new InternalComponent({
@@ -211,6 +197,7 @@ const RelationsPage = function(options={}) {
     relation,
     feature,
     currentview,
+    layer,
     table
   });
   this.setInternalComponent(internalComponent);

@@ -84,13 +84,8 @@ function TableLayer(config={}, options={}) {
   this.vectorUrl = options.vectorurl || initConfig.vectorurl;
   // add urls
   config.urls = config.urls || {};
-  //add editing urls
-  this.setEditingUrls({
-    urls: config.urls
-  });
   // add editing configurations
   config.editing = {
-    pk: null, // primary key
     fields: [] // editing fields
   };
   // call base layer
@@ -104,15 +99,13 @@ function TableLayer(config={}, options={}) {
     editing: {
       started: false,
       modified: false,
-      ready: false,
-      ispkeditable: false
+      ready: false
     }
   }, this.state);
   // get configuration from server if is editable
   if (this.isEditable()) {
     this.getEditingConfig()
       .then(({vector, constraints}={}) => {
-        this.config.editing.pk = vector.pk;
         this.config.editing.fields = vector.fields;
         this.config.editing.format = vector.format;
         this.config.editing.constraints = constraints || {};
@@ -121,7 +114,6 @@ function TableLayer(config={}, options={}) {
         if (vector.style) {
           this.setColor(vector.style.color)
         }
-        this._setPkEditable(this.config.editing.fields);
         // creare an instace of editor
         this._editor = new Editor({
           layer: this
@@ -192,17 +184,6 @@ proto.getEditingLayer = function() {
   return this;
 };
 
-proto.setEditingUrls = function({urls}={}) {
-  const suffixUrl = `${this.projectType}/${this.projectId}/${this.layerId}/`;
-  urls = urls || this.config.urls;
-  urls.editing = `${this.vectorUrl}editing/${suffixUrl}`;
-  urls.commit = `${this.vectorUrl}commit/${suffixUrl}`;
-  urls.config = `${this.vectorUrl}config/${suffixUrl}`;
-  urls.unlock = `${this.vectorUrl}unlock/${suffixUrl}`;
-  urls.widget = {
-    unique: `${this.vectorUrl}widget/unique/data/${suffixUrl}`
-  }
-};
 
 proto.getEditingStyle = function() {
   return this.config.editing.style;
@@ -266,19 +247,6 @@ proto.getDataFormat = function() {
   return this.config.editing.format;
 };
 
-proto.getPk = function() {
-  return this.config.editing.pk;
-};
-
-proto._setPkEditable = function(fields) {
-  fields.forEach((field) => {
-    if (field.name === this.getPk()) {
-      this.state.editing.ispkeditable = field.editable;
-      return false;
-    }
-  })
-};
-
 // raw data
 proto.getEditingFormat = function() {
   return this.config.editing.format;
@@ -290,10 +258,6 @@ proto.isReady = function() {
 
 proto.setReady = function(bool) {
   this.state.editing.ready = _.isBoolean(bool) ? bool : false;
-};
-
-proto.isPkEditable = function() {
-  return this.state.editing.ispkeditable;
 };
 
 // get configuration from server
@@ -340,10 +304,6 @@ proto.setCommitUrl = function(url) {
 
 proto.getEditingUrl = function() {
   return this.config.urls.editing;
-};
-
-proto.setEditingUrl = function(url) {
-  this.config.urls.editing = url;
 };
 
 proto.getUnlockUrl = function() {
@@ -429,25 +389,15 @@ proto.addLockIds = function(lockIds) {
 };
 
 proto.setFieldsWithValues = function(feature, fields) {
-  let pkValue;
   const createAttributesFromFields = (fields) => {
     const attributes = {};
     fields.forEach((field) => {
       if (field.type === 'child') {
         attributes[field.name] = createAttributesFromFields(field.fields);
-      } else {
-        // check if primary key is editbale
-        if (feature.getPk() === field.name && field.editable) {
-          pkValue = field.type === "integer" ? 1* field.value : field.value;
-          feature.setId(pkValue);
-        } else {
-          // case selct force to null
-          if (field.value === 'null') {
-            field.value = null;
-          }
-          attributes[field.name] = field.value;
-        }
+      } else if (field.value === 'null') {
+        field.value = null;
       }
+      attributes[field.name] = field.value;
     });
     return attributes;
   };
@@ -469,20 +419,10 @@ proto.getFieldsWithValues = function(obj, options={}) {
   if (feature) {
     const attributes = feature.getProperties();
     fields = fields.filter((field) =>  {
-      //check if field is pk and if is new nad if is not editable
-      return (!relation && (field.name === this.config.editing.pk) && feature.isNew() && !this.isPkEditable()) ? false : exclude.indexOf(field.name) === -1;
+      return exclude.indexOf(field.name) === -1;
     });
     fields.forEach((field) => {
-      // check if pk
-      if (field.name === this.config.editing.pk) {
-        let editable = this.isPkEditable();
-        // check check if has a value
-        if (feature.getId() && !feature.isNew()) {
-          field.value = feature.getId();
-        } else field.value = feature.get(field.name);
-        field.editable = editable;
-      } else field.value = attributes[field.name];
-
+      field.value = attributes[field.name];
       if (field.type !== 'child' && field.input.type === 'select_autocomplete' && !field.input.options.usecompleter) {
         const _configField = this.getEditingFields().find((_field) => {
           return _field.name === field.name
@@ -495,13 +435,13 @@ proto.getFieldsWithValues = function(obj, options={}) {
       if (field.validate === undefined)
         field.validate = {};
       field.validate.valid = true;
-      field.validate._valid = true; //usefult to get previous value in certain case
+      field.validate._valid = true; //useful to get previous value in certain case
       field.validate.unique = true;
       field.validate.required = field.validate.required === undefined ? false : field.validate.required;
       field.validate.mutually_valid = true;
       field.validate.empty = !field.validate.required;
       field.validate.message = null;
-      // end editng purpose
+      // end editing purpose
     });
   }
   return fields;
@@ -530,14 +470,9 @@ proto.createNewFeature = function() {
   });
   feature.setProperties(properties);
   feature = new Feature({
-    feature : feature,
-    pk: this.getPk()
+    feature : feature
   });
-  //check if primary key is editable
-  if (!this.isPkEditable())
-    feature.setTemporaryId();
-  else
-    feature.setNew();
+  feature.setNew();
   return feature;
 };
 

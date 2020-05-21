@@ -71,7 +71,7 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
         ordering
       }).then((data) => {
         let features = data.features;
-        this.addFeatures(features, data.pk, data.pkField);
+        this.addFeatures(features);
         this.state.pagination = !!data.count;
         this.state.allfeatures = data.count || this.state.features.length;
         this.state.featurescount += features.length;
@@ -98,9 +98,8 @@ proto.addFeature = function(feature) {
   this.state.features.push(tableFeature);
 };
 
-proto.addFeatures = function(features, pk, pkField) {
+proto.addFeatures = function(features) {
   this.state.hasGeometry = this.hasGeometry(features);
-  pk && this._addPkProperties(features, pkField);
   features.forEach((feature) => {
     this.addFeature(feature);
   });
@@ -125,13 +124,6 @@ proto.hasGeometry = function(features) {
     return !!features[0].geometry
   }
   return false
-};
-
-proto._addPkProperties = function(features, pkField) {
-  features.forEach((feature) => {
-    const _pkField = this.state.headers.find(header => header.name === pkField);
-    if (_pkField) feature.properties[_pkField.name] = feature.id;
-  })
 };
 
 proto.zoomAndHighLightSelectedFeature = function(feature, zoom=true) {

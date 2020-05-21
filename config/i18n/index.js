@@ -101,6 +101,9 @@ export default {
             }
           }
         },
+        tooltips: {
+          copy_map_extent_url: 'Copia map view link'
+        },
         mapcontrols: {
           query: {
             tooltip: 'Interroga Layer',
@@ -294,6 +297,9 @@ export default {
               }
             }
           }
+        },
+        tooltips: {
+          copy_map_extent_url: 'Copy map view link'
         },
         mapcontrols: {
           query: {

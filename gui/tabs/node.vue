@@ -54,7 +54,6 @@
   import G3wInput from '../inputs/g3w-input.vue';
   const Fields = require('gui/fields/fields');
   const ProjectRegistry = require('core/project/projectsregistry');
-  const RelationsService = require('core/relations/relationsservice');
   const RelationPage = require('gui/relations/vue/relationspage');
   const GUI = require('gui/gui');
   const COLUMNCLASSES = {

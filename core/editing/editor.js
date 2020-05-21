@@ -166,14 +166,9 @@ proto.applyCommitResponse = function(response={}) {
     const {response:data} = response;
     const ids = data.new;
     const lockids = data.new_lockids;
-    const pk = this._layer.getPk();
     ids.forEach((idobj) => {
       const feature = this._featuresstore.getFeatureById(idobj.clientid);
       feature.setId(idobj.id);
-      try {
-        // temporary inside try ckeck if feature contain a field with the same pk of the layer
-        Object.keys(feature.getProperties()).indexOf(pk) !== -1 && feature.set(pk, idobj.id);
-      } catch(err) {}
     });
     this._layer.getSource().addLockIds(lockids);
   }
@@ -185,20 +180,16 @@ proto.commit = function(commitItems) {
   this._layer.commit(commitItems)
     .then((promise) => {
       promise
-        .then((response) => {
+        .then(response => {
           this.applyCommitResponse(response);
           const features = this._featuresstore.readFeatures();
           features.forEach(feature => feature.clearState());
           this._layer.setFeatures(features);
-          return d.resolve(response);
+          d.resolve(response);
         })
-        .fail((err) => {
-        return d.reject(err);
-      })
+        .fail(err => d.reject(err))
     })
-    .fail((err) => {
-      d.reject(err);
-    });
+    .fail(err => d.reject(err));
   return d.promise();
 };
 

@@ -1,6 +1,6 @@
 const t = require('core/i18n/i18n.service').t;
 
-const serverErrorParser = function(options) {
+const serverErrorParser = function(options={}) {
   this._error = options.error;
 };
 
@@ -21,16 +21,8 @@ proto.parse = function() {
       }
     });
   }
-  let error_obj = (this._error && this._error.responseJSON && this._error.responseJSON.error.data) ? this._error.responseJSON.error.data : null;
-  if (error_obj) {
-    error_message = "";
-    traverseErrorMessage(error_obj);
-    error_message = "<h4>"+ t("server_saver_error") + "</h4>" +
-    "<h5>" + error_message + "</h5>"
-  } else {
-    error_message = t("server_saver_error");
-  }
-  return error_message;
+  return  (this._error && this._error.responseJSON && this._error.responseJSON.error.message) ?
+    this._error.responseJSON.error.message : t("server_saver_error");
 };
 
 module.exports = serverErrorParser;

@@ -33,6 +33,13 @@ function Layer(config={}, options={}) {
     this.config.urls.data = `${vectorUrl}data/${suffixUrl}`;
     this.config.urls.shp = `${vectorUrl}shp/${suffixUrl}`;
     this.config.urls.xls = `${vectorUrl}xls/${suffixUrl}`;
+    this.config.urls.editing = `${vectorUrl}editing/${suffixUrl}`;
+    this.config.urls.commit = `${vectorUrl}commit/${suffixUrl}`;
+    this.config.urls.config = `${vectorUrl}config/${suffixUrl}`;
+    this.config.urls.unlock = `${vectorUrl}unlock/${suffixUrl}`;
+    this.config.urls.widget = {
+      unique: `${vectorUrl}widget/unique/data/${suffixUrl}`
+    };
     //set custom parameters based on project qgis version
     this.config.searchParams = {
       I: qgisVersion === 2 ? null : 0,
@@ -146,14 +153,10 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
           const data = response.data;
           const count = response.count;
           const title = this.getTitle();
-          const pkProperties = this.getFields().find((field) => ((response.pk === field.name) && field.show));
           const features = data.features && data.features || [];
           let headers = features.length ? features[0].properties : [];
           headers = provider._parseAttributes(this.getAttributes(), headers);
-          if (pkProperties) headers.unshift(pkProperties);
           const dataTableObject = {
-            pk: !!pkProperties,
-            pkField: response.pk,
             headers,
             features,
             title,
@@ -174,7 +177,6 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
         .done((response) => {
           const data = provider.digestFeaturesForLayers(response.data);
           const dataTableObject = {
-            pkField: response.pk,
             headers: data[0].attributes,
             features: data[0].features,
             title: this.getTitle()
@@ -417,6 +419,10 @@ proto.getUrl = function(type) {
 // return urls
 proto.getUrls = function() {
   return this.config.urls;
+};
+
+proto.setEditingUrl = function(url) {
+  this.config.urls.editing = url || this.config.urls.editing;
 };
 
 proto.getQueryUrl = function() {

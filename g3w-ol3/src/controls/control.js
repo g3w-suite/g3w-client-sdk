@@ -34,7 +34,7 @@ const Control = function(options) {
                 type: 'button',
               },
               directives: [{
-                name: 't-mapcontrol',
+                name: 't-tooltip',
                 value: tipLabel
               }]
             }, [

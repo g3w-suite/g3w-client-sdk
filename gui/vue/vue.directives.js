@@ -44,8 +44,9 @@ const GlobalDirective = {
         }
       }
     );
-
-    Vue.directive('t-mapcontrol', {
+    
+    
+    Vue.directive('t-tooltip', {
       bind(el, binding){
         const value= binding.value;
         const i18Fnc = binding.arg;
@@ -57,11 +58,11 @@ const GlobalDirective = {
         vm.$watch(() => ApplicationState.lng, handler);
       }
     });
+    
 
     Vue.directive('t-html', {
       bind(el, binding){
         const handlerElement = () => {
-          console.log(binding.value)
           el.innerHTML = `${t(binding.value)}`;
         };
         vm.$watch(() => ApplicationState.lng, () => {

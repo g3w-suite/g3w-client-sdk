@@ -61,6 +61,9 @@ g3w.core = {
       Expression: require('core/layers/filter/expression')
     }
   },
+  relations: {
+    RelationsService: require('core/relations/relationsservice')
+  },
   interaction: {
     PickCoordinatesInteraction: require('g3w-ol3/src/interactions/pickcoordinatesinteraction'),
     PickFeatureInteraction: require('g3w-ol3/src/interactions/pickfeatureinteraction')

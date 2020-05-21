@@ -2,13 +2,11 @@ const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils//utils').base;
 const G3WObject = require('core/g3wobject');
 
-function Relation(config) {
-  config = config || {};
+function Relation(config={}) {
   const uniqueSuffix = Date.now();
   const id = config.id || 'id_' + uniqueSuffix;
   const name = config.name || 'name_' + uniqueSuffix;
 
-  // config per le pari statiche
   this.state = {
     id,
     name,
@@ -81,7 +79,5 @@ proto.getFatherField = function() {
 proto.getChildField = function() {
   return this.state.childField;
 };
-
-
 
 module.exports = Relation;

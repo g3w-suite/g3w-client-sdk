@@ -4,7 +4,6 @@ const Feature = function(options={}) {
   ol.Feature.call(this);
   this._uid = uniqueId();
   this._newPrefix = '_new_';
-  this._pk = options.pk || "id";
   this._geometry = false;
   const feature = options.feature;
   if (feature) {
@@ -27,7 +26,7 @@ ol.inherits(Feature, ol.Feature);
 
 const proto = Feature.prototype;
 
-// vado a cambiare il costruttore
+//change constructor
 proto.constructor = 'Feature';
 
 proto.getUid = function(){
@@ -54,10 +53,9 @@ proto.clone = function() {
   feature.setId(this.getId());
   this.isGeometry() && feature.setGeometry(feature.getGeometry().clone());
   const clone =  new Feature({
-    feature,
-    pk: this._pk
+    feature
   });
-  const uid = this.getUid()
+  const uid = this.getUid();
   clone._setUid(uid);
   clone.setState(this.getState());
   this.isNew() && clone.setNew();
@@ -67,7 +65,6 @@ proto.clone = function() {
 proto.setTemporaryId = function() {
   const newValue = this._newPrefix + Date.now();
   this.setId(newValue);
-  this.get(this._pk) !== undefined  && this.set(this._pk, newValue);
   this.setNew();
 };
 
@@ -75,13 +72,6 @@ proto.setNew = function() {
   this.state.new = true;
 };
 
-proto.getPk = function() {
-  return this._pk;
-};
-
-proto.isPk = function(field) {
-  return field === this.getPk();
-};
 
 // setta la feature a state 2 delete
 proto.delete = function() {
@@ -140,7 +130,6 @@ proto.getAlphanumericProperties = function() {
     if (geometryFields.indexOf(name) === -1)
       alphanumericproperties[name] = properties[name];
   }
-  alphanumericproperties[this._pk] = this.getId();
   return alphanumericproperties;
 };
 

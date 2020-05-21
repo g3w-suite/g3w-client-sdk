@@ -1,29 +1,35 @@
 const inherit = require('core/utils/utils').inherit;
 const XHR = require('core/utils/utils').XHR;
 const base = require('core/utils/utils').base;
-const getMapLayerById = require('core/utils/geo').getMapLayerById;
 const G3WObject = require('core/g3wobject');
 
 function RelationsService(options={}) {
-  this.state = {};
-  const {layer} = options;
   base(this);
-
-  this.getRelations = function(options={}) {
-    const relation = options.relation || {};
-    const layerId = layer.id === relation.referencedLayer ?relation.referencingLayer: relation.referencedLayer;
-    const dataUrl = getMapLayerById(layerId).getUrl('data');
-    let fid = options.fid.split('.');
-    fid = fid.length === 1 ? fid[0]: fid[1];
-    const id = relation.id;
-    const url = `${dataUrl}?relationonetomany=${id}|${fid}`;
-    return XHR.get({
-      url
-    })
-  };
-
 }
 
 inherit(RelationsService, G3WObject);
 
-module.exports = RelationsService;
+const proto = RelationsService.prototype;
+
+proto.getRelations = function(options={}) {
+  const ProjectsRegistry = require('core/project/projectsregistry');
+  const currentProject = ProjectsRegistry.getCurrentProject();
+  // type : <editing, data>
+  const {layer={}, relation={}, fid, type='data'} = options;
+  let layerId;
+  const {father, child, referencedLayer, referencingLayer, id:relationId} = relation;
+  if (father !== undefined) layerId = layer.id === father ? child: father;
+  else layerId = layer.id === referencedLayer ? referencingLayer: referencedLayer;
+  const dataUrl = currentProject.getLayerById(layerId).getUrl(type);
+  let  value = fid;
+  if (typeof value === 'string') {
+    value = value.split('.');
+    value = value.length === 1 ? value[0]: value[1];
+  }
+  const url = `${dataUrl}?relationonetomany=${relationId}|${value}`;
+  return XHR.get({
+    url
+  })
+};
+
+module.exports = new RelationsService;

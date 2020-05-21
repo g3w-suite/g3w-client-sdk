@@ -48,7 +48,6 @@ function FormService() {
     this.title = options.title || 'Form';
     this.formId = options.formId;
     this.name = options.name;
-    this.pk = options.pk || null;
     this.buttons = options.buttons || [];
     this.context_inputs = options.context_inputs;
     const footer = options.footer || {};

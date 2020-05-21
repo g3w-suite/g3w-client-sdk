@@ -49,16 +49,13 @@ proto.getData = function({layer_id= this.state.input.options.layer_id, key=this.
       suggest: search_value,
       ordering: key
     }).then((response) => {
-      const relationLayerPk = response.pkField;
-      const isKeyPk = relationLayerPk === key;
-      const isValuePk = relationLayerPk === value;
       const values = [];
       const features = response.features;
       for (let i=0; i < features.length; i++) {
         values.push({
-          text:isKeyPk ? features[i].id : features[i].properties[key],
+          text:features[i].properties[key],
           id: i,
-          $value: isValuePk? features[i].id : features[i].properties[value]
+          $value: features[i].properties[value]
         })
       }
       resolve(values);

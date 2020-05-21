@@ -194,33 +194,29 @@ function PrintComponentService() {
     const mapScala = getScaleFromResolution(resolution, this._mapUnits);
     const orderScales = _.orderBy(this.state.scale, ['value'], ['desc']);
     let scale = [];
-    orderScales.forEach((scala) => {
+    let addedFirstHighestScale = false;
+    const handleScala = scala => {
+      scale.push(scala);
+      resolution = getResolutionFromScale(scala.value, this._mapUnits);
+      this._scalesResolutions[scala.value] = resolution;
+      resolution = resolution / 2;
+    };
+    orderScales.forEach((scala, index) => {
       if (mapScala > scala.value) {
-        scale.push(scala);
-        resolution = getResolutionFromScale(scala.value, this._mapUnits);
-        this._scalesResolutions[scala.value] = resolution;
-        resolution = resolution / 2;
+        if (!addedFirstHighestScale) {
+          const higherScale = orderScales[index-1];
+          handleScala(higherScale);
+          addedFirstHighestScale = true;
+        }
+        handleScala(scala);
       }
     });
     this.state.scale = _.orderBy(scale, ['value'], ['asc']);
   };
 
   this._setInitialScalaSelect = function() {
-    const initialResolution = this._map.getView().getResolution();
-    const initialScala = getScaleFromResolution(initialResolution, this._mapUnits);
-    let found = false;
-    this.state.scale.forEach((scala, index) => {
-      if (initialScala < scala.value && !this.state.scala) {
-        const idx = index ? index -1 : index;
-        this.state.scala = this.state.scale[idx].value;
-        $('#scala').val(this.state.scala);
-        found = true;
-        return false
-      }
-    });
-    if (!found) {
-      this.state.scala = this.state.scale[this.state.scale.length-1].value;
-    }
+    this.state.scala = this.state.scale[this.state.scale.length-1].value;
+    $('#scala').val(this.state.scala);
   };
 
   this._setCurrentScala = function(resolution) {
