@@ -1641,8 +1641,7 @@ proto.removeAllLayers = function(){
 
 proto.addLayerToMap = function(layer) {
   const olLayer = layer.getOLLayer();
-  if (olLayer)
-    this.getMap().addLayer(olLayer);
+  olLayer && this.getMap().addLayer(olLayer);
 };
 
 proto._setMapProjectionToLayers = function(layers) {

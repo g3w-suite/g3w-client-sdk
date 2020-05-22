@@ -1,7 +1,7 @@
 <template>
   <field :state="state">
     <div slot="field" style="text-align: left">
-      <img v-for="(value, index) in values" class="img-responsive" style="max-height:50px" @click="showGallery(index)" :src="getSrc(value)"/>
+      <img v-for="(value, index) in values" class="img-responsive" style="max-height:50px; width: 100%;" @click="showGallery(index)" :src="getSrc(value)"/>
       <gallery :id="galleryId" :active="active" :images="getGalleryImages()"></gallery>
     </div>
   </field>

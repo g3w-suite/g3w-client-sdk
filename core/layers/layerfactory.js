@@ -21,7 +21,7 @@ function LayerFactory() {
         LayerClass = ImageLayer;
         if (config.source && config.geometrytype) {
           if ([Layer.SourceTypes.POSTGIS, Layer.SourceTypes.MYSQL, Layer.SourceTypes.SPATIALITE, Layer.SourceTypes.CSV, Layer.SourceTypes.OGR].indexOf(config.source.type) > -1) {
-            if (config.geometrytype && config.geometrytype === 'No geometry') {
+            if (config.geometrytype && config.geometrytype === 'NoGeometry') {
               LayerClass = TableLayer;
             }
           }

@@ -330,15 +330,19 @@ proto.getCommitItems = function() {
   return this._serializeCommit(commitItems);
 };
 
-proto.commit = function({ids=null, relations=true}={}) {
+proto.commit = function({ids=null, items, relations=true}={}) {
   const d = $.Deferred();
   let commitItems;
   if (ids) {
     commitItems = this._history.commit(ids);
     this._history.clear(ids);
   } else {
-    commitItems = this._history.commit();
-    commitItems = this._serializeCommit(commitItems);
+    if (items) {
+      commitItems = items;
+    } else {
+      commitItems = this._history.commit();
+      commitItems = this._serializeCommit(commitItems);
+    }
     if (!relations) commitItems.relations = {};
     this._editor.commit(commitItems)
       .then((response) => {
@@ -361,6 +365,7 @@ proto.commit = function({ids=null, relations=true}={}) {
       });
   }
   return d.promise();
+
 };
 
 proto._canStop = function() {
@@ -388,9 +393,7 @@ proto.clear = function() {
   this.unregister();
   this.state.started = false;
   this.state.getfeatures = false;
-  // clar related history
-  this._clearHistory();
-  // clear a learestor
+  this.clearHistory();
   this._editor.clear();
 };
 
@@ -400,7 +403,7 @@ proto.getHistory = function() {
 };
 
 // clear history
-proto._clearHistory = function() {
+proto.clearHistory = function() {
   this._history.clear();
 };
 

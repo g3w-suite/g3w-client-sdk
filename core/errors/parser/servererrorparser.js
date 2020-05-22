@@ -6,7 +6,7 @@ const serverErrorParser = function(options={}) {
 
 const proto = serverErrorParser.prototype;
 
-proto.parse = function() {
+proto.parse = function({type='responseJSON'}={}) {
   let error_message = null;
   function traverseErrorMessage(obj) {
     _.forIn(obj, function (val, key) {
@@ -21,8 +21,10 @@ proto.parse = function() {
       }
     });
   }
-  return  (this._error && this._error.responseJSON && this._error.responseJSON.error.message) ?
-    this._error.responseJSON.error.message : t("server_saver_error");
+  if (type === 'responseJSON')
+    return  (this._error && this._error.responseJSON && this._error.responseJSON.error.message) ? this._error.responseJSON.error.message : t("server_saver_error");
+  else if (type=== 'String') return this._error;
+  else return t("server_saver_error");
 };
 
 module.exports = serverErrorParser;

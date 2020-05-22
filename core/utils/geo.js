@@ -188,7 +188,8 @@ const geoutils = {
     });
     if (!style) {
       switch (geometryType) {
-        case 'Point' || 'MultiPoint':
+        case Geometry.GeometryTypes.POINT:
+        case Geometry.GeometryTypes.MULTIPOINT:
           style = new ol.style.Style({
             image: new ol.style.Circle({
               radius: 5,
@@ -198,7 +199,8 @@ const geoutils = {
             })
           });
           break;
-        case 'Line' || 'MultiLine':
+        case Geometry.GeometryTypes.LINESTRING:
+        case Geometry.GeometryTypes.MULTILINESTRING:
           style = new ol.style.Style({
             stroke: new ol.style.Stroke({
               width: 3,
@@ -206,7 +208,8 @@ const geoutils = {
             })
           });
           break;
-        case 'Polygon' || 'MultiPolygon':
+        case Geometry.GeometryTypes.POLYGON:
+        case Geometry.GeometryTypes.MULTIPOLYGON:
           style =  new ol.style.Style({
             stroke: new ol.style.Stroke({
               color:  "#000000",
@@ -217,6 +220,7 @@ const geoutils = {
             })
           });
           olLayer.setOpacity(0.6);
+          break;
       }
     }
     olLayer.setStyle(style);

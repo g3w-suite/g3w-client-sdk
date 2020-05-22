@@ -21,7 +21,7 @@ const Input = {
     this.$watch(() => ApplicationState.lng, ()=>{
       this.service.setErrorMessage(this.state);
     });
-    this.state.validate.required && this.service.validate();
+    this.state.editable && this.state.validate.required && this.service.validate();
     this.$emit('addinput', this.state);
   }
 };

@@ -92,7 +92,6 @@ proto.validate = function() {
     } else
       this.state.validate.valid = this._validator.validate(this.state.value);
   }
-
   return this.state.validate.valid;
 };
 

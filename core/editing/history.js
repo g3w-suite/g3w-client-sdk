@@ -256,14 +256,11 @@ proto.getFirstState = function() {
   return this._states.length ? this._states[0] : null;
 };
 
-//restituisce l'ultimo state registrato (che non è detto sia quello corrente)
 proto.getLastState = function() {
   const length = this._states.length;
   return length ? this._states[length -1] : null;
 };
 
-// funzione che mi permette di ricavare stato corrente del layer
-// attualmente nella storia
 proto.getCurrentState = function() {
   let currentState = null;
   if (this._current && this._states.length) {

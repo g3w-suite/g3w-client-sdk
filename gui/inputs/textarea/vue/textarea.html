@@ -1,5 +1,6 @@
 <baseinput :state="state">
   <textarea
+    :placeholder="state.default"
     @input="change"
     @change="change"
     slot="body"

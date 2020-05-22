@@ -189,7 +189,7 @@ proto.getFeatures = function(options={}, params={}) {
           const parser = Parsers[layerType].get({
             type: 'json'
           });
-          const parser_options = (geometrytype !== 'No geometry') ? { crs: this._layer.getCrs() } : {};
+          const parser_options = (geometrytype !== 'NoGeometry') ? { crs: this._layer.getCrs() } : {};
           const lockIds = featurelocks.map((featureLock) => {
             return featureLock.featureid
           });

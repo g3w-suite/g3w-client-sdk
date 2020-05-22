@@ -21,7 +21,7 @@ proto.setup = function(config={}, options={}) {
   // state extend of layer setting geolayer property to true
   // and adding informations of bbox
   _.extend(this.state, {
-    geolayer: config.geometrytype !== "No geometry",
+    geolayer: config.geometrytype !== "NoGeometry",
     external: config.source && config.source.external || false,
     bbox: config.bbox || null,
     visible: config.visible || false,
@@ -111,7 +111,7 @@ proto.getOwsMethod = function() {
   return this.config.ows_method;
 };
 
-proto.setProjection = function(crs,proj4) {
+proto.setProjection = function(crs, proj4) {
   this.config.projection = Projections.get(crs,proj4);
 };
 

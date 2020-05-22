@@ -408,7 +408,6 @@ proto.setFieldsWithValues = function(feature, fields) {
 
 proto.getFieldsWithValues = function(obj, options={}) {
   const exclude = options.exclude || [];
-  const relation = options.relation || false;
   let fields = JSON.parse(JSON.stringify(this.getEditingFields()));
   let feature;
   if (obj instanceof Feature) feature = obj;

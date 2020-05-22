@@ -122,7 +122,7 @@
     },
     computed: {
       isSpatial() {
-        return this.state.geometrytype != 'No geometry'
+        return this.state.geometrytype != 'NoGeometry'
       }
     },
     methods: {

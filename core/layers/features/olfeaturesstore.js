@@ -6,7 +6,6 @@ const FeaturesStore = require('./featuresstore');
 function OlFeaturesStore(options={}) {
   base(this, options);
   this._features = options.features || new ol.Collection([]);
-
 }
 
 inherit(OlFeaturesStore, FeaturesStore);
