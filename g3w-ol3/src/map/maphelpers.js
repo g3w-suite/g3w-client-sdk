@@ -1,4 +1,5 @@
-BaseLayers = require('../layers/bases');
+const BaseLayers = require('../layers/bases');
+const Projections = require('../projection/projections');
 
 const MapHelpers = {
   createViewer: function(opts){
@@ -17,13 +18,7 @@ const _Viewer = function(opts={}) {
       new ol.interaction.DragRotate()
     ]);
   interactions.removeAt(1);// remove douclickzoom
-
-  let view;
-  if (opts.view instanceof ol.View) {
-    view = opts.view;
-  } else {
-    view = new ol.View(opts.view);
-  }
+  const view = opts.view instanceof ol.View ? opts.view : new ol.View(opts.view);
   const options = {
     controls,
     interactions,
@@ -34,6 +29,7 @@ const _Viewer = function(opts={}) {
   if (opts.id) {
     options.target = opts.id;
   }
+  Projections.setApplicationProjections();
   const map  = new ol.Map(options);
   this.map = map;
 };

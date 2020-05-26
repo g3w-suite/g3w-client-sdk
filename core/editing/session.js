@@ -19,18 +19,17 @@ function Session(options={}) {
   base(this, options);
 
   this.state = {
-    id: options.id, // id session is the same of id layer
+    id: options.id,
     started: false,
     getfeatures: false
   };
   // editor
   this._editor = options.editor;
-  // history -- oggetto che contiene gli stati dei layers
   this._history = new History({
     id: this.state.id
   });
-
   this._temporarychanges = [];
+  this.register();
 }
 
 inherit(Session, G3WObject);
@@ -59,7 +58,6 @@ proto.unregister = function(){
 
 proto._start = function(options={}) {
   const d = $.Deferred();
-  this.register();
   this._editor.start(options)
     .then((features) => {
       this.state.started = true;
@@ -131,6 +129,7 @@ proto.updateTemporaryChanges = function(feature) {
 
 // method to add temporary feature
 proto.pushAdd = function(layerId, feature) {
+  this._editor.removeNotEditablePropriertiesFromFeature(feature);
   const newFeature = feature.clone();
   this.push({
     layerId: layerId,
@@ -241,16 +240,28 @@ proto.rollback = function(changes) {
     const d = $.Deferred();
     const changes = this._filterChanges();
     this._editor.rollback(changes.own).then(()=>{
-      this._temporarychanges = [];
       const {dependencies} = changes;
       for (const id in dependencies) {
-        // rollbackt to eventually depenencies
         SessionsRegistry.getSession(id).rollback(dependencies[id]);
       }
       d.resolve(dependencies);
     });
+    this._temporarychanges = [];
     return d.promise();
   }
+};
+
+proto.rollbackDependecies = function(ids=[]) {
+  ids.forEach(id => {
+    const changes = [];
+    this._temporarychanges = this._temporarychanges.filter(temporarychange => {
+      if (temporarychange.layerId !== id) {
+        changes.push(temporarychange);
+        return true
+      }
+    changes.length && SessionsRegistry.getSession(id).rollback(changes);
+    });
+  })
 };
 
 // method undo
@@ -284,7 +295,8 @@ proto._serializeCommit = function(itemsToCommit) {
     const items = itemsToCommit[key];
     if (key !== id) {
       isRelation = true;
-      const lockids = SessionsRegistry.getSession(key) ? SessionsRegistry.getSession(key).getEditor().getLayer().getFeaturesStore().getLockIds(): [];
+      const sessionRelation = SessionsRegistry.getSession(key);
+      const lockids =  sessionRelation ? sessionRelation.getEditor().getLockIds(): [];
       commitObj.relations[key] = {
         lockids,
         add: [],
@@ -292,9 +304,7 @@ proto._serializeCommit = function(itemsToCommit) {
         delete: []
       };
       layer = commitObj.relations[key];
-    } else {
-      layer = commitObj
-    }
+    } else layer = commitObj;
     items.forEach((item) => {
       state = item.getState();
       const GeoJSONFormat = new ol.format.GeoJSON();
@@ -313,6 +323,7 @@ proto._serializeCommit = function(itemsToCommit) {
              value.properties[key] = childs_properties[key]
           }
           const action = item.isNew() ? 'add' : item.getState();
+          // in case of add i have to remove non editable properties
           layer[action].push(value);
           break;
       }
@@ -390,7 +401,7 @@ proto._stop = function() {
 
 // clear all things bind to session
 proto.clear = function() {
-  this.unregister();
+  this._allfeatures = false;
   this.state.started = false;
   this.state.getfeatures = false;
   this.clearHistory();

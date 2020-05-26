@@ -47,7 +47,8 @@ proto.cloneNew = function(){
   clone._setUid(uid);
   clone.setTemporaryId();
   return clone;
-}
+};
+
 proto.clone = function() {
   const feature = ol.Feature.prototype.clone.call(this);
   feature.setId(this.getId());

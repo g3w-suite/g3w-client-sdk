@@ -42,6 +42,8 @@ function Editor(options={}) {
   this._featuresstore = this._layer.getType() === Layer.LayerTypes.TABLE ? new FeaturesStore() : new OlFeaturesStore();
   // editor is active or not
   this._started = false;
+  // not editable fields
+  this._noteditablefileds = this._layer.getEditingNotEditableFields() || [];
 }
 
 inherit(Editor, G3WObject);
@@ -87,6 +89,12 @@ proto.getLayer = function() {
 proto.setLayer = function(layer) {
   this._layer = layer;
   return this._layer;
+};
+
+proto.removeNotEditablePropriertiesFromFeature = function(feature){
+  this._noteditablefileds.forEach(field => {
+    feature.unset([field]);
+  });
 };
 
 //clone features method
@@ -160,28 +168,69 @@ proto.applyChangesToNewRelationsAfterCommit = function(relationsResponse) {
   }
 };
 
+proto.setFieldValueToRelationField = function({relationId, ids, field, values=[]}={}){
+  const SessionsRegistry = require('./sessionsregistry');
+  const editingLayerSource = SessionsRegistry.getSession(relationId).getEditor().getEditingSource();
+  ids.forEach(id => {
+    const feature = editingLayerSource.getFeatureById(id);
+    if (feature) {
+      const fieldvalue = feature.get(field);
+      fieldvalue == values[0] && feature.set(field, values[1]);
+    }
+  })
+};
+
 // apply response data from server in case of new inserted feature
-proto.applyCommitResponse = function(response={}) {
+proto.applyCommitResponse = function(response={}, relations=[]) {
   if (response && response.result) {
     const {response:data} = response;
     const ids = data.new;
     const lockids = data.new_lockids;
-    ids.forEach((idobj) => {
+    ids.forEach(idobj => {
       const feature = this._featuresstore.getFeatureById(idobj.clientid);
       feature.setId(idobj.id);
+      feature.setProperties(idobj.properties);
+      relations.forEach(relation =>{
+        Object.entries(relation).forEach(([relationId, options]) => {
+          const value = feature.get(options.fatherField);
+          this.setFieldValueToRelationField({
+            relationId,
+            ids: options.ids,
+            field: options.childField,
+            values:[idobj.clientid, value]
+          })
+        })
+      })
     });
     this._layer.getSource().addLockIds(lockids);
   }
 };
 
-// run after server apply chaged to origin resource
+proto.getLockIds = function(){
+  return this._layer.getSource().getLockIds();
+};
+
+// run after server apply changed to origin resource
 proto.commit = function(commitItems) {
   const d = $.Deferred();
+  // in case of relations bind to new feature
+  const relations = commitItems.add.length ? Object.keys(commitItems.relations).map(relationId => {
+    const layerRelation = this._layer.getRelations().getRelationByFatherChildren(this._layer.getId(), relationId);
+    const updates = commitItems.relations[relationId].update.map(relation => relation.id);
+    const add = commitItems.relations[relationId].add.map(relation => relation.id);
+    return {
+      [relationId]:{
+        ids: [...add, ...updates],
+        fatherField: layerRelation.getFatherField(),
+        childField: layerRelation.getChildField()
+      }
+    }
+  }) : [];
   this._layer.commit(commitItems)
     .then((promise) => {
       promise
         .then(response => {
-          this.applyCommitResponse(response);
+          this.applyCommitResponse(response, relations);
           const features = this._featuresstore.readFeatures();
           features.forEach(feature => feature.clearState());
           this._layer.setFeatures(features);

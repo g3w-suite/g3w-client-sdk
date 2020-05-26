@@ -29,12 +29,11 @@ proto._makeOlLayer = function(){
       break;
   }
   olLayer.getSource().on('imageloadstart', () => {
-        this.emit("loadstart");
-      });
-  olLayer.getSource().on('imageloadend', () => {
-      this.emit("loadend");
+    this.emit("loadstart");
   });
-
+  olLayer.getSource().on('imageloadend', () => {
+    this.emit("loadend");
+  });
   return olLayer
 };
 

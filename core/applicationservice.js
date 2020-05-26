@@ -55,13 +55,17 @@ const ApplicationService = function() {
     return this._bootstrap();
   };
 
+  this.getCurrentProject = function() {
+    return PluginsRegistry.getCurrenProject();
+  };
+
   this.changeLanguage = function(lng){
     changeLanguage(lng);
     ApplicationState.lng = lng;
-    // const pathname = window.location.pathname;
-    // const pathArray = pathname.split('/');
-    // pathArray[1] = lng;
-    // window.location.pathname = pathArray.join('/');
+    const pathname = window.location.pathname;
+    const pathArray = pathname.split('/');
+    pathArray[1] = lng;
+    history.replaceState(null, null, pathArray.join('/'));
   };
 
   this.registerOnlineOfflineEvent = function() {

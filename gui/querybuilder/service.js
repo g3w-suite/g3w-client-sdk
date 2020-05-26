@@ -30,7 +30,7 @@ proto.getCurrentProjectItems = function() {
 proto.getItems = function(projectId) {
   const items = ApplicationService.getLocalItem(QUERYBUILDERSEARCHES);
   projectId = projectId || ProjectsRegistry.getCurrentProject().getId();
-  return items ? items[projectId] : [];
+  return items ? items[projectId] || [] : [];
 };
 
 proto._getLayerById = function(layerId){
@@ -201,6 +201,11 @@ proto.save = function({id, name, layerId, filter, projectId} = {}){
       querybuildersearch.name =result;
       searchService.addQueryBuilderSearch(querybuildersearch);
       this.addLocalItem(projectId, querybuildersearch);
+      GUI.showUserMessage({
+        type: 'success',
+        message: t("sdk.querybuilder.messages.changed"),
+        autoclose: true
+      });
     }
   })
 };

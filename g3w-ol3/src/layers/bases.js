@@ -9,22 +9,6 @@ BaseLayers.OSM = new ol.layer.Tile({
   basemap: true
 });
 
-BaseLayers.BING = {};
-
-BaseLayers.BING.Road = new ol.layer.Tile({
-  name:'Road',
-  visible: false,
-  preload: Infinity,
-  source: new ol.source.BingMaps({
-    key: BING_API_KEY,
-    imagerySet: 'Road'
-      // use maxZoom 19 to see stretched tiles instead of the BingMaps
-      // "no photos at this zoom level" tiles
-      // maxZoom: 19
-  }),
-  basemap: true
-});
-
 BaseLayers.TMS =  {
   get: function({visible=false, url=null, source_type="xyz", minZoom, maxZoom, projection, attributions}={}) {
     let source;
@@ -77,9 +61,25 @@ BaseLayers.WMTS = {
   }
 };
 
+BaseLayers.BING = {};
+
+BaseLayers.BING.Road = new ol.layer.Tile({
+  name:'Road',
+  visible: false,
+  preload: Infinity,
+  source: new ol.source.BingMaps({
+    key: BING_API_KEY,
+    imagerySet: 'Road'
+    // use maxZoom 19 to see stretched tiles instead of the BingMaps
+    // "no photos at this zoom level" tiles
+    // maxZoom: 19
+  }),
+  basemap: true
+});
+
 BaseLayers.BING.AerialWithLabels = new ol.layer.Tile({
   name: 'AerialWithLabels',
-  visible: true,
+  visible: false,
   preload: Infinity,
   source: new ol.source.BingMaps({
     key: BING_API_KEY,

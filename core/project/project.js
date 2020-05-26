@@ -33,10 +33,9 @@ function Project(config={}, options={}) {
   // process layers
   this._processLayers();
   // set the project projection
-  this._projection = Projections.get(this.state.crs, this.state.proj4);
+  this._projection = Projections.get(this.state.crs, this.state.proj4, this.state.extent);
   // build a layerstore of the project
   this._layersStore = this._buildLayersStore();
-
   this.setters = {
     setBaseLayer: function(id) {
       this.state.baselayers.forEach((baseLayer) => {

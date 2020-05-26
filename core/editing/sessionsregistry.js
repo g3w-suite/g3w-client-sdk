@@ -20,6 +20,10 @@ const SessionsRegistry = function() {
 
   this.getSessions = function() {
     return this._sessions;
+  };
+
+  this.clear = function(){
+    this._sessions = {};
   }
 };
 

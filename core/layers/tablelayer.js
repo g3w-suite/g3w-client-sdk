@@ -77,11 +77,7 @@ function TableLayer(config={}, options={}) {
   this._color = null;
   options.project = options.project || ProjectsRegistry.getCurrentProject();
   const {project} = options;
-  // set urls
-  this.projectId = project.getId();
   this.layerId = config.id;
-  this.projectType = options.project_type || project.getType();
-  this.vectorUrl = options.vectorurl || initConfig.vectorurl;
   // add urls
   config.urls = config.urls || {};
   // add editing configurations
@@ -111,9 +107,7 @@ function TableLayer(config={}, options={}) {
         this.config.editing.constraints = constraints || {};
         this.config.editing.style = vector.style || {};
         this._setOtherConfigParameters(vector);
-        if (vector.style) {
-          this.setColor(vector.style.color)
-        }
+        vector.style && this.setColor(vector.style.color);
         // creare an instace of editor
         this._editor = new Editor({
           layer: this
@@ -233,6 +227,14 @@ proto.getEditingFields = function(editable=false) {
       return field.editable;
     });
   return fields;
+};
+
+proto.isEditingFieldEditable = function(field) {
+  return this.getEditingFields().find(_field => _field.name === field).editable;
+};
+
+proto.getEditingNotEditableFields = function() {
+  return this.config.editing.fields.filter(field => !field.editable).map(field => field.name);
 };
 
 proto.getFieldsLabel = function() {

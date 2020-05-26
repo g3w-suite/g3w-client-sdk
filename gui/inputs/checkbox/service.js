@@ -19,6 +19,7 @@ inherit(CheckBoxService, Service);
 const proto = CheckBoxService.prototype;
 
 proto.convertCheckedToValue = function(checked) {
+  cheched = checked === null ||  checked === undefined ? false : checked;
   const option = this.state.input.options.values.find((value) => {
     return value.checked === checked
   });
@@ -28,8 +29,8 @@ proto.convertCheckedToValue = function(checked) {
 
 proto.convertValueToChecked = function() {
   const valueToCheck = this.state.value;
-  if (valueToCheck === null)
-    return null;
+  if (valueToCheck === null || valueToCheck === undefined)
+    return false;
   const option = this.state.input.options.values.find((value) => {
     return value.value == valueToCheck
   });

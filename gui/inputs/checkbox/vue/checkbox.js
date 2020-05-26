@@ -30,8 +30,10 @@ const CheckBoxInput = Vue.extend({
       this.setLabel();
     }
   },
-  mounted: function() {
+  created() {
     this.value = this.service.convertValueToChecked();
+  },
+  mounted: function() {
     this.setLabel();
     this.change();
   }

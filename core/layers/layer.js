@@ -62,7 +62,6 @@ function Layer(config={}, options={}) {
     geolayer: false
   };
 
-  this._editingLayer = null;
   // refferred to (layersstore);
   this._layersstore = config.layersstore || null;
   /*

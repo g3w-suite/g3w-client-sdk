@@ -7682,6 +7682,7 @@ ol.events.EventTarget.prototype.addEventListener = function(type, listener) {
  *     event object or if any of the listeners returned false.
  */
 ol.events.EventTarget.prototype.dispatchEvent = function(event) {
+  console.log(event)
   var evt = typeof event === 'string' ? new ol.events.Event(event) : event;
   var type = evt.type;
   evt.target = this;
