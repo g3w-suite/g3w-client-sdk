@@ -6,7 +6,6 @@ const base = require('core/utils/utils').base;
 const Component = require('gui/vue/component');
 const QueryResultsService = require('gui/queryresults/queryresultsservice');
 const GUI = require('gui/gui');
-const t = require('core/i18n/i18n.service').t;
 const fieldsMixin = require('gui/vue/vue.mixins').fieldsMixin;
 const maxSubsetLength = 3;
 const headerExpandActionCellWidth = 10;
@@ -253,9 +252,7 @@ const vueComponentOptions = {
     }
   },
   beforeMount() {
-    if (this.isMobile()) {
-      GUI.hideSidebar();
-    }
+    this.isMobile() && GUI.hideSidebar();
   },
   beforeDestroy() {
     this.state.zoomToResult = true;

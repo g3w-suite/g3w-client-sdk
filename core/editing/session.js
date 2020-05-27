@@ -342,6 +342,7 @@ proto.getCommitItems = function() {
 };
 
 proto.commit = function({ids=null, items, relations=true}={}) {
+  console.log(items)
   const d = $.Deferred();
   let commitItems;
   if (ids) {

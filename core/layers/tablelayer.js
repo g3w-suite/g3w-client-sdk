@@ -237,6 +237,10 @@ proto.getEditingNotEditableFields = function() {
   return this.config.editing.fields.filter(field => !field.editable).map(field => field.name);
 };
 
+proto.getEditingMediaFields = function(options=null){
+  return this.config.editing.fields.filter(field => field.input.type === 'media').map(field => field.name);
+};
+
 proto.getFieldsLabel = function() {
   const labels = [];
   this.getEditingFields().forEach((field) => {

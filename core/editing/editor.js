@@ -202,9 +202,13 @@ proto.applyCommitResponse = function(response={}, relations=[]) {
         })
       })
     });
+    const features = this._featuresstore.readFeatures();
+    features.forEach(feature => feature.clearState());
+    this._layer.setFeatures(features);
     this._layer.getSource().addLockIds(lockids);
   }
 };
+
 
 proto.getLockIds = function(){
   return this._layer.getSource().getLockIds();
@@ -231,9 +235,6 @@ proto.commit = function(commitItems) {
       promise
         .then(response => {
           this.applyCommitResponse(response, relations);
-          const features = this._featuresstore.readFeatures();
-          features.forEach(feature => feature.clearState());
-          this._layer.setFeatures(features);
           d.resolve(response);
         })
         .fail(err => d.reject(err))
