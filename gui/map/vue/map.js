@@ -69,7 +69,7 @@ Vue.component('g3w-map', vueComponentOptions);
 function MapComponent(options = {}) {
   base(this, options);
   this.id = "map-component";
-  this.title = "Catalogo dati";
+  this.title = "Map Component";
   const target = options.target || "map";
   const maps_container = options.maps_container || "g3w-maps";
   options.target = target;
