@@ -1,6 +1,5 @@
-const inherit = require('core/utils/utils').inherit;
+const {base, inherit, noop} = require('core/utils/utils');
 const getAlphanumericPropertiesFromFeature = require('core/utils/geo').getAlphanumericPropertiesFromFeature;
-const base = require('core/utils/utils').base;
 const t = require('core/i18n/i18n.service').t;
 const ProjectsRegistry = require('core/project/projectsregistry');
 const Layer = require('core/layers/layer');
@@ -46,6 +45,7 @@ function QueryResultsService() {
       this._orderResponseByProjectLayers(layers);
       this.state.loading = false;
       this.state.layers =  layers;
+      console.log(layers)
       this.setActionsForLayers(layers);
     },
     addComponent: function(component) {
@@ -58,13 +58,56 @@ function QueryResultsService() {
   base(this);
   this._setRelations(project);
   this._addVectorLayersDataToQueryResponse();
+  this._asyncFnc = {
+    todo: noop,
+    zoomToLayerFeaturesExtent: {
+      async: false
+    },
+    goToGeometry: {
+      async: false
+    }
+  };
+  GUI.onbefore('setContent', (options)=>{
+    const {perc} = options;
+    GUI.on('collapsed', (collapsed) =>{
+      if (collapsed){
+        setTimeout(()=>{
+          this.clear();
+        })
+      } else {
+        this._asyncFnc.zoomToLayerFeaturesExtent.async = true;
+        this._asyncFnc.goToGeometry.async = true;
+      }
+    });
+    if (perc === 100) {
+      this._asyncFnc.zoomToLayerFeaturesExtent.async = true;
+      this._asyncFnc.goToGeometry.async = true;
+    }
+  })
 }
 
 // Make the public service en Event Emitter
 inherit(QueryResultsService, G3WObject);
 
-
 const proto = QueryResultsService.prototype;
+
+proto.clear = function() {
+  this.runAsyncTodo();
+  this._asyncFnc = null;
+  this._asyncFnc = {
+    todo: noop,
+    zoomToLayerFeaturesExtent: {
+      async: false
+    },
+    goToGeometry: {
+      async: false
+    }
+  };
+};
+
+proto.runAsyncTodo = function() {
+  this._asyncFnc.todo();
+};
 
 proto._orderResponseByProjectLayers = function(layers) {
   layers.sort((layerA, layerB) => {
@@ -81,7 +124,9 @@ proto.setZoomToResults = function(bool=true) {
 proto.zoomToLayerFeaturesExtent = function(layer, options={}) {
   const mapService = ComponentsRegistry.getComponent('map').getService();
   const features = layer.features;
-  mapService.zoomToFeatures(features, options);
+  if (this._asyncFnc.zoomToLayerFeaturesExtent.async)
+    this._asyncFnc.todo = mapService.zoomToFeatures.bind(mapService, features, options);
+  else mapService.zoomToFeatures(features, options);
 };
 
 proto.clearState = function() {
@@ -182,19 +227,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       formStructure,
       error: ''
     };
-
-    const relationNames = [];
-    if (extractRelations)
-      for (const id in this._relations) {
-        if (layerId ===  id) {
-          this._relations[id].forEach((relation) =>{
-            if (relation.type === 'ONE') {
-              const name = relation.name.replace(/\s/g, "_");
-              relationNames.push(name)
-            }
-          })
-        }
-      }
+    
     if (featuresForLayer.features && featuresForLayer.features.length) {
       const layerSpecialAttributesName = (layer instanceof Layer) ? layerAttributes.filter(attribute => {
         try {
@@ -207,7 +240,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
         name: attribute.name
       })) : [];
       layerSpecialAttributesName.length && featuresForLayer.features.forEach( feature => this._setSpecialAttributesFetureProperty(layerSpecialAttributesName, feature));
-      layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0], relationNames);
+      layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0]);
       layerObj.attributes.forEach((attribute) => {
         if (formStructure) {
           const relationField = formStructure.fields.find((field)=>{
@@ -262,7 +295,7 @@ proto._setSpecialAttributesFetureProperty = function(layerSpecialAttributesName,
   }
 };
 
-proto._parseAttributes = function(layerAttributes, feature, relationNames) {
+proto._parseAttributes = function(layerAttributes, feature) {
   const featureAttributes = feature.getProperties();
   let featureAttributesNames = Object.keys(featureAttributes);
   featureAttributesNames = getAlphanumericPropertiesFromFeature(featureAttributesNames);
@@ -270,21 +303,7 @@ proto._parseAttributes = function(layerAttributes, feature, relationNames) {
     const attributes = layerAttributes.filter((attribute) => {
       return featureAttributesNames.indexOf(attribute.name) > -1;
     });
-    let relationAttributes = [];
-    relationNames.forEach((relationName) =>{
-      relationAttributes = featureAttributesNames.filter((attributeName) => {
-        return attributeName.indexOf(relationName) !== -1;
-      }).map((name) => {
-        const suffix = name.split(relationName)[1];
-        const fieldName = `${relationName.replace(/_/g, ' ')}${suffix}`;
-        feature.set(fieldName, feature.get(name));
-        feature.unset(name);
-        return {
-          name: fieldName
-        }
-      })
-    });
-    return [...attributes, ...relationAttributes];
+    return attributes;
   } else {
     return featureAttributesNames.map((featureAttributesName) => {
       return {
@@ -304,7 +323,7 @@ proto.setActionsForLayers = function(layers) {
         id: 'gotogeometry',
         class: GUI.getFontClass('marker'),
         hint: t('sdk.mapcontrols.query.actions.show_map.hint'),
-        cbk: QueryResultsService.goToGeometry
+        cbk: this.goToGeometry.bind(this)
       });
     // in case of relations
     if (this._relations) {
@@ -444,6 +463,23 @@ proto._addComponent = function(component) {
   this.state.components.push(component)
 };
 
+proto.goToGeometry = function(layer, feature) {
+  if (feature.geometry) {
+    const mapService = ComponentsRegistry.getComponent('map').getService();
+    if (this._asyncFnc.goToGeometry.async) {
+      this._asyncFnc.todo = mapService.highlightGeometry.bind(mapService, feature.geometry, {
+        layerId: layer.id,
+        duration: 1500
+      });
+    } else setTimeout(() => {
+      mapService.highlightGeometry(feature.geometry, {
+        layerId: layer.id,
+        duration: 1500
+      });
+    }, 0)
+  }
+};
+
 //save layer result
 proto.saveLayerResult = function(layer, alias=true) {
   try {
@@ -472,9 +508,9 @@ proto.saveLayerResult = function(layer, alias=true) {
       items = items.map(item => {
         Object.keys(item).forEach(key => {
           item[key] = typeof item[key] === 'string' ? item[key].replace(/(\r\n|\n|\r)/gm," ") : item[key];
-        })
+        });
         return item
-      })
+      });
       if (headers) items.unshift(headers);
       // Convert Object to JSON
       const csv = convertToCSV(items);

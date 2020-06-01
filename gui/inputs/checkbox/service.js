@@ -31,9 +31,13 @@ proto.convertValueToChecked = function() {
   const valueToCheck = this.state.value;
   if (valueToCheck === null || valueToCheck === undefined)
     return false;
-  const option = this.state.input.options.values.find((value) => {
+  let option = this.state.input.options.values.find((value) => {
     return value.value == valueToCheck
   });
+  if (option === undefined) {
+    option = this.state.input.options.values.find(value => value.checked === false);
+    this.state.value = option.value;
+  }
   return option.checked;
 };
 

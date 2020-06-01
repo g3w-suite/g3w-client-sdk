@@ -5,7 +5,8 @@ const {coordinatesToGeometry, geometryFields} =  require('core/utils/geo');
 const TableService = function(options = {}) {
   this.currentPage = 0; // number of pages
   this.layer = options.layer;
-  const headers = this.getHeaders(this.layer.getTableFields());
+  this.formatter = options.formatter;
+  const headers = this.getHeaders();
   this.projection = this.layer.state.geolayer  ? this.layer.getProjection() : null;
   this.state = {
     pageLengths: [10, 25, 50],
@@ -23,11 +24,8 @@ const TableService = function(options = {}) {
 
 const proto = TableService.prototype;
 
-proto.getHeaders = function(fields) {
-  const headers = fields.filter((field) => {
-    return  geometryFields.indexOf(field.name) === -1
-  });
-  return headers;
+proto.getHeaders = function() {
+  return this.layer.getTableHeaders();
 };
 
 // function need to work with pagination
@@ -68,6 +66,7 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
         page: this.currentPage,
         page_size: length,
         search: searchText,
+        formatter: this.formatter,
         ordering
       }).then((data) => {
         let features = data.features;
@@ -82,7 +81,6 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
         });
       })
         .fail((err) => {
-          console.log(err)
           GUI.notify.error(t("info.server_error"));
           reject(err);
         });

@@ -51,17 +51,22 @@ mixin(ImageLayer, GeoLayerMixin);
 
 const proto = ImageLayer.prototype;
 
-proto.getLayerForEditing = function({force=false, vectorurl, project_type, project}={}) {
+proto.getLayerForEditing = async function({force=false, vectorurl, project_type, project}={}) {
   if (this.isEditable() || force) {
     const project = project || require('core/project/projectsregistry').getCurrentProject();
-    const editingLayer = new VectorLayer(this.config, {
+    const editableLayer = new VectorLayer(this.config, {
       vectorurl,
       project_type,
       project
     });
     // set editing layer
-    this.setEditingLayer(editingLayer);
-    return editingLayer;
+    try {
+      const editingLayer = await editableLayer.layerForEditing;
+      this.setEditingLayer(editingLayer);
+      return editingLayer
+    } catch(err) {
+      return Promise.reject(err);
+    }
   } else return null
 };
 

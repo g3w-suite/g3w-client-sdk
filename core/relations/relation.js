@@ -6,10 +6,11 @@ function Relation(config={}) {
   const uniqueSuffix = Date.now();
   const id = config.id || 'id_' + uniqueSuffix;
   const name = config.name || 'name_' + uniqueSuffix;
-
+  const origname = config.origname || 'origname_' + uniqueSuffix;
   this.state = {
     id,
     name,
+    origname,
     father: config.referencedLayer,
     child: config.referencingLayer,
     fatherField: config.fieldRef.referencedField,

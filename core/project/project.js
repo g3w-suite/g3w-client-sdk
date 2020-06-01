@@ -26,6 +26,7 @@ function Project(config={}, options={}) {
     wps: [] // array of wps service
   }
   */
+
   // for future implementation catalog tab actived
   config.catalog_tab = config._catalog_tab || 'layers'; // values : layers, baselayers, legend
   config.ows_method = config.ows_method || 'GET';

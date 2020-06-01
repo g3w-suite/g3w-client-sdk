@@ -197,7 +197,8 @@ const vueComponentOptions = {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       this.layerMenu.loading.data_table = true;
       const tableContent = new TableComponent({
-        layer
+        layer,
+        formatter: 1
       });
       tableContent.on('show', () => {
         if (this.isMobile()) {

@@ -149,6 +149,7 @@ const InternalComponent = Vue.extend({
     },
     showRelation: function(relation) {
       this.relation = relation;
+      const relationLayerId = relation.referencingLayer;
       const fid = this.feature.attributes['g3w_fid'];
       GUI.setLoadingContent(true);
       this.$options.service.getRelations({
@@ -157,7 +158,7 @@ const InternalComponent = Vue.extend({
         fid
       }).then((response) => {
         const relations = getFeaturesFromResponseVectorApi(response);
-        this.table = this.$options.service.buildRelationTable(relations);
+        this.table = this.$options.service.buildRelationTable(relations, relationLayerId);
         this.currentview = 'relation';
         this.previousview = 'relations';
       }).catch((err) => {

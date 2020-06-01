@@ -12,13 +12,15 @@ const TableComponent = function(options = {}) {
   base(this);
   this.id = "openattributetable";
   const layer = options.layer;
+  const formatter = options.formatter;
   const service = options.service || new TableService({
-    layer
+    layer,
+    formatter
   });
 
   this.setService(service);
   const internalComponent = new InternalComponent({
-    service: service
+    service
   });
   this.setInternalComponent(internalComponent);
   internalComponent.state = service.state;

@@ -189,8 +189,8 @@ proto.start = function(options={}) {
        this.clearUserMessagesSteps();
       }
       d.reject(error);
-    })
-
+    });
+  this.emit('start');
   return d.promise();
 };
 
@@ -218,6 +218,7 @@ proto.stop = function() {
           this.clearMessages();
         })
   });
+  this.emit('stop');
   return d.promise();
 };
 

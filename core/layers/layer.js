@@ -4,6 +4,7 @@ const t = require('core/i18n/i18n.service').t;
 const XHR = require('core/utils/utils').XHR;
 const G3WObject = require('core/g3wobject');
 const Filter = require('core/layers/filter/filter');
+const { geometryFields } =  require('core/utils/geo');
 const ProviderFactory = require('core/layers/providers/providersfactory');
 
 // Base Class of all Layer
@@ -132,7 +133,7 @@ proto.isGeoLayer = function() {
   return this.state.geolayer;
 };
 
-proto.getDataTable = function({ page = null, page_size=null, ordering=null, search=null, suggest=null } = {}) {
+proto.getDataTable = function({ page = null, page_size=null, ordering=null, search=null, suggest=null, formatter=0 } = {}) {
   const d = $.Deferred();
   let provider;
   const params = {
@@ -140,6 +141,7 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
     page_size,
     ordering,
     search,
+    formatter,
     suggest
   };
   if (!(this.getProvider('filter')  || this.getProvider('data'))) {
@@ -258,6 +260,12 @@ proto.getTableFields = function() {
   return this.config.fields.filter((field) => {
     return field.show
   })
+};
+
+proto.getTableHeaders = function(){
+  return this.getTableFields().filter((field) => {
+    return geometryFields.indexOf(field.name) === -1
+  });
 };
 
 proto.getProject = function() {

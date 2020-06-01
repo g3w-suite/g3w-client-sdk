@@ -49,20 +49,21 @@ proto.add = function(uniqueId, items) {
   // in this way avoid starge barch in the history
   //If we are in the middle of undo, delete all changes in the histroy from the current "state"
   // so i can create a new history
-  if (this._states.length && this._current !== this.getLastState().id) {
-    this._states.find((state, idx) => {
-      if (this._current === state.id) {
-        //substitute new state
-        this._states = this._states.slice(0, idx + 1);
-        return true;
-      }
+
+  if (this._current === null) {
+    this._states = [{
+      id: uniqueId,
+      items
+    }]
+  } else {
+    if (this._states.length && this._current < this.getLastState().id)
+      this._states = this._states.filter(state => state.id <= this._current);
+    this._states.push({
+      id: uniqueId,
+      items
     });
   }
 
-  this._states.push({
-    id: uniqueId,
-    items
-  });
   this._current = uniqueId;
   this._setState();
   // return unique id key

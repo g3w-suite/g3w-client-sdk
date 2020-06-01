@@ -188,6 +188,7 @@ proto._setProjectRelations = function(projectConfig) {
       projectConfig.layers.find((layer) => {
         if (layer.id === relation.referencingLayer) {
           relation.name = layer.name;
+          relation.origname = layer.origname;
           return true;
         }
       })

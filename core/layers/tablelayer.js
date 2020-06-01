@@ -90,36 +90,39 @@ function TableLayer(config={}, options={}) {
   // create realations
   this._relations;
   this._createRelations(projectRelations);
-  // add state info for the layer
-  this.state = _.merge({
-    editing: {
-      started: false,
-      modified: false,
-      ready: false
-    }
-  }, this.state);
   // get configuration from server if is editable
+  this._editatbleLayer;
   if (this.isEditable()) {
-    this.getEditingConfig()
-      .then(({vector, constraints}={}) => {
-        this.config.editing.fields = vector.fields;
-        this.config.editing.format = vector.format;
-        this.config.editing.constraints = constraints || {};
-        this.config.editing.style = vector.style || {};
-        this._setOtherConfigParameters(vector);
-        vector.style && this.setColor(vector.style.color);
-        // creare an instace of editor
-        this._editor = new Editor({
-          layer: this
-        });
-        this.setReady(true);
-      })
-      .fail((err) => {
-        this.setReady(false);
-      })
-      .always(() => {
-        this.emit('layer-config-ready', this.config);
-      })
+    // add state info for the layer
+    this.layerForEditing = new Promise((resolve, reject) => {
+      this.getEditingConfig()
+        .then(({vector, constraints}={}) => {
+          this.config.editing.fields = vector.fields;
+          this.config.editing.format = vector.format;
+          this.config.editing.constraints = constraints || {};
+          this.config.editing.style = vector.style || {};
+          this._setOtherConfigParameters(vector);
+          vector.style && this.setColor(vector.style.color);
+          // creare an instace of editor
+          this._editor = new Editor({
+            layer: this
+          });
+          resolve(this);
+          this.setReady(true);
+        })
+        .fail((err) => {
+          reject(this);
+          this.setReady(false);
+        })
+    });
+    this.state = _.merge({
+      editing: {
+        started: false,
+        modified: false,
+        ready: false
+      }
+    }, this.state);
+
   }
   this._featuresstore = new FeaturesStore({
     provider: this.providers.data
@@ -159,11 +162,16 @@ proto.readFeatures = function() {
 };
 
 // return layer for editing
-proto.getLayerForEditing = function({vectorurl, project_type}={}) {
+proto.getLayerForEditing = async function({vectorurl, project_type}={}) {
   vectorurl && this.setVectorUrl(vectorurl);
   project_type && this.setProjectType(project_type);
   this.setEditingUrl();
-  return this.clone();
+  const editableLayer = this.clone();
+  try {
+    return await editableLayer.layerForEditing;
+  } catch(err) {
+    return err
+  };
 };
 
 proto.getEditingSource = function() {
@@ -177,7 +185,6 @@ proto.readEditingFeatures = function() {
 proto.getEditingLayer = function() {
   return this;
 };
-
 
 proto.getEditingStyle = function() {
   return this.config.editing.style;
@@ -262,8 +269,8 @@ proto.isReady = function() {
   return this.state.editing.ready;
 };
 
-proto.setReady = function(bool) {
-  this.state.editing.ready = _.isBoolean(bool) ? bool : false;
+proto.setReady = function(bool=false) {
+  this.state.editing.ready = bool;
 };
 
 // get configuration from server
@@ -277,7 +284,7 @@ proto.getEditingConfig = function(options={}) {
     .fail((err) => {
       d.reject(err)
     });
-  return d.promise()
+  return d.promise();
 };
 
 proto.addEditingConfigFieldOption = function({field, key, value} = {}) {
@@ -459,9 +466,9 @@ proto._createRelations = function(projectRelations) {
     if ([relation.referencedLayer, relation.referencingLayer].indexOf(layerId) !== -1)
       relations.push(relation);
   });
-  if (!!relations.length) {
+  if (relations.length) {
     this._relations = new Relations({
-      relations: relations
+      relations
     });
   }
   return relations;

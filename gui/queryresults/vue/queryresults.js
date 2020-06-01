@@ -19,7 +19,6 @@ const vueComponentOptions = {
     return {
       state: this.$options.queryResultsService.state,
       layersFeaturesBoxes: {},
-      hasResults: false,
       headerExpandActionCellWidth: headerExpandActionCellWidth,
       headerActionsCellWidth: headerActionsCellWidth,
     }
@@ -30,7 +29,10 @@ const vueComponentOptions = {
   },
   computed: {
     hasLayers: function() {
-      return !!this.state.layers.length || !!this.state.components.length;
+      return this.hasResults || !!this.state.components.length;
+    },
+    hasResults() {
+      return this.state.layers.length > 0
     }
   },
   methods: {
@@ -57,9 +59,6 @@ const vueComponentOptions = {
     },
     hasFieldOutOfFormStructure(layer) {
       return this.hasFormStructure(layer) ? layer.getFieldsOutOfFormStructure() : [];
-    },
-    showResults() {
-      this.hasResults = true;
     },
     isArray: function (value) {
       return _.isArray(value);
@@ -106,6 +105,7 @@ const vueComponentOptions = {
       return _attributes.slice(0, end);
     },
     relationsAttributesSubset: function(relationAttributes) {
+      console.log(relationAttributes)
       const attributes = [];
       _.forEach(relationAttributes, function (value, attribute) {
         if (_.isArray(value)) return;
@@ -244,7 +244,6 @@ const vueComponentOptions = {
           this.zoomToLayerFeaturesExtent(layers[0], {
             maxZoom: 8
           });
-        this.hasResults = true;
       }
       requestAnimationFrame(() => {
         this.$options.queryResultsService.postRender(this.$el);
@@ -256,6 +255,12 @@ const vueComponentOptions = {
   },
   beforeDestroy() {
     this.state.zoomToResult = true;
+  },
+  async destroyed() {
+    await this.$nextTick();
+    setTimeout(()=>{
+      this.$options.queryResultsService.clear();
+    })
   }
 };
 

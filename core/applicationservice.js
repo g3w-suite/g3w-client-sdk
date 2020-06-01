@@ -51,12 +51,11 @@ const ApplicationService = function() {
     ApplicationState.lng = config._i18n.lng;
     this._config = config;
     this._groupId = this._config.group.slug || this._config.group.name.replace(/\s+/g, '-').toLowerCase();
-    // run bbotstrap
     return this._bootstrap();
   };
 
   this.getCurrentProject = function() {
-    return PluginsRegistry.getCurrenProject();
+    return ProjectsRegistry.getCurrentProject();
   };
 
   this.changeLanguage = function(lng){

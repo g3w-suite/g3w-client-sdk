@@ -463,7 +463,7 @@ const geoutils = {
     const geometries = {
       feature: feature.getGeometry(), //geometry of the feature to split
       split: splitfeature.getGeometry() // geometry of split feature
-    }
+    };
     // check geometry type of split
     const splitType = geometries.split.getType();
     // check geometry type of feature
@@ -491,6 +491,7 @@ const geoutils = {
             })
           } else {
             // case a Polygon
+            const polygonFeatureGeometry = parser.read(polygonFeature);
             const featureGeometry = parser.read(polygonFeature.getLinearRing(0));
             const splitGeometry = parser.read(geometries.split);
             const union = featureGeometry.union(splitGeometry);
@@ -498,8 +499,10 @@ const geoutils = {
             polygonizer.add(union);
             const polygons = polygonizer.getPolygons().toArray();
             polygons.length > 1 && polygons.forEach(polygon => {
-              const geometry = parser.write(polygon);
-              return splittedFeatureGeometries.push(isMulti ? new ol.geom.MultiPolygon([geometry.getCoordinates()]) : geometry)
+              if (polygonFeatureGeometry.intersection(polygon).getGeometryType() === 'Polygon') {
+                const geometry = parser.write(polygon);
+                splittedFeatureGeometries.push(isMulti ? new ol.geom.MultiPolygon([geometry.getCoordinates()]) : geometry)
+              }
             })
           }
         //LineString or MultiLineString

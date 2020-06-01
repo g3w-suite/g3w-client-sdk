@@ -1794,13 +1794,22 @@ proto.zoomToFeatures = function(features, options={highlight: false}) {
 };
 
 proto.zoomToExtent = function(extent, options={}) {
+  const center = ol.extent.getCenter(extent);
+  const resolution = this.getResolutionForZoomToExtent(extent);
+  this.goToRes(center, resolution);
+  options.highLightGeometry && this.highlightGeometry(options.highLightGeometry, {
+    zoom: false
+  });
+};
+
+proto.getResolutionForZoomToExtent = function(extent){
+  let resolution;
   const map = this.getMap();
   const projectInitExtent = this.project.state.initextent;
   const projectMaxResolution = map.getView().getResolutionForExtent(projectInitExtent, map.getSize());
   const inside = ol.extent.containsExtent(projectInitExtent, extent);
   // max resolution of the map
   const maxResolution = getResolutionFromScale(SETTINGS.zoom.maxScale, this.getMapUnits()); // map resolution of the map
-  const center = ol.extent.getCenter(extent);
   // check if
   if (inside) {
     // calculate main resolutions
@@ -1808,13 +1817,10 @@ proto.zoomToExtent = function(extent, options={}) {
     const extentResolution = map.getView().getResolutionForExtent(extent, map.getSize()); // resolution of request extent
     ////
     // set the final resolution to go to
-    let resolution = extentResolution > maxResolution ? extentResolution: maxResolution;
+    resolution = extentResolution > maxResolution ? extentResolution: maxResolution;
     resolution = (currentResolution < resolution) && (currentResolution > extentResolution) ? currentResolution : resolution;
-    this.goToRes(center, resolution);
-  } else this.goToRes(center, projectMaxResolution); // set max resolution
-  options.highLightGeometry && this.highlightGeometry(options.highLightGeometry, {
-    zoom: false
-  });
+  } else resolution = projectMaxResolution; // set max resolution
+  return resolution
 };
 
 proto.goToBBox = function(bbox) {

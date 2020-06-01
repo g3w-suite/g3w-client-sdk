@@ -151,5 +151,4 @@ proto.isFather = function(id) {
   return !!this._relationsInfo.fathers[id];
 };
 
-
 module.exports = Relations;
