@@ -45,7 +45,6 @@ function QueryResultsService() {
       this._orderResponseByProjectLayers(layers);
       this.state.loading = false;
       this.state.layers =  layers;
-      console.log(layers)
       this.setActionsForLayers(layers);
     },
     addComponent: function(component) {
@@ -69,16 +68,6 @@ function QueryResultsService() {
   };
   GUI.onbefore('setContent', (options)=>{
     const {perc} = options;
-    GUI.on('collapsed', (collapsed) =>{
-      if (collapsed){
-        setTimeout(()=>{
-          this.clear();
-        })
-      } else {
-        this._asyncFnc.zoomToLayerFeaturesExtent.async = true;
-        this._asyncFnc.goToGeometry.async = true;
-      }
-    });
     if (perc === 100) {
       this._asyncFnc.zoomToLayerFeaturesExtent.async = true;
       this._asyncFnc.goToGeometry.async = true;
@@ -554,9 +543,6 @@ QueryResultsService.zoomToElement = function(layer, feature) {
 };
 
 QueryResultsService.goToGeometry = function(layer, feature) {
-  //mobile
-  isMobile.any && !GUI.isContentCollapsed()? GUI.collapseContent() : null;
-  //
   if (feature.geometry) {
     setTimeout(() => {
       const mapService = ComponentsRegistry.getComponent('map').getService();

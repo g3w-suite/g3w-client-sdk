@@ -3,8 +3,7 @@
     <tr role="row" class="feature_attribute"
         :id="'open_table_row_' + index"
         v-for="(feature, index) in features" :key="index"
-        @mouseover="zoomAndHighLightSelectedFeature(feature, false)"
-        @click="zoomAndHighLightSelectedFeature(feature); toggleRow(index)"
+        @click="[zoomAndHighLightSelectedFeature(feature, index), toggleRow(index)]"
         :selected="selectedRow === index"
         :class="[index %2 == 1 ? 'odd' : 'pair', {geometry: hasGeometry}]">
       <td v-for="header in headers" :tab-index="1">

@@ -1,6 +1,7 @@
 const GUI = require('gui/gui');
 const t = require('core/i18n/i18n.service').t;
-const {coordinatesToGeometry, geometryFields} =  require('core/utils/geo');
+const noop = require('core/utils/utils').noop;
+const {coordinatesToGeometry} =  require('core/utils/geo');
 
 const TableService = function(options = {}) {
   this.currentPage = 0; // number of pages
@@ -20,6 +21,14 @@ const TableService = function(options = {}) {
     pagination: true,
     hasGeometry: false
   };
+  this._async = {
+    state: false,
+    fnc: noop
+  };
+  GUI.onbefore('setContent', (options)=>{
+    const {perc} = options;
+    this._async.state = perc === 100;
+  })
 };
 
 const proto = TableService.prototype;
@@ -128,11 +137,22 @@ proto.zoomAndHighLightSelectedFeature = function(feature, zoom=true) {
   let geometry = feature.geometry;
   if (geometry) {
     const mapService = GUI.getComponent('map').getService();
-    mapService.highlightGeometry(geometry , {
-      zoom
-    });
+    if (this._async.state) {
+      this._async.fnc = mapService.highlightGeometry.bind(mapService, geometry, {zoom});
+    } else {
+      mapService.highlightGeometry(geometry , {
+        zoom
+      });
+    }
   }
 };
 
+proto.clear = function(){
+  this._async.state && setTimeout(()=> {
+    this._async.fnc();
+    this._async.state = false;
+    this._async.fnc = noop;
+  });
+};
 
 module.exports = TableService;

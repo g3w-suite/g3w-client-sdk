@@ -61,6 +61,7 @@ proto.show = function(options = {}) {
 
 proto.unmount = function() {
   return base(this, 'unmount').then(() => {
+    this._service.clear();
   })
 };
 
