@@ -1,4 +1,4 @@
-const {base, inherit, noop} = require('core/utils/utils');
+const {base, inherit, noop, downloadCSV} = require('core/utils/utils');
 const getAlphanumericPropertiesFromFeature = require('core/utils/geo').getAlphanumericPropertiesFromFeature;
 const t = require('core/i18n/i18n.service').t;
 const ProjectsRegistry = require('core/project/projectsregistry');
@@ -480,49 +480,7 @@ proto.saveLayerResult = function(layer, alias=true) {
       return attribute ? attribute.label : property;
     });
 
-    function convertToCSV(items) {
-      let str = '';
-      for (let i = 0; i < items.length; i++) {
-        let line = '';
-        for (let index in items[i]) {
-          if (line !== '') line += ';';
-          line += items[i][index];
-        }
-        str += line + '\r\n';
-      }
-      return str;
-    }
-
-    function exportCSVFile(headers, items=[], fileTitle) {
-      items = items.map(item => {
-        Object.keys(item).forEach(key => {
-          item[key] = typeof item[key] === 'string' ? item[key].replace(/(\r\n|\n|\r)/gm," ") : item[key];
-        });
-        return item
-      });
-      if (headers) items.unshift(headers);
-      // Convert Object to JSON
-      const csv = convertToCSV(items);
-      const exportedFilenmae = `${layer.id}.csv`;
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      if (navigator.msSaveBlob) { // IE 10+
-        navigator.msSaveBlob(blob, exportedFilenmae);
-      } else {
-        const link = document.createElement("a");
-        if (link.download !== undefined) { // feature detection
-          // Browsers that support HTML5 download attribute
-          const url = URL.createObjectURL(blob);
-          link.setAttribute("href", url);
-          link.setAttribute("download", exportedFilenmae);
-          link.style.visibility = 'hidden';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        }
-      }
-    }
-
-    const itemsFormatted = layer.features.map((feature) => {
+    const items = layer.features.map((feature) => {
       const attributes = feature.attributes;
       const item = {};
       properties.forEach((property, index) => {
@@ -532,8 +490,13 @@ proto.saveLayerResult = function(layer, alias=true) {
       return item;
     });
 
-    exportCSVFile(headers, itemsFormatted);
+    downloadCSV({
+      filename: layer.id,
+      items
+    })
+
   } catch(e) {
+    console.log(e)
     GUI.notify.error(t('info.server_error'));
   }
 };

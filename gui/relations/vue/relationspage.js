@@ -65,6 +65,9 @@ const relationComponent = {
     }
   },
   methods: {
+    saveRelation(){
+      this.$emit('save-relation')
+    },
     reloadLayout() {
       relationDataTable.columns.adjust();
     },
@@ -104,6 +107,7 @@ const relationComponent = {
   mounted () {
     this.relation.title = this.relation.name;
     this.$nextTick(() => {
+      $('.query-relation .header span[data-toggle="tooltip"]').tooltip();
       if (!this.one) {
         const tableHeight = $(".content").height();
         relationDataTable = $('#relationtable').DataTable( {
@@ -144,6 +148,9 @@ const InternalComponent = Vue.extend({
     'relation': relationComponent
   },
   methods: {
+    saveCSVRelations(){
+      this.$options.service.saveCSVRelations();
+    },
     reloadLayout() {
       RelationPageEventBus.$emit('reload');
     },

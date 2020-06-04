@@ -102,7 +102,8 @@ export default {
           }
         },
         tooltips: {
-          copy_map_extent_url: 'Copia map view link'
+          copy_map_extent_url: 'Copia map view link',
+          download_xls: "Scarica XLS"
         },
         mapcontrols: {
           query: {
@@ -299,7 +300,8 @@ export default {
           }
         },
         tooltips: {
-          copy_map_extent_url: 'Copy map view link'
+          copy_map_extent_url: 'Copy map view link',
+          download_xls: "Download XLS"
         },
         mapcontrols: {
           query: {

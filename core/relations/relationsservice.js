@@ -1,6 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const XHR = require('core/utils/utils').XHR;
-const base = require('core/utils/utils').base;
+const { inherit, XHR, base} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 function RelationsService(options={}) {
@@ -11,10 +9,10 @@ inherit(RelationsService, G3WObject);
 
 const proto = RelationsService.prototype;
 
-proto.getRelations = function(options={}) {
+proto.createUrl = function(options={}){
   const ProjectsRegistry = require('core/project/projectsregistry');
   const currentProject = ProjectsRegistry.getCurrentProject();
-  // type : <editing, data>
+  // type : <editing, data, xls>
   const {layer={}, relation={}, fid, type='data'} = options;
   let layerId;
   const {father, child, referencedLayer, referencingLayer, id:relationId} = relation;
@@ -26,9 +24,22 @@ proto.getRelations = function(options={}) {
     value = value.split('.');
     value = value.length === 1 ? value[0]: value[1];
   }
-  const url = `${dataUrl}?relationonetomany=${relationId}|${value}`;
+  return `${dataUrl}?relationonetomany=${relationId}|${value}`;
+};
+
+proto.getRelations = function(options={}) {
+  const url = this.createUrl(options);
   return XHR.get({
     url
+  })
+};
+
+proto.saveCSV = function(options={}){
+  options.type = 'xls';
+  const url = this.createUrl(options);
+  XHR.fileDownload({
+    url,
+    httpMethod: "GET"
   })
 };
 
