@@ -229,6 +229,10 @@ const utils = {
     return `${string[0].toUpperCase()}${string.slice(1)}`;
   },
   Base64: Base64,
+  toRawType(value) {
+    const _toString = Object.prototype.toString;
+    return _toString.call(value).slice(8, -1)
+  },
   // build throttle function
   throttle: function(fnc, delay=500) {
     let lastCall;
