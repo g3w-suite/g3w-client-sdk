@@ -95,6 +95,7 @@ export default {
                   </ul>`
           },
           querybybbox: {
+            nolayers_visible: "Nessun layer interrogabile è visibile. Assicurarsi che almeno un layer wfs sia visibile per eseguire l'interrogazione",
             help: `<h4>Guida - Query BBox layer</h4>
                    <ul style="padding-left: 10px;">
                     <li style="font-size:0.8em;">Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li>
@@ -257,6 +258,7 @@ export default {
                   </ul>`
           },
           querybybbox: {
+            nolayers_visible: 'No querable layers are visible. Please set at least one visible wfs layer to run query',
             help: `<h4>Guide - Query BBox layer</h4>
                    <ul style="padding-left: 10px;">
                     <li style="font-size:0.8em;">Draw a square on map to query underlined layers on TOC</li>
