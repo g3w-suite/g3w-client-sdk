@@ -57,23 +57,35 @@ BaseLayers.TMS =  {
 
 
 BaseLayers.WMTS = {
-  get: function({url, layer, visible, attributions, crs, format='image/png', opacity=0.7} = {}) {
+  get: function({url, layer, visible, attributions, matrixSet, crs, requestEncoding,  style='default', format='image/png', opacity=0.7} = {}) {
     const projection = Projections.get(`EPSG:${crs}`);
     const projectionExtent = projection.getExtent();
+    const resolutions = new Array(14);
     const size = ol.extent.getWidth(projectionExtent) / 256;
-    const matrixIds = [];
-    const resolutions = [];
-    for (var i = 0; i < 18; i++) {
-      matrixIds[i] = i.toString();
-      resolutions[i] = size / Math.pow(2, i);
+    const matrixIds = new Array(14);
+    for (var z = 0; z < 14; ++z) {
+      // generate resolutions and matrixIds arrays for this WMTS
+      resolutions[z] = size / Math.pow(2, z);
+      matrixIds[z] = z;
     }
-    url = 'https://hazards.fema.gov/gis/nfhl/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/16';
     return new ol.layer.Tile({
       opacity,
-      source: new ol.source.TileArcGISRest({
-        url
+      source: new ol.source.WMTS({
+        url,
+        projection,
+        layer,
+        matrixSet,
+        requestEncoding,
+        format,
+        attributions,
+        tileGrid: new ol.tilegrid.WMTS({
+          origin: ol.extent.getTopLeft(projectionExtent),
+          resolutions: resolutions,
+          matrixIds: matrixIds
+        }),
+        style
       })
-    })
+    });
   }
 };
 

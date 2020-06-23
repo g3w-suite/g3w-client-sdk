@@ -14,12 +14,16 @@ const proto = WMTSLayer.prototype;
 
 proto._makeOlLayer = function() {
   //use this config to get params
-  const {url, layer, attributions, crs} = this.config;
+  const {url, layer, attributions, matrixSet, format, style, requestEncoding, crs} = this.config;
   const olLayer = BasesLayers.WMTS.get({
     url,
     layer,
     attributions,
-    crs
+    format,
+    crs,
+    requestEncoding,
+    matrixSet,
+    style
   });
   return olLayer
 };
