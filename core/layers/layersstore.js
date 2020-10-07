@@ -401,11 +401,14 @@ proto.setLayersTree = function(layerstree, name) {
     Object.entries(obj).forEach(([key, layer]) => {
      //check if lis layer and not a folder
       if (layer.id !== undefined) {
+        console.log(layer.id);
         obj[key] = this.getLayerById(layer.id).getState();
         obj[key].groupdisabled = parentDisabled;
       }
       if (layer.nodes) {
+        parentDisabled = !layer.checked;
         traverse(layer.nodes);
+        parentDisabled = false;
       }
     });
   };

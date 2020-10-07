@@ -95,7 +95,7 @@ proto.setDisabled = function(resolution, mapUnits='m') {
     this.state.disabled = !(mapScale >= this.state.maxscale && mapScale <= this.state.minscale);
     this.state.disabled = (QGISVERSION === 3 && this.state.minscale === 0) ? !(mapScale >= this.state.maxscale) : this.state.disabled;
   } else {
-    this.state.disabled = false;
+    this.state.disabled = this.state.groupdisabled;
   }
 };
 
