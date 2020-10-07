@@ -396,15 +396,16 @@ proto.getWmsUrl = function() {
 
 // set layersstree of layers inside the laysstore
 proto.setLayersTree = function(layerstree, name) {
-  let groupDisabled = false;
   const traverse = (obj, isChild=false, currentGroupDisabled=false) => {
     Object.entries(obj).forEach(([key, layer]) => {
-      if (layer.nodes) {
-        groupDisabled = !isChild ? !layer.checked : currentGroupDisabled || !layer.cheched;
-        traverse(layer.nodes, true, groupDisabled);
-      } else if (layer.id !== undefined) {
+      if (layer.id !== undefined) {
         obj[key] = this.getLayerById(layer.id).getState();
-        obj[key].groupdisabled = isChild ? currentGroupDisabled : false;
+        obj[key].groupdisabled = currentGroupDisabled;
+      }
+      if (layer.nodes) {
+        layer.disabled = isChild ? currentGroupDisabled : false;
+        const _currentGroupDisabled = !isChild ? !layer.checked : currentGroupDisabled || !layer.checked;
+        traverse(layer.nodes, true, _currentGroupDisabled);
       }
     });
   };
