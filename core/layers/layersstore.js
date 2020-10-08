@@ -403,7 +403,6 @@ proto.setLayersTree = function(layerstree, name) {
         obj[key].groupdisabled = currentGroupDisabled;
       }
       if (layer.nodes) {
-        layer.disabled = isChild ? currentGroupDisabled : false;
         const _currentGroupDisabled = !isChild ? !layer.checked : currentGroupDisabled || !layer.checked;
         traverse(layer.nodes, true, _currentGroupDisabled);
       }
