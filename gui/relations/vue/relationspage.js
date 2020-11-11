@@ -66,6 +66,51 @@ const relationComponent = {
     }
   },
   methods: {
+    saveCSV(){
+      try {
+        const headers = this.table.columns;
+        function convertToCSV(items) {
+          console.log(items)
+          let str = '';
+          for (let i = 0; i < items.length; i++) {
+            let line = '';
+            for (let index in items[i]) {
+              if (line !== '') line += ';';
+              line += items[i][index];
+            }
+            str += line + '\r\n';
+          }
+          return str;
+        }
+        let items = [[this.table.columns]];
+        this.table.rows.forEach(row => {
+          const item = {};
+          row.forEach((value, index) => item[[this.table.columns[index]]] = value);
+          items.push(item);
+        });
+        // Convert Object to JSON
+        const csv = convertToCSV(items);
+        const exportedFilenmae = `${this.relation.name}.csv`;
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        if (navigator.msSaveBlob) { // IE 10+
+          navigator.msSaveBlob(blob, exportedFilenmae);
+        } else {
+          const link = document.createElement("a");
+          if (link.download !== undefined) { // feature detection
+            // Browsers that support HTML5 download attribute
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", exportedFilenmae);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          }
+        }
+      } catch(e) {
+        GUI.notify.error(t('info.server_error'));
+      }
+    },
     reloadLayout() {
       relationDataTable.columns.adjust();
     },
@@ -105,6 +150,7 @@ const relationComponent = {
   mounted () {
     this.relation.title = this.relation.name;
     this.$nextTick(() => {
+      $('.query-relation .action-button[data-toggle="tooltip"]').tooltip();
       if (!this.one) {
         const tableHeight = $(".content").height();
         relationDataTable = $('#relationtable').DataTable( {

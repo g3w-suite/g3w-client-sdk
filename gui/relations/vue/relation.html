@@ -5,8 +5,11 @@
     </span>
   </div>
   <div class="header">
-    <div style="font-size: 1.5em">
-      <span v-t:pre="'sdk.relations.relation_data'">:</span> <b> {{ relation.name }}</b>
+    <div style="display: flex; justify-content: space-between">
+      <span v-t:pre="'sdk.relations.relation_data'">:<b style="font-size: 1.5em" class="skin-color"> {{ relation.name }}</b></span>
+      <span v-if="table.rows.length" title="CSV" class="action-button-icon action-button skin-tooltip-left" style="font-size:1.5em" data-placement="left" data-toggle="tooltip"
+      :class="g3wtemplate.getFontClass('csv')" @click.stop="saveCSV">
+      </span>
     </div>
   </div>
   <div class="nano" v-if="table.rows.length">
